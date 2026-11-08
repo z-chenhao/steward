@@ -1811,18 +1811,19 @@ def account_presentation(binary, browser_evidence, report):
                              'Web account reconnect completes', lambda _: h.http('/api/auth'))
                 require('Test connection' not in h.http(resources) and 'Add account model' not in h.http(resources),
                         'account reconnect requires an unnecessary connection test')
-                restored_profile = next(item for item in h.command('model','list') if item['profile_id']==profile['profile_id'])
-                restore = dict(profile=profile['profile_id'], restore_current='yes',
-                               profile_version=restored_profile['version'],
-                               config_version=h.http('/api/status')['config_version'])
-                restore['consent']='yes'
-                h.http('/model/select', urlencode(restore).encode(), headers=form)
                 restored = h.http('/api/status')
                 require(restored['readiness'] == 'ready' and restored['active_model_profile_id'] == profile['profile_id'],
-                        'account selection did not restore the existing model')
+                        'account reconnect did not automatically restore the existing model')
+                restored_profile = next(item for item in h.command('model','list') if item['profile_id']==profile['profile_id'])
+                require(restored_profile['status']=='ready','reconnected current profile retained stale auth state')
+                with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
+                    require(db.execute('SELECT count(*) FROM model_generation').fetchone()[0]==0 and
+                            db.execute('SELECT count(*) FROM model_probe').fetchone()[0]==0,
+                            'account reconnect generated inference or fabricated a probe')
                 restored_page = h.http(resources)
                 require('fixture-account-model' in h.http('/') and 'Test connection' not in restored_page and 'Use model' not in restored_page,
                         'restored model still exposes replaced actions')
+                h.browser(browser_evidence/'restored', 'account-restored')
                 # Price a real accepted response using the bundled catalog. Only
                 # the owned OAuth/Responses peer is substituted; no ledger or
                 # rendered result is injected by the browser fixture.

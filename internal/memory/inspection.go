@@ -147,14 +147,29 @@ type InspectionRelated struct {
 	Title string `json:"title"`
 }
 type MaintenanceRecord struct {
-	Metrics   *MaintenanceMetrics `json:"metrics,omitempty"`
-	Ref       string              `json:"ref"`
-	Operation string              `json:"operation"`
-	Status    string              `json:"status"`
-	CreatedAt time.Time           `json:"created_at"`
-	Attempts  int                 `json:"attempts"`
-	Error     string              `json:"error,omitempty"`
-	RunID     string              `json:"run_id,omitempty"`
+	Generations []MaintenanceGeneration `json:"generations,omitempty"`
+	Metrics     *MaintenanceMetrics     `json:"metrics,omitempty"`
+	Ref         string                  `json:"ref"`
+	Operation   string                  `json:"operation"`
+	Status      string                  `json:"status"`
+	CreatedAt   time.Time               `json:"created_at"`
+	Attempts    int                     `json:"attempts"`
+	Error       string                  `json:"error,omitempty"`
+	RunID       string                  `json:"run_id,omitempty"`
+}
+
+// Owner-only diagnostics; no request, proposal or control payload is exposed.
+type MaintenanceGeneration struct {
+	ID           string    `json:"id"`
+	Purpose      string    `json:"purpose"`
+	Pass         int       `json:"pass"`
+	Status       string    `json:"status"`
+	Model        string    `json:"model"`
+	CreatedAt    time.Time `json:"created_at"`
+	InputTokens  *int64    `json:"input_tokens"`
+	OutputTokens *int64    `json:"output_tokens"`
+	LatencyMS    *int64    `json:"latency_ms"`
+	Failure      string    `json:"failure,omitempty"`
 }
 type InspectionPage struct {
 	Items       []InspectionRecord  `json:"items"`

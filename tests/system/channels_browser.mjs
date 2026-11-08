@@ -174,6 +174,19 @@ try{
    });
    if(!await pending.getByRole('button',{name:'Cancel sign-in',exact:true}).isVisible())throw Error('pending sign-in has no cancellation action');
   }
+ }else if(phase==='account-restored'){
+  await page.getByRole('combobox',{name:'Model',exact:true}).filter({hasText:'fixture-account-model'}).waitFor();
+  await page.getByLabel('Message Ghost',{exact:true}).fill('Ready after reconnect.');
+  const send=page.getByRole('button',{name:'Send message',exact:true});
+  if(!await send.isEnabled())throw Error('account reconnect left the composer disabled');
+  for(const theme of ['light','dark']){
+   await page.evaluate(value=>{localStorage.setItem('steward-theme',value);document.documentElement.classList.toggle('dark',value==='dark')},theme);
+   for(const width of [1400,390]){
+    await page.setViewportSize({width,height:980});
+    if(!await send.isEnabled())throw Error('restored composer lost readiness');
+    await page.screenshot({path:evidence+'/account-restored-'+theme+'-'+width+'.png'});
+   }
+  }
  }else if(phase==='memory'){
   await memoryInspection({page,context,browser,url,evidence});
  }else if(phase==='attention'){
@@ -411,7 +424,7 @@ try{
   await page.getByRole('button',{name:'Help: Model cost',exact:true}).click();
   await page.getByRole('tooltip').filter({hasText:'Estimates are not invoices'}).waitFor();
   await page.keyboard.press('Escape');
-  if(!/^USD \d+\.\d{2}$/.test(await cost.innerText())||!/^.*USD \d+\.\d{6}$/.test(await cost.getAttribute('title'))||!(await cost.getAttribute('title')).includes('openai-codex'))throw Error('automatic price lost its rounded display, exact amount or provenance');
+  if(!/^USD \d+\.\d{2}$/.test(await cost.innerText())||!/^.*USD \d+\.\d{2}$/.test(await cost.getAttribute('title'))||!(await cost.getAttribute('title')).includes('openai-codex'))throw Error('automatic price lost its shared precision or provenance');
   for(const width of [1400,390])for(const theme of ['light','dark']){
    await page.setViewportSize({width,height:980});
    await page.evaluate(value=>{localStorage.setItem('steward-theme',value);document.documentElement.classList.toggle('dark',value==='dark')},theme);
@@ -425,7 +438,6 @@ try{
    await page.screenshot({path:evidence+'/estimated-cost-'+theme+'-'+width+'.png',fullPage:true});
   }
   await row.locator('a.trace-open').click();await page.locator('.control-sheet').waitFor();
-  await page.getByText('Trace metrics',{exact:true}).click();
   await page.locator('.obs-run-overview .obs-cost').waitFor();
   if(await page.locator('.obs-run-overview .obs-cost').getByText('Estimated',{exact:true}).count()||!(await page.locator('#trace-detail-cost-help').textContent()).includes('not invoices'))throw Error('cost detail lost its single help disclosure');
   await page.locator('.control-sheet').getByRole('button',{name:'Help: Model cost',exact:true}).hover();
@@ -493,7 +505,6 @@ try{
   await page.screenshot({path:evidence+'/trace-wire.png',fullPage:true});
   await page.goBack();await page.locator('.obs-detail-tabs a[aria-current="page"]').filter({hasText:'Input / Output'}).waitFor();
   await page.goto(url+'/developer/observability?run='+encodeURIComponent(facts.root));
-  await page.getByText('Trace metrics',{exact:true}).click();
   await page.getByRole('button',{name:'Help: Root Worker',exact:true}).hover();
   await page.getByRole('tooltip').filter({hasText:'Task root · no parent Worker.'}).waitFor();
   await page.keyboard.press('Escape');
@@ -523,7 +534,7 @@ try{
   await page.getByRole('heading',{name:'Tracing',exact:true}).waitFor();
   const row=page.locator('[data-execution-id="'+main+'"]');
   await row.locator('a.trace-open').click();
-  await page.getByText('Trace metrics',{exact:true}).click();
+  await page.getByRole('link',{name:'Details',exact:true}).click();
   await page.locator('.task-timeline .inspect-task').click();
   await page.locator('.obs-task-epochs .object-row').first().click();
   await page.locator('.obs-tree .run-node').first().waitFor();
@@ -539,8 +550,9 @@ try{
   await page.getByText('Raw observation',{exact:true}).waitFor();
   if(!await page.locator('[data-observation-parent] a.control-identifier-link').innerText().then(text=>text.includes(child.parent)))throw new Error('selected Child lost parent navigation');
   await page.locator('[data-observation-parent] a.control-identifier-link').click();
-  await page.getByText('Trace metrics',{exact:true}).click();
+  await page.getByRole('link',{name:'Details',exact:true}).click();
   await page.locator('.creator-run').click();
+  await page.locator('.run-node[data-run-id="'+main+'"]').waitFor();
   if(await page.locator('.run-node[data-role="root"],.run-node[data-role="child"]').count())throw new Error('Main page presented Task Roots as its Child Runs');
   await page.getByRole('link',{name:'Traces',exact:true}).first().click();
   // The native page is usable before its deferred autosubmit handler loads.
@@ -565,7 +577,6 @@ try{
    if(!workbench.stacked||!workbench.contained)throw Error('intermediate trace details are clipped instead of stacked');
   }
   await page.setViewportSize({width:1400,height:980});
-  await page.getByText('Trace metrics',{exact:true}).click();
   await page.getByRole('button',{name:'Help: Root Worker',exact:true}).hover();
   await page.getByRole('tooltip').filter({hasText:'Task root · no parent Worker.'}).waitFor();
   await page.keyboard.press('Escape');

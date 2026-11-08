@@ -11,6 +11,9 @@
 .memory-content{font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.memory-content-section{margin-bottom:24px}.memory-content-section h3{font-size:12px}.memory-source-content{padding-top:12px;border-top:1px solid var(--border)}.memory-source-reference{font-size:11px;overflow-wrap:anywhere}
 .memory-lineage{margin-top:24px;padding-top:12px;border-top:1px solid var(--border)}.memory-lineage h3{font-size:12px}.memory-lineage a{font-size:12px;display:block;padding:8px 0;overflow-wrap:anywhere}.memory-lineage small{display:block;overflow-wrap:anywhere;font-size:11px;color:var(--muted-foreground)}
 .memory-metadata{padding-top:12px;border-top:1px solid var(--border);font-size:12px}.memory-metadata dl{display:grid;gap:6px}.memory-metadata dt{color:var(--muted-foreground)}.memory-metadata dd{margin:0;overflow-wrap:anywhere}
-.control-sheet #memory-workbench{height:100%}.memory-page>#memory-workbench{height:calc(100dvh - 96px)}.memory-page>#memory-workbench>.obs-workbench{height:100%;min-height:0}
+.control-sheet #memory-workbench{height:100%;display:flex;flex-direction:column;min-height:0}.control-sheet #memory-workbench>.memory-workbench{flex:1;min-height:0}.memory-page>#memory-workbench{height:calc(100dvh - 96px)}.memory-page>#memory-workbench>.obs-workbench{height:100%;min-height:0}
 @container inspection-layout (max-width:700px){.memory-page>#memory-workbench{height:auto}.memory-page .memory-workbench{display:block}.memory-page .memory-sources{max-height:240px;height:auto}}
 @media(max-width:760px){.memory-list-toolbar{padding-left:12px}.memory-source>a.memory-select{min-height:44px}.control-sheet #memory-workbench{height:auto}.memory-content{font-size:14px}}
+
+.memory-col-operation{width:110px}.memory-col-attempts{width:80px}.memory-col-error{width:210px}.memory-col-execution{width:130px}.memory-record-list tr[data-memory-ref]:hover{background:var(--hover)}
+.memory-generation-history{margin-block:24px}.memory-generation-history h3{font-size:var(--text-ui)}

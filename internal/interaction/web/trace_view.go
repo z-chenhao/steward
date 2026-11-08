@@ -24,7 +24,23 @@ func duration(start int64, end *int64) string {
 	if end == nil {
 		return "—"
 	}
-	return (time.Duration(max(0, *end-start)) * time.Microsecond).Round(time.Millisecond).String()
+	return elapsedLabel(float64(max(0, *end-start)) / 1000)
+}
+
+// elapsedLabel is shared by all server-rendered Web latency metrics.
+func elapsedLabel(ms float64) string {
+	ms = max(0, ms)
+	if ms < 1000 {
+		return fmt.Sprintf("%.2fms", ms)
+	}
+	return fmt.Sprintf("%.2fs", ms/1000)
+}
+
+func milliseconds(value *int64) string {
+	if value == nil {
+		return "—"
+	}
+	return elapsedLabel(float64(*value))
 }
 
 func providerTimingLabel(phase string) string {
@@ -50,7 +66,7 @@ func elapsed(created, ended string) string {
 	if e != nil || f != nil {
 		return "—"
 	}
-	return b.Sub(a).Round(time.Millisecond).String()
+	return elapsedLabel(float64(b.Sub(a)) / float64(time.Millisecond))
 }
 
 func traceRows(tree observability.ObservationTree) []traceRow {
@@ -124,9 +140,13 @@ func observationIcon(kind string) string {
 	return "↔"
 }
 func observationParent(id string) string { return strings.TrimPrefix(id, "agent:") }
-func traceMoney(m int64) string          { return fmt.Sprintf("%.2f", float64(m)/1e6) }
-func money(m int64) string               { return fmt.Sprintf("%.6f", float64(m)/1e6) }
-func viewJSON(v any) string              { body, _ := json.MarshalIndent(v, "", "  "); return string(body) }
+func money(m int64) string {
+	if m > 0 && m < 10000 {
+		m = 10000
+	}
+	return fmt.Sprintf("%.2f", float64(m)/1e6)
+}
+func viewJSON(v any) string { body, _ := json.MarshalIndent(v, "", "  "); return string(body) }
 
 // Tabs are meaningful views of the selected node, never empty destinations.
 func observationTabs(o observability.Observation) []string {

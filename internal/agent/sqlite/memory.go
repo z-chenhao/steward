@@ -352,7 +352,7 @@ func (r *Runs) CurateMemory(ctx context.Context) error {
 					return err
 				}
 			}
-			res, e := tx.ExecContext(ctx, `UPDATE memory_mutation SET applied_at=?,attempts=attempts+1 WHERE event_id=? AND applied_at IS NULL`, time.Now().UnixMicro(), id)
+			res, e := tx.ExecContext(ctx, `UPDATE memory_mutation SET applied_at=?,attempts=attempts+1,last_error=NULL WHERE event_id=? AND applied_at IS NULL`, time.Now().UnixMicro(), id)
 			if e != nil {
 				return e
 			}

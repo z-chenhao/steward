@@ -14,7 +14,7 @@ export function bucketSelection(count:number,first:number,last:number){
 }
 export function elapsedLabel(microseconds:number){
  const ms=Math.max(0,microseconds/1000);
- return ms<1?`${Math.round(ms*1000)}µs`:ms<1000?`${Number(ms.toFixed(1))}ms`:ms<60000?`${Number((ms/1000).toFixed(2))}s`:`${Number((ms/60000).toFixed(2))}m`;
+ return ms<1000?`${ms.toFixed(2)}ms`:`${(ms/1000).toFixed(2)}s`;
 }
 
 // Date.parse truncates sub-millisecond timestamps. Keep the microsecond part

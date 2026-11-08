@@ -29,7 +29,8 @@ type semanticProvider struct {
 
 func (p *semanticProvider) Generate(ctx context.Context, req llm.GenerationRequest, _ func(llm.GenerationEvent)) (llm.GenerationResult, error) {
 	p.calls++
-	if len(req.Tools) != 0 || len(req.Messages) != 2 || (req.Messages[0].Text != memory.CurationInstruction && req.Messages[0].Text != memory.DreamInstruction && req.Messages[0].Text != memory.GroundedDreamInstruction && req.Messages[0].Text != memory.WorkerDreamInstruction) || !strings.HasPrefix(req.SessionID, "memory:") {
+	instruction, _, _ := strings.Cut(req.Messages[0].Text, "\nThe previous attempt was rejected: ")
+	if len(req.Tools) != 0 || len(req.Messages) != 2 || (instruction != memory.CurationInstruction && instruction != memory.DreamInstruction && instruction != memory.GroundedDreamInstruction && instruction != memory.WorkerDreamInstruction) || !strings.HasPrefix(req.SessionID, "memory:") {
 		return llm.GenerationResult{}, llm.InvalidProviderResponse
 	}
 	release, e := req.DispatchGuard(ctx)

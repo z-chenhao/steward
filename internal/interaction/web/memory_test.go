@@ -101,10 +101,13 @@ func TestMemoryFailuresAreSafeAndLocalized(t *testing.T) {
 type maintenanceMemoryReader struct{}
 
 func (maintenanceMemoryReader) InspectMemory(_ context.Context, q memory.InspectionQuery) (memory.InspectionPage, error) {
+	input, output, latency := int64(120), int64(0), int64(450)
 	records := []memory.MaintenanceRecord{
 		{Ref: "memory-event:priced", Operation: "dream", Status: "applied", Attempts: 1, CreatedAt: time.Now(), Metrics: &memory.MaintenanceMetrics{Generations: 2, KnownUsageGenerations: 2, InputTokens: 340, OutputTokens: 50, CacheReadTokens: 128, DocumentsWritten: 2, LaterToolReads: 1, Costs: []memory.MaintenanceCost{{Currency: "USD", ReferenceMicros: 125000, PricedGenerations: 2}}}},
 		{Ref: "memory-event:unknown", Operation: "dream", Status: "rejected", Attempts: 1, Error: "MEMORY_INVALID_PROPOSAL", CreatedAt: time.Now(), Metrics: &memory.MaintenanceMetrics{Generations: 1, UnpricedGenerations: 1}},
 	}
+	records[0].Generations = []memory.MaintenanceGeneration{{ID: "memory:completed", Purpose: "dream", Status: "completed", Model: "fixture", CreatedAt: time.Now(), InputTokens: &input, OutputTokens: &output, LatencyMS: &latency}, {ID: "memory:failed", Purpose: "dream", Status: "failed", Model: "fixture", CreatedAt: time.Now(), Failure: "Supporting quote is empty or is not an exact substring of its observation."}}
+	records[1].Generations = []memory.MaintenanceGeneration{{ID: "memory:legacy-failed", Purpose: "dream", Status: "failed", CreatedAt: time.Now()}}
 	if q.Ref != "" {
 		for _, record := range records {
 			if strings.Replace(record.Ref, "memory-event:", "memory:maintenance-", 1) == q.Ref {
@@ -124,7 +127,7 @@ func TestMemoryMaintenanceRoutesShowPricedUnknownAndNativeDetail(t *testing.T) {
 		if w.Code != 200 {
 			t.Fatal(path, w.Code, w.Body.String())
 		}
-		if strings.HasPrefix(path, "/developer/") && !strings.Contains(w.Body.String(), "0.125000") {
+		if strings.HasPrefix(path, "/developer/") && !strings.Contains(w.Body.String(), "0.12") {
 			t.Fatal("priced maintenance missing", w.Body.String())
 		}
 	}
