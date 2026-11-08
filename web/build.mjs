@@ -16,6 +16,8 @@ const js=await build({absWorkingDir:root,entryPoints:['src/main.tsx'],bundle:tru
   banner:{js:'/*! Steward UI; bundled third-party licenses:\n'+notices+'\n*/'},legalComments:'inline'});
 const appearance=await build({absWorkingDir:root,entryPoints:['src/appearance.ts'],bundle:true,minify:true,write:false,format:'iife',target:['es2022']});
 const diagrams=await build({absWorkingDir:root,entryPoints:['src/diagrams.ts'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
+const previewRuntime=await build({absWorkingDir:root,entryPoints:['src/preview-runtime.js'],bundle:true,minify:true,write:false,format:'iife',target:['es2022']});
+const widgetRuntime=await build({absWorkingDir:root,entryPoints:['src/widget-runtime.js'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
 // Use Tailwind's file output: a synchronous child can otherwise lose buffered stdout.
 const cssTemp=mkdtempSync(join(tmpdir(),'steward-web-css-'));
 let css;
@@ -32,7 +34,7 @@ css=Buffer.from(css.toString().replace(/url\(['"]?(\/brand\/[^)'"?]+\.(?:woff2|t
   return `url('${path}?v=${digest}')`;
 }));
 const dependencyDirs=new Set(['node_modules/tailwindcss']);
-for(const input of [...Object.keys(js.metafile.inputs),...Object.keys(diagrams.metafile.inputs)]){
+for(const input of [...Object.keys(js.metafile.inputs),...Object.keys(diagrams.metafile.inputs),...Object.keys(widgetRuntime.metafile.inputs)]){
   const at=input.lastIndexOf('node_modules/');if(at<0)continue;
   const pieces=input.slice(at+13).split('/');
   dependencyDirs.add(input.slice(0,at+13)+pieces.slice(0,pieces[0].startsWith('@')?2:1).join('/'));
@@ -49,7 +51,7 @@ const lightTheme=THEME_CSS.match(/:root\s*\{([\s\S]*?)\}/)[1],darkTheme=THEME_CS
 const widgetStyles=THEME_CSS+'\n'+SVG_CLASSES_CSS+'\n'+FORM_STYLES_CSS+'\n:root[data-widget-theme=light]{'+lightTheme+'}\n:root[data-widget-theme=dark]{'+darkTheme+'}';
 const frameTheme=readFileSync(root+'src/components/ui/controls.css','utf8').split('/* Intelligent UI sandbox theme:')[1];
 const embeddedFont="@font-face{font-family:Inter;src:url(data:font/woff2;base64,"+readFileSync(root+'../internal/interaction/web/assets/brand/InterVariable.woff2').toString('base64')+") format('woff2');font-style:normal;font-weight:100 900;font-display:swap}";
-const outputs={'widget.css':widgetStyles+'\n/* Intelligent UI sandbox theme:'+frameTheme+'\n'+embeddedFont,'appearance.js':appearance.outputFiles[0].contents,'client.js':js.outputFiles[0].contents,'diagrams.js':diagrams.outputFiles[0].contents,'style.css':css,'licenses.txt':licenses,'brand/NOTICE.txt':readFileSync(root+'licenses/steward-artwork.md')};
+const outputs={'preview-runtime.js':previewRuntime.outputFiles[0].contents,'widget.css':widgetStyles+'\n/* Intelligent UI sandbox theme:'+frameTheme+'\n'+embeddedFont,'widget-runtime.js':widgetRuntime.outputFiles[0].contents,'appearance.js':appearance.outputFiles[0].contents,'client.js':js.outputFiles[0].contents,'diagrams.js':diagrams.outputFiles[0].contents,'style.css':css,'licenses.txt':licenses,'brand/NOTICE.txt':readFileSync(root+'licenses/steward-artwork.md')};
 for(const [name,bytes] of Object.entries(outputs)){
   const path=root+'../internal/interaction/web/assets/'+name;
   if(process.argv.includes('--check')){

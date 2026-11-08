@@ -203,6 +203,7 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 	if result != nil {
 		l.emit(r, "generation_reused", "", "")
 	}
+	keepUIPrefixes := false
 	if result == nil {
 		visible := generation.Compaction == nil
 		if visible {
@@ -225,6 +226,9 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 		lastPreview := map[string]time.Time{}
 		defer func() {
 			for key := range prefixes {
+				if keepUIPrefixes {
+					continue
+				}
 				l.publishUIPreview(r, "ui_preview_remove", key, nil)
 			}
 		}()
@@ -320,6 +324,7 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 	end := l.event(r, "message_end", "", "")
 	end.GenerationID = cp.ExchangeID
 	l.publish(end)
+	keepUIPrefixes = cp.Phase == ToolsPhase
 	keepPreview = cp.Phase == ReplyPhase
 	return false, nil
 }
@@ -346,6 +351,11 @@ func (l *agentLoop) toolsTurn(r Run) (bool, error) {
 
 func (l *agentLoop) finishTools(r Run, results []tool.Result) (bool, error) {
 	cp := r.Checkpoint
+	for i, result := range results {
+		if result.Error != nil && i < len(cp.Result.ToolCalls) && cp.Result.ToolCalls[i].Name == ui.ShowName {
+			l.publishUIPreview(r, "ui_preview_remove", cp.ExchangeID+":"+cp.Result.ToolCalls[i].ID, nil)
+		}
+	}
 	unknownExchange := false
 	for _, result := range results {
 		if result.Error != nil && result.Error.Code == "UNKNOWN_SIDE_EFFECT" {

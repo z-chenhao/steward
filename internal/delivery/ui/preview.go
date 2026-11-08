@@ -5,17 +5,25 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"unicode/utf8"
 )
 
 // Preview is an ephemeral display, never a delivered artifact or an authority to
 // submit an answer. Executable fields and artifact/action references are absent.
 type Preview struct {
+	Order      string      `json:"-"`
 	Title      string      `json:"title"`
+	Text       string      `json:"text,omitempty"`
 	Components []Component `json:"components"`
 }
 
+// StagedPreview carries private recovery metadata, never a model tool call.
+type StagedPreview struct {
+	Key, Arguments, Order string
+}
+
 type previewObserverKey struct{}
-type PreviewObserver func(string, string)
+type PreviewObserver func(string, string, string)
 
 func WithPreviewObserver(ctx context.Context, observe PreviewObserver) context.Context {
 	return context.WithValue(ctx, previewObserverKey{}, observe)
@@ -23,9 +31,13 @@ func WithPreviewObserver(ctx context.Context, observe PreviewObserver) context.C
 
 // ObservePreview is called outside the staging transaction. The ordinary tool
 // completion, reply binding and Delivery remain the only durable authorities.
-func ObservePreview(ctx context.Context, key, raw string) {
+func ObservePreview(ctx context.Context, key, raw string, order ...string) {
 	if observe, ok := ctx.Value(previewObserverKey{}).(PreviewObserver); ok && ctx.Err() == nil {
-		observe(key, raw)
+		position := ""
+		if len(order) > 0 {
+			position = order[0]
+		}
+		observe(key, raw, position)
 	}
 }
 
@@ -47,7 +59,11 @@ func ParsePreview(raw string) (Preview, bool) {
 		return out, false
 	}
 	out.Title, _ = root["title"].(string)
-	if len(out.Title) > 200 {
+	out.Text, _ = root["text"].(string)
+	if utf8.RuneCountInString(out.Text) > 8192 {
+		return Preview{}, false
+	}
+	if utf8.RuneCountInString(out.Title) > 200 {
 		return Preview{}, false
 	}
 	components, _ := root["components"].([]any)
@@ -73,7 +89,7 @@ func ParsePreview(raw string) (Preview, bool) {
 			}
 			html, _ := props["html"].(string)
 			css, _ := props["css"].(string)
-			b, _ := json.Marshal(map[string]any{"initialHeight": height, "html": html, "css": css})
+			b, _ := json.Marshal(map[string]any{"initialHeight": height, "html": html, "css": css, "cssComplete": props["css"] != nil})
 			out.Components = append(out.Components, Component{Name: name, Props: b})
 			continue
 		}
@@ -83,7 +99,10 @@ func ParsePreview(raw string) (Preview, bool) {
 		case "Table":
 			defaults = map[string]any{"title": "", "columns": []any{}, "rows": []any{}, "source": ""}
 		case "barChart", "pieChart", "steward.lineChart", "steward.scatterChart":
-			defaults = map[string]any{"title": "", "description": "", "data": []any{}}
+			defaults = map[string]any{"title": "", "description": ""}
+			if _, multi := props["series"]; !multi {
+				defaults["data"] = []any{}
+			}
 		case "plan_visualization":
 			defaults = map[string]any{"approach": "", "technology": "", "key_elements": []any{}}
 		case "scheduleTime", "steward.form":
@@ -164,7 +183,7 @@ func (p *prefixParser) value(key string, depth int) (any, bool, bool) {
 			if !ok {
 				return nil, false, false
 			}
-			if value != nil {
+			if value != nil && (name != "css" || complete) {
 				out[name] = value
 			}
 			if !complete {

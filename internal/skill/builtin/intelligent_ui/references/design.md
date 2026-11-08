@@ -2,9 +2,9 @@
 
 Use one visual focal point. Explain the conclusion in the normal reply. Source data, units, assumptions and illustrative values must remain clear.
 
-Reuse Table, barChart, pieChart, plan_visualization and scheduleTime for supported tasks. Custom HTML/SVG follows generateSandboxedUi's ordered CSS/markup/functions/expressions contract. Keep styles widget-specific: upstream theme variables, SVG helpers and form controls are already injected.
+Use Table, barChart, pieChart and scheduleTime when they fit the question. Do not substitute a table for a mechanism or a single series for a multi-option scenario. plan_visualization is optional planning, not the delivered answer. Custom HTML/SVG follows generateSandboxedUi's ordered CSS/markup/functions/expressions contract. Local d3 and THREE are available; read references/visualization.md for their boundaries. Keep styles widget-specific: upstream theme variables, SVG helpers and form controls are already injected.
 
-SVG provides `.c-purple`, `.c-teal`, `.c-coral`, `.c-pink`, `.c-gray`, `.c-blue`, `.c-green`, `.c-amber`, `.c-red` and `.box`, `.node`, `.arr`, `.leader`, `.t`, `.ts`, `.th`. Use a responsive viewBox and reserve room for labels. Simplify crowded graphs rather than shrinking text or hiding content.
+SVG provides `.c-purple`, `.c-teal`, `.c-coral`, `.c-pink`, `.c-gray`, `.c-blue`, `.c-green`, `.c-amber`, `.c-red` and `.box`, `.node`, `.arr`, `.leader`, `.t`, `.ts`, `.th`. Measure the container and reserve room for labels. Reflow a desktop graph on narrow screens; a responsive viewBox alone does not keep text readable. Simplify crowded graphs rather than shrinking text or hiding content.
 
 Calculators need labels, units, bounded finite inputs, an initial useful result and a reset control. Reject blank inputs and never display NaN/Infinity. Teaching tools and simulations should expose only meaningful controls, show how an input changes an outcome, and support pause/reset where time matters. Respect reduced motion.
 

@@ -61,7 +61,7 @@ def frozen_generation_contracts(value):
                 return False
             continue
         frozen = json.loads(caps[run['capability_snapshot_id']]['tools_json'])
-        if [(t['name'], t['input_schema']) for t in tools] != [(t['name'], t['input_schema']) for t in frozen if not t.get('internal')]:
+        if [(t['name'], t['input_schema']) for t in tools] != [(t['name'], t.get('model_input_schema') or t['input_schema']) for t in frozen if not t.get('internal')]:
             return False
         if schemas.setdefault(run['run_id'], tools) != tools:
             return False

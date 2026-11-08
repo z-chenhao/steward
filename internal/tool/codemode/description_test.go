@@ -9,6 +9,7 @@ import (
 
 func TestDescriptionIncludesSchemaDeclarationsAndInstructions(t *testing.T) {
 	spec := tool.Spec{Name: "builtin__agent_run", Description: "Create one Child, never a Task.", InputSchema: `{"type":"object","properties":{"task":{"type":"string"},"artifactRefs":{"type":"array","items":{"type":"string"}}},"required":["task"],"additionalProperties":false}`}
+	spec.ModelInputSchema = `{"type":"object","description":"Compact direct declaration"}`
 	d := Describe(spec)
 	for _, fragment := range []string{`"task": string`, `"artifactRefs"?: ReadonlyArray<string>`, `readonly artifactRefs: readonly string[]`} {
 		if !strings.Contains(d.Declaration, fragment) {

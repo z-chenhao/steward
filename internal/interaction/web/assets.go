@@ -10,7 +10,7 @@ import (
 
 // Bundled, pinned frontend components and Steward artwork and self-hosted fonts. No CDN or second server.
 //
-//go:embed assets/client.js assets/diagrams.js assets/appearance.js assets/widget.css assets/style.css assets/licenses.txt assets/brand/* assets/apps/*
+//go:embed assets/client.js assets/diagrams.js assets/appearance.js assets/widget.css assets/widget-runtime.js assets/preview-runtime.js assets/style.css assets/licenses.txt assets/brand/* assets/apps/*
 var assets embed.FS
 
 // This fixed allowlist is shared by requests; no user path reaches the filesystem.

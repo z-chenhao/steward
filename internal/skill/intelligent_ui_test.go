@@ -23,6 +23,9 @@ func TestBuiltinIntelligentUISkillIsVersioned(t *testing.T) {
 	}
 	list, _ := r.Resolve("builtin__skill_list")
 	view, _ := r.Resolve("builtin__skill_view")
+	if strings.Contains(strings.ToLower(view.Spec.Description), "empty") {
+		t.Fatal("readable builtin Skill is advertised as an empty catalog", view.Spec.Description)
+	}
 	var entries []Summary
 	result := list.Execute(context.Background(), `{}`)
 	if json.Unmarshal([]byte(result.Text), &entries) != nil || len(entries) != 1 || entries[0].Name != "intelligent_ui" || strings.Contains(result.Text, `"scope"`) || strings.Contains(result.Text, `"version"`) || strings.HasPrefix(entries[0].Description, "Main:") {
@@ -35,7 +38,7 @@ func TestBuiltinIntelligentUISkillIsVersioned(t *testing.T) {
 			t.Fatal(path, result)
 		}
 	}
-	for _, path := range []string{"templates/native-comparison.json", "templates/calculator.json", "templates/flow-diagram.json", "templates/native-explorer.json"} {
+	for _, path := range []string{"templates/native-comparison.json", "templates/calculator.json", "templates/flow-diagram.json", "templates/native-explorer.json", "templates/architecture-diagram.json", "templates/scenario-comparison.json", "templates/three-dimensional.json", "templates/geographic-overview.json"} {
 		args, _ := json.Marshal(map[string]string{"name": "intelligent_ui", "path": path})
 		result := view.Execute(context.Background(), string(args))
 		if result.Error != nil {

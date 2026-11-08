@@ -4,7 +4,71 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/z-chenhao/assistant/internal/tool"
+	"github.com/z-chenhao/assistant/internal/tool/codemode"
 )
+
+func TestPresentationToolDescribesAndValidatesActualComponentProps(t *testing.T) {
+	definition := ShowDefinition()
+	if _, err := tool.NewRegistry([]tool.Definition{definition}); err != nil {
+		t.Fatal(err)
+	}
+	declaration := codemode.Describe(definition.Spec).Declaration
+	for _, field := range []string{`"name": "Table"`, `"columns": ReadonlyArray<string>`, `"name": "generateSandboxedUi"`, `"jsFunctions": string`, `"jsExpressions": ReadonlyArray<string> | ""`} {
+		if !strings.Contains(declaration, field) {
+			t.Fatalf("Code Mode lost the actual component shape: %s", field)
+		}
+	}
+	for index, props := range []string{
+		`{"title":"Values","columns":["Name"],"rows":[["A"]],"source":"User"}`,
+		`{"title":"Values","columns":"Name","rows":[["A"]],"source":"User"}`,
+		`{"title":"Values","columns":["Name"],"rows":[["A"]]}`,
+		`{"title":"Values","columns":["Name"],"rows":[["A"]],"source":"User","html":"<script>"}`,
+	} {
+		raw := `{"title":"Values","fallback":"A","components":[{"name":"Table","props":` + props + `}]}`
+		want := index == 0
+		if got := tool.Validate(definition.Spec.InputSchema, raw); got != want {
+			t.Fatalf("tool schema accepted=%v, want %v: %s", got, want, props)
+		}
+	}
+}
+
+func TestSharedAxisLineSeriesAndFallback(t *testing.T) {
+	props := `{"title":"Growth","description":"User data","unit":"万人","labels":["1月","2月"],"series":[{"name":"A","values":[12,15]},{"name":"B","values":[10,13]}]}`
+	raw := `{"title":"Growth","fallback":"A and B","components":[{"name":"steward.lineChart","props":` + props + `}]}`
+	w, ok := ParseWidget(raw)
+	if !ok || !strings.Contains(nativeSummary(w.Components[0]), "B / 2月: 13 万人") {
+		t.Fatal("multi-series lost values or unit", w)
+	}
+	for _, invalid := range []string{
+		strings.Replace(raw, `[10,13]`, `[10]`, 1),
+		strings.Replace(raw, `"name":"B"`, `"name":"A"`, 1),
+		strings.Replace(raw, `"values":[10,13]`, `"values":[10,"13"]`, 1),
+		strings.Replace(raw, `"labels":`, `"data":[],"labels":`, 1),
+		strings.Replace(raw, `"series":[`, `"series":[],"invalid":[`, 1),
+	} {
+		if _, accepted := ParseWidget(invalid); accepted {
+			t.Fatal("ambiguous or misaligned series accepted", invalid)
+		}
+	}
+	if _, ok := ParsePreview(raw); !ok {
+		t.Fatal("multi-series cannot stream a scriptless preview")
+	}
+}
+
+func TestSharedAxisNumericIntervalsValidateAndKeepFallbackCoordinates(t *testing.T) {
+	raw := `{"title":"Cost","fallback":"Costs","components":[{"name":"steward.lineChart","props":{"title":"Cost","description":"Illustrative units","labels":["Start","Middle","End"],"xValues":[0,1000,10000],"series":[{"name":"A","values":[99,179,899]}]}}]}`
+	w, ok := ParseWidget(raw)
+	if !ok || !strings.Contains(nativeSummary(w.Components[0]), "Middle (x=1000): 179") {
+		t.Fatal("numeric coordinates lost", w, ok)
+	}
+	for _, values := range []string{`[0,1000]`, `[0,0,10000]`, `[0,10000,1000]`, `[0,"1000",10000]`, `[0,1000,10000000000000000]`} {
+		if _, ok := ParseWidget(strings.Replace(raw, `[0,1000,10000]`, values, 1)); ok {
+			t.Fatal("invalid numeric intervals accepted", values)
+		}
+	}
+}
 
 func TestUpstreamNativeCatalogAndBoundMeetingResponse(t *testing.T) {
 	c := Component{Name: "scheduleTime", Props: json.RawMessage(`{"reasonForScheduling":"Review","meetingDuration":30,"timeSlots":[{"date":"2026-11-07","time":"10:00"},{"date":"2026-11-08","time":"14:00"}]}`)}
@@ -53,6 +117,9 @@ func TestSandboxEmptyExpressionsNormalizeWithoutCoercingCode(t *testing.T) {
 			raw := `{"title":"Roadmap","fallback":"Interview, build, pilot, productize.","components":[{"name":"generateSandboxedUi","props":{"initialHeight":460,"placeholderMessages":[],"css":"","html":"<p>Week 1–2: interview customers</p>","jsFunctions":"","jsExpressions":` + expressions + `}}]}`
 			w, ok := ParseWidget(raw)
 			want := expressions == `[]` || expressions == `""` || expressions == `["initialize()"]`
+			if accepted := tool.Validate(ShowDefinition().Spec.InputSchema, raw); accepted != want {
+				t.Fatalf("model-visible schema accepted=%v, want %v", accepted, want)
+			}
 			if ok != want {
 				t.Fatalf("accepted=%v, want %v", ok, want)
 			}
