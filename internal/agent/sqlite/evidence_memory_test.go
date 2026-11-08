@@ -167,8 +167,7 @@ func (b blockedEvidenceSecret) Get(ctx context.Context, ref string) ([]byte, err
 func TestMemoryEvidenceRechecksForgetAndCorrectionAfterDecryption(t *testing.T) {
 	for _, mutation := range []string{"privacy barrier", "correction", "tombstone"} {
 		t.Run(mutation, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
+			ctx := context.Background()
 			s, r, history, a, _ := loopFixture(t)
 			m, vault := evidenceMemoryVault(t, s)
 			owner := idAgent(t, s)
@@ -177,6 +176,10 @@ func TestMemoryEvidenceRechecksForgetAndCorrectionAfterDecryption(t *testing.T) 
 			if err := m.Apply(ctx, fact); err != nil {
 				t.Fatal(err)
 			}
+			// The deadline bounds the decryption/revocation handshake, not
+			// schema setup under the race detector's admitted CPU budget.
+			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
 			b := blockedEvidenceSecret{SecretStore: vault.Secrets, started: make(chan struct{}), resume: make(chan struct{})}
 			vault.Secrets = b
 			done := make(chan struct{})
