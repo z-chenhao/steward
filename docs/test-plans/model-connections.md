@@ -113,3 +113,5 @@ Models 将账户与 API 连接分组；账户入口先呈现实际支持的 Chat
 `TestComposerModelsBrowserLoadingAndRefresh` 随现有 `make test-browser` 必需门禁执行，通过真实宿主页面和共享控件、受控 HTTP 响应验证慢首屏预取／打开请求合并、无临时子集、加载完成后从 Select 转为可搜索 Combobox、后台刷新不禁用全部选项、真实禁用项保留、切换响应不缩减目录、API Profile 版本递增后更新规范键且不重复条目、取消旧读／配置版本不倒退、读取失败及 HTTP 200 部分不可用响应保留目录、首读失败后重试、无脚本／缺少 fetch 时的原生回退、未知选择的只读确认（包括 API Profile 激活后的版本变化）、草稿附件保留。`channels_models.mjs` 保存明暗主题、中英文及 1400／320px 截图；真实账户激活与冻结的证据仍由 account-auth 和已有 Control 回归提供。
 
 `TestNativeFragmentedTextWithinByteLimitPreservesLongReport` 用真实独立 Bridge 与 HTTP peer 返回 5,000 个短文本增量，验证完整报告不因分块超过旧阈值被拒绝；既有 Burst/Event 回归继续拒绝非法 RPC 序号、重放漂移及事件超限。此回归进入 `make test-memory` 的 Bridge race 检查。
+
+Local-provider 的真实 Node 边界检查保留 Worker 模型仅走 CodeMode 的约束，同时验证宿主冻结 memory_manage v6 和文档 list/read/write/retire 能力。旧的“Worker 完全没有 memory_manage”断言已被四层设计替代；Main 专属 remember/forget/dream 的拒绝仍由 memory-maintenance 与 Worker 权限回归验证，不能从可发现的 schema 推断操作授权。

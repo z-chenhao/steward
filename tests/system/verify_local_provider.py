@@ -148,8 +148,13 @@ def verify(binary, script):
             require(any(any(m["role"] == "user" and "Runtime task update (untrusted Worker data" in str(m.get("content", "")) for m in r["messages"]) for r in task_requests), "runtime framing lost at actual Pi boundary")
             with closing(sqlite3.connect(root / "data/state.db")) as db:
                 frozen_worker = json.loads(db.execute("SELECT tools_json FROM capability_snapshot WHERE role='worker' ORDER BY created_at LIMIT 1").fetchone()[0])
+                worker_manage = [spec for spec in frozen_worker if spec['name'] == 'builtin__memory_manage']
                 require(any(spec['name']=='builtin__memory_search' and spec['permission']=='read_only' for spec in frozen_worker) and
-                        not any(spec['name']=='builtin__memory_manage' for spec in frozen_worker), 'Worker memory scope changed')
+                        len(worker_manage) == 1 and worker_manage[0]['version'] == 6 and
+                        worker_manage[0]['permission'] == 'memory_control' and
+                        worker_manage[0]['replay_policy'] == 'safe', 'Worker layered memory capability changed')
+                require({'list', 'read', 'write', 'retire'} <= set(json.loads(worker_manage[0]['input_schema'])['properties']['operation']['enum']),
+                        'Worker layered document operations missing')
                 require(db.execute("SELECT count(*) FROM task WHERE status='completed'").fetchone()[0] == 1, "actual Pi Task missing")
                 require(db.execute("SELECT count(*) FROM main_inbox").fetchone()[0] == 1, "actual Pi Reporter dedup missing")
             report["task_requests"] = task_requests
