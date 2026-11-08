@@ -173,3 +173,5 @@ expired worktree's JavaScript installation.
 
 
 Web 只读预览：macosvm 的 SSH/Lume peer 验证读取已存在桌面、缺失实例不被启动；Web 模块验证认证与绑定撤销、只读端点及 no-store。Inspector 的真实只读 SQLite 验证 Agent 归属、20条上限和参数不外露。对实际 Guest 的屏幕权限、桌面窗口、断连及持续刷新另行 Live 验证，peer 不冒充真实 macOS 图像质量。
+
+`managed_version_test.go` 覆盖官方纯版本号、空白、错误版本、额外输出及命令失败；验证版本检查不下载或准备 Guest。错误状态回归覆盖取消、超时、兼容性、完整性和权限分类，不回显原始错误。Apple silicon 上另验旧状态只读投影，不改写或发起准备。真实签名运行时的下载 SHA、签名和 CLI 检查不能替代完整 Guest/VM 端到端验收。

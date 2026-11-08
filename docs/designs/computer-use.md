@@ -6,6 +6,8 @@
 
 ## 自动桌面准备
 
+复用已安装运行时时，`--version` 按固定官方 CLI 的纯版本号 `0.6.1` 校验；额外输出、其他版本和非零退出仍拒绝。失败状态按真实错误区分取消、超时、兼容性、完整性、磁盘不足与权限问题，不凭未知错误推断磁盘或网络故障。应用退出中断准备时，下次重启后的真实 Computer 使用可重新发起；Settings 读取不下载、不启动 VM。旧版遗留通用失败提示只投影为上次准备失败，不改写文件。
+
 安装版的默认 Computer 在 Apple silicon Mac 按首次使用准备。`macosvm.DefaultConfig` 固定 Lume 0.6.1、`macos-tahoe-cua:26.5.2` 的 OCI manifest digest，以及既有 Guest build / Driver 签名和哈希。宿主使用独立的 `.desktop` 目录、私有 Lume 配置、loopback 服务、关闭的遥测与缓存；不操作用户原有 VM 目录。
 
 首次真实 Computer 或 Guest 文件工具调用在 `ToolStore.Start` 检查执行权和审批后启动共享准备。准备期间返回已有 `resource` 等待，原 ToolInvocation 尚未执行，不持有 VM 或工具槽；调度器重试同一调用。纯 JavaScript 不触发下载。准备的两小时总时限属于 Host 政策，应用退出会中止下载和所拥有的 Lume 服务。

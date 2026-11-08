@@ -199,3 +199,5 @@ accepted Tool pipeline. `computer status` is a read-only operator diagnostic.
 
 
 Web Chat 的 Computer 面板提供只读桌面预览与操作进度，使用已有配置且已处于 ready 的实例。查看不分配/恢复 VM、不激活应用、不输入内容；关闭面板或页面转入后台后停止请求。画面来自独立 Driver 会话，不更新 Agent 的 AX/截图观察凭据；实际 macOS Guest 权限与显示环境仍需 Live 验证。
+
+自动桌面在首次真实使用时准备。重启只允许下一次 Computer 使用重新准备，不会立即下载镜像。Settings 的历史失败提示不代表当前磁盘或网络已被检查；已知取消、超时、兼容性及完整性错误会分别说明。

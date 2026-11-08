@@ -50,7 +50,7 @@ func (m *managedRuntime) installRuntime(ctx context.Context) error {
 		cmd := m.command(ctx, "--version")
 		cmd.Stdout = nil
 		raw, err := cmd.Output()
-		if err == nil && strings.TrimSpace(string(raw)) == "lume version 0.6.1" {
+		if err == nil && strings.TrimSpace(string(raw)) == "0.6.1" {
 			return nil
 		}
 		return computer.ErrCompatibility
