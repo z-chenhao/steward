@@ -120,9 +120,11 @@ OpenIntelligentUI 的原生组件协议是基础，保留上游组件名称和�
 
 原生组件使用同一基础控件，沙箱内容使用宿主共享主题和控件样式。正常呈现不常驻重复的 Text version；失败或无 JavaScript 时保留真实文字回退。宽图、表格和卡片列表在组件内部横向滚动，隐藏常驻滚动条；保留触摸、触控板和键盘操作，最右侧内容必须可达，不能撑宽气泡或聊天页面。沙箱不得通过根节点 `overflow:hidden` 裁切宽内容。组件与后续文字回复按顺序分成气泡，操作收进紧凑菜单。页面只出现内容、控件与必要状态，不新增组件介绍、实现细节或重复技术文案。
 
-Intelligent UI 生成中使用同一消息气泡与原生组件，显示一次“正在生成交互内容”状态。预览控件 inert、不可聚焦或提交；HTML/SVG 使用无脚本隔离框架。正式内容到达后撤下对应预览，启用原交互与状态恢复。跟随最新消息时逐步展示保持底部；正在阅读历史时不抢滚动。明暗主题、窄屏与现有字体、控件归属保持一致。
+Intelligent UI 根据比较、趋势、机制、空间关系与参数场景主动选择表达。生成式架构图在窄屏重排，不能仅缩小桌面 SVG 导致文字不可读；多方案比较应显示真实变化的结果，少量 3D 几何可使用本地 SVGRenderer。地理展示使用有来源的本地底图或已提供的地理数据，连接线不得冒充导航路线；图片沿用授权附件。滑块共用可见轨道、明确滑块与键盘焦点，手机操作区至少 44px；选择按钮同时以 aria-pressed 与明确选中态表达当前值。原生柱状图在类别较多或名称较长时横向排列，数值轴可缩写但提示保留完整数值，折线不默认平滑未知中间值。字体、页面布局、品牌和共享控件继续遵循本契约。
 
-隔离预览必须在真实宿主 CSP 下验证实际计算后的背景色、字体、控件禁用与窄屏溢出；DOM 节点存在或截图文件生成不能证明样式已生效。需要独立样式策略时使用受同一授权保护的独立沙箱响应，不通过放宽宿主 CSP 解决 srcdoc 的样式继承限制。对应 HTTP 安全回归归 `internal/interaction/web/ui_preview_test.go`，真实浏览器断言归 `verify_intelligent_ui.py` 的明暗/桌面/手机场景。
+Intelligent UI 生成中使用同一消息气泡与原生组件，显示一次“正在生成交互内容”状态。预览控件 inert、不可聚焦或提交；HTML/SVG 预览只运行宿主受信更新器，生成脚本保持禁用。正式内容到达后撤下对应预览，启用原交互与状态恢复。跟随最新消息时逐步展示保持底部；正在阅读历史时不抢滚动。明暗主题、窄屏与现有字体、控件归属保持一致。
+
+预览使用稳定的 iframe 和 DOM 增量更新，完整样式到达后才显示生成内容；仅宿主 nonce 授权的更新器执行，生成脚本保持关闭。正式沙箱恢复就绪前保留最后安全预览。隔离预览必须在真实宿主 CSP 下验证实际计算后的背景色、字体、控件禁用与窄屏溢出；DOM 节点存在或截图文件生成不能证明样式已生效。需要独立样式策略时使用受同一授权保护的独立沙箱响应，不通过放宽宿主 CSP 解决 srcdoc 的样式继承限制。对应 HTTP 安全回归归 `internal/interaction/web/ui_preview_test.go`，真实浏览器断言归 `verify_intelligent_ui.py` 的明暗/桌面/手机场景。
 
 ### 修改与验收
 
@@ -310,7 +312,7 @@ Ghost 回复左对齐，使用主题中的灰色气泡；用户消息右对齐�
 六类能力都使用结构化表单；MCP 以服务和允许工具行配置，开关必须是标签在左、控件在右的紧凑配置行，不套文本输入边框或大面积空面板。普通字段自动验证并保存，原生无脚本保留提交。浏览器标签页 Ghost 使用现有图集导出的黑／白图标，跟随实际页面主题。
 
 
-Intelligent UI uses OpenIntelligentUI native component contracts, SVG helpers and form controls as the foundation, with Steward typography, neutral surfaces, restrained chart colors and compact spacing. Normal interactive answers do not repeat a Text version control; text fallback appears on failure or without JavaScript. Action groups use explicit gaps and wrap on narrow screens. Generated HTML/SVG diagrams, calculators and simulations follow generateSandboxedUi with compact answer layouts, explicit theme tokens and bounded content sizing. Native UI and the final written reply remain separate bubbles. Standard conversation Markdown is independent of this component contract.
+Intelligent UI uses OpenIntelligentUI native component contracts, SVG helpers and form controls as the foundation, with Steward typography, neutral surfaces, restrained chart colors and compact spacing. Normal interactive answers do not repeat a Text version control; text fallback appears on failure or without JavaScript. Action groups use explicit gaps and wrap on narrow screens. Generated HTML/SVG diagrams, calculators and simulations follow generateSandboxedUi with compact answer layouts, explicit theme tokens and bounded content sizing. Optional show text and its visual form ordered answer sections, followed by the final written reply; omitting text preserves the earlier visual-first layout. Public section text uses ordinary Markdown and conversation typography. Standard conversation Markdown is independent of this component contract.
 
 Intelligent UI operations live in a compact options menu. Native tables, charts, typed forms and cards share state and control styling; fullscreen, dialogs and pinned views preserve the same content instance. The page contains content, controls and necessary state only, with no feature introductions or implementation explanations.
 
@@ -341,3 +343,9 @@ Memory 沿用 Traces 的紧凑列表、176px 过滤栏和统一宽度的两级�
 点击记忆打开共享非模态半屏详情，左侧来源与替代关系、右侧正文与选中的原始来源；分栏使用同一可拖拽与键盘调宽组件，手机上下排列。记忆正文使用普通界面阅读字体，不装扮为 JSON。真实正文、不可用及被替代元数据状态由读取结果决定，无脚本时保留原生链接和表单。
 
 桌面一级导航的收起仅将主栏变为 64px 图标栏，当前模块的二级导航仍保留 224px 宽度并跟随主栏左移；手机保留整组抽屉。Settings 使用齿轮，任务配置与偏好使用滑杆图标，两者不共用同一图形。
+
+原生多序列折线共用一个数值轴和单位，系列名称与颜色在图例、线条及提示中一致，导出保留序列和单位。SVGRenderer 未显式指定背景时跟随宿主主题；中心投影辅助基于容器实测尺寸，不将桌面坐标简单缩放到手机。show 同轮定向修正只绑定选定的新版本，保留历史证据与不同内容区块。
+
+流式正文保留已经显示的段落节点，并支持中文标点相邻的强调；未完成格式仅在临时视图补全，不改写原文。正在跟随的聊天在 iframe／字体／图表异步增高后继续跟随；上滚、选择文字或组件交互优先，不因仍靠近底部而抢回滚动。复杂关系图可用本地布局引擎，节点盒、箭头和换行标签按实际容器宽度重排，不能用整图缩小替代窄屏设计。
+
+折线图的分类标签默认等距；不等距数值坐标通过显式 xValues 表达并保持比例，不能把数字外观的标签自动视为连续坐标。横轴几何与导出数值一致；复用原图表容器、主题、提示和单位样式。

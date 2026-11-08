@@ -104,13 +104,16 @@ type Spec struct {
 	ResourceHash         string `json:"resource_hash,omitempty"`
 	Version              int    `json:"version"`
 	InputSchema          string `json:"input_schema"`
-	ReplayPolicy         string `json:"replay_policy"`
-	Permission           string `json:"permission"`
-	Risk                 string `json:"risk,omitempty"`
-	TimeoutMS            int    `json:"timeout_ms,omitempty"`
-	OutputBytes          int    `json:"output_bytes,omitempty"`
-	Provider             string `json:"provider,omitempty"`
-	ConflictPolicy       string `json:"conflict_policy,omitempty"`
+	// ModelInputSchema is an optional frozen declaration for direct model calls.
+	// InputSchema still validates every execution and describes Code Mode tools.
+	ModelInputSchema string `json:"model_input_schema,omitempty"`
+	ReplayPolicy     string `json:"replay_policy"`
+	Permission       string `json:"permission"`
+	Risk             string `json:"risk,omitempty"`
+	TimeoutMS        int    `json:"timeout_ms,omitempty"`
+	OutputBytes      int    `json:"output_bytes,omitempty"`
+	Provider         string `json:"provider,omitempty"`
+	ConflictPolicy   string `json:"conflict_policy,omitempty"`
 }
 
 type PromptContext struct {
@@ -141,6 +144,11 @@ func NewRegistry(definitions []Definition) (*Registry, error) {
 		}
 		if _, valid := parseSchema(d.Spec.InputSchema); !valid {
 			return nil, errors.New("unsupported tool schema")
+		}
+		if d.Spec.ModelInputSchema != "" {
+			if _, valid := parseSchema(d.Spec.ModelInputSchema); !valid {
+				return nil, errors.New("unsupported model tool schema")
+			}
 		}
 		if _, exists := r.definitions[d.Spec.Name]; exists {
 			return nil, errors.New("duplicate tool definition")
@@ -177,6 +185,7 @@ func (r *Registry) Select(specs []Spec) (*Registry, error) {
 		// new configuration cannot change an existing Run's tool declarations.
 		d.Spec.Exposure = s.Exposure
 		d.Spec.CodeModeOnly = s.CodeModeOnly
+		d.Spec.ModelInputSchema = s.ModelInputSchema
 		if s.Name == SearchName {
 			d.Spec.Description = s.Description
 		}

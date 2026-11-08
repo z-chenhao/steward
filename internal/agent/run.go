@@ -57,10 +57,14 @@ func ProviderTools(specs []tool.Spec, loaded ...[]string) []llm.ToolSpec {
 	out := []llm.ToolSpec{}
 	appendSpec := func(spec tool.Spec) {
 		description := spec.Description
+		schema := spec.InputSchema
+		if spec.ModelInputSchema != "" {
+			schema = spec.ModelInputSchema
+		}
 		if spec.Name == "builtin__skill_list" && len(spec.PromptContext) > 0 {
 			description = "List available Skills and their frozen versions. Read a matching Skill with skill view before applying its scoped guidance."
 		}
-		out = append(out, llm.ToolSpec{Name: spec.Name, Description: description, InputSchema: spec.InputSchema})
+		out = append(out, llm.ToolSpec{Name: spec.Name, Description: description, InputSchema: schema})
 	}
 	indirect := map[string]tool.Spec{}
 	for _, spec := range specs {

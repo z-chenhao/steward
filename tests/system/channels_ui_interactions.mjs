@@ -1,7 +1,11 @@
-import {readFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 export async function uiInteractions(page,context,browser,url,evidence,restart=false){
- const table=page.locator('[data-openintelligentui="Table"]'),line=page.locator('[data-openintelligentui="steward.lineChart"]'),scatter=page.locator('[data-openintelligentui="steward.scatterChart"]'),form=page.locator('[data-openintelligentui="steward.form"]').first(),cards=page.locator('[data-openintelligentui="steward.cards"]'),action=page.locator('[data-openintelligentui="steward.action"]'),widget=page.locator('.intelligent-widget').filter({has:page.locator('iframe[title="Explorer"]')}),frame=page.frameLocator('iframe[title="Explorer"]');
+ const table=page.locator('[data-openintelligentui="Table"]'),line=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Trend'}),scatter=page.locator('[data-openintelligentui="steward.scatterChart"]'),form=page.locator('[data-openintelligentui="steward.form"]').first(),cards=page.locator('[data-openintelligentui="steward.cards"]'),action=page.locator('[data-openintelligentui="steward.action"]'),widget=page.locator('.intelligent-widget').filter({has:page.locator('iframe[title="Explorer"]')}),frame=page.frameLocator('iframe[title="Explorer"]');
  await form.getByRole('textbox',{name:'Notes',exact:true}).waitFor();await frame.locator('#quantity').waitFor();
+ // Chromium can defer ResizeObserver deliveries during responsive layout.
+ // Such browser notifications must retain the live frame and its controls.
+ await frame.locator('#quantity').evaluate(()=>{for(const message of ['ResizeObserver loop completed with undelivered notifications.','ResizeObserver loop limit exceeded'])dispatchEvent(new ErrorEvent('error',{message}))});
+ await frame.locator('#quantity').waitFor();
  if(restart){
   if(await frame.locator('#quantity').inputValue()!=='7')throw Error('restart lost sandbox input');
   if(await form.getByRole('textbox',{name:'Notes',exact:true}).inputValue()!=='Keep this draft.')throw Error('restart lost submitted form');
@@ -12,7 +16,47 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  const activate=async button=>{await button.hover();await button.click()};
  const menu=async(scope,name)=>{await activate(scope.getByRole('button',{name:'Options',exact:true}));await page.getByRole('menuitem',{name,exact:true}).click()};
  const downloaded=async(scope,name,ext)=>{const pending=page.waitForEvent('download');await menu(scope,name);const file=await pending;if(!file.suggestedFilename().endsWith(ext))throw Error('incorrect export extension');const path=await file.path();const bytes=await readFile(path);if(ext==='.png'&&!bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))throw Error('invalid PNG');if(ext==='.svg'&&!bytes.toString().includes('<svg'))throw Error('invalid SVG');return bytes};
+ const multi=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Shared growth'});
+ const numeric=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Uneven usage'});
+ const verifyIntervals=async()=>{
+  await numeric.locator('.recharts-line-curve').last().waitFor();
+  const coordinates=[];
+  for(const [label,value] of [['0',99],['1000',179],['10000',899]])coordinates.push(await numeric.getByRole('button',{name:'A / '+label+': '+value+' 元',exact:true}).locator('circle').last().getAttribute('cx').then(Number));
+  if(coordinates.some(x=>!Number.isFinite(x))||coordinates[2]<=coordinates[0]||Math.abs((coordinates[1]-coordinates[0])/(coordinates[2]-coordinates[0])-.1)>.01)throw Error('numeric intervals use equally spaced categories: '+JSON.stringify(coordinates));
+ };
+ await verifyIntervals();
+ const numericCSV=(await downloaded(numeric,'Download CSV','.csv')).toString();
+ if(!numericCSV.includes('"Label","X","A (元)","B (元)"')||!numericCSV.includes('"1000","1000","179","329"'))throw Error('numeric chart export lost its X coordinates');
+ await multi.locator('.recharts-line-curve').last().waitFor();
+ if(await multi.locator('.recharts-line-curve').count()!==2||await multi.locator('.recharts-yAxis').count()!==1)throw Error('series did not share one numeric axis');
+ await multi.getByLabel('A / 3月: 14 万人',{exact:true}).hover();
+ await multi.locator('.answer-chart-tooltip').getByText('14 万人',{exact:true}).waitFor();
+ await multi.locator('.answer-chart-tooltip').getByText('17 万人',{exact:true}).waitFor();
+ const multiCSV=(await downloaded(multi,'Download CSV','.csv')).toString();
+ await writeFile(evidence+'/multi-series.csv',multiCSV);
+ if(!multiCSV.includes('A (万人)')||!multiCSV.includes('B (万人)')||!multiCSV.includes('"3月","14","17"'))throw Error('multi-series CSV lost units or values');
+ for(const width of [1400,390]){await page.setViewportSize({width,height:980});for(const theme of ['light','dark']){
+  await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await multi.scrollIntoViewIfNeeded();
+  await numeric.scrollIntoViewIfNeeded();await numeric.locator('.recharts-surface').evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await verifyIntervals();await multi.scrollIntoViewIfNeeded();
+  if(await multi.evaluate(node=>node.scrollWidth>node.clientWidth+2))throw Error('multi-series chart overflowed its container');
+  const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
+  try{await multi.screenshot({path:evidence+'/multi-series-'+width+'-'+theme+'.png'})}
+  finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css').deleteRule(index),captureRule)}
+ }}
+ await page.setViewportSize({width:1400,height:980});
  await line.locator('.recharts-line-curve').waitFor();await scatter.locator('.recharts-scatter-symbol').first().waitFor();
+ const bar=page.locator('[data-openintelligentui="barChart"]');
+ await bar.locator('.recharts-bar-rectangle').first().waitFor();
+ if(await bar.locator('.recharts-yAxis .recharts-cartesian-axis-tick').count()!==7)throw Error('long category labels did not use the vertical category axis');
+ const categoryLabels=await bar.locator('[data-axis-category]').evaluateAll(nodes=>nodes.map(node=>({width:node.getBBox().width,left:node.getBoundingClientRect().left-node.closest('.native-chart').getBoundingClientRect().left,label:node.textContent})));
+ if(categoryLabels.length!==7||categoryLabels.some(label=>label.width>98||label.left<0))throw Error('Latin or CJK category labels exceed their reserved width');
+ const ticks=await bar.locator('.recharts-xAxis-tick-labels .recharts-cartesian-axis-tick-value').allTextContents();
+ if(!ticks.some(text=>text.includes('B'))||ticks.some(text=>text.length>8))throw Error('large-value ticks are clipped instead of compact: '+JSON.stringify(ticks));
+ await bar.locator('.recharts-bar-rectangle').last().hover();
+ await bar.locator('.answer-chart-tooltip').getByText('Research department 7',{exact:true}).waitFor();
+ await bar.locator('.answer-chart-tooltip').getByText('7,000,000,000',{exact:true}).waitFor();
+ for(const width of [1400,390]){await page.setViewportSize({width,height:980});for(const theme of ['light','dark']){await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await bar.scrollIntoViewIfNeeded();const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});try{await bar.screenshot({path:evidence+'/category-chart-'+width+'-'+theme+'.png'})}finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css').deleteRule(index),captureRule)}}}
+ await page.setViewportSize({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
  await table.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button').click();
  if(await table.locator('tbody tr').first().innerText().then(text=>!text.includes('10')))throw Error('numeric ascending sort failed');
  await table.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button').click();if(!await table.locator('tbody tr').first().innerText().then(text=>text.includes('42')))throw Error('numeric descending sort failed');

@@ -136,6 +136,11 @@ class Endpoint(BaseHTTPRequestHandler):
                             remainders.append(raw[cut:])
                             chunk({'tool_calls':[dict(index=index,id=f'stream-direct-{index}',type='function',function=dict(name='builtin__intelligent_ui_show',arguments=raw[:cut]))]})
                         self.server.preview_ready.set()
+                        require(self.server.preview_advance.wait(35), 'incremental UI preview was never requested')
+                        tail = remainders[1]
+                        boundary = tail.index(', "jsFunctions"')
+                        chunk({'tool_calls':[dict(index=1,function=dict(arguments=tail[:boundary]))]})
+                        remainders[1] = tail[boundary:]
                         require(self.server.preview_release.wait(40), 'direct UI preview was never released')
                         for index, tail in enumerate(remainders):
                             chunk({'tool_calls':[dict(index=index,function=dict(arguments=tail))]})
@@ -225,9 +230,9 @@ class Endpoint(BaseHTTPRequestHandler):
                     await_browser('fail')
                     return
                 require("STREAM_SUCCESS" in text, 'unexpected streaming test input')
-                chunk({"content": "First chunk <img src=x onerror=unsafe()>"})
+                chunk({"content": "First chunk <img src=x onerror=unsafe()>\n\n**增长趋势：**A在增长。\n\n**正在解释"})
                 await_browser('second')
-                chunk({"content": "\nSecond chunk 中文."})
+                chunk({"content": "，继续说明**\n\nSecond chunk 中文."})
                 await_browser('finish')
                 chunk({"content": "\nFinal tail.\n"})
                 chunk({}, "stop")

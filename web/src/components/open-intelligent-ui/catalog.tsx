@@ -4,6 +4,7 @@ import {BarChart,BarChartProps} from './charts/bar-chart';
 import {PieChart,PieChartProps} from './charts/pie-chart';
 import {PlanCard} from './plan-card';
 import {MeetingTimePicker} from './meeting-time-picker';
+import {lineChartSchema} from '../../intelligent-ui/line-schema';
 import {ChartExplorer} from '../../intelligent-ui/charts';
 import {formSchema,cardsSchema,actionSchema,InputForm,CardCarousel,ToolActionButton} from '../../intelligent-ui/extensions';
 
@@ -16,7 +17,7 @@ export const nativeDefinition=z.discriminatedUnion('name',[
  z.object({name:z.literal('pieChart'),props:PieChartProps.merge(chart).strict().refine(p=>p.data.every(d=>d.value>=0)&&(!p.data.length||p.data.some(d=>d.value>0)))}),
  z.object({name:z.literal('plan_visualization'),props:plan}),
  z.object({name:z.literal('scheduleTime'),props:meeting}),
- z.object({name:z.literal('steward.lineChart'),props:chart.strict()}),
+ z.object({name:z.literal('steward.lineChart'),props:lineChartSchema}),
  z.object({name:z.literal('steward.scatterChart'),props:z.object({title:z.string().max(300),description:z.string().max(2000),data:z.array(z.object({label:z.string().max(200),x:z.number().finite(),y:z.number().finite()}).strict()).max(200)}).strict()}),
  z.object({name:z.literal('steward.form'),props:formSchema}),
  z.object({name:z.literal('steward.cards'),props:cardsSchema}),

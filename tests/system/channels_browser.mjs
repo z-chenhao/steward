@@ -31,8 +31,10 @@ async function chooseSharedOption(page,control,label,value){
 }
 const browser=await chromium.launch(options);
 let page;
+const diagnostics=[];
 try{
  const context=await browser.newContext({viewport:{width:1400,height:980},timezoneId:'Asia/Shanghai',deviceScaleFactor:1,reducedMotion:['rich-replies','intelligent-ui','ui-interactions','ui-interactions-restart'].includes(phase)?'reduce':'no-preference'});
+ if(['intelligent-ui','ui-interactions','ui-interactions-restart'].includes(phase))await context.addInitScript(()=>addEventListener('error',event=>console.warn('fixture-frame-error: '+event.message)));
  if(phase==='streaming'){
   await context.addInitScript(()=>{
    const NativeEventSource=window.EventSource;
@@ -49,7 +51,10 @@ try{
  }
  if(phase==='send-feedback')await context.addInitScript(()=>Object.defineProperty(crypto,'randomUUID',{value:undefined,configurable:true}));
  page=await context.newPage();
+ // Leave time for failure evidence before the harness's 45-second deadline.
+ if(phase==='intelligent-ui')page.setDefaultTimeout(12000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ page.on('console',message=>{if(['error','warning'].includes(message.type())){diagnostics.push(message.text().slice(0,512));if(diagnostics.length>32)diagnostics.shift()}});
  const remote=[];page.on('request',r=>{if(new URL(r.url()).origin!==new URL(url).origin)remote.push(r.url())});
  await page.goto(url);
  await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);
@@ -495,6 +500,9 @@ try{
   await page.locator('.creator-run').click();
   if(await page.locator('.run-node[data-role="root"],.run-node[data-role="child"]').count())throw new Error('Main page presented Task Roots as its Child Runs');
   await page.getByRole('link',{name:'Traces',exact:true}).first().click();
+  // The native page is usable before its deferred autosubmit handler loads.
+  // This case exercises the scripted filter, not a pre-hydration click.
+  await page.waitForLoadState('load');
   await page.getByRole('radio',{name:'Root Worker',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('role')==='root');
   await page.getByRole('radio',{name:'completed',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('status')==='completed');
   await page.waitForURL(target=>target.searchParams.get('role')==='root');
@@ -620,6 +628,9 @@ try{
   let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++});
   await editor.fill('STREAM_SUCCESS');await send.click();
   await draft.filter({hasText:first}).waitFor();
+  await draft.locator('strong').getByText('增长趋势：',{exact:true}).waitFor();
+  await draft.locator('strong').getByText('正在解释',{exact:true}).waitFor();
+  await page.evaluate(()=>window.stableDraftParagraph=document.querySelector('#conversation-draft [data-draft-text] p'));
   if(await committed.count()||await draft.locator('img').count()||before===await source.inputValue())throw Error('draft was committed, interpreted as HTML, or did not rotate the accepted request identity');
   const durable=await (await context.request.get(url+'/api/conversation')).json();
   if(durable.some(message=>message.role==='assistant'))throw Error('preview was persisted before the provider completed');
@@ -636,7 +647,8 @@ try{
   await release('second');
   const draftText=draft.locator('[data-draft-text]');
   await draftText.filter({hasText:second}).waitFor();
-  if((await draftText.innerText()).trimEnd()!==first+'\n'+second)throw Error('reconnect lost, repeated or exposed streamed text');
+  if(!(await draftText.innerText()).includes(first)||!(await draftText.innerText()).includes(second)||await draftText.locator('strong').getByText('正在解释，继续说明',{exact:true}).count()!==1)throw Error('reconnect lost, repeated or exposed streamed text');
+  await page.evaluate(()=>window.stableDraftParagraph=document.querySelector('#conversation-draft [data-draft-text] p'));
   await page.screenshot({path:evidence+'/streaming-draft.png'});
   let resumeProjection;
   const projectionGate=new Promise(resolve=>{resumeProjection=resolve});
@@ -644,7 +656,8 @@ try{
   try{
    await release('finish');
    await draftText.filter({hasText:'Final tail.'}).waitFor();
-   if((await draftText.innerText()).trimEnd()!==first+'\n'+second+'\nFinal tail.'||await committed.count())throw Error('commit lost or repeated text before the final projection');
+   if(!(await draftText.innerText()).trimEnd().endsWith('Final tail.')||await committed.count())throw Error('commit lost or repeated text before the final projection');
+   if(!await draftText.locator('p').first().evaluate(node=>node===window.stableDraftParagraph))throw Error('stream growth replaced an already displayed paragraph');
   }finally{resumeProjection()}
   await page.unroute('**/api/updates?**');
   await committed.filter({hasText:'Final tail.'}).waitFor();
@@ -982,8 +995,35 @@ try{
    if(rows!==(phase.endsWith('direct')?1:2))throw Error('preview fabricated or lost complete rows: '+rows);
    const frame=page.frameLocator('#conversation-ui-preview iframe[title="Streaming visual"]');
    await frame.locator('#preview-text').getByText('Script stays off',{exact:true}).waitFor();
-   if(await frame.locator('script,img,a,form').count())throw Error('preview retained executable or navigable markup');
-   if(await preview.locator('iframe').first().getAttribute('sandbox')!=='')throw Error('preview sandbox permits capabilities');
+   if(await frame.locator('#preview-content script,#preview-content img,#preview-content a,#preview-content form').count())throw Error('preview retained executable or navigable markup');
+   if(await preview.locator('iframe').first().getAttribute('sandbox')!=='allow-scripts')throw Error('preview sandbox differs from the trusted display updater');
+   if(phase.endsWith('direct')){
+    await page.evaluate(()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
+    await page.waitForFunction(()=>scrollY+innerHeight>=document.documentElement.scrollHeight-100);
+    await frame.locator('#preview-content').evaluate(node=>node.style.minHeight='1000px');
+    await page.waitForFunction(()=>{const n=document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]');return n.getBoundingClientRect().height>=1000});
+    await page.waitForFunction(()=>scrollY+innerHeight>=document.documentElement.scrollHeight-100);
+    const nearBottomTop=await page.evaluate(()=>scrollY);
+    await page.mouse.move(4,200);await page.mouse.wheel(0,-40);
+    await page.waitForFunction(top=>scrollY<top-1,nearBottomTop);
+    const readingTop=await page.evaluate(()=>scrollY);
+    await frame.locator('#preview-content').evaluate(node=>node.style.minHeight='1400px');
+    await page.waitForFunction(()=>document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]').getBoundingClientRect().height>=1400);
+    await page.getByRole('button',{name:'Latest messages'}).waitFor();
+    if(Math.abs(await page.evaluate(()=>scrollY)-readingTop)>2)throw Error('small upward reading gesture was overridden by asynchronous growth');
+    await page.getByRole('button',{name:'Latest messages'}).click();
+    await page.waitForFunction(()=>scrollY+innerHeight>=document.documentElement.scrollHeight-100);
+    await frame.locator('#preview-content').evaluate(node=>node.style.removeProperty('min-height'));
+    await page.evaluate(()=>window.streamingFrame=document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]'));
+    await frame.locator('#preview-text').evaluate(node=>window.streamingNode=node);
+    await writeFile(evidence+'/preview-before.png',await preview.screenshot());
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await writeFile(evidence+'/preview-advance.json',JSON.stringify({advance:true}));
+    await frame.locator('#root-node').getByText('Root',{exact:true}).waitFor();
+    if(!await page.evaluate(()=>window.streamingFrame===document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]'))||!await frame.locator('#preview-text').evaluate(node=>node===window.streamingNode))throw Error('incremental drawing reloaded the frame or replaced an existing node');
+    if(await page.evaluate(()=>scrollY)!==0)throw Error('drawing growth moved the reader away from the top');
+    await writeFile(evidence+'/preview-after.png',await preview.screenshot());
+   }
    const button=preview.locator('button').first();await button.evaluate(node=>node.focus());
    if(await button.evaluate(node=>document.activeElement===node))throw Error('preview controls accepted focus');
    for(const theme of ['light','dark'])for(const width of [1400,390]){
@@ -1001,7 +1041,17 @@ try{
    await page.reload();await preview.locator('[data-ui-preview]').first().waitFor();
    await preview.locator('td').filter({hasText:/^A$/}).waitFor();
    if(executed)throw Error('generated script ran during preview');
-   await writeFile(evidence+'/preview-observed.json',JSON.stringify({observed:true}));
+   await page.evaluate(()=>window.handoffPreviewFrame=document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]'));
+   let releaseFinal;const heldFinal=new Promise(resolve=>{releaseFinal=resolve});
+   await page.route('**/ui/widget?**',async route=>{await heldFinal;await route.continue()});
+   try{
+    await writeFile(evidence+'/preview-observed.json',JSON.stringify({observed:true}));
+    await page.locator('[data-ui-handoff]').waitFor({state:'attached'});
+    if(!await preview.isVisible())throw Error('preview disappeared before the committed frame was ready');
+    if(await page.locator('[data-ui-handoff] iframe').evaluateAll(nodes=>nodes.some(n=>n.clientWidth===0)))throw Error('committed frames initialized without a measurable width');
+    if(!await page.evaluate(()=>window.handoffPreviewFrame===document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]')))throw Error('tool staging replaced the streaming preview frame');
+    await writeFile(evidence+'/preview-handoff.json',JSON.stringify({previewRetainedUntilFinalReady:true,frameRetainedAcrossStaging:true}));
+   }finally{releaseFinal()}
    await preview.waitFor({state:'hidden'});
    await page.frameLocator('.message .intelligent-widget iframe[title="Streaming visual"]').last().locator('#preview-text').getByText('Activated after delivery',{exact:true}).waitFor();
    if(await page.locator('[data-ui-preview]').count())throw Error('same-page commit retained duplicate preview');
@@ -1023,8 +1073,15 @@ try{
  }
  if(phase==='intelligent-ui'){
   const activate=async button=>{await button.hover();await button.click()};
+  const ordered=page.locator('.message.assistant.message-split').first();
+  const sectionOrder=await ordered.locator(':scope > .message-bubble').evaluateAll(nodes=>nodes.map(n=>n.textContent));
+  if(!sectionOrder[0]?.includes('First, compare the exact values.')||!sectionOrder[1]?.includes('Comparison')||!sectionOrder[2]?.includes('Next, explore a value with the calculator.')||!await ordered.locator(':scope > .message-bubble').nth(3).locator('iframe[title="Calculator"]').count())throw Error('public paragraphs did not retain their visual section order');
+  await ordered.locator('strong').getByText('调用与回传：',{exact:true}).waitFor();
   await page.getByRole('columnheader',{name:'Option',exact:true}).waitFor();
-  if(await page.locator('.message .intelligent-widget').count()!==2)throw Error('custom UI widgets missing');
+  if(await page.locator('.message .intelligent-widget').count()!==6)throw Error('custom UI widgets missing');
+  // Generated markup can appear while the Host still covers its frame with
+  // the loading overlay. Wait for saved-state hydration before real clicks.
+  await page.waitForFunction(()=>document.querySelectorAll('.intelligent-widget iframe[data-ready="true"]').length===5);
   const widget=page.frameLocator('iframe[title="Calculator"]');
   await widget.locator('#security').getByText('blocked:2',{exact:true}).waitFor();
   const direct=await context.newPage();
@@ -1032,6 +1089,84 @@ try{
   await widget.locator('#n').fill('25');await widget.getByRole('button',{name:'Compute',exact:true}).click();
   await widget.locator('#answer').getByText('50',{exact:true}).waitFor();
   await widget.locator('#amplitude').fill('35');if(await widget.locator('#wave').getAttribute('r')!=='35')throw Error('upstream sandbox controls did not update SVG');
+  const architecture=page.frameLocator('iframe[title="Answer architecture"]');
+  const scenario=page.frameLocator('iframe[title="Compare two pricing models"]');
+  const orientation=page.frameLocator('iframe[title="Explore 3D orientation"]');
+  const geography=page.frameLocator('iframe[title="Explore destinations"]');
+  await architecture.locator('.vertex').first().waitFor();
+  const nodes=await architecture.locator('.vertex rect').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().toJSON()));
+  if(nodes.some((a,index)=>nodes.slice(index+1).some(b=>Math.min(a.right,b.right)>Math.max(a.left,b.left)+1&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top)+1)))throw Error('architecture node boxes overlap');
+  await architecture.getByRole('button',{name:'Sandbox: Custom diagrams, calculators and simulations.',exact:true}).press('Enter');
+  await architecture.locator('.node-detail strong').getByText('Sandbox',{exact:true}).waitFor();
+  await scenario.locator('#usage').fill('250');
+  await scenario.locator('#cost-a').getByText('$40.00',{exact:true}).waitFor();
+  await scenario.locator('#cost-b').getByText('$55.00',{exact:true}).waitFor();
+  await scenario.locator('#difference').getByText('Plan A saves $15.00 per month.',{exact:true}).waitFor();
+  await orientation.locator('.orientation-stage svg path').first().waitFor();
+  const originalBox=await orientation.locator('.orientation-stage svg').innerHTML();
+  await orientation.locator('#pitch').fill('35');await orientation.locator('#yaw').fill('20');
+  await orientation.locator('#pitch-value').getByText('35°',{exact:true}).waitFor();
+  if(await orientation.locator('.orientation-stage svg').innerHTML()===originalBox)throw Error('3D controls changed text without changing the model');
+  if(await orientation.locator('[data-axis-label]').count()!==3)throw Error('3D explanation lost its fixed axis labels');
+  await orientation.locator('#roll').fill('15');const pitchFirst=await orientation.locator('.orientation-stage svg').innerHTML();
+  await activate(orientation.getByRole('button',{name:'Yaw → Pitch',exact:true}));
+  if(await orientation.locator('.orientation-stage svg').innerHTML()===pitchFirst)throw Error('rotation order changed text without changing geometry');
+  await geography.locator('.land').first().waitFor();
+  if(await geography.locator('.land').count()<100)throw Error('geographic overview did not use the real bundled country outlines');
+  await activate(geography.getByRole('button',{name:'Los Angeles',exact:true}));
+  await geography.locator('.destination-detail strong').getByText('Los Angeles',{exact:true}).waitFor();
+  if(!(await geography.locator('.map-source').innerText()).includes('Natural Earth'))throw Error('offline map lost its source attribution');
+  // Chromium suspends animation frames in offscreen iframes. Exercise the
+  // animation while its actual stage is visible, including with longer prose.
+  await page.locator('.intelligent-widget').filter({has:page.locator('iframe[title="Compare two pricing models"]')}).scrollIntoViewIfNeeded();
+  // Animation changes geometry, not user data: it must not flood Host state writes.
+  await scenario.locator('svg').evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  await page.evaluate(()=>{window.animationStateMessages=0;const source=document.querySelector('iframe[title="Compare two pricing models"]').contentWindow;window.addEventListener('message',event=>{if(event.source===source&&event.data?.type==='view-state')window.animationStateMessages++})});
+  await scenario.locator('svg').evaluate(node=>new Promise(resolve=>{let index=0;function draw(){node.querySelector('path').setAttribute('data-animation-frame',String(index++));if(index<12)requestAnimationFrame(draw);else resolve()}draw()}));
+  if(await page.evaluate(()=>window.animationStateMessages)>1)throw Error('geometry-only animation repeatedly saved identical UI state');
+  for(const width of [1400,390]){
+   await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
+   await page.setViewportSize({width,height:width===390?844:980});
+   for(const theme of ['light','dark']){
+    await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);
+    for(const [title,frame] of [['Answer architecture',architecture],['Compare two pricing models',scenario],['Explore 3D orientation',orientation],['Explore destinations',geography]]){
+     await frame.locator('html[data-widget-theme="'+theme+'"]').waitFor();
+     const answer=page.locator('.intelligent-widget').filter({has:page.locator('iframe[title="'+title+'"]')});
+     await answer.evaluate(node=>node.scrollIntoView({block:'center'}));
+     // ResizeObserver and the frame's sizing message run after layout. Read
+     // the responsive composition after those render phases, not stale pixels
+     // from the preceding viewport width.
+     await frame.locator('svg').first().evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+     if(await frame.locator('body').evaluate(()=>document.documentElement.scrollWidth>innerWidth+2))throw Error(title+' overflows its narrow frame');
+     const labels=await frame.locator('svg text').evaluateAll(nodes=>nodes.filter(node=>node.getBoundingClientRect().width>0).map(node=>{const box=node.getBoundingClientRect();return {text:node.textContent,height:box.height,font:getComputedStyle(node).fontSize,svg:node.ownerSVGElement.getAttribute('viewBox'),width:node.ownerSVGElement.getBoundingClientRect().width}}));
+     if(labels.some(label=>label.height<11))throw Error(title+' scales labels below readable size: '+JSON.stringify(labels));
+     if(title==='Answer architecture'){
+      const geometry=await frame.locator('.vertex').evaluateAll(nodes=>nodes.map(node=>({box:node.querySelector('rect').getBoundingClientRect().toJSON(),label:node.querySelector('text').getBoundingClientRect().toJSON()})));
+      if(geometry.some(({box,label})=>label.left<box.left||label.right>box.right||label.top<box.top||label.bottom>box.bottom))throw Error('architecture labels escape their node boxes');
+      if(geometry.some(({box:a},index)=>geometry.slice(index+1).some(({box:b})=>Math.min(a.right,b.right)>Math.max(a.left,b.left)+1&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top)+1)))throw Error('responsive architecture node boxes overlap');
+      if(await frame.locator('.edge[marker-end]').count()!==6)throw Error('architecture lost directed relationships');
+     }
+     if(title==='Explore 3D orientation'){
+      const runtime=await frame.locator('.orientation-stage').evaluate(stage=>{const renderer=new THREE.SVGRenderer(),camera=new THREE.PerspectiveCamera(42,1,.1,100),scene=new THREE.Scene();camera.position.set(4,3,6);camera.lookAt(0,0,0);StewardSVG.resize(renderer,camera,stage);renderer.render(scene,camera);const point=new THREE.Vector3(),projected=StewardSVG.project(point,camera,renderer);const background=renderer.domElement.style.backgroundColor,expected=getComputedStyle(document.body).backgroundColor;renderer.setClearColor('red');renderer.render(scene,camera);return {background,expected,explicit:renderer.domElement.style.backgroundColor,projected,original:point.toArray(),size:renderer.getSize(),width:stage.clientWidth,height:stage.clientHeight}});
+      if(runtime.background!==runtime.expected||runtime.explicit!=='rgb(255, 0, 0)'||Math.abs(runtime.projected.x)>.01||Math.abs(runtime.projected.y)>.01||runtime.original.some(v=>v!==0)||runtime.size.width!==runtime.width||runtime.size.height!==runtime.height)throw Error('shared SVG theme, sizing or centered projection differs: '+JSON.stringify(runtime));
+     }
+     if(title==='Explore 3D orientation'&&await frame.locator('[data-axis-label]').evaluateAll(nodes=>nodes.some(node=>{const box=node.getBoundingClientRect(),stage=node.ownerSVGElement.getBoundingClientRect();return box.left<stage.left||box.right>stage.right||box.top<stage.top||box.bottom>stage.bottom})))throw Error('3D axis label is outside the visible stage');
+     if(await frame.locator('input[type=range]').count()){
+      const range=await frame.locator('input[type=range]').first().evaluate(node=>({height:node.getBoundingClientRect().height,track:getComputedStyle(node).getPropertyValue('--range-track').trim()}));
+      if(range.height<36||!range.track||range.track==='transparent')throw Error('shared slider lost its theme track or hit area');
+     }
+     // Isolate component art from fixed Host chrome in these detail captures;
+     // the existing whole-page captures retain the actual conversation shell.
+     // CSSOM uses the existing authorized stylesheet; an injected inline
+     // screenshot style would be blocked by the real Host CSP.
+     const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
+     try{await answer.screenshot({path:evidence+'/'+title.toLowerCase().replaceAll(' ','-')+'-'+width+'-'+theme+'.png'})}
+     finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css').deleteRule(index),captureRule)}
+    }
+    if(width===390){await architecture.locator('.architecture-list button').filter({hasText:'Tools'}).click();await architecture.locator('.node-detail strong').getByText('Tools',{exact:true}).waitFor()}
+   }
+  }
+  await page.setViewportSize({width:1400,height:980});
   const activity=JSON.parse(await widget.locator('#open-generative-ui-activity').textContent());if(activity.type!=='open-generative-ui'||activity.content.htmlComplete!==true||activity.content.jsExpressions[0]!=='initialize()')throw Error('upstream completed activity shape changed');
   await page.evaluate(()=>document.documentElement.classList.add('dark'));
   await widget.locator('html[data-widget-theme="dark"]').waitFor();
@@ -1071,6 +1206,11 @@ try{
   await page.unroute('**/api/message');
   await page.getByText('Discuss the computed result: 50',{exact:true}).waitFor();
   await page.reload();await page.frameLocator('iframe[title="Calculator"]').locator('#answer').getByText('50',{exact:true}).waitFor();if(await page.frameLocator('iframe[title="Calculator"]').locator('#n').inputValue()!=='25')throw Error('calculator control state was not restored');
+  await scenario.locator('#usage').waitFor();if(await scenario.locator('#usage').inputValue()!=='250')throw Error('scenario comparison lost its selected usage');
+  await orientation.locator('#pitch-value').getByText('35°',{exact:true}).waitFor();
+  if(await orientation.locator('#roll').inputValue()!=='15'||await orientation.getByRole('button',{name:'Yaw → Pitch',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('3D angle or rotation order was not restored');
+  await architecture.locator('.node-detail strong').getByText('Tools',{exact:true}).waitFor();
+  await geography.locator('.destination-detail strong').getByText('Los Angeles',{exact:true}).waitFor();
   await page.setViewportSize({width:390,height:844});
   await calculator.evaluate(node=>node.scrollIntoView({block:'center'}));
   await page.screenshot({path:evidence+'/intelligent-ui-widget-mobile.png'});
@@ -1195,7 +1335,8 @@ try{
  if(remote.length)throw new Error('UI contacted an external service: '+remote.join(', '));
  if(errors.length)throw new Error(errors.join(';'));
 }catch(error){
+ await writeFile(evidence+'/'+phase+'-failure-stack.txt',String(error?.stack??error));
  if(phase==='account-signin'||phase==='account-reconnect'){const frame=String(error?.stack??'').split('\n').find(line=>line.includes('channels_browser.mjs:')||line.includes('channels_controls.mjs:'));throw Error('Browser did not complete the controlled account flow'+(frame?' ('+frame.trim()+')':''))}
- if(page){await page.screenshot({path:evidence+'/'+phase+'-failure.png',fullPage:true});await writeFile(evidence+'/'+phase+'-failure.txt',await page.locator('body').innerText())}
+ if(page){await page.screenshot({path:evidence+'/'+phase+'-failure.png',fullPage:true});await writeFile(evidence+'/'+phase+'-failure.txt',await page.locator('body').innerText());await writeFile(evidence+'/'+phase+'-console.json',JSON.stringify(diagnostics))}
  throw error;
 }finally{await browser.close()}

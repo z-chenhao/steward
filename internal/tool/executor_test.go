@@ -37,6 +37,32 @@ func TestPromptResourcesAreCopiedAndFrozenOnSelection(t *testing.T) {
 	}
 }
 
+func TestModelDeclarationIsFrozenWithoutChangingExecutionSchema(t *testing.T) {
+	d, _ := FixtureRegistry().Resolve("mcp__fixture__echo")
+	d.Spec.ModelInputSchema = `{"type":"object","description":"Original compact declaration"}`
+	r, err := NewRegistry([]Definition{d})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, compact := range []string{d.Spec.ModelInputSchema, ""} {
+		frozen := r.Describe()
+		frozen[0].ModelInputSchema = compact
+		d.Spec.ModelInputSchema = `{"type":"object","description":"New live declaration"}`
+		live, err := NewRegistry([]Definition{d})
+		if err != nil {
+			t.Fatal(err)
+		}
+		selected, err := live.Select(frozen)
+		if err != nil || selected.Describe()[0].ModelInputSchema != compact || selected.Describe()[0].InputSchema != d.Spec.InputSchema {
+			t.Fatal("live metadata changed a frozen declaration or its execution schema", err)
+		}
+	}
+	d.Spec.ModelInputSchema = `{"type":"object","unknownKeyword":true}`
+	if _, err := NewRegistry([]Definition{d}); err == nil {
+		t.Fatal("unsupported model declaration accepted")
+	}
+}
+
 func TestEchoSchemaAndPolicyDefaults(t *testing.T) {
 	registry := FixtureRegistry()
 	definition, ok := registry.Resolve("mcp__fixture__echo")

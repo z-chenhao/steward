@@ -27,7 +27,7 @@ func TestContextPromptBytes(t *testing.T) {
 		{Name: "builtin__computer_observe", Internal: true},
 		{Name: "mcp__calendar__lookup", Provider: "mcp:calendar", NamespaceDescription: "Find calendar events", Exposure: tool.CodeMode, CodeModeOnly: true},
 	}
-	for _, tc := range []struct{ position, hash string }{{"main", "0497f281884ae2a016b9c815cf6287e1909d17f23f1c2340cbb4140e5ca7fe2a"}, {"root", "08da6374cd929e66b969a1c6f23ed9a5d8fd9225e859601d39ebbc94b87dcc99"}, {"child", "fd1fd68937191e1b920fc33101a89e139ecc2d575392aeba7744dc39c31b6a11"}} {
+	for _, tc := range []struct{ position, hash string }{{"main", "0dc704a7564efae33a8a4da5e38b7e1cfe23164c1d4ca8152353aba1293200d3"}, {"root", "08da6374cd929e66b969a1c6f23ed9a5d8fd9225e859601d39ebbc94b87dcc99"}, {"child", "fd1fd68937191e1b920fc33101a89e139ecc2d575392aeba7744dc39c31b6a11"}} {
 		t.Run(tc.position, func(t *testing.T) {
 			messages, err := ProviderMessages(InitialContext(ContextOptions{Position: tc.position, Tools: specs, Title: "Review", Task: "Keep constraints", ArtifactRefs: []string{"artifact:input"}}), false, false)
 			if err != nil {
@@ -39,6 +39,26 @@ func TestContextPromptBytes(t *testing.T) {
 				t.Fatalf("model message bytes changed: %s", got)
 			}
 		})
+	}
+}
+
+func TestProviderToolUsesFrozenModelDeclarationAndKeepsLegacySchema(t *testing.T) {
+	spec := tool.Spec{Name: "builtin__artifact_search", InputSchema: `{"type":"object","properties":{"text":{"type":"string"}},"required":["text"]}`, ModelInputSchema: `{"type":"object","description":"Compact declaration"}`}
+	for _, compact := range []string{spec.ModelInputSchema, ""} {
+		spec.ModelInputSchema = compact
+		raw, _ := json.Marshal(spec)
+		var frozen tool.Spec
+		if err := json.Unmarshal(raw, &frozen); err != nil {
+			t.Fatal(err)
+		}
+		wire := ProviderTools([]tool.Spec{frozen})
+		want := compact
+		if want == "" {
+			want = frozen.InputSchema
+		}
+		if len(wire) != 1 || wire[0].InputSchema != want || frozen.InputSchema != spec.InputSchema {
+			t.Fatal("frozen model projection or historical fallback changed", wire)
+		}
 	}
 }
 

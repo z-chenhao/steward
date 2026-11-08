@@ -683,7 +683,7 @@ def streaming_replies(binary, evidence, report):
             h.wait(lambda state: sorted(r['status'] for r in state['runs']) == ['completed', 'failed'], 'committed and failed stream outcomes')
             messages = h.http('/api/conversation')
             replies = [m for m in messages if m['message_id'].startswith('reply:')]
-            expected = 'First chunk <img src=x onerror=unsafe()>\nSecond chunk 中文.\nFinal tail.'
+            expected = 'First chunk <img src=x onerror=unsafe()>\n\n**增长趋势：**A在增长。\n\n**正在解释，继续说明**\n\nSecond chunk 中文.\nFinal tail.'
             require(len(replies)==1 and replies[0]['content'][0]['text'].rstrip()==expected and
                     'Interrupted draft only.' not in json.dumps(messages), 'preview changed durable reply history')
             report['scenarios']['streaming-replies'] = dict(durable_replies=1, failure_discarded=True, late_subscriber=True,

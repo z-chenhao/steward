@@ -1,0 +1,5 @@
+package ui
+
+// Direct model calls get compact props signatures; Code Mode and execution
+// keep the complete discriminated catalog. Both are frozen in the tool spec.
+const modelShowSchema = `{"type":"object","properties":{"text":{"type":"string"},"replace":{"type":"string"},"title":{"type":"string"},"fallback":{"type":"string"},"components":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"props":{"type":"object","description":"Table:{title,columns:string[],rows:string[][],source}; barChart|pieChart:{title,description,data:{label,value:number}[]}; steward.lineChart:{title,description,labels:string[],series:{name,values:number[]}[],unit?,xValues?:number[]}; generateSandboxedUi:{initialHeight:number,placeholderMessages:string[],css,html,jsFunctions,jsExpressions:string[]}. xValues gives proportional numeric spacing; otherwise labels are categories. Unmarked fields are strings; other props: intelligent_ui Skill."}},"required":["name","props"],"additionalProperties":false}}},"required":["title","fallback","components"],"additionalProperties":false}`

@@ -35,5 +35,8 @@ func TestWidgetBootstrapPrecedesGeneratedCodeAndDirectNavigationUsesText(t *test
 		if bootstrap < 0 || generated < bootstrap || !strings.Contains(w.Header().Get("Content-Security-Policy"), "sandbox allow-scripts") {
 			t.Fatal("generated CSS could execute before sandbox bootstrap", text)
 		}
+		if !strings.Contains(text, "SVGRenderer") || !strings.Contains(w.Header().Get("Content-Security-Policy"), "connect-src 'none'") || !strings.Contains(w.Header().Get("Content-Security-Policy"), "script-src 'unsafe-inline';") {
+			t.Fatal("local visualization runtime missing or network boundary widened")
+		}
 	}
 }

@@ -298,7 +298,7 @@ def run(binary):
             require(len(turns) == 32 and len(result["tools"]) == 32, "wrong model/Tool path")
             expected = ["Processed: " + json.loads(item["message_json"])["content"][0]["text"] for item in result["inputs"]]
             replies = [part["text"] for message in result["conversation"] if message["role"] == "assistant" for part in message["content"]]
-            require(replies == expected, "concurrent inputs did not receive individual ordered replies")
+            require(replies == expected, "concurrent inputs did not receive individual ordered replies: " + repr(dict(expected=expected, actual=replies)))
             h.command("chat", "work")
             require(h.state() == result, "draining terminal work changed state")
             return result
