@@ -36,6 +36,9 @@ func TestExecutionRecordsKeepHistoricalRoundsSeparateFromTaskConfiguration(t *te
 	mustDrain(t, a)
 	mustSubmit(t, a, "second-round", "append")
 	mustDrain(t, a)
+	if _, err := s.db.Exec(`UPDATE task SET progress_summary='Current round progress',version=version+1`); err != nil {
+		t.Fatal(err)
+	}
 	reader := s.TaskReader()
 	before := scalar(t, s, `SELECT total_changes()`)
 	configs, err := reader.List(ctx, task.ListQuery{View: "open"})
@@ -55,6 +58,9 @@ func TestExecutionRecordsKeepHistoricalRoundsSeparateFromTaskConfiguration(t *te
 		t.Fatal("old round was replaced or repeated", second, err)
 	}
 	old, err := reader.Execution(ctx, second.Items[0].ID)
+	if err == nil && (old.ProgressSummary != "" || len(old.RecentRuns) != 2 || old.RecentRuns[0].Epoch != 2 || old.RecentRuns[1].Epoch != 1) {
+		t.Fatal("historical run imported current progress or lost scoped run history", old)
+	}
 	if err != nil || old.Epoch != 1 || len(old.Instructions) != 0 || !strings.Contains(old.Description, "upstream versions") {
 		t.Fatal("old detail used newer instructions", old, err)
 	}
@@ -63,6 +69,9 @@ func TestExecutionRecordsKeepHistoricalRoundsSeparateFromTaskConfiguration(t *te
 		t.Fatal("raw worker result became a user delivery")
 	}
 	latest, err := reader.Execution(ctx, first.Items[0].ID)
+	if err == nil && latest.ProgressSummary != "Current round progress" {
+		t.Fatal("current run lost its accepted progress", latest)
+	}
 	if err != nil || len(latest.Instructions) != 1 || latest.Instructions[0].Text != "New instructions for round two" {
 		t.Fatal("current round instructions lost", latest, err)
 	}

@@ -220,3 +220,5 @@ Apps 图标与目录：`TestAppLogosBundledForEverySuggestedApp` 检查每个推
 
 
 目录浏览器场景核对无项目初始化／服务配置入口和冗余筛选确认按钮，服务配置通过 Resources 进入；选择沟通类别会直接得到对应 8 项推荐，恢复全部类别回到 65 项，不创建账户授权。
+
+`TestProductionToolSurfaceKeepsOnlyFrequentControlsDirect` 使用生产组合检查 Main／Worker 均排除四个退役入口，保留的 web_search 可发现，冻结旧入口仍可选取并在 Code Mode 调用。`TestDefinitionsFreezePolicy` 检查 web_search v2 不再推荐退役入口且 v1 可恢复。`TestToolOutputTimingPrecedesCompleteArguments` 覆盖工具元数据／参数 delta 均可开始计时，空协议帧不能计时。

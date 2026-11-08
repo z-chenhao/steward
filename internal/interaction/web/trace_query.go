@@ -19,6 +19,11 @@ func traceQuery(r *http.Request) (*traceView, error) {
 			return nil, observability.ErrInvalid
 		}
 		switch key {
+		case "internal":
+			if list[0] != "1" && list[0] != "0" {
+				return nil, observability.ErrInvalid
+			}
+			v.ShowInternal = list[0] == "1"
 		case "compare":
 			if list[0] != "messages" && list[0] != "tools" {
 				return nil, observability.ErrInvalid
@@ -86,6 +91,9 @@ func traceQuery(r *http.Request) (*traceView, error) {
 
 func traceURL(v *traceView, field string, value any) string {
 	q := url.Values{}
+	if v.ShowInternal {
+		q.Set("internal", "1")
+	}
 	if v.Query.Search != "" {
 		q.Set("search", v.Query.Search)
 	}

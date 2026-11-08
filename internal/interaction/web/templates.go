@@ -20,9 +20,9 @@ func newLayout(language string) *template.Template {
 		"memorySourcesOffset": memorySourcesOffset, "memoryOffset": memoryOffset, "memoryURL": memoryURL, "memorySourceLabel": memorySourceLabel, "memoryOriginLabel": memoryOriginLabel, "memoryStatus": memoryStatus, "memoryLayerLabel": memoryLayerLabel,
 		"capabilityURL": capabilityURL,
 		"traceColumns": func() []string {
-			return []string{"Created time", "Type", "Status", "Output", "Wall time", "TTFT", "Model", "Tokens", "Model cost", "Trace ID"}
+			return []string{"Trace ID", "Created time", "Type", "Status", "Output", "Wall time", "TTFT", "Model", "Tokens", "Model cost"}
 		},
-		"traceLabel": traceLabel, "traceURL": traceURL, "traceListURL": traceListURL, "traceClearURL": traceClearURL, "tracePresetURL": tracePresetURL,
+		"traceRangeURL": traceRangeURL, "activityHeight": activityHeight, "activityOffset": activityOffset, "activityX": activityX, "activityWidth": activityWidth, "traceSpan": traceSpan, "traceLabel": traceLabel, "traceURL": traceURL, "traceListURL": traceListURL, "traceClearURL": traceClearURL, "tracePresetURL": tracePresetURL,
 		"canSend":       canSend,
 		"bindingTarget": bindingTarget, "toolLabel": toolLabel,
 		"taskConfigurationPage": taskConfigurationPage, "taskURL": taskURL, "executionURL": executionURL, "taskTitle": task.Title, "taskListURL": taskListURL, "taskPageCount": taskPageCount, "historyLabel": historyLabel,
@@ -45,7 +45,9 @@ func newLayout(language string) *template.Template {
 		"parentRun":   observationParent,
 		"obsIcon":     observationIcon,
 
-		"money":           money,
+		"money":       money,
+		"traceMoney":  traceMoney,
+		"hasPrevious": func(step *int64) bool { return step != nil && *step > 0 }, "tokenRate": tokenRate, "totalInput": totalInput,
 		"obsJSON":         viewJSON,
 		"authURL":         AuthURL,
 		"runRole":         runRole,

@@ -189,6 +189,10 @@ func (a *App) runtimeRegistry(ctx context.Context, cfg config.Config, fixture st
 		for i := range defs {
 			s := &defs[i].Spec
 			switch s.Name {
+			case "builtin__fetch_content", "builtin__get_search_content", "builtin__source_check", "builtin__artifact_search":
+				// Retain execution only for existing frozen capabilities. New
+				// Main/Worker snapshots exclude these superseded entry points.
+				s.Exposure, s.CodeModeOnly = tool.Hidden, true
 			case codemode.ToolName, tool.SearchName, "builtin__intelligent_ui_show", "builtin__skill_list", "builtin__skill_view", "builtin__task_manage", "builtin__task_search":
 				s.CodeModeOnly = false
 				if s.Exposure == tool.CodeMode || s.Exposure == tool.Deferred {

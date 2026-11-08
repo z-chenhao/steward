@@ -15,7 +15,9 @@ type ExecutionList struct {
 }
 type ExecutionDetail struct {
 	Execution
-	Description  string
-	Instructions []Instruction
-	Messages     []conversation.Message
+	Description     string
+	ProgressSummary string
+	RecentRuns      []Execution
+	Instructions    []Instruction
+	Messages        []conversation.Message
 }

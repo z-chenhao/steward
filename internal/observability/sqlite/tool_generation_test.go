@@ -28,7 +28,7 @@ func TestToolGenerationsKeepTheirOwningToolAndPurpose(t *testing.T) {
 		{kind: "page_answer", owner: "local", name: "Answer from page", parent: "tool:local"},
 		{owner: "local", name: "Hosted web search", parent: "tool:local", legacy: true},
 		{kind: "hosted_search", owner: "foreign", name: "Hosted web search", parent: "agent:own"},
-		{name: "Generate response", parent: "agent:own"},
+		{name: "Model call", parent: "agent:own"},
 		{name: "Summarize context", parent: "agent:own", summary: true},
 	} {
 		t.Run(tc.name+tc.owner, func(t *testing.T) {

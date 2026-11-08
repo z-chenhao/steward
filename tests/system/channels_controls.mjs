@@ -37,7 +37,8 @@ export async function assertDataList(page){
   const symbols=[svg('.app-sidebar .primary-navigation-top>a[href="/developer/observability"] svg'),svg('.section-navigation a[href="/developer/observability"] svg'),svg('.section-navigation a[href="/developer/memory"] svg')];
   if(location.pathname.startsWith('/developer/')&&(symbols.some(symbol=>!symbol)||new Set(symbols).size!==3))issues.push('Developer, Traces and Memory reuse an icon');
   const row=document.querySelector('.control-list-table tbody tr:not(:has(.task-table-empty))');
-  if(row&&!row.querySelector('.empty-state')){if(row.getBoundingClientRect().height>38)issues.push('list rows lost compact density');if(parseFloat(getComputedStyle(row.querySelector('td')).fontSize)>13)issues.push('list text became oversized')}
+  // Visible ID copy controls retain their 44px touch target plus cell padding.
+  if(row&&!row.querySelector('.empty-state')){if(row.getBoundingClientRect().height>(innerWidth<=760?58:38))issues.push('list rows lost compact density');if(parseFloat(getComputedStyle(row.querySelector('td')).fontSize)>13)issues.push('list text became oversized')}
   for(const input of document.querySelectorAll('.control-list-search input')){
    const box=input.closest('.control-search').getBoundingClientRect(),style=getComputedStyle(input);
    if(innerWidth>760&&box.height>36)issues.push('search control became oversized');

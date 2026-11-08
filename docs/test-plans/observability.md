@@ -69,17 +69,21 @@ F-031 复用真实 Actor/store 和现有 Web。测试用显式 scripted provider
 
 ## 执行与完成判定
 
+`TestFrozenContextMarksSealedMemoryWithoutChangingStoredJSON` 验证独立与附加的加密记忆均有文本标记，普通工具消息不受影响，JSON 和冻结请求保持原样。`TestLayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch` 通过真实 generation 检查 Preview 标记、实际发送前解密、无明文泄漏及冻结复用；`TestRecallEmptyEvidenceOmittedFromAgentMessagesAndFrozen` 验证空召回／空注入不产生消息，后续新增记忆或检索不可用仍复用空快照。新增空证据回归包含在 `make test-prompts` 与必需 CI 的 `make test-memory` 中。
+
 使用隔离配置与可丢弃数据，保留产品版本、实际命令、环境、结果和清理情况。区分通过、失败、跳过、未执行以及未知外部结果。
 
 需求完成需要对应入口可用、正常与相关失败/恢复场景有证据、使用说明与技术方案一致。报告沿用现有 evidence/流程；不为本方案建立另一套测试平台或复制历史评测资产。
 
 HTTP 诊断写入以真实 SQLite 锁验证：短业务写锁释放后保存记录，测试为 CI 调度留出余量。持续锁定场景通过实际邮箱验证生产写入时限和调用方的非阻塞行为。`go test -race ./internal/observability/sqlite -run TestRecorder` 覆盖两条边界。原 native Pi/HTTP 回归保留完整 attempts/headers 数量断言，失败输出已接收请求数、诊断阶段和 generation 状态计数。
 
-生产 Bridge + HTTP peer 的 channels 回归核对 Generation Overview 的时间点顺序，覆盖 503 后重试、200、首段数据、首个工具调用和终止事件。Web 回归验证收到 200 后仍能显示空闲超时。旧数据没有流诊断时只展示已采集的阶段。
+生产 Bridge + HTTP peer 的 channels 回归核对 Generation Details 的时间点顺序，覆盖 503 后重试、200、首段数据、首个工具调用和终止事件。Web 回归验证收到 200 后仍能显示空闲超时。旧数据没有流诊断时只展示已采集的阶段。
+
+`TestTraceRunningListShowsLatestMetricsWithoutPartialBadges` 与 `TestTraceCostRoundsDisplayAndKeepsExactSourceInTooltip` 覆盖进行中缺失值、最新用量、两位小数和精确提示；`channels_traces.mjs` 验证 ID 首列、默认可见、v3/v4 偏好按字段迁移，以及既有桌面／手机和明暗截图。TTFT 首轮只有工具调用也有值；真实 SQLite 回归核对文本／工具输出先到者、含重试及缺失证据，不改用后续轮次。
 
 ## 页面重构验收
 
-真实 channels 浏览器 action 从列表进入独立 Trace 详情，验证树/时间线对齐导航、节点类型 Tab、折叠 metadata、完整 Context/JSON/来源与相邻 Compare 前后内容，返回列表和旧 deep link 保留参数；长 UTF-8 正文、桌面/移动端、无 JavaScript 与原 API 的读取边界继续覆盖。`TestTraceDetailDoesNotDependOnGlobalList` 明确让全局列表失败而详情成功，防止拆页后仍耦合列表查询。沿用同一 SQLite/HTTP peer 证据，不引入第二套执行或评测系统。
+真实 channels 浏览器 action 从列表进入独立 Trace 详情，验证树/时间线对齐导航、输入输出／详情分工、原始 metadata、完整 Context/JSON/来源与相邻 Compare 前后内容，返回列表和旧 deep link 保留参数；长 UTF-8 正文、桌面/移动端、无 JavaScript 与原 API 的读取边界继续覆盖。`TestTraceDetailDoesNotDependOnGlobalList` 明确让全局列表失败而详情成功，防止拆页后仍耦合列表查询。沿用同一 SQLite/HTTP peer 证据，不引入第二套执行或评测系统。
 
 列表共享规范见 [design.md](../../design.md#数据列表页契约)。`npm test --prefix web` 覆盖共享调宽与 JSON 无损回退；现有 native trace 浏览器场景调用公共列表几何断言，并进入 channels-web CI。
 
@@ -88,3 +92,11 @@ HTTP 诊断写入以真实 SQLite 锁验证：短业务写锁释放后保存记�
 Requests 阅读器的 Go 回归验证完整小请求组装，以及超限、分页长度变化、来源不可用、游标不前进和读取失败时保留原生分页；Node 回归验证转义文本、Unicode 重复键和无损数值，不能为了可读性覆盖原始请求证据。
 
 Trace／Memory 侧栏关闭的浏览器回归必须确认已返回原列表 URL，再开始下一次整页导航。原生 dialog 关闭后会先离开可访问角色树，History 遍历随后才完成；仅等待对话框消失不能证明返回完成，也不应以重试或固定 sleep 掩盖导航竞争。
+
+
+节点详情回归验证：所选冻结模型与单次 usage/cost，缺失与零值区分，实际零费用优先于估算；25 条长 UTF-8 消息及工具调用／图片／加密标记完整保留；常规内部节点默认隐藏、深链接及失败节点不消失；输出速率只使用同一 attempt 的首个有效输出到终止事件，缺少 usage 或终止时间保持未知。真实 HTTP peer 浏览器流程核对两个主视图不重复输入输出、内部记录切换、模型指标、原始 JSON、上下文与请求导航、桌面／移动及明暗主题。
+
+
+时间分布与详情时间线的行为回归：真实 Trace 分桶计数等于同一条件的表格计数；桶的起点包含、终点排他，首尾裁切保留纳秒边界，空窗不包含边界事件。可读间隔保持最多 48 桶。浏览器断言非零柱条实际有高度，hover／焦点 Tooltip、点击与反向刷选更新相同 URL 范围，其他筛选保留，Back 后交互仍有效；触屏点击／刷选先固定预览、Explore 后才筛选。时间线默认可见、统一轴、缩放／范围拖选／键盘平移／Fit／选节点保留窗口，不篡改服务端记录。截图覆盖桌面宽度 1400／1920、390 手机及明暗主题，保留无脚本柱条链接和节点导航。
+
+直方图复核回归额外验证：首尾裁切桶按真实时间比例绘制并导航，微秒边界不被 Date.parse 的毫秒精度吞掉；原生 SVG 与浏览器指针使用相同位置。触屏 tap／brush 释放后，所选当地时段和计数在 Explore 旁持续可见，即使提示浮层被滚动关闭。

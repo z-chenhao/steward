@@ -35,15 +35,15 @@ flowchart LR
 
 `/developer/observability` 只读取 Trace 列表，`/developer/observability/{runID}` 只读取该执行树与关系，详情不依赖全局列表查询成功。浏览器列表点击名称时以共享原生 dialog 抽屉呈现同一个服务端 workbench，非模态列表浏览、共享 Escape/焦点恢复与 URL/history 管理选择，关闭恢复原列表；完整详情页与无脚本路线保持独立。左侧紧凑执行树与右侧内容分开，执行时长位于名称下方；移除重复的底部执行表，Task epoch 通过详情选择器切换。因果/内部标识折叠保留，Main→Task 仍是跨 Trace 链接，Root 不冒充 Main Child。
 
-节点类型决定 Tab：Generation Preview/Context/Requests（Preview 继续使用原 overview URL 值），仅有前一存储轮次时增加 Compare；HTTP Preview/Requests；其他节点 Preview。技术 metadata 为折叠区。完整 contextReader 合并到 Generation Context 内，保留全部 messages/tools/response/provenance/recall、分页、原始 JSON、UTF-8 偏移及前后 Diff 内容；不再维护并列的冻结上下文页面。旧 context/run-query URL 经过原参数校验后仅跳转，API 不变。
+节点主视图统一为输入／输出和详情（overview / metadata URL 值），按内容职责划分。context / wire / diff 深链接为详情中的次级证据路线；完整 contextReader 保留全部 messages/tools/response/provenance/recall、分页、原始 JSON、UTF-8 偏移及前后 Diff 内容，不再维护并列冻结上下文页面。旧 context/run-query URL 经过原参数校验后仅跳转，API 不变。
 
 ### 列表查询与呈现
 
 当前消费者为安装所有者的 Developer 列表及已有 Trace API。新增可选 `search`（最多 200 UTF-8 字节）在当前 Agent、Session、角色、状态、时间范围内，对 Run ID、Task 标题（Main 使用 Main conversation）和模型做字面子串匹配；ASCII 大小写不敏感，不把 `%` 或 `_` 解释为通配符。查询在 keyset 分页前应用，不只过滤当前页，不扫描 observation 正文。API 输出与既有查询保持兼容，不更改持久化 schema、授权或冻结数据。
 
-服务端继续拥有查询机制、指标口径与时间边界；最近 24 小时／7 天／30 天是当前 Web 的时间快照链接，Refresh 不隐式滚动其起点。一级与二级导航共同使用全局 224px 宽度、筛选栏 176px（手机默认收起）、单行分列、默认显示 Input/Output 与默认隐藏 ID 是 Web 呈现策略；列显隐只存当前浏览器。共享 `disclosure.tsx` 使用 Base UI Popover 管理定位/焦点/关闭，顶栏时间字段通过 form 属性关联原列表 form，脚本失效保留 details 表单。详情抽屉复用同一 GET 页面解析的 workbench，不增加第二个详情 API 或查询引擎。
+服务端继续拥有查询机制、指标口径与时间边界；最近 24 小时／7 天／30 天是当前 Web 的时间快照链接，Refresh 不隐式滚动其起点。一级与二级导航共同使用全局 224px 宽度、筛选栏 176px（手机默认收起）、单行分列、Trace ID 首列默认可见及 Trace/Output 独立展示是 Web 呈现策略；列显隐只存当前浏览器。共享 `disclosure.tsx` 使用 Base UI Popover 管理定位/焦点/关闭，顶栏时间字段通过 form 属性关联原列表 form，脚本失效保留 details 表单。详情抽屉复用同一 GET 页面解析的 workbench，不增加第二个详情 API 或查询引擎。
 
-`Traces` 额外返回完整筛选范围的 `total` 与最多 48 个时间桶 `activity`。同一个只读事务在 keyset 条件前计算 count/min/max 和分桶；行数据与指标继续分页读取，直方图不从当前 40 条摘要假造全量。无匹配记录返回零计数。未指定边界时使用匹配记录的最早/最晚创建时间，指定时间边界时按该边界分桶；存储时间戳与排序均为 UTC；Web 显示、图表提示和日期筛选输入使用当前浏览器时区，提交边界保留绝对时刻。新增投影字段不修改数据库 schema 或执行状态。
+`Traces` 额外返回完整筛选范围的 `total` 与最多 48 个可读时间桶 `activity`（每桶含 `at`／排他 `until`／`count`）。同一个只读事务在 keyset 条件前计算 count/min/max 和分桶；行数据与指标继续分页读取，直方图不从当前 40 条摘要假造全量。无匹配记录返回零计数。未指定边界时使用匹配记录的最早/最晚创建时间，短于一分钟时补足一分钟观察窗；按秒至年的可读区间选择桶宽，桶边界对齐且数量最多 48；指定时间边界时首尾桶严格裁切到该边界，即使无匹配行也保留明确的有界空时间窗；存储时间戳与排序均为 UTC；Web 显示、图表提示和日期筛选输入使用当前浏览器时区，提交边界保留绝对时刻。新增投影字段不修改数据库 schema 或执行状态。
 
 这些组件和查询投影是仓库内实现，不提升为外部插件协议或通用查询语言。当前不实现 Langfuse 的 field:value DSL、facet 计数、保存视图、批量操作或公开分享；只借鉴布局与诊断密度。选择有界元数据子串查询而不增加 FTS 索引，避免将这次列表改造扩大为全文检索基础设施；大规模搜索优化需以真实数据量再验证。
 
@@ -70,9 +70,13 @@ Agent Loop 在实际复用结果和成功提交等待后发出 best-effort 事�
 
 指标仅汇总唯一 model_generation 关联的 provider_usage、spend_reservation 与 generation_cost_estimate；HTTP 重试和 reuse 不倍增。部分 usage 标明已知记录数；费用优先读取已结算账本，否则使用接纳时固定的目录估算，按币种分开。包含目录估算的总额标注“估算”，来源 tooltip 展示目录及版本；未计价调用仍计入部分覆盖。不使用当前价格推算历史，不将缺失 usage、价格或 duration 补零。估算与货币授权账本的边界见[费用设计](operations.md#account-monetary-authorization)。
 
+列表的 Trace ID 前置，时间列收窄；列偏好 v5 将 v4 的 ID 可见性移到首项，继续兼容 v3/v2 的既有迁移，保留用户明确选择。新浏览器默认显示 ID。Tokens／Cost 直接展示已接纳的最新累计值，缺失值不补零；Trace 金额仅展示层舍入到两位小数，提示保留六位精度，存储仍使用原整数微单位。进行中的 Output／Wall time 没有终态证据时显示“—”，Status 继续表达执行状态。
+
 ## F-034 冻结上下文
 
 逐轮内容继续由 `model_generation`、`context_compaction` 和 `run_recall` 提供，读取 Host 冻结输入、原始 Schema 与接受结果，不从当前 checkpoint/Memory 重建。Generation 详情默认按角色展示有界预览；完整消息、来源、Schema、压缩记录和旧/新内容由同一 Generation 的 Context 阅读器与 Compare 入口读取。
+
+输入／输出与 Context 文本投影共用密封记忆标记：存在 `memory_text` 信封时，在原 `text` 后标明加密内容与发送前解密语义，避免独立记忆消息被误读为空。该标记仅属于诊断展示，不进入 agent messages、冻结 JSON、请求 hash 或 Diff；检查器不获得 Vault，也不解密历史内容。原始 JSON 和来源保持原样。
 
 同一逻辑输入复用首次召回时，`context_compaction.provenance_json.recall_step` 指向该 Run 内确切的 `run_recall` 记录，后续 Generation 的召回区按此引用读取；Retrieve context 仅由真实召回记录产生，Prepare context 仍记录每次请求准备。旧 provenance 缺此字段时只读本 step 的记录，缺失保持未知，不以最近时间点猜测复用。
 
@@ -147,6 +151,34 @@ state schema **31** 引入 `dispatch_observation` 与 Root 查询索引。schema
 Web Trace 列表的普通行点击通过该行的既有名称链接打开非模态详情侧栏；名称仍是键盘与无脚本的原生入口。其他链接、控件、修饰键点击与文字选择不被整行点击处理接管。
 
 
-TTFT 是新增的只读派生指标 `metrics.ttft_ms`，不迁移 schema、不改变 runtime 记录或接受回执。Trace 取时间最早的 generation，计算其首次 HTTP started 到具有同 attempt started 证据的首段 first_text；包含该 generation 的重试时间，不混入后续调用、子执行的文本或 headers／first_body。Generation 的详情使用同口径。没有观测时省略字段，UI 显示未知；first_text 含模型推理，不称为用户首屏送达时间。
+TTFT 是新增的只读派生指标 `metrics.ttft_ms`，不迁移 schema、不改变接受回执。Trace 取时间最早的 generation，计算其首次 HTTP started 到具有同 attempt started 证据的首段 first_text／first_tool_call；包含该 generation 的重试时间，不混入后续调用、子执行的文本或 headers／first_body。Generation 的详情使用同口径。没有观测时省略字段，UI 显示未知；first_text 含模型推理，first_tool_call 在工具名称／ID 或非空参数 delta 到达时记录，不等待完整参数。该指标不称为用户首屏送达时间。
 
-Web 在 Requests 起始页内只读组装最多 2 MiB 的已有请求片段；长度变化、失败或超限保留原片段分页，不改变有界 body API。结构化阅读只解码文字，拒绝重复键与不可无损表达的数字；脱敏原始 JSON 不被改写。可读面板按实际协议的 instructions/system、messages/input/contents、tools 与其余参数组合，不引入新的外部协议。Context 链接经过同一详情导航处理，保留抽屉及树／导航状态。
+Web 在输入／输出及 Provider request 起始页内只读组装最多 2 MiB 的已有内容片段；长度变化、失败或超限保留原片段分页，不改变有界 body API。结构化阅读只解码文字，拒绝重复键与不可无损表达的数字；脱敏原始 JSON 不被改写。可读面板按实际协议的 instructions/system、messages/input/contents、tools 与其余参数组合，不引入新的外部协议。Context 链接经过同一详情导航处理，保留抽屉及树／导航状态。
+
+### Observation 与首输出边界
+
+参照 [Langfuse 数据模型](https://langfuse.com/docs/observability/data-model)、[Observation 类型](https://langfuse.com/docs/observability/features/observation-types)及[最佳实践](https://langfuse.com/docs/observability/best-practices)，Trace 表示一次执行，Generation 表示一次模型调用，Tool 表示接受的工具执行。多轮 Agent 中 Generation 与 Tool 是所属 Agent 下按实际因果关联的独立观察；工具内模型调用归属 Tool，不能把整轮工具循环合并为一个 Generation。现有真实回执与父子关系是机制，树形、筛选、预览和列表聚合是呈现政策，不引入另一套执行引擎或厂商 SDK。
+
+[Langfuse OpenAI 流式实现](https://github.com/langfuse/langfuse-python/blob/main/langfuse/openai.py)在首个迭代项记录 completion_start_time，而非要求可见回答文本。Steward 以首个有内容的文本、推理或工具调用输出作为本地事件边界，排除纯协议帧；Trace 列表取首个 Generation，所选 Generation 单独展示本轮指标，用户交付仍由 Main 接受消息证明。旧 first_tool_call 只在参数完成时记录的时间继续忠实呈现，不倒推缺失的历史 delta。聚合费用／Tokens 只累计独立模型用量，重试及恢复复用不重复记账。该查询契约仅仓库内稳定，不暴露内部 checkpoint 为公共 Observation API。
+
+
+### 节点详情的阅读与指标边界
+
+当前消费者是所有者的只读 Developer UI/API。沿用已存 observation、冻结请求、provider_usage、spend_reservation、generation_cost_estimate 和 dispatch_observation，不新增采集协议、写入或迁移。`ObservationTree.generation` 是所选 Generation 的可选内部读取投影，固定模型信息来自该次冻结请求，费用按实际记录优先于参考估算。它不暴露账户凭据或当前配置，不稳定化为第三方 SDK 接口。
+
+主视图为输入／输出和详情；旧 context/wire/diff 深链接继续有效，只作为详情内的次级证据阅读路线。输入／输出在有限预算内完整组装，失败／超限保留原始分页；结构化展示不覆盖原始 JSON。Worker 输入取首轮冻结的 task 来源消息，找不到时保留未知。
+
+Generation 的 input_total = input + cache_read + cache_write，缓存分项不重复累加到总量之外。吞吐量只在 accepted completed 调用有已知 usage 且同一 attempt 有 first_text/first_tool_call → stream_terminal 正间隔时计算，单位 Token/s；缺少证据不使用总生命周期替代。未知与真实零值区分。当前 provider 协议没有独立 reasoning token 计数，不推测或新增无来源指标。
+
+内部节点的隐藏是 Web 读取策略，原始树与真实父子关系保持不变；保留所选节点及祖先、失败、压缩、检索和等待。未采用删除记录、把全部模型循环合为一个 Generation、用当前任务重建历史输入或将所有原始请求并列为重复主 Tab。Langfuse 的 observation 类型、重要步骤／减少内部噪声和逐 Generation usage/cost 作为设计参考：[Best practices](https://langfuse.com/docs/observability/best-practices)、[Observation types](https://langfuse.com/docs/observability/features/observation-types)、[Token and cost tracking](https://langfuse.com/docs/observability/features/token-and-cost-tracking)。
+
+
+### 执行时间线与时间分布筛选
+
+消费者仍为所有者 Developer 详情、列表及只读 API。复用现有 Observation、Trace 统计与分桶 SQL；新增可选读取字段 `ObservationTree.total/errors`（全树节点数及 failed/http_error 节点数）和 `TraceBucket.until`，不迁移持久化模型，不触发执行。失败节点数不是失败 Trace 数，也不将 unknown 当成失败。当前策略为默认展示树与时间线，内部节点的可见性策略独立于记录和汇总。
+
+详情顶部使用一行可换行属性区，区分全 Trace 汇总和右侧所选节点指标。时间线使用实际开始／结束时间，选中 Generation 的首次有效模型输出作刻度；未知结束时间为点，仍在运行且 Trace 未终止的 Agent／Generation／Tool 用观测时刻为虚线边界。其语义是观察快照，不是捏造已完成耗时。缩放和平移只影响浏览器内的时间域，选节点、上下文阅读和历史导航保留同一 Trace 的窗口；换 Trace 各自记忆，重新加载恢复全域。按钮、Ctrl/Command 滚轮、Shift 滚轮、轴键盘和拖选复用同一有界时间窗计算，不新增服务端查询语法。
+
+列表时间直方图使用相同查询条件、UTC 排他边界和浏览器当地显示。柱条的位置、宽度及刷选边界均按实际裁切后的起止时刻成比例计算，不能将短首尾桶拉成完整桶宽。原生 SVG 和增强后的指针逻辑使用同一时间域，浏览器保留账本的微秒精度。点击／刷选只生成已有 `since/until` 查询并清空 keyset cursor，保留搜索／角色／状态／Session；空桶不导航。触屏常驻显示所选当地起止时间、Trace 数量并提供显式 Explore 操作，避免误触即改变查询；键盘箭头逐桶阅读、Shift 箭头选区、Enter 应用、Escape 取消。共享 `chart-tooltip` 仅拥有顶层定位、转义文本和生命周期，业务查询不进入共享控件。
+
+选择保留 Trace 计数一种现有指标，不引入没有消费证据的自定义报表平台、指标语言或任意聚合。没有采用把所有时间点拉成耗时条、用当前页计数替代全量、删除原始节点，或对每次 hover 发起查询。参考 [Langfuse Responsive Timeline](https://langfuse.com/changelog/2026-08-28-responsive-timeline)、[Pulse](https://langfuse.com/docs/observability/features/pulse) 与 [Kibana Discover](https://www.elastic.co/docs/explore-analyze/discover/discover-get-started)，实现仍由 Steward 自有组件及只读模型承载。

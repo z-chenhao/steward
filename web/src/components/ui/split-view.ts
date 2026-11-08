@@ -1,7 +1,7 @@
 import {createResizeHandle} from './resize-handle';
 
 export function enhanceSplitView(root:HTMLElement,label:string){
- const storage=root.dataset.splitStorage;let fraction=.38;
+ const storage=root.dataset.splitStorage;let fraction=.45;
  try{const stored=Number(storage&&localStorage.getItem(storage));if(stored>=.2&&stored<=.7)fraction=stored}catch{}
  const bounds=()=>({min:200,max:Math.max(200,root.clientWidth-246),value:Math.min(Math.max(200,root.clientWidth*fraction),Math.max(200,root.clientWidth-246))});
  const render=()=>{root.style.gridTemplateColumns=bounds().value+'px 6px minmax(0,1fr)';handle.element.hidden=getComputedStyle(root).display!=='grid'||root.clientWidth<560;handle.sync()};

@@ -74,11 +74,17 @@ func (s *streamState) tool(key int, id, name, namespace string) *pendingTool {
 	if namespace != "" {
 		c.Namespace = namespace
 	}
+	if s.onOutput != nil && (id != "" || name != "") {
+		s.onOutput("first_tool_call")
+	}
 	return p
 }
 func (s *streamState) args(key int, delta string) {
 	p := s.tool(key, "", "", "")
 	p.arguments.WriteString(delta)
+	if delta != "" && s.onOutput != nil {
+		s.onOutput("first_tool_call")
+	}
 	c := s.message.Content[p.index]
 	s.send(Event{Type: "toolcall_delta", Index: p.index, Delta: delta, Content: &c})
 }
@@ -104,9 +110,6 @@ func (s *streamState) endTool(key int) error {
 	}
 	v.Arguments = args
 	p.ended = true
-	if s.onOutput != nil {
-		s.onOutput("first_tool_call")
-	}
 	copy := *v
 	s.send(Event{Type: "toolcall_end", Index: p.index, Content: &copy})
 	return nil

@@ -226,3 +226,5 @@ time[data-local-time]{font-variant-numeric:tabular-nums}
 .control-list-toolbar> :last-child:not([data-list-filter-toggle]):not([data-task-filters]){margin-left:auto}
 
 .control-density-compact .control-toolbar-button{height:32px}
+
+.control-chart-tooltip{position:fixed;inset:auto;margin:0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--control-radius);background:var(--card);color:var(--foreground);font:400 var(--text-meta)/1.6 var(--font-ui);white-space:pre-line;overflow-wrap:anywhere;pointer-events:none;z-index:1100}

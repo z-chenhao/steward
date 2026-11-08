@@ -100,7 +100,7 @@ func (s Inspector) Traces(ctx context.Context, q observability.TraceQuery) (obse
 	if err = tx.QueryRowContext(ctx, `SELECT count(*),min(r.created_at),max(r.created_at)`+filtered, filterArgs...).Scan(&out.Total, &first, &last); err != nil {
 		return out, err
 	}
-	if first.Valid {
+	if first.Valid || (!q.Since.IsZero() && !q.Until.IsZero()) {
 		start, end := first.Int64, last.Int64+1
 		if !q.Since.IsZero() {
 			start = q.Since.UnixMicro()
@@ -108,12 +108,17 @@ func (s Inspector) Traces(ctx context.Context, q observability.TraceQuery) (obse
 		if !q.Until.IsZero() {
 			end = q.Until.UnixMicro()
 		}
-		step := max(int64(1), (end-start+47)/48)
-		out.Activity = make([]observability.TraceBucket, 48)
-		for i := range out.Activity {
-			out.Activity[i].At = stamp(start + int64(i)*step)
+		// A useful minimum window avoids dozens of indistinguishable microsecond
+		// buckets for a single trace. Explicit filter boundaries remain exact.
+		if q.Since.IsZero() && q.Until.IsZero() && end-start < 60_000_000 {
+			end = start + 60_000_000
 		}
-		bucketArgs := append([]any{start, step}, filterArgs...)
+		step := activityInterval(end - start)
+		base := start / step * step
+		for at := base; at < end; at += step {
+			out.Activity = append(out.Activity, observability.TraceBucket{At: stamp(max(start, at)), Until: stamp(min(end, at+step))})
+		}
+		bucketArgs := append([]any{base, step}, filterArgs...)
 		buckets, e := tx.QueryContext(ctx, `SELECT (r.created_at-?)/?,count(*)`+filtered+` GROUP BY 1`, bucketArgs...)
 		if e != nil {
 			return out, e
@@ -180,8 +185,8 @@ func traceMetrics(ctx context.Context, tx *sql.Tx, id string) (observability.Met
 	if ms.Valid {
 		m.ProviderMS = &ms.Int64
 	}
-	// The first generation defines trace TTFT. Do not average or sum model
-	// calls, substitute response headers, or turn absent text timing into zero.
+	// The first generation defines trace TTFT. Text, reasoning and tool-call
+	// deltas are model output; HTTP headers and protocol-only frames are not.
 	var firstText sql.NullInt64
 	err = tx.QueryRowContext(ctx, `WITH first_generation AS (
  SELECT g.generation_id FROM model_generation g JOIN run r USING(run_id)
@@ -190,7 +195,7 @@ func traceMetrics(ctx context.Context, tx *sql.Tx, id string) (observability.Met
  SELECT (SELECT min(occurred_at) FROM dispatch_observation WHERE generation_id=(SELECT generation_id FROM first_generation) AND phase='started') AS started,
  (SELECT min(t.occurred_at) FROM dispatch_observation t JOIN dispatch_observation s
  ON s.generation_id=t.generation_id AND s.attempt=t.attempt AND s.phase='started'
- WHERE t.generation_id=(SELECT generation_id FROM first_generation) AND t.phase='first_text' AND t.occurred_at>=s.occurred_at) AS first_text
+ WHERE t.generation_id=(SELECT generation_id FROM first_generation) AND t.phase IN ('first_text','first_tool_call') AND t.occurred_at>=s.occurred_at) AS first_text
  ) SELECT CASE WHEN first_text>=started THEN (first_text-started)/1000 END FROM timing`, id, id).Scan(&firstText)
 	if err != nil {
 		return m, err
@@ -253,6 +258,10 @@ func (s Inspector) Observations(ctx context.Context, q observability.Observation
 	if err != nil {
 		return out, err
 	}
+	err = tx.QueryRowContext(ctx, scopeObservationsSQL()+`SELECT count(*),coalesce(sum(status IN ('failed','http_error')),0) FROM observations`, id, id).Scan(&out.Total, &out.Errors)
+	if err != nil {
+		return out, err
+	}
 	c, err := readCursor(q.Cursor, "observations:"+id)
 	if err != nil {
 		return out, err
@@ -295,6 +304,9 @@ func (s Inspector) Observations(ctx context.Context, q observability.Observation
 	}
 	if err == nil && out.Selected.Type == "generation" {
 		out.ProviderTimings, err = providerTimings(ctx, tx, out.Selected.Key)
+		if err == nil {
+			out.Generation, err = generationDetails(ctx, tx, out.Selected.Key)
+		}
 	}
 	return out, err
 }
@@ -323,4 +335,15 @@ func providerTimings(ctx context.Context, tx *sql.Tx, generationID string) ([]ob
 func parseStamp(raw string) (int64, error) {
 	at, err := time.Parse(time.RFC3339Nano, raw)
 	return at.UnixMicro(), err
+}
+
+// Keep histogram bins readable and bounded across short and long ranges.
+func activityInterval(span int64) int64 {
+	for _, seconds := range []int64{1, 5, 10, 30, 60, 300, 600, 1800, 3600, 10800, 21600, 43200, 86400, 604800, 2592000, 31536000} {
+		step := seconds * 1_000_000
+		if step >= (span+46)/47 {
+			return step
+		}
+	}
+	return max(int64(1_000_000), (span+46)/47)
 }

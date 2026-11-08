@@ -241,3 +241,41 @@ func TestFrozenContextUsesExplicitReusedRecallReference(t *testing.T) {
 		t.Fatal("continuation lost the exact frozen recall", out, err)
 	}
 }
+
+func TestFrozenContextMarksSealedMemoryWithoutChangingStoredJSON(t *testing.T) {
+	envelope := map[string]any{"sealed": "PRIVATE_CIPHERTEXT", "binding": "memory-injected:run", "encoded_bytes": 660}
+	messages := []any{
+		map[string]any{"role": "user", "text": "", "memory_text": envelope},
+		map[string]any{"role": "user", "text": "Current request", "memory_text": envelope},
+		map[string]any{"role": "assistant", "text": "", "tool_calls": []any{map[string]string{"id": "call", "name": "echo", "arguments": "{}"}}},
+	}
+	request := map[string]any{"messages": messages}
+	s, db := contextFixture(t, request, request)
+	var before string
+	if err := db.QueryRow(`SELECT request_json FROM model_generation WHERE step_index=1`).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	for i, message := range messages {
+		q := observability.ContextQuery{RunID: "run", Step: 1, Section: "messages", Item: i}
+		view, err := s.Context(context.Background(), q)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if i < 2 && (!strings.Contains(view.Content, "Encrypted memory content") || strings.Contains(view.Content, "PRIVATE_CIPHERTEXT")) {
+			t.Fatal("sealed content looked empty or exposed ciphertext", view)
+		}
+		if i == 1 && !strings.HasPrefix(view.Content, "Current request\n") || i == 2 && view.Content != "" {
+			t.Fatal("inspection changed ordinary message text", view)
+		}
+		q.JSON = true
+		stored, err := s.Context(context.Background(), q)
+		want, _ := json.Marshal(message)
+		if err != nil || stored.Content != string(want) {
+			t.Fatal("JSON no longer represents the stored message", stored, err)
+		}
+	}
+	var after string
+	if err := db.QueryRow(`SELECT request_json FROM model_generation WHERE step_index=1`).Scan(&after); err != nil || after != before {
+		t.Fatal("inspection rewrote frozen input", err)
+	}
+}

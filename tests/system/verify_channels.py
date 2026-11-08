@@ -1121,6 +1121,31 @@ def native_trace_inspection(binary,evidence,report):
     with tempfile.TemporaryDirectory(prefix='steward-native-traces-') as temp, Sandbox() as platform, Broker(Path(temp)) as broker:
         server=ThreadingHTTPServer(('127.0.0.1',0),TraceEndpoint);server.daemon_threads=True
         server.requests=[];server.mode='success'
+        server.task_title='筛选杭州有产品设计感的前沿 AI 团队'
+        server.task_description=('Browser report fixture. 用户希望在杭州寻找以用户体验与产品原则为核心的 AI 团队。'
+                                 '核对实际职责、研发地点、招聘来源与团队工作方式；明确区分已验证事实、推测与未知信息。'
+                                 '不要将团队定位或设计偏好写成客观事实；没有证据时如实说明。'
+                                 '输出可验证的候选、技术匹配理由、未知项和下一步访谈问题。'*3)
+        server.task_root_delay=6
+        server.task_root_tool='builtin__artifact_manage'
+        server.task_root_arguments=dict(operation='save',name='trace-fixture.txt',mediaType='text/plain',text='Synthetic browser regression evidence.')
+        server.task_followup=('## 本轮研究结论\n\n这是一份用于界面回归的合成报告。示例团队与证据状态不代表真实招聘信息。\n\n'
+                              '优先核实团队是否持续交付面向真实用户的 AI 产品，以及工程师能否参与产品取舍。当前证据不足以确认全部岗位，因此将候选与待验证问题分开呈现。\n\n'
+                              '### 候选方向\n\n'
+                              '| 候选 | 技术匹配 | 仍需核实 |\n| --- | --- | --- |\n'
+                              '| 示例团队 A | Agent 后端、业务系统集成 | 杭州研发地点与岗位状态 |\n'
+                              '| 示例团队 B | AI CRM、客户研究工作流 | 产品决策权限与协作方式 |\n'
+                              '| 示例团队 C | 面向用户的 AI 应用 | 实际职责及团队工作时间 |\n\n'
+                              '### 建议的核验顺序\n\n'
+                              '1. 先查看官方招聘页和近期产品发布，记录来源与日期。\n'
+                              '2. 向团队确认后端、模型应用与产品工作的实际分工。\n'
+                              '3. 用具体产品讨论验证设计理念，而不是仅凭品牌印象判断。\n\n'
+                              '### 面试时值得追问\n\n'
+                              '- 最近一次因为用户反馈而改变产品方向是什么？\n'
+                              '- 工程师如何参与交互和体验决策？\n'
+                              '- 跨团队需求冲突时，由谁决定优先级，依据是什么？\n\n'
+                              '目前仍不能确认实际岗位、杭州办公安排及工作时间。这些问题需要官方来源或团队直接答复，不能由模型补全。\n\n'
+                              'Main Task follow-up through Pi.')
         thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
         h=ChannelHarness(binary,Path(temp),platform,'')
         try:
@@ -1131,10 +1156,14 @@ def native_trace_inspection(binary,evidence,report):
             server.mode='tasks';server.reject_next=True
             h.start()
             h.wait_state(lambda status:status['readiness']=='ready','native trace runtime readiness',lambda _:h.http('/api/status'))
-            h.http('/api/message',dict(source_id='native-trace',content=[dict(type='text',text='Compare the available evidence and prepare an independent report. Keep the original sources and return a concise summary.')]))
+            h.browser(evidence.parent/'execution-empty-ui','execution-empty')
             # The Root terminal commit can precede its causal Main follow-up. Wait
             # for both Main runs and their deliveries before measuring read-only UI.
             h.wait(lambda state:any(r['worker_position']=='root' for r in state['runs']) and sum(r['kind']=='main' for r in state['runs'])>=2 and all(r['status'] in ('completed','failed','cancelled') for r in state['runs']) and len(state['deliveries'])>=2 and all(d['status']=='sent' for d in state['deliveries']),'native trace completion and Main follow-up')
+            # A second real execution exercises previous/next inspection without
+            # replacing the first trace's frozen request or accepted delivery.
+            h.http('/api/message',dict(source_id='native-trace-second',content=[dict(type='text',text='Prepare a second independent report from the available evidence.')]))
+            h.wait(lambda state:sum(r['worker_position']=='root' for r in state['runs'])==2 and sum(r['kind']=='main' for r in state['runs'])>=4 and all(r['status'] in ('completed','failed','cancelled') for r in state['runs']) and all(d['status']=='sent' for d in state['deliveries']),'second native execution and delivery')
             capture_state={}
             def captured(_):
                 with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
@@ -1154,7 +1183,8 @@ def native_trace_inspection(binary,evidence,report):
                 generation,main=db.execute('SELECT generation_id,run_id FROM model_generation ORDER BY created_at LIMIT 1').fetchone()
                 before=[r['body'] for r in server.requests if r.get('session')==main and r['method']=='POST'][:2]
                 require(len(before)==2 and before[0]==before[1],'actual HTTP retry was not exercised')
-                root=db.execute("SELECT run_id FROM run WHERE worker_position='root'").fetchone()[0]
+                root=db.execute("SELECT run_id FROM run WHERE worker_position='root' ORDER BY created_at,run_id LIMIT 1").fetchone()[0]
+                require(db.execute("SELECT count(*) FROM tool_invocation WHERE run_id=? AND tool_name='builtin__artifact_manage' AND status='succeeded'",(root,)).fetchone()[0]==1,'Root fixture did not execute a valid tool successfully')
                 attempts=db.execute("SELECT body_json FROM dispatch_observation WHERE generation_id=? AND phase='started' ORDER BY occurred_at",(generation,)).fetchall()
                 require(len(attempts)==2,'result reuse fabricated a new HTTP attempt')
                 require([json.loads(a[0]) for a in attempts]==before,'observed final request differs from actual HTTP body')
@@ -1164,7 +1194,14 @@ def native_trace_inspection(binary,evidence,report):
             tree=h.http('/api/developer/observations?'+urlencode(dict(run=main)))
             require(sum(o['name']=='Provider HTTP' for o in tree['items'])>=2,'actual sends missing from observation tree')
             round_tree=h.http('/api/developer/observations?'+urlencode(dict(run=main,obs='generation:'+generation)))
+            generation_details=round_tree['generation']
+            require(generation_details['model']=='fixture-model' and generation_details['metrics']['known_usage']==1
+                    and generation_details['metrics']['input_tokens']==7 and generation_details['metrics']['output_tokens']==8,
+                    'selected generation metrics do not match the actual provider usage')
+            root_input=h.http('/api/developer/observation-body?'+urlencode(dict(run=root,obs='agent:'+root,field='input')))
+            require(root_input['available'] and server.task_description in root_input['content'], 'Worker input lost its original frozen task brief')
             timings=round_tree['provider_timings']
+            require(round_tree['trace']['metrics'].get('ttft_ms',-1)>=0,'tool-only first generation lost trace TTFT')
             phases=[x['phase'] for x in timings]
             require(phases[:5]==['started','headers','started','headers','first_body']
                     and sorted(phases[5:])==['first_tool_call','stream_terminal'],

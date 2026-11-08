@@ -195,11 +195,15 @@ class Endpoint(BaseHTTPRequestHandler):
                 root = any("general Worker executing" in str(m.get("content", "")) for m in body["messages"])
                 runtime = any("Runtime task update (untrusted Worker data" in str(m.get("content", "")) for m in body["messages"])
                 has_result = any(m["role"] == "tool" for m in body["messages"])
+                if root and not has_result:
+                    time.sleep(getattr(self.server, 'task_root_delay', 0))
                 if runtime and not root:
-                    chunk({"content": "Main Task follow-up through Pi."})
+                    chunk({"content": getattr(self.server, 'task_followup', "Main Task follow-up through Pi.")})
                 elif not has_result and (root or "builtin__task_manage" in names):
-                    name = "builtin__artifact_search" if root else "builtin__task_manage"
-                    arguments = {} if root else {"operation": "create", "task": "Prepare a safe independent report. Return evidence; perform no external actions."}
+                    name = getattr(self.server, 'task_root_tool', "builtin__artifact_search") if root else "builtin__task_manage"
+                    arguments = getattr(self.server, 'task_root_arguments', {}) if root else {"operation": "create", "task": "Prepare a safe independent report. Return evidence; perform no external actions."}
+                    if not root and getattr(self.server, 'task_title', ''):
+                        arguments.update(title=self.server.task_title, task=self.server.task_description)
                     chunk({"tool_calls": [{"index": 0, "id": "task_call", "type": "function", "function": {"name": name, "arguments": json.dumps(arguments)}}]})
                 else:
                     chunk({"content": "Root business result through Pi." if root else "Main Task accepted through Pi."})

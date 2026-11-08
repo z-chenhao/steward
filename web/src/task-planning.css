@@ -63,3 +63,38 @@
 @media(max-width:700px){.attention-row{align-items:flex-start;flex-direction:column;gap:14px}.attention-row>.button{align-self:flex-start}.task-feedback-form button{min-height:44px}}
 
 .task-configuration h2{display:flex;align-items:center;gap:8px}
+
+/* A task execution is a reading surface inside the shared Trace sheet. */
+.execution-page{max-width:900px;container:execution-layout / inline-size}
+.execution-heading{position:relative;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.execution-heading h1{margin:0 0 8px;font-size:18px;line-height:1.5;font-weight:600;overflow-wrap:anywhere}
+.execution-summary{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;color:var(--muted-foreground);font-size:12px;line-height:1.5}
+.execution-summary time{font:inherit;color:inherit}
+.execution-trace{margin-left:auto;color:var(--foreground)}
+.execution-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin-top:12px;font-size:12px}
+.execution-actions>.control-icon-button{margin-left:auto}
+.execution-metadata .execution-actions{margin:8px 0 12px}
+.execution-main{min-width:0;max-width:76ch}
+.execution-progress>h2{font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500;color:var(--muted-foreground)}
+.execution-empty{margin:0;color:var(--muted-foreground);font-size:14px;line-height:1.7}
+.execution-progress{margin:0 0 20px;max-width:76ch}
+.execution-progress p{font-size:14px;line-height:1.7;overflow-wrap:anywhere;margin:0}
+.execution-side{margin-top:32px;max-width:76ch;font-size:13px}
+.execution-side>details{border-top:1px solid var(--border)}
+.execution-side summary{font-weight:500;cursor:pointer;min-height:44px;align-content:center}
+.execution-count{font-size:12px;font-weight:400;color:var(--muted-foreground);margin-left:6px}
+.execution-instructions .semantic{font-size:13px;line-height:1.7;margin:0 0 16px;overflow-wrap:anywhere}
+.execution-instructions h3{font-size:13px;margin:16px 0 8px}.execution-instructions ol{padding-left:18px;margin:0 0 16px}
+.execution-history ol{list-style:none;padding:0;margin:0 0 12px}
+.execution-history a{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;text-decoration:none;padding:8px 0}
+.execution-history a[aria-current]{font-weight:600}.execution-history a:hover>span:first-child{text-decoration:underline}
+.execution-history time{grid-column:1/-1;color:var(--muted-foreground);font-size:12px}
+.execution-facts{display:grid;gap:8px;margin:0 0 16px;font-size:12px}
+.execution-facts>div{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:12px}
+.execution-facts dd{margin:0;min-width:0}
+.execution-facts dt{color:var(--muted-foreground)}
+.execution-facts time{font:inherit;color:inherit}
+.control-sheet .execution-page{padding:20px 24px;margin:0;max-width:none}
+.control-sheet .execution-page>.back-link{display:none}
+.task-table tr[data-execution-row]:hover{background:var(--hover)}
+@media(max-width:760px){.execution-actions>.text-link{display:inline-flex;align-items:center;min-height:44px}.control-sheet .execution-page{padding:20px}.execution-heading{padding-bottom:12px;margin-bottom:20px}.execution-actions{margin-top:8px}}

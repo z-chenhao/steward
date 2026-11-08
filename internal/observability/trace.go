@@ -52,6 +52,7 @@ type Traces struct {
 type TraceBucket struct {
 	At    string `json:"at"`
 	Count int64  `json:"count"`
+	Until string `json:"until"`
 }
 
 type ObservationQuery struct {
@@ -80,11 +81,14 @@ type Observation struct {
 	Detail  string `json:"detail,omitempty"`
 }
 type ObservationTree struct {
-	Trace           Trace            `json:"trace"`
-	Items           []Observation    `json:"items"`
-	Selected        Observation      `json:"selected"`
-	Next            string           `json:"next,omitempty"`
-	ProviderTimings []ProviderTiming `json:"provider_timings,omitempty"`
+	Total           int64              `json:"total"`
+	Errors          int64              `json:"errors"`
+	Trace           Trace              `json:"trace"`
+	Items           []Observation      `json:"items"`
+	Selected        Observation        `json:"selected"`
+	Next            string             `json:"next,omitempty"`
+	ProviderTimings []ProviderTiming   `json:"provider_timings,omitempty"`
+	Generation      *GenerationDetails `json:"generation,omitempty"`
 }
 
 type ProviderTiming struct {
@@ -119,11 +123,24 @@ type Body struct {
 	Note      string `json:"note,omitempty"`
 }
 type ChatPreview struct {
-	Index  int    `json:"index"`
-	Role   string `json:"role"`
-	Text   string `json:"text"`
-	Source string `json:"source,omitempty"`
-	CallID string `json:"tool_call_id,omitempty"`
-	Calls  string `json:"tool_calls,omitempty"`
-	More   bool   `json:"more"`
+	Index  int      `json:"index"`
+	Role   string   `json:"role"`
+	Text   string   `json:"text"`
+	Source string   `json:"source,omitempty"`
+	CallID string   `json:"tool_call_id,omitempty"`
+	Calls  string   `json:"tool_calls,omitempty"`
+	More   bool     `json:"more"`
+	Images []string `json:"image_refs,omitempty"`
+}
+
+// GenerationDetails is a read-only projection of one admitted model call. It
+// never includes credentials or live model configuration.
+type GenerationDetails struct {
+	Model           string  `json:"model"`
+	Provider        string  `json:"provider"`
+	API             string  `json:"api"`
+	ReasoningEffort string  `json:"reasoning_effort,omitempty"`
+	Parameters      string  `json:"parameters_json"`
+	MaxOutputTokens int64   `json:"max_output_tokens"`
+	Metrics         Metrics `json:"metrics"`
 }

@@ -360,4 +360,4 @@ Models 为 Settings 的独立分类，包含「Sign in with an account」和「C
 
 浏览器请求标识在 HTTPS 使用原生 UUID，在 HTTP 来源使用 Web Crypto 加密随机源生成同格式的 UUIDv4；聊天发送、Intelligent UI 交互／导出和图表渲染不依赖 HTTPS 专属的 `randomUUID` 接口。重试继续复用原请求标识，不改动 Host 授权或监听策略。
 
-Developer Traces 的状态前置，Trace 识别列合并原 Name／Input；固定倒序不展示排序操作图标。费用口径集中在标题帮助，首轮仅工具调用时 TTFT 保持未知。工具内模型调用按归属与用途展示，工具 Preview 展示业务内容，原始回执仍可读取。Session／Run／Trace／Task 和来源 ID 使用共享完整值复制，包含局域网 HTTP 与手动回退。
+Developer Traces 的状态前置，Trace 识别列合并原 Name／Input；固定倒序不展示排序操作图标。费用口径集中在标题帮助，首轮仅工具调用也计算 TTFT，缺失计时证据才保持未知。工具内模型调用按归属与用途展示，工具 Preview 展示业务内容，原始回执仍可读取。Session／Run／Trace／Task 和来源 ID 使用共享完整值复制，包含局域网 HTTP 与手动回退。

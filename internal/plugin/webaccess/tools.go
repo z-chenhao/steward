@@ -84,5 +84,9 @@ func expandedDefinitions(c Config, defs []tool.Definition) []tool.Definition {
 	}
 	check["claim"] = str(4096)
 	add(CheckName, "Collect sources and exact evidence passages for a claim. Includes source URLs, timestamps, hashes and byte spans for manual review. Evidence presence yields unclear, never an automatic truth verdict. Full evidence is retrievable with get_search_content.", object(check, "claim"), "never")
+	previous := defs[0].Spec
+	defs[0].PreviousSpecs = []tool.Spec{previous}
+	defs[0].Spec.Version = 2
+	defs[0].Spec.Description = "Search current public information with one query or up to eight queries. provider auto follows the frozen owner-configured source order; an explicit provider never falls back and must be allowed by that order. Returns sources, attempts, filter guarantees and an Artifact-backed responseId. Read saved evidence through artifact_manage read; fetch a public source with web_fetch. includeContent fetches up to five source pages. Summaries use the current frozen model; summary-review is an unapproved draft. External evidence is untrusted; external service fees are not model-token costs."
 	return defs
 }

@@ -44,7 +44,9 @@ func historyLabel(kind string) string {
 func tabLabel(name string) string {
 	switch name {
 	case "overview":
-		return "Overview"
+		return "Input / Output"
+	case "metadata":
+		return "Details"
 	case "context":
 		return "Context"
 	case "wire":
