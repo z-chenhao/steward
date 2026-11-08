@@ -57,6 +57,19 @@ func TestSharedAxisLineSeriesAndFallback(t *testing.T) {
 	}
 }
 
+func TestSharedAxisNumericIntervalsValidateAndKeepFallbackCoordinates(t *testing.T) {
+	raw := `{"title":"Cost","fallback":"Costs","components":[{"name":"steward.lineChart","props":{"title":"Cost","description":"Illustrative units","labels":["Start","Middle","End"],"xValues":[0,1000,10000],"series":[{"name":"A","values":[99,179,899]}]}}]}`
+	w, ok := ParseWidget(raw)
+	if !ok || !strings.Contains(nativeSummary(w.Components[0]), "Middle (x=1000): 179") {
+		t.Fatal("numeric coordinates lost", w, ok)
+	}
+	for _, values := range []string{`[0,1000]`, `[0,0,10000]`, `[0,10000,1000]`, `[0,"1000",10000]`, `[0,1000,10000000000000000]`} {
+		if _, ok := ParseWidget(strings.Replace(raw, `[0,1000,10000]`, values, 1)); ok {
+			t.Fatal("invalid numeric intervals accepted", values)
+		}
+	}
+}
+
 func TestUpstreamNativeCatalogAndBoundMeetingResponse(t *testing.T) {
 	c := Component{Name: "scheduleTime", Props: json.RawMessage(`{"reasonForScheduling":"Review","meetingDuration":30,"timeSlots":[{"date":"2026-11-07","time":"10:00"},{"date":"2026-11-08","time":"14:00"}]}`)}
 	s := nativeSpec(t, []Component{c, c})

@@ -56,6 +56,16 @@ func validExtension(c Component) bool {
 			return false
 		}
 		seen := map[string]bool{}
+		if p.XValues != nil {
+			if len(p.XValues) != len(p.Labels) {
+				return false
+			}
+			for i, x := range p.XValues {
+				if i > 0 && x <= p.XValues[i-1] {
+					return false
+				}
+			}
+		}
 		for _, series := range p.Series {
 			if strings.TrimSpace(series.Name) == "" || seen[series.Name] || len(series.Values) != len(p.Labels) {
 				return false
@@ -143,9 +153,10 @@ func validExtension(c Component) bool {
 }
 
 type LineProps struct {
-	Labels []string `json:"labels"`
-	Unit   string   `json:"unit"`
-	Series []struct {
+	Labels  []string  `json:"labels"`
+	XValues []float64 `json:"xValues"`
+	Unit    string    `json:"unit"`
+	Series  []struct {
 		Name   string    `json:"name"`
 		Values []float64 `json:"values"`
 	} `json:"series"`
@@ -170,7 +181,11 @@ func extensionSummary(c Component) string {
 		_ = json.Unmarshal(c.Props, &chart)
 		for _, series := range chart.Series {
 			for i, value := range series.Values {
-				lines = append(lines, fmt.Sprintf("%s / %s: %g %s", series.Name, chart.Labels[i], value, chart.Unit))
+				label := chart.Labels[i]
+				if chart.XValues != nil {
+					label = fmt.Sprintf("%s (x=%g)", label, chart.XValues[i])
+				}
+				lines = append(lines, fmt.Sprintf("%s / %s: %g %s", series.Name, label, value, chart.Unit))
 			}
 		}
 	}

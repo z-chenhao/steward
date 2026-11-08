@@ -24,6 +24,7 @@ def run(binary,evidence):
    components.insert(4,dict(name='steward.form',props=dict(title='Feedback',fields=[dict(name='comment',label='Comment',type='text',required=True),dict(name='tags',label='Tags',type='multiselect',options=[dict(value='x',label='X'),dict(value='y',label='Y')])])))
    components.append(dict(name='steward.lineChart',props=dict(title='Shared growth',description='User-provided fixture',unit='万人',labels=['1月','2月','3月'],series=[dict(name='A',values=[12,15,14]),dict(name='B',values=[10,13,17])])))
    components.append(dict(name='barChart',props=dict(title='Large category comparison',description='Illustrative annual USD values',data=[dict(label='研究与创新部门一号' if i==1 else 'Research department '+str(i),value=i*1000000000) for i in range(1,8)])))
+   components.append(dict(name='steward.lineChart',props=dict(title='Uneven usage',description='Illustrative monthly cost; X: units, Y: yuan',unit='元',labels=['0','1000','10000'],xValues=[0,1000,10000],series=[dict(name='A',values=[99,179,899]),dict(name='B',values=[299,329,599])])) )
    server.widgets=[dict(title='Explorer',fallback='A: 10. B: 42. C: 25.',components=components)]
    h.start();h.wait_state(lambda status:status['readiness']=='ready','UI ready',lambda _:h.http('/api/status'));h.http('/api/message',dict(source_id='ui-extensions',content=[dict(type='text',text='SHOW_UI_INTERACTIONS')]));h.wait(lambda s:len(s['deliveries'])==1 and s['deliveries'][0]['status']=='sent','native UI delivered')
    h.browser(evidence.parent/'browser','ui-interactions')

@@ -17,6 +17,16 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  const menu=async(scope,name)=>{await activate(scope.getByRole('button',{name:'Options',exact:true}));await page.getByRole('menuitem',{name,exact:true}).click()};
  const downloaded=async(scope,name,ext)=>{const pending=page.waitForEvent('download');await menu(scope,name);const file=await pending;if(!file.suggestedFilename().endsWith(ext))throw Error('incorrect export extension');const path=await file.path();const bytes=await readFile(path);if(ext==='.png'&&!bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))throw Error('invalid PNG');if(ext==='.svg'&&!bytes.toString().includes('<svg'))throw Error('invalid SVG');return bytes};
  const multi=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Shared growth'});
+ const numeric=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Uneven usage'});
+ const verifyIntervals=async()=>{
+  await numeric.locator('.recharts-line-curve').last().waitFor();
+  const coordinates=[];
+  for(const [label,value] of [['0',99],['1000',179],['10000',899]])coordinates.push(await numeric.getByRole('button',{name:'A / '+label+': '+value+' 元',exact:true}).locator('circle').last().getAttribute('cx').then(Number));
+  if(coordinates.some(x=>!Number.isFinite(x))||coordinates[2]<=coordinates[0]||Math.abs((coordinates[1]-coordinates[0])/(coordinates[2]-coordinates[0])-.1)>.01)throw Error('numeric intervals use equally spaced categories: '+JSON.stringify(coordinates));
+ };
+ await verifyIntervals();
+ const numericCSV=(await downloaded(numeric,'Download CSV','.csv')).toString();
+ if(!numericCSV.includes('"Label","X","A (元)","B (元)"')||!numericCSV.includes('"1000","1000","179","329"'))throw Error('numeric chart export lost its X coordinates');
  await multi.locator('.recharts-line-curve').last().waitFor();
  if(await multi.locator('.recharts-line-curve').count()!==2||await multi.locator('.recharts-yAxis').count()!==1)throw Error('series did not share one numeric axis');
  await multi.getByLabel('A / 3月: 14 万人',{exact:true}).hover();
@@ -27,6 +37,7 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  if(!multiCSV.includes('A (万人)')||!multiCSV.includes('B (万人)')||!multiCSV.includes('"3月","14","17"'))throw Error('multi-series CSV lost units or values');
  for(const width of [1400,390]){await page.setViewportSize({width,height:980});for(const theme of ['light','dark']){
   await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await multi.scrollIntoViewIfNeeded();
+  await numeric.scrollIntoViewIfNeeded();await numeric.locator('.recharts-surface').evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await verifyIntervals();await multi.scrollIntoViewIfNeeded();
   if(await multi.evaluate(node=>node.scrollWidth>node.clientWidth+2))throw Error('multi-series chart overflowed its container');
   const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
   try{await multi.screenshot({path:evidence+'/multi-series-'+width+'-'+theme+'.png'})}

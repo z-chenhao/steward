@@ -53,7 +53,7 @@ F-020：飞书自建应用通过 SecretStore 引用自动获取/刷新 tenant ac
 | [F-018](features/channels.md#f-018) | 基础 Web 工作台 | Steward 四入口本机工作台；导航按钮就绪后才可操作，保留慢脚本及原生回退；默认免 token、对话、Worker 任务、审批提示、只读 Computer 预览与中英文界面；Enter 发送、Shift + Enter 换行及橙色发送按钮；Models 分组管理账户与 API 连接，连接时自动校验，Chat 输入区选择模型，工作待办定位问题、成果审阅、审批及任务故障。 | 是 · 已完成 |
 | [F-019](features/channels.md#f-019) | Web 实时状态与回复更新 | 模型生成时，Web 逐段显示 Main 回复；完成后展示正式消息。审批、状态更新和输入保留仍独立工作。 | 是 · 已完成 |
 | [F-020](features/channels.md#f-020) | 可维护的飞书交互与通知 | 个人原消息同步/Task 结果回复、具名问题及成果审阅卡、可选工作台成果链接与通知去重；显式 PR 接续复用原话题；真实平台验收仍待补，未知投递不盲目重发。 | 否 · 部分完成 |
-| [F-021](features/intelligent-ui.md#f-021) | 富组件从生成到交互的闭环 | Main 主动按问题选择展示，支持有序正文／视觉区块、中文强调与流式段落保持、读者意图跟随、本地有向图布局，以及稳定增量画面与正式就绪衔接，以及同轮待交付内容的定向修正与原生共轴多序列折线，typed intelligent_ui_show 与无本地目录仍可发现读取的内建 Skill 复用 OpenIntelligentUI 原生组件，本地 D3/Three.js 支持自适应架构、多序列比较、3D 几何与离线地理配方，Web 覆盖直接参数增量与 Code Mode 暂存后的可撤销预览，正式提交后启用交互，空脚本列表规范化保证静态预览可持久交付，以 generateSandboxedUi 协议扩展 HTML/SVG、计算器和模拟；包含折线/散点、typed 表单、卡片和已声明动作扩展；状态 CAS、输入上下文快照、工具结果回传、筛选联动、导出与展开/弹窗/悬浮共用原交付链路，页面无功能介绍文案；组件以 shadcn 结构/Base UI 交互统一全局控件，短列表无搜索，长列表按需筛选，保留 Steward 字体和页面布局。 | 是 · 已完成 |
+| [F-021](features/intelligent-ui.md#f-021) | 富组件从生成到交互的闭环 | Main 主动选择原生组件或沙箱，有序交付正文与视觉；流式预览保持节点和阅读位置，衔接正式交互；支持中文排版、共轴多序列／数值横轴、同轮修正与本地图形／地理能力；表单、卡片及已声明动作保留 CAS 状态、冻结上下文、宿主授权、导出和响应式共享控件。 | 是 · 已完成 |
 | [F-022](features/skills-experience.md#f-022) | 受版本控制的 Skill 读取 | Main 与 Worker 按名称或用途搜索冻结目录，按名称读取时由 Host 绑定版本，system 不预载 Skill 索引。 | 是 · 已完成 |
 | [F-023](features/skills-experience.md#f-023) | 执行后的自动经验闭环 | 用户纠正、恢复失败或重复成功能进入候选、验证和晋升流程。 | 否 · 部分完成 |
 | [F-024](features/integrations.md#f-024) | 受限本地 MCP 工具接入 | 操作员可接入允许的本地 stdio 工具；固定 Code Mode 调用、按工具或服务用途检索与 500 工具目录已接通，system 不预载 MCP Server 目录。 | 是 · 已完成 |
