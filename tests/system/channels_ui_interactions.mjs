@@ -2,6 +2,10 @@ import {readFile,writeFile} from 'node:fs/promises';
 export async function uiInteractions(page,context,browser,url,evidence,restart=false){
  const table=page.locator('[data-openintelligentui="Table"]'),line=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Trend'}),scatter=page.locator('[data-openintelligentui="steward.scatterChart"]'),form=page.locator('[data-openintelligentui="steward.form"]').first(),cards=page.locator('[data-openintelligentui="steward.cards"]'),action=page.locator('[data-openintelligentui="steward.action"]'),widget=page.locator('.intelligent-widget').filter({has:page.locator('iframe[title="Explorer"]')}),frame=page.frameLocator('iframe[title="Explorer"]');
  await form.getByRole('textbox',{name:'Notes',exact:true}).waitFor();await frame.locator('#quantity').waitFor();
+ // Chromium can defer ResizeObserver deliveries during responsive layout.
+ // Such browser notifications must retain the live frame and its controls.
+ await frame.locator('#quantity').evaluate(()=>{for(const message of ['ResizeObserver loop completed with undelivered notifications.','ResizeObserver loop limit exceeded'])dispatchEvent(new ErrorEvent('error',{message}))});
+ await frame.locator('#quantity').waitFor();
  if(restart){
   if(await frame.locator('#quantity').inputValue()!=='7')throw Error('restart lost sandbox input');
   if(await form.getByRole('textbox',{name:'Notes',exact:true}).inputValue()!=='Keep this draft.')throw Error('restart lost submitted form');

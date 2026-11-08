@@ -82,7 +82,9 @@ addEventListener('message',event=>{if(event.source!==parent||event.data?.channel
  if(value.type==='export'){try{send('exported',{id:value.id,format:value.format,data:exportView(value.format)})}catch{send('exported',{id:value.id,error:'Export unavailable.'})}}
  if(value.type==='result'&&pending.has(value.id)){pending.get(value.id)(value.result);pending.delete(value.id)}
 });
-addEventListener('error',event=>{send('error',{});event.preventDefault()});addEventListener('unhandledrejection',event=>{send('error',{});event.preventDefault()});
+// A deferred browser resize notification is not a generated-script exception.
+// Real exceptions, including Error objects with this message, still fail closed.
+addEventListener('error',event=>{if(!event.error&&['ResizeObserver loop completed with undelivered notifications.','ResizeObserver loop limit exceeded'].includes(event.message)){event.preventDefault();return}send('error',{});event.preventDefault()});addEventListener('unhandledrejection',event=>{send('error',{});event.preventDefault()});
 function scrollRegions(){
  const root=document.documentElement;const wide=root.scrollWidth>root.clientWidth+1;
  root.tabIndex=wide?0:-1;if(wide){root.setAttribute('role','region');root.setAttribute('aria-label',document.title)}else{root.removeAttribute('role');root.removeAttribute('aria-label')}

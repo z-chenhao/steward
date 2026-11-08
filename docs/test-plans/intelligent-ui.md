@@ -132,5 +132,6 @@ verify_ui_interactions 的超宽沙箱夹具在桌面及 390px 视口验证：�
 - `channels_browser.mjs` 的 streaming 场景覆盖真实模型 HTTP 增量、CJK 强调、已显示段落的 DOM 身份、断线恢复与持久原文；direct preview 场景验证 iframe 异步增高时的跟随以及上滚后的保留。
 - 架构配方沿 intelligent-ui 浏览器门禁验证有向分支、无节点重叠、标签大小、键盘选择与刷新恢复，覆盖 1400／390 和明暗主题。真实模型是否使用 Dagre 另从实际工具产物记录，不能由配方回归推断。
 - `TestUIStagedRecoveryKeepsAcceptedOrderDespiteReverseCompletion` 与 `TestUIPreviewRestoredAndNewSectionsKeepPrivateAcceptedOrder` 覆盖逆序完成、释放／重新取得 claim 后的接纳顺序及私有排序键不外泄。`TestUIPreviewUsesCatalogCharacterLimitsForPublicText` 与前端 wire 回归覆盖中文／补充平面字符到达和超出字符上限，防止以字节或 UTF-16 长度过早拒绝合法正文。
+- ui-interactions 浏览器回归验证尺寸通知后仍可操作同一 iframe；intelligent-ui 的失败夹具抛出同消息的真实 Error，验证异常对象仍触发原失败替代。失败证据保留有界浏览器 console，避免仅从控件消失推断原因。
 
-以上单元与真实 SQLite 回归由现有 CI 的 go／frontend 分片执行；图文连续性、阅读位置和配方渲染由 startup-ui／channels-web 系统分片执行，UI 竞态继续归 capabilities-race。复用现有必需 `Ubuntu checks` 聚合门禁，不增加重复工作流。测试容量显式配置在渠道夹具内，预算恢复仍由所属上下文门禁覆盖，不改变产品的模型窗口。
+以上单元与真实 SQLite 回归由现有 CI 的 go／frontend 分片执行；图文连续性、阅读位置和配方渲染由 startup-ui／channels-web 系统分片执行，UI 竞态继续归 capabilities-race。复用现有必需 `Ubuntu checks` 聚合门禁，不增加重复工作流。工具／渠道门禁保留普通 8K 模型的批准后续轮与多轮回执，防止展示声明挤占必需输入预算；不通过扩大模型窗口替代兼容性回归。

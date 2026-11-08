@@ -31,8 +31,10 @@ async function chooseSharedOption(page,control,label,value){
 }
 const browser=await chromium.launch(options);
 let page;
+const diagnostics=[];
 try{
  const context=await browser.newContext({viewport:{width:1400,height:980},timezoneId:'Asia/Shanghai',deviceScaleFactor:1,reducedMotion:['rich-replies','intelligent-ui','ui-interactions','ui-interactions-restart'].includes(phase)?'reduce':'no-preference'});
+ if(['intelligent-ui','ui-interactions','ui-interactions-restart'].includes(phase))await context.addInitScript(()=>addEventListener('error',event=>console.warn('fixture-frame-error: '+event.message)));
  if(phase==='streaming'){
   await context.addInitScript(()=>{
    const NativeEventSource=window.EventSource;
@@ -52,6 +54,7 @@ try{
  // Leave time for failure evidence before the harness's 45-second deadline.
  if(phase==='intelligent-ui')page.setDefaultTimeout(12000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ page.on('console',message=>{if(['error','warning'].includes(message.type())){diagnostics.push(message.text().slice(0,512));if(diagnostics.length>32)diagnostics.shift()}});
  const remote=[];page.on('request',r=>{if(new URL(r.url()).origin!==new URL(url).origin)remote.push(r.url())});
  await page.goto(url);
  await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);
@@ -1331,6 +1334,6 @@ try{
 }catch(error){
  await writeFile(evidence+'/'+phase+'-failure-stack.txt',String(error?.stack??error));
  if(phase==='account-signin'||phase==='account-reconnect'){const frame=String(error?.stack??'').split('\n').find(line=>line.includes('channels_browser.mjs:')||line.includes('channels_controls.mjs:'));throw Error('Browser did not complete the controlled account flow'+(frame?' ('+frame.trim()+')':''))}
- if(page){await page.screenshot({path:evidence+'/'+phase+'-failure.png',fullPage:true});await writeFile(evidence+'/'+phase+'-failure.txt',await page.locator('body').innerText())}
+ if(page){await page.screenshot({path:evidence+'/'+phase+'-failure.png',fullPage:true});await writeFile(evidence+'/'+phase+'-failure.txt',await page.locator('body').innerText());await writeFile(evidence+'/'+phase+'-console.json',JSON.stringify(diagnostics))}
  throw error;
 }finally{await browser.close()}

@@ -52,16 +52,6 @@ class ChannelHarness(MainHarness):
         self.bind = self.command('channel','manage',text=json.dumps(dict(op='bind',channel='feishu',subject='sandbox-tenant:sandbox-app:owner',destination='bound-chat',enabled=True,version=0)))
         self.process = None
 
-    def setup(self, model='fixture-model', metadata=None):
-        # Channel lifecycle cases retain multi-turn receipts through delivery;
-        # budget recovery has separate gates, rather than the peer's 8K default.
-        if metadata is None:
-            metadata = dict(name='Channel workload', provider_kind='openai_compatible',
-                            endpoint='http://127.0.0.1:1/v1', wire_api='openai_completions',
-                            model_id=model, context_window=32768, max_output_tokens=1024,
-                            compatibility=dict(tool_result_format='openai'), capabilities=dict(text_input=True))
-        return super().setup(model, metadata)
-
     def args(self, *args):
         return [str(self.binary), '-config', str(self.config), '-test-bridge', self.fixture, *(['-test-events'] if getattr(self, 'production_events', False) else []), *(['-test-automation-now',self.now] if hasattr(self,'now') else []), *args]
 
