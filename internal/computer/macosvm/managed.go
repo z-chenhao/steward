@@ -26,6 +26,7 @@ import (
 
 const defaultImage = "macos-tahoe-cua:26.5.2"
 const defaultImageDigest = "ed1783e80e08e888889b54a8c0387105a37fbcfc995079f76db48e2280081487"
+const legacyPreparationStopped = "Desktop preparation stopped. Check free disk space and network access, then restart Steward to retry."
 
 func DefaultConfig(root string) Config {
 	return Config{Managed: true, Root: root, Compatibility: computer.Compatibility{ProviderVersion: "0.6.1", GuestBuild: "25F84", DriverVersion: "0.36.0", DriverSHA256: "54bb23df35ae9a52b6fa7b71e607364d0711bbbf750b9edb006e87b9af586fdd", DriverTeam: "YCK386LBJ7", DriverBundle: "com.trycua.driver", Architecture: "arm64"}, Manifest: computer.RestorationManifest{Version: 1}}
@@ -57,6 +58,9 @@ func ManagedState(root string) (string, string) {
 		Message string `json:"message"`
 	}
 	if readJSON(filepath.Join(root, "status.json"), &s) == nil {
+		if s.State == "unavailable" && s.Message == legacyPreparationStopped {
+			s.Message = "The previous desktop preparation failed. Restart Steward, then use Computer to retry."
+		}
 		return s.State, s.Message
 	}
 	return "automatic", "The private macOS desktop will download and start on first use."
@@ -112,7 +116,8 @@ func (m *managedRuntime) startPreparation(ctx context.Context, prepare func(cont
 		err := prepare(work)
 		if err != nil {
 			_ = m.stopServer()
-			m.status("unavailable", "Desktop preparation stopped. Check free disk space and network access, then restart Steward to retry.")
+			state, message := preparationFailure(err)
+			m.status(state, message)
 		}
 		m.mu.Lock()
 		m.err = err
@@ -121,6 +126,25 @@ func (m *managedRuntime) startPreparation(ctx context.Context, prepare func(cont
 		m.mu.Unlock()
 	}()
 	return computer.ErrPreparing
+}
+
+func preparationFailure(err error) (string, string) {
+	switch {
+	case errors.Is(err, context.Canceled):
+		return "automatic", "Desktop preparation was interrupted. Use Computer after restarting Steward to resume."
+	case errors.Is(err, context.DeadlineExceeded):
+		return "unavailable", "Desktop preparation timed out. Restart Steward, then use Computer to retry."
+	case errors.Is(err, computer.ErrCompatibility):
+		return "unavailable", "The desktop runtime or image does not match this Steward version."
+	case errors.Is(err, computer.ErrIntegrity):
+		return "unavailable", "Desktop verification failed. Restart Steward, then use Computer to retry."
+	case errors.Is(err, unix.ENOSPC):
+		return "unavailable", "There is not enough disk space to prepare the desktop. Free space, restart Steward, then use Computer to retry."
+	case errors.Is(err, os.ErrPermission):
+		return "unavailable", "Desktop preparation could not access its private files. Check permissions, restart Steward, then use Computer to retry."
+	default:
+		return "unavailable", "Desktop preparation failed. Restart Steward, then use Computer to retry."
+	}
 }
 
 func (m *managedRuntime) close() {

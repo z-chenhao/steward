@@ -1500,5 +1500,13 @@
   "Document edit has an unknown target, stale revision, changed layer or duplicate target.": "文档编辑包含未知目标、旧修订、更换层级或重复目标。",
   "Document edits contain cyclic dependencies or link to a retired target.": "文档编辑包含循环依赖，或链接到本轮退役的文档。",
   "Provider output was clipped before the proposal completed.": "提案尚未完整返回，服务商输出已被截断。",
-  "Proposal returned tool calls instead of the required JSON.": "提案返回了工具调用，未按要求返回 JSON。"
+  "Proposal returned tool calls instead of the required JSON.": "提案返回了工具调用，未按要求返回 JSON。",
+  "The previous desktop preparation failed. Restart Steward, then use Computer to retry.": "上一次桌面准备失败。请重启 Steward，再使用 Computer 重试。",
+  "Desktop preparation was interrupted. Use Computer after restarting Steward to resume.": "桌面准备已中断。重启 Steward 后使用 Computer 可继续准备。",
+  "Desktop preparation timed out. Restart Steward, then use Computer to retry.": "桌面准备超时。请重启 Steward，再使用 Computer 重试。",
+  "The desktop runtime or image does not match this Steward version.": "桌面运行时或镜像与此 Steward 版本不兼容。",
+  "Desktop verification failed. Restart Steward, then use Computer to retry.": "桌面完整性校验失败。请重启 Steward，再使用 Computer 重试。",
+  "There is not enough disk space to prepare the desktop. Free space, restart Steward, then use Computer to retry.": "没有足够的磁盘空间准备桌面。请释放空间、重启 Steward，再使用 Computer 重试。",
+  "Desktop preparation could not access its private files. Check permissions, restart Steward, then use Computer to retry.": "桌面准备无法访问私有文件。请检查权限、重启 Steward，再使用 Computer 重试。",
+  "Desktop preparation failed. Restart Steward, then use Computer to retry.": "桌面准备失败。请重启 Steward，再使用 Computer 重试。"
 }
