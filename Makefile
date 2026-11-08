@@ -44,7 +44,7 @@ test-web-access:
 # Privacy, provenance and lifecycle regressions run in the required CI lane.
 test-memory:
 	go test -race ./internal/memory/... ./internal/recall/... ./internal/conversation/... ./internal/tool ./internal/context ./internal/llm -count=1
-	go test -race ./internal/agent/sqlite -run 'Memory|Layered|Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs|RootFailureNotice' -count=1
+	python3 tests/system/race.py --part memory
 	go test -race ./internal/llm/bridge -run 'LayeredMemory|NativeFragmented' -count=1
 	go test -race ./internal/app -run 'MemoryExternalSecrets' -count=1
 

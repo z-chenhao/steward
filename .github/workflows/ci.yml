@@ -84,8 +84,7 @@ jobs:
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-24.04
-    # Full memory race coverage and its two system gates share this lane.
-    timeout-minutes: ${{ matrix.lane == 'memory-context' && 15 || 10 }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.scope.outputs.system) }}

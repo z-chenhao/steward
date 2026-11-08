@@ -221,9 +221,13 @@ Select behavior and 320px touch/layout assertions remain part of channels.
 Production timeouts and the provider's real 30/90/180-second deadline probes
 remain unchanged. Full race coverage stays in extended regression.
 
-The system `memory-context` lane has a 15-minute failure boundary for its race
-inventory and two system gates; other software/system lanes retain ten minutes.
-All gates remain mandatory and cancellation still fails the aggregate check.
+Each lane has a ten-minute failure boundary. The memory SQLite subset reuses
+the private race inventory runner: discover the same name-pattern selection,
+partition it across at most three independent processes, and verify every root
+executes exactly once. Each process retains `-race`, `-count=1`, a ten-minute Go
+deadline and one admitted CPU. This avoids a cumulative serial package deadline
+without dropping coverage or creating another scheduler; the existing full-race
+policy remains separate. The ordinary `make test-memory` entry point is unchanged.
 The latency target is under five
 minutes from workflow start to the aggregate result on a warm hosted runner;
 this is measured remotely, not asserted from local runtimes. Cold tool/cache

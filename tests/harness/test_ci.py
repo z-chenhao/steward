@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import DEFAULT, patch
 
 import ci
+import race
 import verify_channels
 from runner import CORE
 
@@ -90,23 +91,22 @@ class CIChecksTests(unittest.TestCase):
         makefile = (Path(__file__).resolve().parents[2] / 'Makefile').read_text()
         commands = makefile.split('\ntest-memory:\n', 1)[1].split('\n\n', 1)[0]
         self.assertIn('memory-context', {lane['lane'] for lane in ci.plan('system')['include']})
-        self.assertEqual(commands.count('go test -race '), 4)
+        self.assertEqual(commands.count('go test -race '), 3)
+        self.assertIn('python3 tests/system/race.py --part memory', commands)
         for package in ('memory/...', 'recall/...', 'conversation/...', 'tool', 'llm/bridge', 'app'):
             self.assertIn('./internal/' + package + ' ', commands)
-        for regression in ('Recall', 'Forget', 'Evidence', 'ObjectIDs', 'Layered', 'RootFailureNotice', 'NativeFragmented', 'MemoryExternalSecrets'):
+        for regression in ('Recall', 'Forget', 'Evidence', 'ObjectIDs', 'Layered', 'RootFailureNotice'):
+            self.assertIn(regression, race.MEMORY_PATTERN)
+        for regression in ('NativeFragmented', 'MemoryExternalSecrets'):
             self.assertIn(regression, commands)
         # Existence in test-go alone must not silently remove race coverage.
         dry_run = subprocess.check_output(['make', '-n', 'test-memory'],
                                           cwd=Path(__file__).resolve().parents[2], text=True)
-        agent_patterns = []
-        for line in dry_run.splitlines():
-            tokens = shlex.split(line)
-            if './internal/agent/sqlite' in tokens and '-run' in tokens:
-                agent_patterns.append(tokens[tokens.index('-run') + 1])
+        self.assertIn('python3 tests/system/race.py --part memory', dry_run)
         for test in ('TestMemoryWorkerEvidencePageBoundaryAndContinuation',
                      'TestMemoryMissingFieldsSurviveNativeAndCodeModeReceipts',
                      'TestMemoryDreamDoesNotBlindlyRecreateOversizedInjectedHead'):
-            self.assertTrue(any(re.search(pattern, test) for pattern in agent_patterns),
+            self.assertTrue(re.search(race.MEMORY_PATTERN, test),
                             f'{test} is missing from required memory race checks')
 
     def test_artifact_round_trips_run_in_required_tools_lane(self):

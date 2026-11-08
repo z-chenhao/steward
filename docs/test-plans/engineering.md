@@ -12,7 +12,7 @@ F-038：固定依赖和构建入口可用；文档改动只运行适用检查；
 
 ## PR 并行检查
 
-[分片回归](../../tests/harness/test_ci.py) 核对十一项 core gate 无遗漏、无重复，每个分片都有实际命令；汇总状态必须拒绝缺失、失败、取消及未经文档路径授权的跳过。软件检查保留 `make test lint` 的全部入口、prompt、Web Access、四个 capabilities 场景和定向 race。Intelligent UI 的取消/提交、宿主参数权威、RPC opt-in 与 SSE 撤权回归在 Agent、SQLite、Web、Bridge 包中启用 race；`startup-ui` 继续运行真实 CSP 下的流式预览及既有交互门禁，harness 防止遗漏这些包、入口和浏览器依赖。`connected-apps` 分片额外执行 `make test-connected-apps`；Apps 授权与共享帮助浏览器回归归 `browser-infra`，其浏览器和前端依赖由分片计划保证安装。每个分片使用独立 checkout、构建和证据目录，继续由 process owner 验证源状态及取消清理。`memory-context` 的完整 race 与两项系统门禁使用 15 分钟 job 上限，其余软件／系统分片为 10 分钟；不得通过跳过或忽略取消来满足时限。GitHub 的 `Ubuntu checks` 必须等待全部选中分片；不以单个分片通过代替整个 PR 通过。
+[分片回归](../../tests/harness/test_ci.py) 核对十一项 core gate 无遗漏、无重复，每个分片都有实际命令；汇总状态必须拒绝缺失、失败、取消及未经文档路径授权的跳过。软件检查保留 `make test lint` 的全部入口、prompt、Web Access、四个 capabilities 场景和定向 race。Intelligent UI 的取消/提交、宿主参数权威、RPC opt-in 与 SSE 撤权回归在 Agent、SQLite、Web、Bridge 包中启用 race；`startup-ui` 继续运行真实 CSP 下的流式预览及既有交互门禁，harness 防止遗漏这些包、入口和浏览器依赖。`connected-apps` 分片额外执行 `make test-connected-apps`；Apps 授权与共享帮助浏览器回归归 `browser-infra`，其浏览器和前端依赖由分片计划保证安装。每个分片使用独立 checkout、构建和证据目录，继续由 process owner 验证源状态及取消清理。所有软件／系统分片保持 10 分钟 job 上限。Memory 的 SQLite 子集复用已有 race 清单执行器，最多三个独立进程；按原名称模式动态发现测试，以执行回执核对全部 root 恰好一次，保留每进程 race／count／10 分钟 Go 时限。`test_race.py` 覆盖新 root 自动进入、缺失和重复回执均拒绝通过；不得跳过测试或忽略取消来满足时限。GitHub 的 `Ubuntu checks` 必须等待全部选中分片；不以单个分片通过代替整个 PR 通过。
 
 五分钟目标使用完整远端 workflow 起止时间验证，同时区分排队、安装与实际检查时间；冷缓存、外部服务和 hosted runner 排队不能通过删除覆盖或放宽断言规避。文档-only 仍实际执行文档检查，并产生同名 required status。
 
