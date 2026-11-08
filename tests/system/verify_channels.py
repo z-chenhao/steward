@@ -774,6 +774,11 @@ def transport_channels(binary, evidence, report):
             require(state['approvals'][0]['status']=='invalidated','old Monday approval remained valid')
             approval=state['approvals'][-1]
             h.callback('old-approve','/approve '+old['approval_id']+' '+old['frozen_arguments_hash'],expected=409)
+            # Crash while awaiting approval, not while committing its notice.
+            # An interrupted external send must legitimately remain unknown;
+            # delivery_leases separately exercises that ambiguity boundary.
+            h.wait(lambda s:len(s['deliveries'])==4 and all(d['status']=='sent' for d in s['deliveries']),
+                   'approval notices durable before restart')
             h.stop(kill=True);h.start()
             h.http('/approval',data=urlencode(dict(approval_id=approval['approval_id'],hash='drift',decision='approved')).encode(),headers={'Content-Type':'application/x-www-form-urlencoded'},expected=409)
             command='/approve '+approval['approval_id']+' '+approval['frozen_arguments_hash']

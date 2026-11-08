@@ -286,3 +286,5 @@ Trace 阅读与筛选回归：`traces_test.go` 的分页请求读取测试验证
 HTTP 浏览器兼容：`web/random-id.test.mjs` 覆盖原生 UUID、仅有 `getRandomValues` 时的 UUIDv4 格式／版本／variant 及加密随机源失败；沿用 required frontend `npm test`。HTTP 局域网部署验证实际非安全来源下的聊天发送标识轮换、模型选择、五个 Settings 页面及同源表单；不向真实模型发送测试消息。
 
 Trace 列表回归验证状态前置、Name／Input 合并、无伪排序箭头、费用无逐行 Estimated，以及 v2/v3 列偏好迁移。native-trace 浏览器验证动态抽屉完整 Run ID 键盘复制、Clipboard API 缺失／拒绝、原生复制失败后的完整值选中回退与焦点恢复。`web/traces_test.go` 验证 ID 转义与独立导航；`tool_preview_test.go` 验证工具传输展开边界、精度与原始证据保持；`observability/sqlite/tool_generation_test.go` 验证工具内模型节点归属、用途与跨 Run 隔离。
+
+审批恢复场景在两条 Task 回复及两条审批通知均已持久发送后再 SIGKILL，隔离“等待审批”的恢复边界；通知发送中断的 unknown/query-only 语义仍由 delivery_leases 和 multipart/crash 场景单独验证，不能通过放宽终态断言掩盖未知副作用。
