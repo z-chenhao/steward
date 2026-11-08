@@ -426,8 +426,10 @@ try{
   }
   await row.locator('a.trace-open').click();await page.locator('.control-sheet').waitFor();
   await page.getByText('Trace metrics',{exact:true}).click();
-  await page.locator('.obs-metrics .obs-cost').waitFor();
-  if(await page.locator('.obs-metrics .obs-cost').getByText('Estimated',{exact:true}).count()||!(await page.locator('#trace-detail-cost-help').textContent()).includes('not invoices'))throw Error('cost detail lost its single help disclosure');
+  await page.locator('.obs-run-overview .obs-cost').waitFor();
+  if(await page.locator('.obs-run-overview .obs-cost').getByText('Estimated',{exact:true}).count()||!(await page.locator('#trace-detail-cost-help').textContent()).includes('not invoices'))throw Error('cost detail lost its single help disclosure');
+  await page.locator('.control-sheet').getByRole('button',{name:'Help: Model cost',exact:true}).hover();
+  await page.getByRole('tooltip').filter({hasText:'Estimates are not invoices'}).waitFor();await page.keyboard.press('Escape');
   await page.setViewportSize({width:1400,height:980});await page.goto(url);
  }
 
@@ -533,7 +535,8 @@ try{
   }
   if(await page.locator('.obs-task-link img').count()||!await page.locator('.obs-task-link').innerText().then(text=>text.includes('<img src=x')))throw new Error('Task title was interpreted as HTML');
   await page.locator('.run-node[data-run-id="'+child.id+'"] a.tree-heading').click();
-  await page.getByText('Raw observation',{exact:true}).click();
+  await page.getByRole('link',{name:'Details',exact:true}).click();
+  await page.getByText('Raw observation',{exact:true}).waitFor();
   if(!await page.locator('[data-observation-parent] a.control-identifier-link').innerText().then(text=>text.includes(child.parent)))throw new Error('selected Child lost parent navigation');
   await page.locator('[data-observation-parent] a.control-identifier-link').click();
   await page.getByText('Trace metrics',{exact:true}).click();
@@ -567,7 +570,7 @@ try{
   await page.getByRole('tooltip').filter({hasText:'Task root · no parent Worker.'}).waitFor();
   await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Help: Input',exact:true}).hover();
-  await page.getByRole('tooltip').filter({hasText:'Saved input metadata / last accepted model result; not a delivery receipt'}).waitFor();
+  await page.getByRole('tooltip').filter({hasText:'Original task brief from the first frozen model request; current task edits are not substituted'}).waitFor();
   await page.keyboard.press('Escape');
   await page.screenshot({path:evidence+'/inspection-tree.png',fullPage:true});
   const compact=await context.newPage();
@@ -591,10 +594,11 @@ try{
   await generationLink.press('Enter');await selectedGeneration;
   await page.waitForFunction(()=>!document.querySelector('#observability-workbench')?.classList.contains('obs-loading'));
   if(!await page.evaluate(href=>document.activeElement?.getAttribute('href')===href&&!!document.activeElement?.closest('.obs-tree'),generationHref))throw Error('trace selection lost keyboard focus in its tree row');
-  await page.getByRole('link',{name:'Compare',exact:true}).click();
+  await page.getByRole('link',{name:'Details',exact:true}).click();
+  await page.getByRole('link',{name:'Compare inputs',exact:true}).click();
   await page.getByRole('heading',{name:'Adjacent input diff',exact:true}).waitFor();
   if(!await page.locator('.context-diff [data-change="added"]').count())throw Error('tool continuation additions missing from diff');
-  await page.getByRole('link',{name:'Frozen context, tools & sources',exact:true}).click();
+  await page.getByRole('link',{name:'Frozen context',exact:true}).click();
   await page.getByRole('heading',{name:'Full frozen context',exact:true}).waitFor();
   const system=page.locator('.context-item-link').filter({hasText:'system'}).first();await system.click();await page.waitForFunction(()=>!document.querySelector('#observability-workbench')?.classList.contains('obs-loading'));
   const meta=await page.locator('.context-reader').evaluate(node=>({...node.dataset}));

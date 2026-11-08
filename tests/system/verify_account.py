@@ -167,7 +167,7 @@ def verify(binary, bridge):
                 require([m["role"] for m in history] == ["user", "assistant"] and history[-1]["content"][0]["text"] == "PROBE_RESULT_OK", "account Main/Direct Tool continuation failed")
                 with closing(sqlite3.connect(root / "data/state.db")) as main_db, main_db:
                     require(main_db.execute("SELECT count(*) FROM run WHERE status='completed'").fetchone()[0] == 1, "account Main not complete")
-                    require(main_db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__artifact_search' AND status='succeeded'").fetchone()[0] == 1, "account nested business tool not persisted")
+                    require(main_db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__artifact_manage' AND status='succeeded'").fetchone()[0] == 1, "account nested business tool not persisted")
                     require(main_db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__codemode_execute' AND status='succeeded'").fetchone()[0] == 1, "account model bypassed Code Mode")
                 report["main_history"] = history
                 report["checks"].append("actual account CLI Main Actor/Loop/Direct Tool/Conversation and frozen current Responses snapshot")

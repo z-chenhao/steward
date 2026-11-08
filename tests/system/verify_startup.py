@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 import signal
+from contextlib import closing
+import sqlite3
 import tarfile
 import tempfile
 import threading
@@ -28,6 +30,19 @@ ROOT = Path(__file__).resolve().parents[2]
 class StartupHarness(MainHarness):
     def args(self, *args):
         return [str(self.binary), *args]
+
+    def state(self):
+        state = super().state()
+        # Default startup also resumes independent Curator work. Its newly
+        # frozen models are not replayed Main runs. Check ownership before
+        # comparing every Run-owned snapshot and the complete execution ledgers.
+        run_models = {run['model_snapshot_id'] for run in state['runs']}
+        with closing(sqlite3.connect(Path(self.env['STEWARD_DATA_ROOT']) / 'state.db')) as db, db:
+            curator_models = {row[0] for row in db.execute('SELECT model_snapshot_id FROM memory_generation')}
+        require(all(snapshot['snapshot_id'] in run_models | curator_models for snapshot in state['snapshots']),
+                'startup created an unowned model snapshot')
+        state['snapshots'] = [snapshot for snapshot in state['snapshots'] if snapshot['snapshot_id'] in run_models]
+        return state
 
 
 def install_environment(root):
@@ -123,13 +138,15 @@ def verify_install():
                 terminal.expect('You> ')
                 before = h.state()
                 assert_final(before, 1)
-                require(len(before['tools']) == 2 and {t['tool_name'] for t in before['tools']} == {'builtin__codemode_execute','builtin__artifact_search'} and all(t['attempt_count'] == 1 for t in before['tools']), 'startup bypassed Code Mode or the nested Tool executor')
+                require(len(before['tools']) == 2 and {t['tool_name'] for t in before['tools']} == {'builtin__codemode_execute','builtin__artifact_manage'} and all(t['attempt_count'] == 1 for t in before['tools']), 'startup bypassed Code Mode or the nested Tool executor')
                 require(terminal.stop(signal.SIGKILL) == -signal.SIGKILL, 'missing crash evidence')
                 report['first_launch'] = terminal.transcript()
             with Terminal(h.args(), h.env, folder) as terminal:
                 terminal.expect_all(['State: ready', 'assistant: PROBE_RESULT_OK'])
                 terminal.expect('You> ')
-                require(h.state() == before, 'restart duplicated or changed completed state')
+                restarted = h.state()
+                changed = [key for key in before if restarted[key] != before[key]]
+                require(not changed, 'restart duplicated or changed completed state: '+','.join(changed))
                 require(terminal.stop() == 0, 'foreground cleanup failed')
                 report['restart'] = terminal.transcript()
             # Reinstallation changes only the runtime, retaining the data root.

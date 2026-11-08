@@ -200,15 +200,18 @@ are test levels; using CI does not turn a unit test into an end-to-end test.
 
 [CI](../../.github/workflows/ci.yml) preserves `Ubuntu checks` as the sole required
 aggregate status. A scope job selects documentation-only checks or the full code
-path. Code runs in eleven isolated Ubuntu lanes, described by the private
+path. Code runs in thirteen isolated Ubuntu lanes, described by the private
 [CI partition](../../tests/system/ci.py):
 
-- Five software lanes retain all `make test lint` work and `make test-prompts`:
-  Go, provider RPC, frontend/JavaScript, browser/infrastructure, and lint.
+- Six software lanes retain all `make test lint` work, `make test-prompts` and
+  connected-app contracts: Go, provider RPC, frontend/JavaScript,
+  browser/infrastructure, connected apps, and lint.
 - Five system lanes cover the eleven core gates without duplicate scenarios. Each runner
   builds its own binary, records its hash and source state, and owns disposable
   fixtures. Channels partitions its independent Web and transport scenarios
   across two runners; the ordinary local gate still runs both groups.
+- One lane retains the complete memory race inventory and the
+  `memory-maintenance` / `recall` system gates.
 - One lane retains Web Access contracts, focused Main/UI/credential races, task
   coding isolation/recovery, Code Mode discovery and Main responsiveness.
 
@@ -218,7 +221,10 @@ Select behavior and 320px touch/layout assertions remain part of channels.
 Production timeouts and the provider's real 30/90/180-second deadline probes
 remain unchanged. Full race coverage stays in extended regression.
 
-Each lane has a ten-minute failure boundary. The latency target is under five
+The system `memory-context` lane has a 15-minute failure boundary for its race
+inventory and two system gates; other software/system lanes retain ten minutes.
+All gates remain mandatory and cancellation still fails the aggregate check.
+The latency target is under five
 minutes from workflow start to the aggregate result on a warm hosted runner;
 this is measured remotely, not asserted from local runtimes. Cold tool/cache
 installation and hosted queue delays may exceed that target.

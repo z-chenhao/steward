@@ -200,8 +200,9 @@ class Endpoint(BaseHTTPRequestHandler):
                 if runtime and not root:
                     chunk({"content": getattr(self.server, 'task_followup', "Main Task follow-up through Pi.")})
                 elif not has_result and (root or "builtin__task_manage" in names):
-                    name = getattr(self.server, 'task_root_tool', "builtin__artifact_search") if root else "builtin__task_manage"
-                    arguments = getattr(self.server, 'task_root_arguments', {}) if root else {"operation": "create", "task": "Prepare a safe independent report. Return evidence; perform no external actions."}
+                    name = getattr(self.server, 'task_root_tool', "builtin__artifact_manage" if code_only else "builtin__artifact_search") if root else "builtin__task_manage"
+                    root_arguments = dict(operation='save',name='task-fixture.txt',mediaType='text/plain',text='Synthetic Task evidence.') if code_only else {}
+                    arguments = getattr(self.server, 'task_root_arguments', root_arguments) if root else {"operation": "create", "task": "Prepare a safe independent report. Return evidence; perform no external actions."}
                     if not root and getattr(self.server, 'task_title', ''):
                         arguments.update(title=self.server.task_title, task=self.server.task_description)
                     chunk({"tool_calls": [{"index": 0, "id": "task_call", "type": "function", "function": {"name": name, "arguments": json.dumps(arguments)}}]})
@@ -246,8 +247,10 @@ class Endpoint(BaseHTTPRequestHandler):
                     chunk({}, "stop")
                 else:
                     names = [item["function"]["name"] for item in body["tools"]]
-                    name = "builtin__artifact_search" if "builtin__artifact_search" in names else names[0]
-                    arguments = {} if name == "builtin__artifact_search" else {"value": "OK"}
+                    name = "builtin__artifact_search" if "builtin__artifact_search" in names else "builtin__artifact_manage" if "builtin__artifact_manage" in names else names[0]
+                    # Exercise a valid Run-scoped operation without adding an
+                    # Artifact that separately schedules background extraction.
+                    arguments = {} if name == "builtin__artifact_search" else dict(operation='publish',artifactRefs=[]) if name == "builtin__artifact_manage" else {"value": "OK"}
                     chunk({"tool_calls": [{"index": 0, "id": "call_echo", "type": "function",
                                           "function": {"name": name, "arguments": json.dumps(arguments)}}]})
                     chunk({}, "tool_calls")

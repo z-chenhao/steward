@@ -11,12 +11,12 @@ ENTRY = 'builtin__codemode_execute'
 MAIN_DIRECT = {ENTRY, 'builtin__tool_search', 'builtin__intelligent_ui_show', 'builtin__skill_list', 'builtin__skill_view', 'builtin__task_manage', 'builtin__task_search'}
 WORKER_DIRECT = MAIN_DIRECT - {'builtin__intelligent_ui_show', 'builtin__task_manage', 'builtin__task_search'}
 MARKER = '// fixture-call: '
-MAIN = ['builtin__intelligent_ui_show', 'builtin__task_search', 'builtin__task_manage', 'builtin__artifact_search',
+MAIN = ['builtin__intelligent_ui_show', 'builtin__task_search', 'builtin__task_manage',
         'builtin__artifact_manage', 'builtin__evidence_read', 'builtin__memory_manage',
         'builtin__memory_search', 'builtin__automation_manage', 'builtin__image_ocr',
         'builtin__skill_list', 'builtin__skill_view']
 WORKER = ['builtin__read', 'builtin__bash', 'builtin__edit', 'builtin__write',
-          'builtin__artifact_search', 'builtin__artifact_manage', 'builtin__memory_search',
+          'builtin__artifact_manage', 'builtin__memory_search',
           'builtin__skill_list', 'builtin__skill_view', ENTRY]
 
 
