@@ -68,7 +68,7 @@ F-020：飞书自建应用通过 SecretStore 引用自动获取/刷新 tenant ac
 | [F-035](features/observability.md#f-035) | 供应商最终请求观测 | 开发者能区分 Host 冻结请求与 Bridge/SDK 转换后实际发送的请求。 | 是 · 已完成 |
 | [F-036](features/observability.md#f-036) | 调用、等待、恢复与用量时间线 | 开发者能检查执行、等待、恢复、用量和模型流时间点，并区分各阶段超时。 | 是 · 已完成 |
 | [F-032](features/evals.md#f-032) | Web Evals 入口 | 后续可从 Developer 查看评测结果，并关联对应执行。 | 否 · 待定义 |
-| [F-033](features/memory.md#f-033) | Web Memory 记忆浏览 | Developer 按四层展示原始记录与记忆文档，复用 Traces 列表与详情侧栏，支持来源、关系、修订、筛选和分页。 | 是 · 已完成 |
+| [F-033](features/memory.md#f-033) | Web Memory 记忆浏览 | Developer 按四层展示原始记录与记忆文档，复用 Traces 列表与详情侧栏，支持来源、关系、修订、筛选和分页；逐 Run 冻结注入在 Trace 核对，尚无版本差异或逐事件文档改动明细。 | 是 · 已完成 |
 | [F-037](features/installation.md#f-037) | 安装、首次启动与显式部署 | 安装、检查、前台启动及自定义部署，并保持持久数据。 | 是 · 已完成 |
 | [F-038](features/engineering.md#f-038) | 标准开发与显式发布流程 | 固定依赖、构建、风险分层验证、隔离并行 CI 与可审查交付。 | 是 · 已完成 |
 | [F-039](features/engineering.md#f-039) | 运行时工程基础重构 | 故障隔离、短事务、只读分页、加密召回复用、明确模块与工具分发边界。 | 是 · 已完成 |

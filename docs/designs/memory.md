@@ -18,7 +18,7 @@ Store 在只读事务中读取作用域内、未删除、隐私 floor 之后的�
 
 Conversation／Task 引用复用既有证据可见性校验；来源正文复用有界 evidence 读取，来源按每页最多 20 条显式续读，且请求的 source 必须属于该记忆当前可见来源页。feedback 仅映射到当前 Agent 的确切 builtin__memory_manage ToolInvocation，或已保存的本机控制请求，不推断关联。替代链接仅指向当前查询边界内仍可见的未删除元数据。
 
-维护页只投影当前 Agent 的 remember／forget 回执，不解密 payload；applied／rejected／pending 来自已保存的时间字段，错误保持维护管线的脱敏代码。记录分页有界，来源 Run 另受隐私 floor 约束。
+维护页只投影当前 Agent 的 remember／forget／Dream 回执，不解密 payload；applied／rejected／pending 来自已保存的时间字段，错误保持维护管线的脱敏代码。记录分页有界，来源 Run 另受隐私 floor 约束。
 
 ## 页面与共享组件
 
@@ -41,3 +41,5 @@ Conversation／Task 引用复用既有证据可见性校验；来源正文复用
 
 
 维护列表包括 remember／forget 和 Dream 事件，使用同一所有者检视与分页，维护详情只读。Transcripts 使用 state 51 的原始时间投影索引；常规页／详情不再加载全部对话。字段仍来自所属领域，未知用量／费用保留未知，参考费用不作为账单。
+
+形成方式条件必须在解密文档元数据、取得最终 origin 后判断，不能提前按原始来源类型推断。退役／被替代记录仅恢复 origin，不恢复标题、正文和链接；元数据不可用时形成方式查询整体失败。页面的记录浏览与运行审计边界见[功能说明](../features/memory.md#审计覆盖边界)，不将当前 L4 文档冒充某次请求的冻结快照。

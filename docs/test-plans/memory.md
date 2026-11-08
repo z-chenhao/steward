@@ -46,3 +46,5 @@ channels 的 memory 场景通过现有 memory manage 控制路径创建笔记、
 Web 的 memory_test.go 验证有价／未知及原生维护详情，memory_browser_test.go 经现有 test-browser opt-in 使用真实 Chromium 与共享 channels_memory.mjs，覆盖桌面明暗、手机、列表内部滚动和抽屉宽度，使用只读领域 fixture 提供已计价／未知值。channels 的真实领域 Memory 场景同时验证维护列表／详情和 GET 不改业务数据。模型效果复测继续冻结原 case、快照和评分，并另计维护成本。
 
 Worker 来源分页回归通过真实接纳的 63／64／65 条回执，验证任务原文与工具页长分离、整页完成不留假游标、超页续读不丢失或重复。该用例随 `test-memory` 进入必需 CI；harness 的 `test_ci.py` 同时断言维护详情浏览器用例仍由 `test-browser` 执行，防止仅保留测试文件却移出门禁。
+
+形成方式回归 `TestMemoryInspectionFormationUsesDocumentMetadata` 经既有 `test-memory` 全包 race 检查运行：覆盖 L2／L3／L4 的 written／dream、有来源但不误分为 automatic／explicit／unknown、退役后形成方式保留且内容隐藏，以及元数据密钥不可用不能伪装为零结果。

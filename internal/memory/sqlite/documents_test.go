@@ -126,6 +126,55 @@ func TestLayeredMemoryRetirementDoesNotForgetOriginalEvidence(t *testing.T) {
 	}
 }
 
+func TestMemoryInspectionFormationUsesDocumentMetadata(t *testing.T) {
+	for _, layer := range []string{memory.Notes, memory.Representations, memory.Injected} {
+		for _, origin := range []string{"written", "dream"} {
+			t.Run(layer+"/"+origin, func(t *testing.T) {
+				s, scope := semanticFixture(t)
+				ctx := context.Background()
+				id := layer + "-" + origin
+				event := id
+				if origin == "dream" {
+					event = "dream:" + id
+				}
+				doc, err := s.WriteDocument(ctx, scope, 0, event, id, time.Now(), []memory.SourceRef{{Type: "conversation", Ref: "conversation:source"}}, memory.DocumentWrite{Layer: layer, Title: id, Content: "PRIVATE_FORMATION_BODY"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, retired := range []bool{false, true} {
+					status := "active"
+					if retired {
+						status = "retired"
+						if _, err = s.WriteDocument(ctx, scope, 0, "retire-"+id, "unused", time.Now(), []memory.SourceRef{{Type: "conversation", Ref: "conversation:source"}}, memory.DocumentWrite{Ref: doc.Ref, Layer: layer, Revision: doc.Revision, Retire: true}); err != nil {
+							t.Fatal(err)
+						}
+					}
+					for _, filter := range []string{"written", "dream", "automatic", "explicit", "unknown"} {
+						page, _, err := s.Inspect(ctx, scope, 0, memory.InspectionQuery{Layer: layer, Origin: filter, Status: status})
+						if err != nil {
+							t.Fatal(err)
+						}
+						want := 0
+						if filter == origin {
+							want = 1
+						}
+						if page.Total != want || len(page.Items) != want {
+							t.Fatalf("%s %s %s filter=%s: total=%d items=%d want=%d", layer, origin, status, filter, page.Total, len(page.Items), want)
+						}
+						if want == 1 && (page.Items[0].Origin != origin || retired && (page.Items[0].Content != "" || page.Items[0].Title != "" || len(page.Items[0].Links) != 0)) {
+							t.Fatal("formation mismatch or retired content exposed", page.Items)
+						}
+					}
+				}
+				s.vault = memory.Vault{}
+				if _, _, err = s.Inspect(ctx, scope, 0, memory.InspectionQuery{Layer: layer, Origin: origin, Status: "retired"}); !errors.Is(err, memory.ErrInspectionUnavailable) {
+					t.Fatal("unreadable formation metadata appeared as a successful empty filter", err)
+				}
+			})
+		}
+	}
+}
+
 func TestLayeredMemoryProofQuotesPersistSealedWithScopedSources(t *testing.T) {
 	s, scope := semanticFixture(t)
 	ctx := context.Background()

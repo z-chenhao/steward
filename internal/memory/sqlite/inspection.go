@@ -124,7 +124,7 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 			if status == "" {
 				status = "active"
 			}
-			if status != "all" && status != v.Status || q.Tier != "" && q.Tier != v.Tier || q.Origin != "" && q.Origin != v.Origin {
+			if status != "all" && status != v.Status || q.Tier != "" && q.Tier != v.Tier {
 				continue
 			}
 		}
@@ -148,21 +148,29 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 				}
 			}
 		}
-		if row.Metadata != "" && v.ContentState == "available" {
+		if row.Metadata != "" {
 			plain, e := s.vault.Open(ctx, row.Metadata, "document:"+r.ID)
 			var meta documentMetadata
 			if e != nil || json.Unmarshal([]byte(plain), &meta) != nil {
 				v.Content = ""
-				v.ContentState = "unavailable"
-				if q.Search != "" {
+				v.Origin = "unknown"
+				if v.ContentState == "available" {
+					v.ContentState = "unavailable"
+				}
+				if q.Search != "" || q.Origin != "" {
 					return memory.InspectionPage{}, snapshot, memory.ErrInspectionUnavailable
 				}
 			} else {
-				v.Title, v.Links = meta.Title, meta.Links
+				if v.ContentState == "available" {
+					v.Title, v.Links = meta.Title, meta.Links
+				}
 				if meta.Origin != "" {
 					v.Origin = meta.Origin
 				}
 			}
+		}
+		if q.Ref == "" && q.Origin != "" && q.Origin != v.Origin {
+			continue
 		}
 		if q.Ref == "" && q.Search != "" && !strings.Contains(strings.ToLower(v.Title+" "+v.Content+" "+v.Ref), strings.ToLower(q.Search)) {
 			continue
