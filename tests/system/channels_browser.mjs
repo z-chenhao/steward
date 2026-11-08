@@ -500,6 +500,9 @@ try{
   await page.locator('.creator-run').click();
   if(await page.locator('.run-node[data-role="root"],.run-node[data-role="child"]').count())throw new Error('Main page presented Task Roots as its Child Runs');
   await page.getByRole('link',{name:'Traces',exact:true}).first().click();
+  // The native page is usable before its deferred autosubmit handler loads.
+  // This case exercises the scripted filter, not a pre-hydration click.
+  await page.waitForLoadState('load');
   await page.getByRole('radio',{name:'Root Worker',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('role')==='root');
   await page.getByRole('radio',{name:'completed',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('status')==='completed');
   await page.waitForURL(target=>target.searchParams.get('role')==='root');
