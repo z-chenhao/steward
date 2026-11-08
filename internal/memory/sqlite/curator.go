@@ -44,7 +44,10 @@ UPDATE memory_record SET deleted_at=(SELECT max(at) FROM lineage WHERE id=memory
 func (s *Store) ConfigureVault(v memory.Vault) error {
 	s.clearWorking()
 	s.vault = v
-	return s.protectExisting(context.Background())
+	if err := s.protectExisting(context.Background()); err != nil {
+		return err
+	}
+	return s.repairSemanticDocuments(context.Background())
 }
 func (s *Store) CheckRef(ctx context.Context, scope recall.Scope, id string, deleted bool) error {
 	var n int

@@ -22,7 +22,7 @@ func TestTraceCostDisclosesEstimateSourceAndPartialCoverage(t *testing.T) {
 	}{
 		{observability.Metrics{}, []string{"Not priced"}, "Estimated"},
 		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 42}}}, []string{"USD 0.000042"}, "Estimated"},
-		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 42, Estimated: true, Source: "catalog-v1 <script>"}}, Unpriced: 1}, []string{"USD 0.000042", "Estimated", "Partial", "catalog-v1 &lt;script&gt;", "not an invoice"}, "<script>"},
+		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 42, Estimated: true, Source: "catalog-v1 <script>"}}, Unpriced: 1}, []string{"USD 0.000042", "Partial", "catalog-v1 &lt;script&gt;"}, "<script>"},
 	} {
 		var html strings.Builder
 		if err := localizedLayout("en").ExecuteTemplate(&html, "trace-cost", tt.metrics); err != nil {
@@ -35,6 +35,36 @@ func TestTraceCostDisclosesEstimateSourceAndPartialCoverage(t *testing.T) {
 		}
 		if strings.Contains(html.String(), tt.absent) {
 			t.Fatal("misleading or unsafe cost", html.String())
+		}
+		if strings.Contains(html.String(), ">Estimated<") {
+			t.Fatal("cost rows repeated the column-level explanation")
+		}
+	}
+}
+
+func TestTraceLabelUsesIncomingMessageOrWorkerTitle(t *testing.T) {
+	for _, tc := range []struct{ role, title, input, want string }{
+		{"main", "Main conversation", "Plan my trip", "Plan my trip"},
+		{"main", "Main conversation", "", "Main conversation"},
+		{"root", "Research itinerary", "Research itinerary", "Research itinerary"},
+	} {
+		trace := observability.Trace{Execution: observability.Execution{Role: tc.role}, Title: tc.title, Input: tc.input}
+		if got := traceLabel(trace); got != tc.want {
+			t.Fatalf("label=%q, want %q", got, tc.want)
+		}
+	}
+}
+
+func TestIdentifierKeepsCompleteEscapedValueAndIndependentNavigation(t *testing.T) {
+	const value = `session:0123456789-very-long-identifier-<unsafe>&"`
+	var out strings.Builder
+	if err := localizedLayout("en").ExecuteTemplate(&out, "identifier", identifier("Session", value, "/developer/observability?session=full")); err != nil {
+		t.Fatal(err)
+	}
+	html := out.String()
+	for _, want := range []string{`data-copy-value="session:0123456789-very-long-identifier-&lt;unsafe&gt;&amp;&#34;"`, `</a><button`, `disabled`, `href="/developer/observability?session=full"`} {
+		if !strings.Contains(html, want) {
+			t.Fatal("identifier lost full evidence, native route, or escaping", want, html)
 		}
 	}
 }

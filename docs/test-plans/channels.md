@@ -193,6 +193,9 @@ F-018/F-039：`foundation_test.go` 实际 HTTP listener 在 Main provider failur
 
 沿用 `verify_channels.py` 和真实浏览器 action，不新增脚本或 CI gate：
 
+- 空白 Chat：setup 场景验证大桌面、常规桌面、iPad 横竖屏与窄屏短窗口中标题与输入区作为整体位于可视中部、标题在中线之上、输入区位于标题下方 24–28px、互不遮挡且无页面横向溢出；空间不足或草稿增长时仍可正常滚动到输入区，同时保留增强前的草稿、附件、焦点与选区。
+- Tasks 共享列表：taskNavigation 场景在两类列表的明暗／桌面／窄屏检查同一标题、搜索、导航接缝及紧凑行高；搜索／筛选与原生详情路径保持，当前页计数排除被去重的计划任务。
+
 - 原生设置：模型来源 → 保存 → 选用时自动校验并明确授权 Select → Conversation；候选 probe 与活动状态分开；ChatGPT 登录、可见目录、重启和退出仍经真实 Manager/Bridge（外部 OAuth 为受控 peer）。通知保存后停留原页，重载仍选实际目的地。
 - 首次设置浏览器路径：在 Preferences 从中文切回英文，经 Chat 返回对话，确认英文保留且未就绪时无法发送，再通过 Set up Steward 连接、验证并显式选用模型。标题、提示密度、设置控件尺寸与登录步骤数量随界面改动在桌面和窄屏验收。
 - 原生输入：延迟脚本时编辑、选文件与打开 picker，增强后保持同一节点/文件；拒绝或丢失确认不自动重发并保留草稿和附件；任务上下文可移除而不丢输入。
@@ -281,3 +284,5 @@ Models 为 Settings 的独立分类，包含「Sign in with an account」和「C
 Trace 阅读与筛选回归：`traces_test.go` 的分页请求读取测试验证完整 JSON 组装及安全原始回退；`agent/sqlite/traces_test.go` 使用真实数据库验证 TTFT 含重试、缺失证据与 HTTP 阶段区别。`web/trace-request.test.mjs` 验证转义、多行、重复键与精度回退；日期 UT 验证当地跨天、星期和旧日期 yyyy-MM-dd。native-trace 浏览器场景在同一抽屉中切换 Context 消息与 JSON 格式、核对结构化 Requests 与原始 JSON；Memory 与 Traces 场景直接选择筛选并核对 URL／结果，无需 Apply filters。共享列表及设置导航场景核对一级／二级宽度一致，保留明暗、宽窄屏截图及无脚本路线。
 
 HTTP 浏览器兼容：`web/random-id.test.mjs` 覆盖原生 UUID、仅有 `getRandomValues` 时的 UUIDv4 格式／版本／variant 及加密随机源失败；沿用 required frontend `npm test`。HTTP 局域网部署验证实际非安全来源下的聊天发送标识轮换、模型选择、五个 Settings 页面及同源表单；不向真实模型发送测试消息。
+
+Trace 列表回归验证状态前置、Name／Input 合并、无伪排序箭头、费用无逐行 Estimated，以及 v2/v3 列偏好迁移。native-trace 浏览器验证动态抽屉完整 Run ID 键盘复制、Clipboard API 缺失／拒绝、原生复制失败后的完整值选中回退与焦点恢复。`web/traces_test.go` 验证 ID 转义与独立导航；`tool_preview_test.go` 验证工具传输展开边界、精度与原始证据保持；`observability/sqlite/tool_generation_test.go` 验证工具内模型节点归属、用途与跨 Run 隔离。

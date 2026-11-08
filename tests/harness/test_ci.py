@@ -45,7 +45,8 @@ class CIChecksTests(unittest.TestCase):
             tokens = shlex.split(line)
             if '-run' in tokens:
                 patterns.append(tokens[tokens.index('-run') + 1])
-        for test in ('TestAppsBrowserConnectionLifecycle', 'TestComposerModelsBrowserLoadingAndRefresh'):
+        for test in ('TestAppsBrowserConnectionLifecycle', 'TestComposerModelsBrowserLoadingAndRefresh',
+                     'TestMemoryMaintenanceBrowser'):
             self.assertTrue(any(re.fullmatch(pattern, test) for pattern in patterns),
                             f'{test} is missing from the required browser recipe')
 
@@ -89,11 +90,24 @@ class CIChecksTests(unittest.TestCase):
         makefile = (Path(__file__).resolve().parents[2] / 'Makefile').read_text()
         commands = makefile.split('\ntest-memory:\n', 1)[1].split('\n\n', 1)[0]
         self.assertIn('memory-context', {lane['lane'] for lane in ci.plan('system')['include']})
-        self.assertEqual(commands.count('go test -race '), 2)
-        for package in ('memory/...', 'recall/...', 'conversation/...', 'tool'):
+        self.assertEqual(commands.count('go test -race '), 4)
+        for package in ('memory/...', 'recall/...', 'conversation/...', 'tool', 'llm/bridge', 'app'):
             self.assertIn('./internal/' + package + ' ', commands)
-        for regression in ('Recall', 'Forget', 'Evidence', 'ObjectIDs'):
+        for regression in ('Recall', 'Forget', 'Evidence', 'ObjectIDs', 'Layered', 'RootFailureNotice', 'NativeFragmented', 'MemoryExternalSecrets'):
             self.assertIn(regression, commands)
+        # Existence in test-go alone must not silently remove race coverage.
+        dry_run = subprocess.check_output(['make', '-n', 'test-memory'],
+                                          cwd=Path(__file__).resolve().parents[2], text=True)
+        agent_patterns = []
+        for line in dry_run.splitlines():
+            tokens = shlex.split(line)
+            if './internal/agent/sqlite' in tokens and '-run' in tokens:
+                agent_patterns.append(tokens[tokens.index('-run') + 1])
+        for test in ('TestMemoryWorkerEvidencePageBoundaryAndContinuation',
+                     'TestMemoryMissingFieldsSurviveNativeAndCodeModeReceipts',
+                     'TestMemoryDreamDoesNotBlindlyRecreateOversizedInjectedHead'):
+            self.assertTrue(any(re.search(pattern, test) for pattern in agent_patterns),
+                            f'{test} is missing from required memory race checks')
 
     def test_artifact_round_trips_run_in_required_tools_lane(self):
         self.assertIn('artifacts', CORE)

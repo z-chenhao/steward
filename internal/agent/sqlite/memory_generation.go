@@ -29,6 +29,29 @@ type curationWork struct {
 }
 
 func curationModelText(in memory.CurationInput) string {
+	if in.Mode == "dream" {
+		projected := in
+		projected.Observation.EventID = ""
+		projected.Observation.Source = memory.SourceRef{}
+		projected.Observations = append([]memory.Observation(nil), in.Observations...)
+		for i := range projected.Observations {
+			projected.Observations[i].EventID = ""
+			projected.Observations[i].Source = memory.SourceRef{}
+		}
+		projected.Documents = append([]memory.Document(nil), in.Documents...)
+		for i := range projected.Documents {
+			projected.Documents[i].Ref = tool.ObjectID(projected.Documents[i].Ref)
+			projected.Documents[i].Sources = nil
+			projected.Documents[i].Evidence = append([]recall.Evidence(nil), projected.Documents[i].Evidence...)
+			for j := range projected.Documents[i].Evidence {
+				projected.Documents[i].Evidence[j].SourceRef = ""
+			}
+			projected.Documents[i].Links = tool.ObjectIDs(projected.Documents[i].Links)
+		}
+		raw, _ := json.Marshal(projected)
+		return string(raw)
+	}
+
 	// Private event/source keys authorize Host maintenance, not model reasoning.
 	input := struct {
 		Observation struct {
@@ -69,7 +92,7 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 	e := r.write(ctx, func(tx *sql.Tx) error {
 		var priorID, sealed, result, status string
 		var lease int64
-		err := tx.QueryRowContext(ctx, `SELECT generation_id,request_sealed,coalesce(result_sealed,''),status,lease_until FROM memory_generation WHERE event_id=? ORDER BY created_at DESC LIMIT 1`, in.Observation.EventID).Scan(&priorID, &sealed, &result, &status, &lease)
+		err := tx.QueryRowContext(ctx, `SELECT generation_id,request_sealed,coalesce(result_sealed,''),status,lease_until FROM memory_generation WHERE event_id=? AND purpose=? AND pass_index=? ORDER BY created_at DESC LIMIT 1`, in.Observation.EventID, curationPurpose(in), in.Pass).Scan(&priorID, &sealed, &result, &status, &lease)
 		if err == nil {
 			plain, e := r.vault.Open(ctx, sealed, priorID)
 			if e != nil || json.Unmarshal([]byte(plain), &work) != nil {
@@ -92,7 +115,7 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 			}
 			if status == "failed" {
 				work.Input = in
-				work.Request.Messages = []llm.Message{{Role: "system", Text: memory.CurationInstruction}, {Role: "user", Text: curationModelText(in)}}
+				work.Request.Messages = []llm.Message{{Role: "system", Text: curationInstruction(in)}, {Role: "user", Text: curationModelText(in)}}
 			}
 		} else if err != sql.ErrNoRows {
 			return agent.ErrStorage
@@ -109,7 +132,7 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 			if e = r.freezeSpend(ctx, tx, snapshot); e != nil {
 				return e
 			}
-			work = curationWork{Input: in, Request: llm.GenerationRequest{RunID: "memory:" + in.Observation.EventID, SessionID: "memory:" + in.Observation.EventID, Snapshot: snapshot, OutputLimitBytes: 32 << 10, Messages: []llm.Message{{Role: "system", Text: memory.CurationInstruction}, {Role: "user", Text: curationModelText(in)}}}}
+			work = curationWork{Input: in, Request: llm.GenerationRequest{RunID: "memory:" + in.Observation.EventID, SessionID: "memory:" + in.Observation.EventID, Snapshot: snapshot, OutputLimitBytes: 32 << 10, Messages: []llm.Message{{Role: "system", Text: curationInstruction(in)}, {Role: "user", Text: curationModelText(in)}}}}
 		}
 		// Private maintenance has the same model-window admission boundary as
 		// user work. Refuse before journaling or contacting the provider.
@@ -121,6 +144,10 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 			return agent.ErrStorage
 		}
 		work.Request.GenerationID = "memory:" + newID()
+		// Dispose is terminal in the real Bridge. Each fresh attempt/pass owns
+		// its own transport session; the event remains the durable receipt key.
+		work.Request.RunID = work.Request.GenerationID
+		work.Request.SessionID = work.Request.RunID
 		token = newID()
 		raw, _ := json.Marshal(work)
 		encrypted, e := r.vault.Seal(ctx, string(raw), work.Request.GenerationID)
@@ -131,7 +158,7 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 		if e != nil {
 			return e
 		}
-		if _, e = tx.ExecContext(ctx, `INSERT INTO memory_generation VALUES(?,?,?,?,?,?,?,NULL,'pending',?,?,?)`, work.Request.GenerationID, in.Observation.EventID, scope.AgentID, privacy, work.Request.Snapshot.SnapshotID, hash, encrypted, token, time.Now().Add(90*time.Second).UnixMicro(), time.Now().UnixMicro()); e != nil {
+		if _, e = tx.ExecContext(ctx, `INSERT INTO memory_generation(generation_id,event_id,agent_id,privacy_epoch,model_snapshot_id,input_hash,request_sealed,result_sealed,status,owner_token,lease_until,created_at,purpose,pass_index) VALUES(?,?,?,?,?,?,?,NULL,'pending',?,?,?,?,?)`, work.Request.GenerationID, in.Observation.EventID, scope.AgentID, privacy, work.Request.Snapshot.SnapshotID, hash, encrypted, token, time.Now().Add(2*curationTimeout(in)).UnixMicro(), time.Now().UnixMicro(), curationPurpose(in), in.Pass); e != nil {
 			return e
 		}
 		return r.reserveMemoryCost(ctx, tx, work.Request)
@@ -140,7 +167,7 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 }
 
 func (r *Runs) deriveMemory(ctx context.Context, scope recall.Scope, in memory.CurationInput) (memory.CurationInput, memory.Proposal, error) {
-	if !memory.EligibleObservation(in.Observation) {
+	if in.Mode != "dream" && !memory.EligibleObservation(in.Observation) {
 		return in, memory.Proposal{Facts: []memory.Candidate{}}, nil
 	}
 	if r.memoryProvider == nil {
@@ -155,7 +182,7 @@ func (r *Runs) deriveMemory(ctx context.Context, scope recall.Scope, in memory.C
 	}
 	req := work.Request
 	req.DispatchGuard = func(c context.Context) (func(), error) { return r.memoryGuard(c, req, token) }
-	call, cancel := context.WithTimeout(ctx, 45*time.Second)
+	call, cancel := context.WithTimeout(ctx, curationTimeout(work.Input))
 	defer cancel()
 	result, e := r.memoryProvider.Generate(call, req, func(llm.GenerationEvent) {})
 	cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
@@ -184,7 +211,7 @@ func (r *Runs) AcceptMemoryGeneration(ctx context.Context, tx *sql.Tx, req llm.G
 		return recall.ErrConflict
 	}
 	var owned int
-	if tx.QueryRowContext(ctx, `SELECT count(*) FROM memory_generation g WHERE generation_id=? AND lease_until>? AND NOT EXISTS(SELECT 1 FROM memory_generation n WHERE n.event_id=g.event_id AND n.created_at>g.created_at)`, req.GenerationID, time.Now().UnixMicro()).Scan(&owned) != nil || owned != 1 {
+	if tx.QueryRowContext(ctx, `SELECT count(*) FROM memory_generation g WHERE generation_id=? AND lease_until>? AND NOT EXISTS(SELECT 1 FROM memory_generation n WHERE n.event_id=g.event_id AND n.purpose=g.purpose AND n.pass_index=g.pass_index AND n.created_at>g.created_at)`, req.GenerationID, time.Now().UnixMicro()).Scan(&owned) != nil || owned != 1 {
 		return recall.ErrConflict
 	}
 	plain, e := r.vault.Open(ctx, sealed, req.GenerationID)
@@ -343,7 +370,15 @@ func (r *Runs) curateObservation(ctx context.Context, scope recall.Scope, o memo
 	}
 	in := memory.CurationInput{Observation: o, Existing: []memory.Fact{}}
 	if memory.EligibleObservation(o) {
-		facts, e := writer.SemanticContext(ctx, scope, floor)
+		var facts []memory.Fact
+		var e error
+		if candidates, ok := r.memory.(interface {
+			SemanticCandidates(context.Context, recall.Scope, int64, string) ([]memory.Fact, error)
+		}); ok {
+			facts, e = candidates.SemanticCandidates(ctx, scope, floor, o.Text)
+		} else {
+			facts, e = writer.SemanticContext(ctx, scope, floor)
+		}
 		if e != nil {
 			return e
 		}
@@ -369,4 +404,32 @@ func (r *Runs) curateObservation(ctx context.Context, scope recall.Scope, o memo
 		return recall.ErrUnavailable
 	}
 	return e
+}
+
+// Cross-session document synthesis is larger than single-observation extraction.
+// Its acceptance lease must outlive the bounded call and cleanup window.
+func curationTimeout(in memory.CurationInput) time.Duration {
+	if in.Mode == "dream" {
+		return 2 * time.Minute
+	}
+	return 45 * time.Second
+}
+
+func curationPurpose(in memory.CurationInput) string {
+	if in.Mode == "dream" {
+		return "dream"
+	}
+	return "facts"
+}
+func curationInstruction(in memory.CurationInput) string {
+	if in.Mode == "dream" {
+		if in.Version >= 3 {
+			return memory.WorkerDreamInstruction
+		}
+		if in.Version >= 2 {
+			return memory.GroundedDreamInstruction
+		}
+		return memory.DreamInstruction
+	}
+	return memory.CurationInstruction
 }

@@ -13,7 +13,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/agent"
-	"github.com/z-chenhao/assistant/internal/artifact"
+	contextbuilder "github.com/z-chenhao/assistant/internal/context"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/recall"
 	"github.com/z-chenhao/assistant/internal/tool"
@@ -75,6 +75,17 @@ func (r *Runs) recallMessages(ctx context.Context, c agent.RunClaim, run agent.R
 		if contextual && run.Kind == "main" && strings.TrimSpace(q.Query) != "" {
 			q.Query = conversationalRecallQuery(messages, q.Query)
 		}
+		reuse, e := r.evidenceReuse(ctx, run.ID)
+		if e != nil {
+			return nil, e
+		}
+		if reuse {
+			q.EvidenceFirst = true
+			q.SeenRefs, e = r.visibleEvidenceRefs(ctx, run, messages)
+			if e != nil {
+				return nil, e
+			}
+		}
 		query := q.Query
 		// Bound serialized evidence to a quarter of the remaining model budget.
 		budget := maxBytes
@@ -84,7 +95,7 @@ func (r *Runs) recallMessages(ctx context.Context, c agent.RunClaim, run agent.R
 		lookup, cancel := context.WithTimeout(ctx, 30*time.Second)
 		hits := []recall.Hit{}
 		if strings.TrimSpace(query) != "" {
-			hits, e = r.recall.Search(lookup, recall.Scope{UserID: artifact.LocalUser, AgentID: run.AgentID}, q, budget)
+			hits, e = r.recall.Search(lookup, recall.Scope{UserID: r.host.OwnerID(), AgentID: run.AgentID}, q, budget)
 		}
 		cancel()
 		if e != nil {
@@ -130,6 +141,23 @@ func (r *Runs) recallMessages(ctx context.Context, c agent.RunClaim, run agent.R
 			var hits []recall.Hit
 			if json.Unmarshal([]byte(raw), &hits) != nil {
 				return nil, agent.ErrStorage
+			}
+			var separate bool
+			if e := r.host.db.QueryRowContext(ctx, `SELECT coalesce(json_extract(policy_json,'$.separate_evidence'),0) FROM run_context_policy WHERE run_id=?`, run.ID).Scan(&separate); e != nil {
+				return nil, e
+			}
+			if separate {
+				at := len(messages)
+				for i := len(messages) - 1; i >= 0; i-- {
+					if messages[i].Role == "user" && messages[i].Origin != "runtime" {
+						at = i
+						break
+					}
+				}
+				evidence := llm.Message{Role: "user", Origin: "runtime", Text: renderSeparateRecall(hits), Source: &llm.ContextSource{Kind: "recall", Ref: "recall:" + digest(run.ID+":"+strconv.FormatInt(recallStep, 10))}}
+				out := append([]llm.Message(nil), messages[:at]...)
+				out = append(out, evidence)
+				return append(out, messages[at:]...), nil
 			}
 			out := append([]llm.Message(nil), messages...)
 			for i := len(out) - 1; i >= 0; i-- {
@@ -276,12 +304,12 @@ func novelRecallHits(hits []recall.Hit, messages []llm.Message) []recall.Hit {
 func (t *tools) searchMemory(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
 	var scope recall.Scope
 	var args string
-	var visible int
+	var visible, version int
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
 		if e := t.fence(ctx, tx); e != nil {
 			return e
 		}
-		return tx.QueryRowContext(ctx, `SELECT r.agent_id,i.arguments_json,(SELECT count(*) FROM capability_snapshot c,json_each(c.tools_json) j WHERE c.snapshot_id=r.capability_snapshot_id AND json_extract(j.value,'$.name')=i.tool_name) FROM tool_invocation i JOIN run r USING(run_id) WHERE i.invocation_id=? AND i.run_id=? AND i.status='running' AND i.tool_name=?`, inv.ID, t.claim.RunID(), recall.ToolName).Scan(&scope.AgentID, &args, &visible)
+		return tx.QueryRowContext(ctx, `SELECT r.agent_id,i.arguments_json,(SELECT count(*) FROM capability_snapshot c,json_each(c.tools_json) j WHERE c.snapshot_id=r.capability_snapshot_id AND json_extract(j.value,'$.name')=i.tool_name),coalesce((SELECT json_extract(j.value,'$.version') FROM capability_snapshot c,json_each(c.tools_json) j WHERE c.snapshot_id=r.capability_snapshot_id AND json_extract(j.value,'$.name')=i.tool_name),1) FROM tool_invocation i JOIN run r USING(run_id) WHERE i.invocation_id=? AND i.run_id=? AND i.status='running' AND i.tool_name=?`, inv.ID, t.claim.RunID(), recall.ToolName).Scan(&scope.AgentID, &args, &visible, &version)
 	})
 	if err != nil {
 		return tool.Result{}, err
@@ -296,18 +324,84 @@ func (t *tools) searchMemory(ctx context.Context, inv tool.Invocation) (tool.Res
 	if t.runs.recall == nil {
 		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 	}
-	scope.UserID = artifact.LocalUser
+	scope.UserID = t.runs.host.OwnerID()
 	q, err = t.runs.privacyQuery(ctx, scope.AgentID, q)
 	if err != nil {
 		return tool.Result{}, err
 	}
-	hits, err := t.runs.recall.Search(ctx, scope, q, 60<<10)
+	budget := 60 << 10
+	if version >= 2 {
+		run, e := t.runs.Load(ctx, t.claim)
+		if e != nil {
+			return tool.Result{}, e
+		}
+		var policyRaw string
+		var policy contextbuilder.Policy
+		if e = t.runs.host.db.QueryRowContext(ctx, `SELECT policy_json FROM run_context_policy WHERE run_id=?`, run.ID).Scan(&policyRaw); e != nil {
+			return tool.Result{}, e
+		}
+		if json.Unmarshal([]byte(policyRaw), &policy) != nil {
+			return tool.Result{}, agent.ErrStorage
+		}
+		messages, positions, e := t.runs.workingMessages(run, policy.UserImages, policy.InputRecall)
+		if e != nil {
+			return tool.Result{}, e
+		}
+		original, e := t.runs.automaticRecallQuery(ctx, run, messages, true)
+		if e != nil {
+			return tool.Result{}, e
+		}
+		q.ExcludeRefs = original.ExcludeRefs
+		for _, m := range messages {
+			if m.Source != nil {
+				if i, ok := positions[m.Source.Ref]; ok && i < len(run.Checkpoint.Messages) && run.Checkpoint.Messages[i].MessageID != "" {
+					q.ExcludeRefs = append(q.ExcludeRefs, "conversation:"+run.Checkpoint.Messages[i].MessageID)
+				}
+			}
+		}
+		if version >= 4 {
+			q.EvidenceFirst = true
+			visible := t.runs.visibleRecallRefs
+			if policy.EvidenceReuse {
+				visible = t.runs.visibleEvidenceRefs
+			}
+			refs, e := visible(ctx, run, messages)
+			if e != nil {
+				return tool.Result{}, e
+			}
+			q.SeenRefs = refs
+		}
+		q.ExcerptBytes = 1400
+		budget = min(8<<10, max(2048, int(run.Snapshot.ContextWindow*3/6)))
+	}
+	hits, err := t.runs.recall.Search(ctx, scope, q, budget)
 	if err != nil {
 		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+	}
+	if policyReuse, e := t.runs.evidenceReuse(ctx, t.claim.RunID()); e != nil {
+		return tool.Result{}, e
+	} else if policyReuse {
+		refs := []string{}
+		for _, h := range hits {
+			refs = append(refs, h.SourceRef)
+		}
+		if e = t.runs.write(ctx, func(tx *sql.Tx) error {
+			if e := t.fence(ctx, tx); e != nil {
+				return e
+			}
+			return recordMemoryAccess(ctx, tx, t.claim.RunID(), inv.ID, "search", refs)
+		}); e != nil {
+			return tool.Result{}, e
+		}
 	}
 	raw, err := encoded(hits)
 	if err != nil {
 		return tool.Result{}, agent.ErrStorage
 	}
 	return tool.Result{Text: raw}, nil
+}
+
+// Separate evidence precedes the current input; the legacy renderer is frozen.
+func renderSeparateRecall(hits []recall.Hit) string {
+	return strings.Replace(renderInputRecall(hits), "The current request above takes precedence.", "The following current request takes precedence.", 1)
 }

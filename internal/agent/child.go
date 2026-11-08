@@ -76,6 +76,10 @@ func WorkerTools(specs []tool.Spec) []tool.Spec {
 		if strings.HasPrefix(s.Name, "builtin__task_") || s.Name == "builtin__evidence_read" {
 			continue
 		}
+		if s.Name == "builtin__memory_manage" && s.Version >= 2 {
+			out = append(out, s)
+			continue
+		}
 		switch s.Permission {
 		case "read_only", "external_effect", "artifact_write", "spawn_agents", "automation_observe":
 			out = append(out, s)

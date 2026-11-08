@@ -89,10 +89,10 @@ func TestRecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory(t *testin
 		t.Fatal("recall repeated visible history or dropped novel evidence", hits)
 	}
 	messages := generation.Request.Messages
-	if len(messages) != len(run.Checkpoint.Messages) || messages[0].Role != "system" || messages[1].Text != "Compare Pi Harness v2 and v1" || messages[4].Text != roadmap {
+	if len(messages) != len(run.Checkpoint.Messages)+1 || messages[0].Role != "system" || messages[1].Text != "Compare Pi Harness v2 and v1" || messages[4].Text != roadmap {
 		t.Fatal("first request did not preserve system and ordered history", messages)
 	}
-	if messages[len(messages)-1].Role != "user" || !strings.HasPrefix(messages[len(messages)-1].Text, latest+"\n\n<recall_memory>") || strings.Contains(messages[len(messages)-1].Text, "source_ref") {
+	if messages[len(messages)-1].Role != "user" || messages[len(messages)-1].Text != latest || messages[len(messages)-2].Origin != "runtime" || !strings.Contains(messages[len(messages)-2].Text, "<recall_memory>") || strings.Contains(messages[len(messages)-1].Text, "source_ref") {
 		t.Fatal("historical recall displaced current request", messages)
 	}
 	// Repeated admission reuses the exact accepted request.
@@ -124,7 +124,7 @@ func TestRecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory(t *testin
 		t.Fatal("tool continuation changed the frozen prefix or repeated recall", prefix)
 	}
 	tail := next.Request.Messages[len(next.Request.Messages)-3:]
-	if !strings.HasPrefix(tail[0].Text, latest+"\n\n<recall_memory>") || len(tail[1].ToolCalls) != 1 || tail[2].Role != "tool" || tail[2].ToolCallID != "discover" {
+	if tail[0].Text != latest || len(tail[1].ToolCalls) != 1 || tail[2].Role != "tool" || tail[2].ToolCallID != "discover" {
 		t.Fatal("recall split the current tool exchange", tail)
 	}
 }
@@ -255,7 +255,7 @@ func TestRecallFrozenPerTurnAndFenced(t *testing.T) {
 	}
 	assertFrozenContextRun(t, s, run.ID)
 	// Static system prefix is byte stable; current input follows recall evidence.
-	if !reflect.DeepEqual(first.Request.Messages[:1], next.Request.Messages[:1]) || !strings.HasPrefix(next.Request.Messages[len(next.Request.Messages)-1].Text, "tea context\n\n<recall_memory>") {
+	if !reflect.DeepEqual(first.Request.Messages[:1], next.Request.Messages[:1]) || next.Request.Messages[len(next.Request.Messages)-1].Text != "tea context" || !strings.Contains(next.Request.Messages[len(next.Request.Messages)-2].Text, "<recall_memory>") {
 		t.Fatal("cache prefix changed")
 	}
 	// Another explicit input starts a fresh retrieval, even for identical text.

@@ -9,8 +9,9 @@ import (
 )
 
 type Budget struct {
-	ModelBytes int
-	FrameBytes int
+	HardModelBytes int
+	ModelBytes     int
+	FrameBytes     int
 }
 
 // BudgetFor separates provider-visible input from Host provenance on the RPC
@@ -21,18 +22,33 @@ func BudgetFor(window, output int64, tools int, p Policy, aggressive bool) Budge
 	if aggressive {
 		model /= 2
 	}
-	return Budget{ModelBytes: model, FrameBytes: (384 << 10) - tools}
+	hard := 0
+	if p.FullWindowFallback && !aggressive {
+		hard = int((window-output)*3) - tools
+	}
+	return Budget{ModelBytes: model, HardModelBytes: hard, FrameBytes: (384 << 10) - tools}
 }
 
 func ModelSize(in []llm.Message) int {
 	projected := make([]llm.Message, len(in))
+	expanded := 0
 	for i, m := range in {
 		m.Source = nil
 		m.Origin = ""
 		m.ImageRefs = nil
+		if m.Memory != nil {
+			if m.Memory.EncodedBytes < 2 || m.Memory.EncodedBytes > 1<<20 {
+				return 1 << 20
+			}
+			// JSON string concatenation is additive after removing one pair of quotes.
+			// The ciphertext/resolver envelope belongs to the Host frame, not tokens.
+			expanded += m.Memory.EncodedBytes - 2
+			m.Memory = nil
+		}
 		projected[i] = m
 	}
-	return Size(projected)
+	raw, _ := json.Marshal(projected)
+	return len(raw) + expanded
 }
 
 func (b Budget) Fits(in []llm.Message) bool {
@@ -49,6 +65,17 @@ type Preparation struct {
 // Over-budget history is handed to the same Agent Loop for a tool-free model
 // summary; required task inputs and unknown-effect facts remain exact.
 func Prepare(in []llm.Message, budget Budget, p Policy, aggressive bool) (Preparation, error) {
+	out, err := prepare(in, budget, p, aggressive)
+	// The compaction target is not the model's hard capacity. Required input may
+	// exceed that target, while still fitting after reserving output and tools.
+	// A provider-context retry stays aggressive; never resend its rejected frame.
+	if err == llm.ContextLengthExceeded && p.FullWindowFallback && !aggressive && budget.HardModelBytes > budget.ModelBytes {
+		budget.ModelBytes = budget.HardModelBytes
+		return prepare(in, budget, p, aggressive)
+	}
+	return out, err
+}
+func prepare(in []llm.Message, budget Budget, p Policy, aggressive bool) (Preparation, error) {
 	if !p.Valid() || budget.ModelBytes <= 0 || budget.FrameBytes <= 0 {
 		return Preparation{}, llm.ContextLengthExceeded
 	}

@@ -146,3 +146,64 @@ func TestWorkingBudgetSeparatesHostProvenanceFromModelInput(t *testing.T) {
 		t.Fatal("Host metadata escaped transport admission")
 	}
 }
+
+func TestLayeredMemoryBudgetAccountsForExpandedEscapedText(t *testing.T) {
+	plain := strings.Repeat("\\\"<", 4000)
+	envelope := &llm.MemoryText{Sealed: strings.Repeat("x", len(plain)*4/3), Binding: "test", EncodedBytes: llm.MemoryEncodedBytes(plain)}
+	messages := []llm.Message{{Role: "user", Text: "current", Memory: envelope}}
+	wire := []llm.Message{{Role: "user", Text: "current" + plain}}
+	if ModelSize(messages) < ModelSize(wire) {
+		t.Fatal("expanded JSON escaped bytes escaped admission")
+	}
+	budget := Budget{ModelBytes: ModelSize(messages) - 1, FrameBytes: Size(messages)}
+	if budget.Fits(messages) {
+		t.Fatal("expanded memory escaped model budget")
+	}
+	envelope.EncodedBytes = -1
+	if Size(messages) < 1<<20 {
+		t.Fatal("invalid hint reduced memory admission size")
+	}
+}
+
+func TestContextFullWindowFallbackDistinguishesTargetFromHardCapacity(t *testing.T) {
+	p := DefaultPolicy()
+	p.FullWindowFallback = true
+	input := []llm.Message{{Role: "system", Text: strings.Repeat("x", 19000)}, {Role: "user", Text: "current"}}
+	budget := BudgetFor(8192, 1024, 0, p, false)
+	out, err := Prepare(input, budget, p, false)
+	if err != nil || len(out.Sources) != 0 || out.Messages[0].Text != input[0].Text {
+		t.Fatal("soft threshold rejected required input within the real window", err)
+	}
+	input[0].Text = strings.Repeat("x", 22000)
+	if _, err = Prepare(input, budget, p, false); err != llm.ContextLengthExceeded {
+		t.Fatal("hard model capacity bypassed", err)
+	}
+	input[0].Text = strings.Repeat("x", 19000)
+	if _, err = Prepare(input, BudgetFor(8192, 1024, 0, p, true), p, true); err != llm.ContextLengthExceeded {
+		t.Fatal("provider context retry bypassed its smaller budget", err)
+	}
+	p.FullWindowFallback = false
+	if _, err = Prepare(input, BudgetFor(8192, 1024, 0, p, false), p, false); err != llm.ContextLengthExceeded {
+		t.Fatal("historical policy changed", err)
+	}
+}
+
+func TestContextModelBudgetCountsExpandedMemoryWithoutCiphertext(t *testing.T) {
+	plain := "precise \"quote\" <markup>\\n" + strings.Repeat("body ", 900)
+	expanded := []llm.Message{{Role: "tool", Text: "public prefix: " + plain}}
+	sealed := []llm.Message{{Role: "tool", Text: "public prefix: ", Memory: &llm.MemoryText{Sealed: strings.Repeat("ciphertext", 900), Binding: "memory-read:run:call", EncodedBytes: llm.MemoryEncodedBytes(plain)}}}
+	if ModelSize(sealed) != ModelSize(expanded) {
+		t.Fatal("model capacity counted Host ciphertext", ModelSize(sealed), ModelSize(expanded))
+	}
+	if Size(sealed) <= ModelSize(sealed) {
+		t.Fatal("RPC capacity lost sealed envelope headroom")
+	}
+	budget := Budget{ModelBytes: ModelSize(expanded), FrameBytes: Size(sealed)}
+	if _, err := Prepare(sealed, budget, DefaultPolicy(), false); err != nil {
+		t.Fatal("unnecessary compaction of a fitting exact read", err)
+	}
+	sealed[0].Memory.EncodedBytes = 1
+	if ModelSize(sealed) < 1<<20 {
+		t.Fatal("invalid expanded-size claim reduced the budget")
+	}
+}

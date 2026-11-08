@@ -247,7 +247,9 @@ contexts. Direct Cancel/Dispose RPCs have a five-second
 bound. The error body is discarded,
 except for an allowlisted machine code read from at most 8 KiB for HTTP 400/422
 context-length classification. Raw response streams are limited to 4 MiB before
-protocol parsing; normalized Tool Calls retain the Host bounds of 32 calls and
+protocol parsing, with at most 65,536 raw SSE events. Small text fragments are
+coalesced before the bounded Host RPC; valid reports are independent of provider
+chunk boundaries. The first text remains immediate. Normalized Tool Calls retain the Host bounds of 32 calls and
 64 KiB of arguments. Malformed or non-object arguments fail with
 INVALID_PROVIDER_RESPONSE before any Tool Call is forwarded. Raw provider parse
 diagnostics are never exposed. An explicit empty object remains valid.

@@ -255,7 +255,7 @@ func (s *Store) saveCodeReport(ctx context.Context, ref string, handoff *codePRH
 	s.boundary("before_code_report_commit")
 	var out artifact.Descriptor
 	err = s.Transaction(ctx, func(tx *sql.Tx) error {
-		scope := artifact.Scope{UserID: artifact.LocalUser, Owner: true}
+		scope := artifact.Scope{UserID: s.OwnerID(), Owner: true}
 		err := tx.QueryRowContext(ctx, `SELECT t.task_id,t.agent_id`+codeReportTask, ref).Scan(&scope.TaskID, &scope.AgentID)
 		if err == sql.ErrNoRows {
 			return agent.ErrNotFound

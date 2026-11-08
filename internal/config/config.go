@@ -111,6 +111,7 @@ type LLM struct {
 }
 
 type App struct {
+	OwnerID     string `yaml:"owner_id,omitempty"`
 	DataRoot    string `yaml:"data_root"`
 	LogLevel    string `yaml:"log_level"`
 	LogMaxBytes int64  `yaml:"log_max_bytes"`

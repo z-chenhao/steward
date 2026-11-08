@@ -27,7 +27,7 @@ func TestContextPromptBytes(t *testing.T) {
 		{Name: "builtin__computer_observe", Internal: true},
 		{Name: "mcp__calendar__lookup", Provider: "mcp:calendar", NamespaceDescription: "Find calendar events", Exposure: tool.CodeMode, CodeModeOnly: true},
 	}
-	for _, tc := range []struct{ position, hash string }{{"main", "0497f281884ae2a016b9c815cf6287e1909d17f23f1c2340cbb4140e5ca7fe2a"}, {"root", "08da6374cd929e66b969a1c6f23ed9a5d8fd9225e859601d39ebbc94b87dcc99"}, {"child", "fd1fd68937191e1b920fc33101a89e139ecc2d575392aeba7744dc39c31b6a11"}} {
+	for _, tc := range []struct{ position, hash string }{{"main", "6004c4f384aa5a1677ab1a318f2aa5e5a7f9ab005af83e1b52c2d30ee42f3051"}, {"root", "cd7b4fc10e03bf7179d30b44f7214c978c1f1c3709f0f075e03348d3c2278fcd"}, {"child", "0515c60c08c2a290e496c36e12e70efe5c09222bcfc678a0b361326bc195179f"}} {
 		t.Run(tc.position, func(t *testing.T) {
 			messages, err := ProviderMessages(InitialContext(ContextOptions{Position: tc.position, Tools: specs, Title: "Review", Task: "Keep constraints", ArtifactRefs: []string{"artifact:input"}}), false, false)
 			if err != nil {

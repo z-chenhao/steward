@@ -38,6 +38,23 @@ type taskView struct {
 	SchedulesUnavailable bool
 }
 
+// Count only rows rendered on this page, including schedules shown on page one.
+func taskPageCount(v *taskView) int {
+	if v == nil {
+		return 0
+	}
+	if !v.Configurations {
+		return len(v.Executions.Items)
+	}
+	count := len(v.Scheduled)
+	for _, entry := range v.List.Items {
+		if entry.Schedule == nil {
+			count++
+		}
+	}
+	return count
+}
+
 func executionURL(id string) string { return "/tasks/executions/" + url.PathEscape(id) }
 func taskURL(ref string) string     { return "/tasks/" + url.PathEscape(ref) }
 func conversationURL(sequence int64) string {

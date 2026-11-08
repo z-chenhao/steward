@@ -19,7 +19,7 @@ Recall 系统夹具必须在真实上下文压缩后识别已完成的 Task 更�
 | [F-010](../features/memory-context.md#f-010) | 消息→任务→产物/原文的真实引用链，验证正确定位、摘要外分页续读、来源、预算及每跳/链接权限；覆盖缺失/过期/循环、跨作用域、Forget 与恢复。 | 本机另支持 Memory 原文、可见来源及确切 GitHub 接续证据。Main Memory/GitHub 导航、其他外部来源和真实模型导航质量仍待补 |
 | [F-011](../features/memory-context.md#f-011) | 用长对话验证关键事实与待办保留、来源可定位及模型窗口约束。 | 必须通过目标入口补齐闭环；不能只直接调用底层方法 |
 
-新增上下文回归验证：召回不增加消息数，保留当前 user 正文及工具调用/结果顺序；历史证据按原始时间排序并转义边界；同输入的工具续轮、摘要、重试及重启复用结果，新输入重新检索。Conversation 与 Memory 两路覆盖超过候选限额的工作集重复项，保证工作集之外的证据仍可进入结果；已消费且压缩移出的原文可恢复，尚未消费的输入不可提前导入。普通对象 ID 经真实 Main 原文读取→附件→Task 的调用链验证，存储与模型投影分别检查，权限拒绝与历史回执重放保持不变。`make test-memory` 在必需 CI memory-context lane 内执行 Conversation 候选排除、工具 ID 投影及原文读取的 race 回归；普通 ID 的本机入口和 Task 追加指令另有真实调用链回归。UI 的任意状态、动作参数、Schema 与重复键 JSON 不得被当作宿主身份字段重写。
+新增上下文回归验证：新 Run 的独立召回证据位于 history 与当前输入之间，旧 inline 策略保持原消息形状；两者均保留当前 user 正文及工具调用/结果顺序；历史证据按原始时间排序并转义边界；同输入的工具续轮、摘要、重试及重启复用结果，新输入重新检索。Conversation 与 Memory 两路覆盖超过候选限额的工作集重复项，保证工作集之外的证据仍可进入结果；已消费且压缩移出的原文可恢复，尚未消费的输入不可提前导入。普通对象 ID 经真实 Main 原文读取→附件→Task 的调用链验证，存储与模型投影分别检查，权限拒绝与历史回执重放保持不变。`make test-memory` 在必需 CI memory-context lane 内执行 Conversation 候选排除、工具 ID 投影及原文读取的 race 回归；普通 ID 的本机入口和 Task 追加指令另有真实调用链回归。UI 的任意状态、动作参数、Schema 与重复键 JSON 不得被当作宿主身份字段重写。
 
 ## 层级与关键路径
 
@@ -176,3 +176,35 @@ navigation, correction, Forget, restart and read-only browser assertions.
 state-schema expectation matches the contiguous migration catalog, so a forward
 migration cannot silently leave foundation/local-provider/Code Mode gates testing
 an obsolete schema version. The ordinary harness suite and required CI execute it.
+
+## 四层记忆
+
+必需 Memory/Prompt/Go 门禁执行 LayeredMemory 回归：三种派生文档独立检视，旧事实作为 notes；CAS 冲突与相同回执重放；版本 1 工具快照继续使用原 schema；超过 128 条事实仍可选取候选；链接传递失效；密文正文与标题；没有搜索命中仍加载 L4；后台修改不改变既有会话请求；Forget 撤销；三轮 Dreaming 形成 notes/wiki/injected，重放不重复模型调用或创建用户 Task；反序提案中的链接跟随同批编辑的新引用，丢失 state 侧步骤/覆盖/接纳回执后仍复用原索引文档回执；循环依赖、同批退役目标链接在写入前拒绝；普通事实与 Dreaming 的调用 deadline 各自有界，接纳租约保留清理余量。Bridge 回归通过真实 HTTP peer 验证只在传输副本解密，观察者保留密封请求且诊断不记录正文。
+
+`make test-memory` 包含上述运行时与 Bridge race 检查；`make test-prompts` 包含注入快照回归。新迁移必须通过现有 schema-catalog harness 检查；memory-maintenance、recall 系统门禁继续必需。确定性模型仅证明传输与状态，不证明策略学习和显著性质量。
+
+`memory_retry_bridge_test.go` 通过独立进程中的真实 Bridge Server 与本地 HTTP peer，先返回无效建议再返回有效建议，验证新会话重试、已接纳结果重放不发请求，以及连续三次无效建议被隔离后后续输入继续。测试经过真实 Dispose 终态，不使用空实现代替会话生命周期。
+
+`TestLayeredMemoryDeployedV2SnapshotKeepsExactSchema` 验证已部署 v2 的 schema/权限在 v3 下仍按精确 predecessor 执行，拒绝未知 v2 schema；Host 拒绝负数、超限窗口与修订。`tasks` 门禁继续用原 8K 模型运行问题回应和成果审阅续轮，防止扩展说明挤占最小窗口。
+
+显式检索／精读补充：`recall_explicit_test.go` 覆盖旧 v1 与新 v2 的工作集排除和输出预算；`memory_precision_test.go` 覆盖 v4 transcript 作用域、分页、密封、Forget，以及 CodeMode 传输投影的确定性、跨 Run 拒绝和 v3 回放。新投影在 context admission 前计算展开预算，测试纳入 `make test-prompts` 与 `make test-memory`。
+
+时间过滤回归包含 UTC、显式偏移、缺少时区的拒绝，以及旧冻结工具规格不变；复合 memory_ref 必须逐字保留，不能截取内部 UUID。
+
+渐进读取回归覆盖：完整 Wiki 不能遮住原始会话；同相关度原文优先，L4 不作为搜索回声；相关引文保留作者与原句；只排除当前工作集实际展示且有同 Run 成功回执的完整结果，失败 CodeMode 父帧／伪造内容／截断／压缩后的证据仍可读取；导航引用授权隔离、预算与冻结续接；原有 Forget 和历史协议不变。真实模型使用同题、同快照、同16K窗口和4K输出比较优化前四层、优化后四层与同代码L1/L2，不择优采样。
+
+聚合回归区分事实支持与全集覆盖：限制原始会话时派生库不可用不影响授权原文读取；source_type 不能选择 Task／其他用户；同题活动计数保留部分 Wiki 误报的失败，并重新全量对比。
+
+
+## 证据复用、学习反馈与云接缝
+
+必测完整搜索／密封精读／自动召回的当前可见性、混合 CodeMode 帧、失败父帧、假 JSON、截断与压缩后再取证；核对旧策略／冻结前缀保持不变。轻量导航用 SecretStore 计数证明仅解密元数据，并覆盖用户／Agent 隔离与 Forget。跨模型轮次重复文档精读只返回已可见指示，仍核对生命周期。
+
+学习回归通过确定的实验反馈把暂定假设改成有原始引文的规则，确认旧假设不再作为当前证据；相同提案不产生新版本，重放不重复记账。两个独立 Host 竞争一个维护 generation 仅推理一次，Busy 不产生失败记录。外部 SecretStore 与非 local Host 身份可以完整写读，重启更换所有者被拒绝，无文件凭据依赖。
+
+受控真实模型用 tests/fixtures/memory_learning_mcp.py 的 stdio MCP 验证计划，记录失败假设、成功修正、后续新会话复用和规则变更后的纠正；导入／邮件／登录均在模拟器验证，不执行外部操作。固定策略、问题和验证器，同批问题比较旧四层、新四层及同代码 Notes/Transcripts 对照，并报告后台 formation token／耗时。MCP 成功回执是动作判据，不能只按答复自称成功评分。这是受控工作流评测，不是公开 benchmark 或真实外部操作成功率。
+
+make test-prompts 包含统一可见性回归；make test-memory 包含新增 Memory 与外部 SecretStore race；标准 Python harness 包含验证器判据测试和 schema 50 目录一致性检查。仍须运行 memory-maintenance、recall 系统门禁与相关恢复／通道检查。
+
+
+混合 CodeMode 摘要必须保留同帧非记忆回执；原始动作是否发生不能被通用记忆提示替代。该场景由 TestMemoryCompactionPreservesMixedCodeBusinessReceipt 进入 test-prompts 和 test-memory。原始 Worker 反馈、旧笔记回查、覆盖重放及 Forget／跨 Agent 拒绝由 Memory 所属回归验证。

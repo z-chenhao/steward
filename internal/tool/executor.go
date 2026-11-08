@@ -120,12 +120,15 @@ type PromptContext struct {
 }
 
 type Definition struct {
-	Spec         Spec
-	Host         bool // Trusted Host builtins receive the accepted invocation, never model-supplied IDs.
-	Execute      func(context.Context, string) Result
-	Invoke       func(context.Context, Request) Outcome
-	Query        func(context.Context, Request) Evidence
-	ConflictKeys func(string) []string
+	// PreviousSpecs is an explicit Host-owned compatibility allow-list. Selecting
+	// one retains its exact schema/policy; it never adds new operations to a Run.
+	PreviousSpecs []Spec
+	Spec          Spec
+	Host          bool // Trusted Host builtins receive the accepted invocation, never model-supplied IDs.
+	Execute       func(context.Context, string) Result
+	Invoke        func(context.Context, Request) Outcome
+	Query         func(context.Context, Request) Evidence
+	ConflictKeys  func(string) []string
 }
 type Registry struct {
 	mu          sync.RWMutex
@@ -136,7 +139,7 @@ func NewRegistry(definitions []Definition) (*Registry, error) {
 	r := &Registry{definitions: map[string]Definition{}}
 	for _, d := range definitions {
 		// Policy is frozen at admission; providers cannot choose retry safety.
-		if d.Spec.Name == "" || d.Spec.Version != 1 || !validPolicy(d) || !validDefinition(d) || !json.Valid([]byte(d.Spec.InputSchema)) {
+		if d.Spec.Name == "" || d.Spec.Version < 1 || !validPolicy(d) || !validDefinition(d) || !json.Valid([]byte(d.Spec.InputSchema)) {
 			return nil, errors.New("invalid tool definition")
 		}
 		if _, valid := parseSchema(d.Spec.InputSchema); !valid {
@@ -146,6 +149,13 @@ func NewRegistry(definitions []Definition) (*Registry, error) {
 			return nil, errors.New("duplicate tool definition")
 		}
 		d.Spec = copySpec(d.Spec)
+		d.PreviousSpecs = append([]Spec(nil), d.PreviousSpecs...)
+		for i, previous := range d.PreviousSpecs {
+			if !d.Host || previous.Name != d.Spec.Name || previous.Version < 1 || previous.Version >= d.Spec.Version || previous.Permission != d.Spec.Permission || previous.ReplayPolicy != d.Spec.ReplayPolicy || !json.Valid([]byte(previous.InputSchema)) {
+				return nil, errors.New("invalid predecessor tool definition")
+			}
+			d.PreviousSpecs[i] = copySpec(previous)
+		}
 		r.definitions[d.Spec.Name] = d
 	}
 	return r, nil
@@ -181,6 +191,17 @@ func (r *Registry) Select(specs []Spec) (*Registry, error) {
 			d.Spec.Description = s.Description
 		}
 		d.Spec.NamespaceDescription = s.NamespaceDescription
+		if ok && !reflect.DeepEqual(d.Spec, s) {
+			for _, previous := range d.PreviousSpecs {
+				previous.PromptContext = append([]PromptContext(nil), s.PromptContext...)
+				previous.Exposure, previous.CodeModeOnly, previous.NamespaceDescription = s.Exposure, s.CodeModeOnly, s.NamespaceDescription
+				if reflect.DeepEqual(previous, s) {
+					d.Spec = previous
+					d.PreviousSpecs = nil
+					break
+				}
+			}
+		}
 		if !ok || !reflect.DeepEqual(d.Spec, s) {
 			return nil, llm.ModelIncompatible
 		}
@@ -234,6 +255,10 @@ func (r *Registry) Resolve(name string) (Definition, bool) {
 	defer r.mu.RUnlock()
 	d, ok := r.definitions[name]
 	d.Spec = copySpec(d.Spec)
+	d.PreviousSpecs = append([]Spec(nil), d.PreviousSpecs...)
+	for i := range d.PreviousSpecs {
+		d.PreviousSpecs[i] = copySpec(d.PreviousSpecs[i])
+	}
 	return d, ok
 }
 

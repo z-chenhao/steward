@@ -13,10 +13,13 @@ import (
 )
 
 type inspectionRow struct {
-	Record  memory.Record
-	At      int64
-	Next    string
-	Retired bool
+	Record   memory.Record
+	At       int64
+	Next     string
+	Retired  bool
+	Layer    string
+	Metadata string
+	Revision int64
 }
 type InspectionSnapshot struct {
 	scope       recall.Scope
@@ -32,7 +35,7 @@ func (s *Store) inspectionRows(ctx context.Context, scope recall.Scope, floor in
 		return nil, memory.ErrInspectionUnavailable
 	}
 	defer tx.Rollback()
-	rows, err := tx.QueryContext(ctx, `SELECT m.memory_id,m.user_id,m.scope_type,m.scope_id,m.tier,m.content,m.source_refs,coalesce(m.supersedes_memory_id,''),m.created_at,(EXISTS(SELECT 1 FROM memory_retirement x WHERE x.memory_id=m.memory_id) OR EXISTS(SELECT 1 FROM memory_semantic_record x WHERE x.memory_id=m.memory_id AND x.expires_at>0 AND x.expires_at<=unixepoch('subsec')*1000000)),coalesce((SELECT n.memory_id FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL),'') FROM memory_record m LEFT JOIN recall_document d ON d.ref='memory:'||m.memory_id WHERE m.user_id=? AND ((m.scope_type='user' AND m.scope_id=?) OR (m.scope_type='agent' AND m.scope_id=?)) AND m.deleted_at IS NULL AND m.created_at>? AND (d.active=1 OR substr(lower(m.content),1,7)='sealed:' OR EXISTS(SELECT 1 FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL)) ORDER BY m.created_at DESC,m.memory_id DESC`, scope.UserID, scope.UserID, scope.AgentID, floor)
+	rows, err := tx.QueryContext(ctx, `SELECT m.memory_id,m.user_id,m.scope_type,m.scope_id,m.tier,m.content,m.source_refs,coalesce(m.supersedes_memory_id,''),m.created_at,coalesce((SELECT layer FROM memory_document x WHERE x.memory_id=m.memory_id),'notes'),coalesce((SELECT metadata FROM memory_document x WHERE x.memory_id=m.memory_id),''),coalesce((SELECT revision FROM memory_document x WHERE x.memory_id=m.memory_id),1),(EXISTS(SELECT 1 FROM memory_document_dependency dep JOIN memory_record source ON source.memory_id=dep.source_id WHERE dep.memory_id=m.memory_id AND (source.deleted_at IS NOT NULL OR EXISTS(SELECT 1 FROM memory_record successor WHERE successor.supersedes_memory_id=source.memory_id) OR EXISTS(SELECT 1 FROM memory_retirement retired WHERE retired.memory_id=source.memory_id))) OR EXISTS(SELECT 1 FROM memory_retirement x WHERE x.memory_id=m.memory_id) OR EXISTS(SELECT 1 FROM memory_semantic_record x WHERE x.memory_id=m.memory_id AND x.expires_at>0 AND x.expires_at<=unixepoch('subsec')*1000000)),coalesce((SELECT n.memory_id FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL),'') FROM memory_record m LEFT JOIN recall_document d ON d.ref='memory:'||m.memory_id WHERE m.user_id=? AND ((m.scope_type='user' AND m.scope_id=?) OR (m.scope_type='agent' AND m.scope_id=?)) AND m.deleted_at IS NULL AND m.created_at>? AND (d.active=1 OR substr(lower(m.content),1,7)='sealed:' OR EXISTS(SELECT 1 FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL)) ORDER BY m.created_at DESC,m.memory_id DESC`, scope.UserID, scope.UserID, scope.AgentID, floor)
 	if err != nil {
 		return nil, memory.ErrInspectionUnavailable
 	}
@@ -42,7 +45,7 @@ func (s *Store) inspectionRows(ctx context.Context, scope recall.Scope, floor in
 		var row inspectionRow
 		var refs string
 		r := &row.Record
-		if rows.Scan(&r.ID, &r.UserID, &r.ScopeType, &r.ScopeID, &r.Tier, &r.Content, &refs, &r.Supersedes, &row.At, &row.Retired, &row.Next) != nil || json.Unmarshal([]byte(refs), &r.SourceRefs) != nil {
+		if rows.Scan(&r.ID, &r.UserID, &r.ScopeType, &r.ScopeID, &r.Tier, &r.Content, &refs, &r.Supersedes, &row.At, &row.Layer, &row.Metadata, &row.Revision, &row.Retired, &row.Next) != nil || json.Unmarshal([]byte(refs), &r.SourceRefs) != nil {
 			return nil, memory.ErrInspectionUnavailable
 		}
 		r.CreatedAt = time.UnixMicro(row.At).UTC()
@@ -78,7 +81,7 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 	}
 	for _, row := range rows {
 		r := row.Record
-		v := memory.InspectionRecord{Ref: "memory:" + r.ID, Tier: r.Tier, CreatedAt: r.CreatedAt, Status: "active", Origin: "unknown", ContentState: "available", Sources: []memory.InspectionSource{}}
+		v := memory.InspectionRecord{Layer: row.Layer, Revision: row.Revision, Ref: "memory:" + r.ID, Tier: r.Tier, CreatedAt: r.CreatedAt, Status: "active", Origin: "unknown", ContentState: "available", Sources: []memory.InspectionSource{}}
 		if row.Retired {
 			v.Status = "retired"
 			v.ContentState = "retired"
@@ -125,6 +128,13 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 				continue
 			}
 		}
+		layer := q.Layer
+		if layer == "" {
+			layer = memory.Notes
+		}
+		if q.Ref == "" && v.Layer != layer {
+			continue
+		}
 		if v.Status == "active" {
 			v.Content = r.Content
 			if strings.HasPrefix(strings.ToLower(r.Content), "sealed:") {
@@ -138,7 +148,23 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 				}
 			}
 		}
-		if q.Ref == "" && q.Search != "" && !strings.Contains(strings.ToLower(v.Content+" "+v.Ref), strings.ToLower(q.Search)) {
+		if row.Metadata != "" && v.ContentState == "available" {
+			plain, e := s.vault.Open(ctx, row.Metadata, "document:"+r.ID)
+			var meta documentMetadata
+			if e != nil || json.Unmarshal([]byte(plain), &meta) != nil {
+				v.Content = ""
+				v.ContentState = "unavailable"
+				if q.Search != "" {
+					return memory.InspectionPage{}, snapshot, memory.ErrInspectionUnavailable
+				}
+			} else {
+				v.Title, v.Links = meta.Title, meta.Links
+				if meta.Origin != "" {
+					v.Origin = meta.Origin
+				}
+			}
+		}
+		if q.Ref == "" && q.Search != "" && !strings.Contains(strings.ToLower(v.Title+" "+v.Content+" "+v.Ref), strings.ToLower(q.Search)) {
 			continue
 		}
 		out.Total++

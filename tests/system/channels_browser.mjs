@@ -328,6 +328,20 @@ try{
   await page.evaluate(()=>document.fonts.ready);
   await page.locator('.welcome').evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
   if(!await page.evaluate(()=>document.fonts.check('500 16px "Inter"')&&document.fonts.check('400 40px "Source Serif 4"')))throw Error('local brand typography unavailable');
+  const welcomeViewport=page.viewportSize(),welcomeGeometry=[];
+  for(const viewport of [{width:2560,height:1332},{width:1400,height:980},{width:1194,height:834},{width:834,height:1194},{width:390,height:844},{width:390,height:500}]){
+   await page.setViewportSize(viewport);
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const group=await page.evaluate(()=>{
+    const title=document.querySelector('.welcome h1').getBoundingClientRect(),composer=document.querySelector('.composer').getBoundingClientRect(),header=document.querySelector('.chat-topbar').getBoundingClientRect();
+    return {top:title.top,titleBottom:title.bottom,titleCenter:(title.top+title.bottom)/2,groupCenter:(title.top+composer.bottom)/2,composerTop:composer.top,bottom:composer.bottom,header:header.bottom,height:innerHeight,overflow:document.documentElement.scrollWidth>innerWidth};
+   });
+   if(group.overflow||group.top<group.header||group.bottom>group.height||group.titleCenter>=group.height/2||group.height>=600&&Math.abs(group.groupCenter-group.height/2)>24||group.composerTop-group.titleBottom<20||group.composerTop-group.titleBottom>36)throw Error('Empty Chat lost its centered welcome/composer group: '+JSON.stringify({viewport,group}));
+   welcomeGeometry.push({viewport,...group});
+  }
+  await writeFile(evidence+'/welcome-layout.json',JSON.stringify(welcomeGeometry,null,2));
+  await page.setViewportSize(welcomeViewport);
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   await page.screenshot({path:evidence+'/welcome.png',fullPage:true});
   if(await page.getByLabel('Message Ghost').inputValue()!=='Plan my day: finish the release risk note before noon.')throw new Error('frontend enhancement lost early draft');
   const preserved=await page.getByLabel('Message Ghost').evaluate(input=>document.activeElement===input&&JSON.stringify([input.selectionStart,input.selectionEnd]));
@@ -386,7 +400,11 @@ try{
   await page.getByRole('button',{name:'Columns',exact:true}).click();
   await page.getByRole('checkbox',{name:'Show column: Model cost',exact:true}).waitFor();
   await page.keyboard.press('Escape');
-  const cost=row.locator('.obs-cost');await cost.getByText('Estimated',{exact:true}).waitFor();
+  const cost=row.locator('.obs-cost');await cost.waitFor();
+  if(await cost.getByText('Estimated',{exact:true}).count())throw Error('cost rows repeat the header explanation');
+  await page.getByRole('button',{name:'Help: Model cost',exact:true}).click();
+  await page.getByRole('tooltip').filter({hasText:'Estimates are not invoices'}).waitFor();
+  await page.keyboard.press('Escape');
   if(!/USD \d+\.\d{6}/.test(await cost.innerText())||!(await cost.getAttribute('title')).includes('openai-codex'))throw Error('automatic price lost its amount or provenance');
   for(const width of [1400,390])for(const theme of ['light','dark']){
    await page.setViewportSize({width,height:980});
@@ -402,7 +420,8 @@ try{
   }
   await row.locator('a.trace-open').click();await page.locator('.control-sheet').waitFor();
   await page.getByText('Trace metrics',{exact:true}).click();
-  await page.locator('.obs-metrics .obs-cost').getByText('Estimated',{exact:true}).waitFor();
+  await page.locator('.obs-metrics .obs-cost').waitFor();
+  if(await page.locator('.obs-metrics .obs-cost').getByText('Estimated',{exact:true}).count()||!(await page.locator('#trace-detail-cost-help').textContent()).includes('not invoices'))throw Error('cost detail lost its single help disclosure');
   await page.setViewportSize({width:1400,height:980});await page.goto(url);
  }
 
@@ -413,7 +432,7 @@ try{
   await traceList(page,context,browser,url,evidence,facts);
   await page.setViewportSize({width:720,height:980});
   await page.waitForFunction(()=>document.querySelector('.obs-filter-rail')?.open===false);
-  await page.locator('.obs-filter-rail>summary').click();
+  await page.getByRole('button',{name:'Filters',exact:true}).click();
   await page.getByRole('radio',{name:'Root Worker',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('role')==='root');
   await page.getByRole('radio',{name:'All agents',exact:true}).check();await page.waitForURL(target=>!target.searchParams.get('role'));
   await page.setViewportSize({width:1400,height:980});
@@ -489,8 +508,8 @@ try{
   if(await page.locator('.obs-task-link img').count()||!await page.locator('.obs-task-link').innerText().then(text=>text.includes('<img src=x')))throw new Error('Task title was interpreted as HTML');
   await page.locator('.run-node[data-run-id="'+child.id+'"] a.tree-heading').click();
   await page.getByText('Raw observation',{exact:true}).click();
-  if(!await page.locator('.parent-run').innerText().then(text=>text.includes(child.parent)))throw new Error('selected Child lost parent navigation');
-  await page.locator('.parent-run').click();
+  if(!await page.locator('[data-observation-parent] a.control-identifier-link').innerText().then(text=>text.includes(child.parent)))throw new Error('selected Child lost parent navigation');
+  await page.locator('[data-observation-parent] a.control-identifier-link').click();
   await page.getByText('Trace metrics',{exact:true}).click();
   await page.locator('.creator-run').click();
   if(await page.locator('.run-node[data-role="root"],.run-node[data-role="child"]').count())throw new Error('Main page presented Task Roots as its Child Runs');

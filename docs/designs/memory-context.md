@@ -23,6 +23,39 @@ flowchart TD
     K --> G["冻结 Generation"]
 ```
 
+### 四层文档与后台整理
+
+**需求、消费者与证据。** Main/Worker 需要在执行时保留经验，并在后续会话发现已有知识；所有者需要按四层检视。原 `CurationInput` 是单条 observation 与 facts，Core/Recall 只表达事实分级，无法单独承担笔记、Wiki 和启动记忆。原始 Conversation、Task、Artifact、冻结请求与记忆隐私屏障仍是下游契约。
+
+```mermaid
+flowchart BT
+  T[Transcripts：原始记录] --> N[Memory notes：笔记]
+  T --> W[Memory representations：Wiki]
+  T --> I[Injected context：启动记忆]
+  N <--> W
+  W <--> I
+  A[业务 Agent] -->|memory_manage write| N
+  A -->|维护| I
+  D[后台 Dreaming] -->|核对与整理| N
+  D --> W
+  D --> I
+  T -->|搜索原文| R[Recall]
+  N --> R
+  W --> R
+  I -->|新 Run 冻结| C[Context Builder]
+  R -->|按逻辑输入冻结| C
+```
+
+**机制。** `memory.Documents` 是运行时消费的私有存储契约，没有路径、SQL 或模型选择的身份参数。SQLite 适配器在 memory schema 4 中增加 document、dependency 和 receipt：正文复用不可变 memory_record，密封元数据记录层级、标题、链接与修订；旧事实作为 notes 读取，不改写旧记录。层级与 Core/Recall 正交。修改以当前叶子和修订号作 CAS，成功写入与回执处于同一 Memory 事务。链接继承原始来源并保存传递依赖；已知来源被替代、退役或遗忘时，依赖文档不再作为有效正文读取或召回。
+
+现有 memory_manage 承担文档 list/read/write/retire 和 Main-only dream；不新增平行管理工具。remember/forget 保留原接受与撤销语义。新 Worker 快照可使用文档操作；版本 1/2 的已知完整快照通过宿主明确列出的 predecessor spec 执行，保留原 schema、输出上限和角色权限；v3 的数值、正文和链接边界由 Host 校验，省略/零 limit 使用默认窗口；未知历史 schema 仍拒绝，历史快照不获得新操作。笔记允许模型经验和暂定假设，不能把模型作者改写成用户作者，也不能改变当前 Task、SecurityPolicy 或授权。页面退役是知识整理，不能代替 Forget 的来源 suppression。
+
+**整理。** 后台沿共享 memory_mutation 日志合并 dream 工作，使用独立的 purpose/pass 维护 generation；原 observation 事实提取保留兼容，不把通用文档送回 facts schema。每批最多读取 24 条未覆盖原始消息及 48 份相关当前文档，原文/总文本分别受 32/64 KiB 上限与实际模型窗口约束。最多 3 轮结构化建议，宿主校验当前目标、链接、隐私 floor 后提交。同批编辑按引用依赖顺序写入，保留原提案索引作为持久回执身份；链接到本批更新目标时绑定返回的新版本引用。循环编辑依赖与指向本批退役目标的链接在写入前拒绝，跨库重放以相同回执取得相同新引用。事实提取预算为 45 秒；较大的 Dreaming 综合预算为 2 分钟，对应接纳租约分别为 90 秒和 4 分钟，避免有效结果晚于租约返回。这是私有维护默认策略，不新增用户配置或批量存储协议。每轮结果由既有 GenerationObserver 接纳、密封和计费；Memory 提交后记录 step，最终才推进来源覆盖位置；长消息以 UTF-8 字节游标分批续读，不能因单次容量不足而丢弃剩余原文。跨库故障重放已接纳建议与相同文档回执，不再次调用模型。无效建议继续使用有界失败隔离，不退回摘句。大于 128 条的旧事实语料通过有界候选选择继续维护，不把全部事实强塞入单次请求。
+
+**上下文。** state schema 49 保存 run_injected_memory、维护步骤和覆盖位置；`layered_memory` 冻结策略仅作用于新 Run，并随父策略继承。每个会话加载所在 Host 授权作用域的 injected 文档，主会话还排除尚未消费输入的派生内容。注入快照不参加查询排序；它与其余必需输入一起参与总窗口检查。旧策略 L4 以密封 Message.Memory 保存在当前 user 投影中；新的 separate_evidence 策略把 L4 和召回作为当前输入之前的独立不可信 runtime 证据。L1/L2/L3 自动召回保留工作集排除和时间顺序。Bridge 只对传输副本解析 MemoryText，接纳观察者仍收到原密封请求；含该内容的 HTTP body 不记录。工具精读同样密封持久化，压缩保留文档重读提示。
+
+**策略与稳定性。** 8 条/5 分钟、24 条原文、48 份文档、3 轮、200 行/25,000 字节是私有默认值；作用域、加密、来源、版本、回执、撤销和冻结是必要机制。保持 SQLite 作为当前适配器，不把本地文件系统、目录结构、通用图数据库或第三方运行时引入记忆契约。旧事实的晋升/老化仅继续作用于旧事实，不把它们当作四层迁移条件。经验可以先存在笔记，再通过现有 Reviewer 形成正式 Skill；计划笔记不成为 Task 的权威状态。
+
 ### 加密召回的工作索引（F-039）
 
 每个 Memory Store 最多保留一个授权作用域的内存 SQLite 工作索引，禁用落盘 temp。每次查询按当前可访问记录增量同步；未变化文档复用向量，只对新增/变化文档生成 embedding。切换作用域、Forget、重新配置 vault 或关闭 Store 清除工作索引。索引变更串行，等待可由 context 取消；embedding 调用不持索引锁，不阻塞其他 Run 的检索。隐私修改关闭旧工作索引，使尚未完成的旧视图检索失败关闭。持久库不保存解密内容或这些向量，选定 embedding 仍须为 loopback。
@@ -130,7 +163,7 @@ context_tokens > context_window * threshold_percentage
 - Forget 覆盖未完成 Run。可靠接受 Forget 时提交隐私 epoch，撤销旧上下文的后续 dispatch、模型结果接受及重放；旧快照仅保留作审计，不原地改写。首版保守停止同 Agent 作用域全部未完成 Run，新的自动上下文不导入撤销点之前的证据。详见 ADR 003 与 `docs/features/memory-context.md`。
 - 撤销点之后接受的新输入归属新的排队 Main，保留不可变回执；旧 Main owner join 或租约失效并完成 stop settlement 后，才允许调度或 Claim 后继 Run。同内容的新显式 remember 保留独立的新来源与时间戳，不能因去重而继续指向撤销点之前的证据。
 - System Prompt、人格、规则和 Core Memory 尽量保持静态。
-- 新 Run 将带原始时间戳的召回附在当前 user message 的 `<recall_memory>` 区块中；不插入额外消息或在工具交换后追加历史证据。
+- 新 Run 采用 system → history → recall → current user input；带原始时间戳的 `<recall_memory>` 是当前输入之前的独立 runtime 证据，不在工具交换后追加。旧 inline 策略及其冻结请求保留。
 
 <a id="contract-11-memory-与-conversation"></a>
 
@@ -150,9 +183,9 @@ context_tokens > context_window * threshold_percentage
 | 信息 | 存储位置 |
 |---|---|
 | 用户偏好、事实、关系、稳定决策 | Memory |
-| 可复用方法、工作流、经验 | Skill |
+| 可复用方法、工作流、经验 | Memory notes 保存经验；正式可执行规范使用 Skill |
 | 安全规则与审批要求 | SecurityPolicy |
-| 持续工作的状态与进度 | Task |
+| 持续工作的状态与进度 | Task 为权威；笔记可保留带时间的计划 |
 | 工具步骤、错误和原始结果 | RunTrace |
 | 用户与 Agent 的原始消息 | Conversation |
 
@@ -267,7 +300,7 @@ forget
 
 - Agent Loop 不直接写 Memory 数据库，只提交 Memory Mutation Event。
 - Root 与 Child Worker 都可以在当前用户与 Agent 作用域内调用只读 `memory_search`，统一检索长期 Memory 与 Conversation 历史；检索内容按需进入各自 Run Context，不自动复制完整历史，也不在 Run 之间同步检索结果。
-- Worker 不直接提交长期 Memory 写入。Conversation、Root/Child Run、Task 结果和用户反馈都进入统一 Memory 提取管线，由后台 Curator 无感完成证据判断、去重、冲突合并与持久化，避免并行 Child 重复或相互覆盖。
+- 新版本 Worker 可经 memory_manage 写入有来源的笔记文档，但不能执行 remember/forget/dream 控制。旧版本 Worker 不直接提交长期 Memory 写入。Conversation、Root/Child Run、Task 结果和用户反馈都进入统一 Memory 提取管线，由后台 Curator 无感完成证据判断、去重、冲突合并与持久化，避免并行 Child 重复或相互覆盖。
 - 后台 Memory Curator 串行合并事件，处理去重、冲突、替代和遗忘。
 - Curator 是机器审核与归并流程，不是人工审批。
 - Memory 默认无感形成：后台自动观察 Conversation、Task 结果和用户反馈，异步提取、归并、降级与淘汰，不阻塞当前回复，也不为单条记忆请求用户确认。
@@ -384,15 +417,15 @@ Only a new explicit input queries the current corpus. Execution
 cancellation interrupts pending recall and admits no partial/frozen model turn.
 New policies exclude working-context Conversation IDs and their derived Memory before index candidate limits, including both lexical and vector selection. Consumed originals outside the working set remain eligible; unconsumed accepted inputs remain excluded. The service and final projection also remove matching source identities or exact text and deduplicate before freezing. This is private automatic-recall policy; explicit memory search
 retains its original results. Final exact-text filtering after bounded retrieval can still return fewer hits; no semantic topic classifier is introduced.
-Evidence is untrusted runtime data. With the Host-frozen `input_recall` policy,
-recall is attached after the current user's text inside one `<recall_memory>`
-block. Hits are ordered by original timestamp and quote their original author;
-XML escaping prevents stored text from closing the block. Source keys are not
-included in the model-facing evidence. The original Conversation message is
-unchanged. The first request is system → history → current user input containing
-recall; tool continuations append exchanges to that exact prefix until a new
-input or required compaction changes the working set. The final rendered block,
-including escaping and framing, must fit its evidence budget.
+Evidence is untrusted runtime data. New Host-frozen `separate_evidence`
+policies order requests system → history → recall → current user input. L4 is
+sealed in its own protected runtime evidence message; timestamped automatic
+recall is a separate runtime `<recall_memory>` block immediately before the
+current input. Neither is a system instruction or action authorization. Original
+Conversation messages remain unchanged. Missing `separate_evidence` retains the
+historical `input_recall` inline representation byte-for-byte. Tool continuations
+append to the exact frozen prefix; only a new input or required compaction
+changes the working set. Source metadata stays Host-owned.
 Evidence uses at
 most one quarter of the remaining conservative byte budget, capped at 16 KiB;
 hierarchical compaction and the final model-window check also apply; see maintenance operations.
@@ -635,3 +668,85 @@ schema and advances to 48. Its encrypted requests/results, receipts and usage
 are preserved. Public v47 runs the ordinary semantic migration. Unknown or
 partial private schemas fail closed; no global IF NOT EXISTS policy or version
 rewind is introduced. Backups remain necessary for rollback.
+
+后台每个新 generation（包括失败重试、租约过期后的新尝试和后续 Dreaming 轮次）使用独立的 Bridge Run/Session；会话销毁为终态，不能复用事件级 Session。持久事件、purpose/pass 与文档回执仍承担去重；已接纳结果重放不新建会话、不再次推理。
+
+
+### 显式检索与逐文档证据
+
+**需求与证据。** 当前消费者为 Main／Worker 的 `memory_search`、CodeMode 中的精读和后台 Dream。实际探测暴露了当前任务请求回流、单次约 60KB 结果挤占 16K 上下文、带引号会话标识被拆词，以及批次来源交叉挂载。相似地点／主题仅构成检索线索，不能证明事件的身份或用途一致。
+
+**机制。** 新冻结的 memory_search v3 复用工作集／Task 原始请求的 Host 排除集合；按窗口限制输出，并返回原文连续摘录、字节偏移、总长度和精读引用。摘录不生成新摘要，也不把不匹配解释为事实不存在。完整引用短语在候选限额前过滤；Latin 词匹配使用边界，CJK 保留二元词。摘录不能因来源去重而遮蔽被截去的原始会话内容。自动召回的按输入冻结和既有消息顺序保持。
+
+memory_manage v6 的 `read, layer=transcripts` 对同一 User／Agent 的原始会话及已结束 Worker 的任务／工具回执提供分页精读，沿用既有工具，不借用 Main 的 Task／Artifact／GitHub 权限。读取校验原始 ownership、Forget 时间边界和 Run fence；结果按当前 Run 密封。CodeMode 的已知文本块和直接密封读回执可在模型传输副本中展开；任意业务对象不被递归猜解。密文引用及展开预算的投影是确定性的，后续轮次保持字节稳定，HTTP 观测不保存展开正文。
+
+当已有 injected 文档因依赖失效而不可读时，Dream 绕过常规消息数／时间合并阈值，以失效文档身份和覆盖位置构造持久键去重补建；没有新 transcript 时从仍有效的笔记／表示重建；用户主动退役、从未创建或已遗忘的内容不触发此恢复。
+
+Dream 私有输入 v2 要求新文档选择原始 observation 索引与精确引文，或链接已有有来源的文档；Host 校验索引、逐字证据、作用域与依赖，只挂载选择的原始来源。引文、作者和时间存入现有加密元数据，重试回执覆盖这些证据，不增加明文索引列。模型仍需区分事实、假设和未知，不能添加原文没有的事件限定条件。
+
+读取契约在 schema 中声明单次最多 4096 字节，工具说明区分 conversation 命中的 transcripts 精读与 memory 命中的文档精读；不依赖模型试错来发现分页上限。
+
+**窗口边界。** 新 Run 冻结 full_window_fallback：压缩阈值是工作集目标，必要系统／当前输入／工具交换无法进一步缩减时，可使用真实窗口扣除输出与工具后的硬容量。模型输入只计算展开后的正文与公开前缀，不把密文／resolver 元数据重复算作模型 token；RPC 预算单独保留封装及展开余量。RPC 上限、输出余量及展开记忆的预算仍约束请求；provider 已报上下文超限后的 aggressive 重试不启用此回退。旧策略缺省保持原行为。
+
+**稳定范围与取舍。** 当前工具消费者获得有版本的窄读取能力；Dream 提案、文档元数据和摘录策略保持 private。不引入事件知识图谱、通用语义判官、固定 Agent 检索轮数上限或本地记忆文件。词匹配和短摘录降低噪声，不作为跨语言蕴含证明；语义质量由固定真实模型 case 评测检验。旧工具规格、旧私有 Dream 输入及已经接纳的请求／结果保留原表示和回放行为。
+
+工具契约保留已部署的 search v1/v2 与 manage v1–v5 精确规格；新版本强调引用为不透明完整值，禁止抽取其中 UUID。时间过滤使用外层存储的 occurred_at，要求带明确时区的 RFC3339；引用正文中的历史日期由检索／精读后推理，不能当作导入时间过滤条件。
+
+
+### 有证据的渐进读取与可见结果去重
+
+**需求与证据。** 当前消费者是 Main／Worker 的显式 memory_search 与冻结 L4；个人场景里，完整 Wiki 曾遮住只被其部分概括的原始会话，同一 Wiki 反复返回，支持引文又固定取开头两条。L4 注入只取 Content，丢掉了已存的 Links。流程经验组因此出现重复搜索与压缩；增加层数本身不是低延迟保证。
+
+**新冻结机制。** search v4 保留 v1–v3 的精确规格。只有新显式读取采用 evidence-first：相同相关度优先原始会话，再是笔记、Wiki；完整派生文档不再代表其原始会话已被完整覆盖，L4 不重复作为搜索候选。跨层同文去重、作用域／隐私／预算仍保留；共有来源不是同文证明，两个方向都不能据此隐藏其他内容。Wiki 引文按当前查询选择最相关的两条原始支持，稳定排序，不生成新事实。
+
+可见去重来自同 Run 的已成功 memory_search 回执，并与当前工作集实际展示的完整命中逐字段匹配。CodeMode 子回执只有在父帧真的把该结果呈现给模型时才算可见；失败父帧、伪造业务 JSON、截断摘录和已压缩离开的证据不消耗未来搜索名额。原始 Task／工作集的 Host 排除集合继续生效。可见引用使用独立的 exact SeenRefs，索引在限额前过滤，不能沿来源传播到尚未读过的派生文档。空结果可表示没有新增证据，不能解释为事实不存在。
+
+memory_navigation 是新 Run 冻结的私有上下文策略，随父 Run 继承，旧缺省为 false。沿用 run_injected_memory 的密封快照，只渲染现有摘要、完整索引引用和经同作用域／Forget 校验的相关链接，不注入所有 Wiki 全文。当前策略为最多三个词匹配链接、正文与导航最多约2KB（随窗口缩小），超长正文用明确标记的 UTF-8 原文摘录，完整文档仍可按引用精读。选择、引用与预算首次冻结后不因后续工具轮次、Corpus 或后台编辑改变，旧请求原样重放。此策略不做通用语义分类、不按评测题切换层、不增加用户配置或新的存储抽象；词匹配排序和注入上限保持 private、可逆，已有 Documents 作用域与读取接口继续复用。
+
+模型可复用已完整覆盖人物／事件／用途／时间限定的原始证据或带来源的笔记；只在缺少上下文、归因或存在冲突时回读，不用每题穷尽复查同一原文。独立读取可在同一 CodeMode 轮次并行。性能验收同时计搜索、精读、模型调用、真正 summary_request、总输入与缓存输入，并保留准确率／拒答／Forget 的负例，不能通过硬截断轮次或改 gold 获取速度。
+
+**完整性。** 局部 Wiki／所选笔记有证据支持，不代表已覆盖所有事件。search v4 可用受限 source_type=conversation 跳过派生库，只查询同一授权原始会话；既有 v1–v3 不获得新参数。明确的原始用户总数按其时间范围引用；其他全集计数、列表或不存在断言应检索原始范围、核对身份／日期／完成状态后聚合，不能把导航列出的文档数或当前结果数当总数。导航声明其为局部主题入口，保留截断和精读标记；不引入按题识别分支或修改评分标准。
+
+8K 窗口回归同时约束固定系统／工具声明开销；来源限定和完整性规则使用紧凑说明，不靠增大窗口或让必需输入提前报超限来解决。聚合按可用历史中已核对的独立项目回答，覆盖不足明确限定；新查询不再增加项目时停止，不要求证明外部世界的全集。
+
+
+### 证据复用、轻量导航与可测的维护
+
+**需求与消费者。** Main、Root、Child 已实际消费自动召回、搜索与精读，同一份完整证据可能由多个入口重复装配；L4 选择导航时逐份读取正文造成额外工作。后台维护还需要区分模型开销、知识修改与后续曝光。原文、权限、Forget、旧能力与冻结请求是下游契约，不能为提速改写。复用已接纳回执和当前模型工作投影，不增加跨 Run 的通用缓存或新的记忆工具。
+
+**可见性机制。** 新 Run 冻结 evidence_reuse，旧缺省为 false。自动召回和显式搜索共用当前工作集的完整证据判定：成功且属于本 Run 的搜索／精读回执，必须与当前可见帧逐字段对应；CodeMode 父帧必须确实展示了内容。原始引用保留为完整 opaque Ref，不拆分内部 UUID。密封精读只在内存解析；SQL 先按可见 provider call IDs 限制回执，不解密全部历史。自动召回的引用没有进入公开正文，按相同逻辑输入最近一次冻结准备投影中的完整 Host 渲染块匹配；separate_evidence 按最新用户要求在新 Run 中冻结独立证据顺序，旧策略不迁移。旧准备记录不会越过最新压缩投影继续排除证据。只有包含修订、链接等完整元数据的成功精读页确实已展示时，再次精读才返回 already_visible 指示；仅见过搜索正文不能阻止获取 CAS 修订等元数据。宿主仍通过元数据读取复核当前版本可见性；截断／已压缩内容、退役文档不能借该机制绕过读取。原始会话精读继续遵循既有授权与分页路径。
+
+自动召回只在新逻辑输入首次查询时应用该判定；已经冻结的 Recall 和请求前缀继续原样复用。每轮仍做预算和派发检查。SeenRefs 精确排除，不传播到同源但尚未展示的派生文档；自动及显式新策略保留不同内容的原文，并过滤已注入层的回声。行为不依赖题号或语义题型路由。
+
+**轻量导航机制。** 新 Run 冻结 metadata_navigation。NavigationReader 是已有存储旁的内部窄投影：一次有界查询取授权文档的密封标题和检索词，解密后再批量复核当前可见性；不选择正文，不调用逐份 ReadDocument。新文档的检索词存入原有密封元数据，最多 96 词／1 KiB；旧不可变元数据通过标题和已有支持引文派生检索词，不回填旧正文或重写引用。最多三个导航引用和约 2 KiB 注入预算仍为 private 默认。旧 navigation policy 保留原渲染与读取行为。
+
+**Dream 当前策略。** 独立载入当前 L4，再通过已有授权检索从整个语料选择最多 48 份相关候选，最终选择至多 12 份模型工作文档；最近 4 份仅作回退，不再是相关性检索的语料边界。48／12／4 都是内部预算。该策略减少模型上下文，不声称已经消除候选正文读取。Host 对内容、标题、链接和支持引文均未变化的提案核对当前叶子后跳过版本重写；新独立来源或证据变化不能当作无变化跳过。调度继续使用现有日志与覆盖游标，不按未经验证的“有用性分数”自动增减维护频率。
+
+**观测与稳定性。** state 50 记录 memory_access、memory_injection_access、memory_dream_change。前两者表示提供／读取／注入，不能证明模型采纳或任务有益；相同 invocation／Run 重放不重复计数。维护 metrics 同时提供模型次数、已知 usage、输入／缓存／输出 token、模型时间、分币种参考费用、未知价格数、修改／退役／无变化数和后续工具读取／注入数。它们从同一只读状态快照汇总，经现有 memory status、维护 Inspection JSON 及 Web 维护列表／详情展示，隐私边界照常复核。自然语言学习收益由独立真实模型与任务验证器判断，不能以读取次数替代。
+
+**恢复与取舍。** 并发 Host 共用持久 generation 租约；其他 Host 的 Busy 不记为维护失败或增加错误次数。已接纳结果、步骤和 Memory 回执继续承担跨库幂等。检索词、选择算法、复用策略与指标投影保持 private / experimental；不新增全局知识缓存、图数据库、语义分类服务、记忆层或云 SDK。暂缓基于未充分测量的收益自动调节 Dream，先保留完整成本与质量证据。
+
+### 云端接入前的身份与密钥边界
+
+当前消费者仍是一数据根一个 Agent／所有者的 runtime。app.owner_id 由可信部署配置提供，缺省 local；state 50 持久绑定 runtime_owner，已有业务根绑定 local。启动拒绝不同所有者，历史数据不重标；模型参数和 HTTP header 不能选择身份。Memory、Recall、原始 Conversation 与 Artifact 的 Host scope 统一来自该绑定，Conversation 校验当前 Agent 主会话的已有归属后绑定追加身份；其他已注册会话保持原有权限并逐次按 scope 过滤。共享数据库的多用户 Web 认证和路由不在这个单所有者 runtime 中隐式实现。
+
+OpenRuntimeWithSecrets 允许可信宿主注入已有 SecretStore，直接复用 Memory Vault、模型凭据和维护管线，不自动选用文件凭据或回退到环境变量。调用方提供用户作用域的 SecretStore 与 opaque key ref；密钥缺失／错误按原机制失败关闭。默认安装的 Files 行为保留。云平台、共享数据库、认证服务与 KMS 尚未选定，因此这里完成可验证的身份／密钥接缝和多 Host 一致性，具体远程适配与真实云部署需在选型后实现；不能把接口注入称为已完成云部署。这个边界保持 experimental，避免提前稳定多租户公共协议。
+
+
+### 原始执行证据、纠错身份与有界检视
+
+**需求与消费者。** Main／Root／Child 的压缩、后台 Dream、所有者 Memory 列表和精读需要保留原始动作结果，并能持续纠正跨会话知识。原始 Run、工具回执、Conversation、冻结请求及隐私屏障是既有契约，不创建新的日志库或记忆工具。
+
+**机制。** 混合 CodeMode 帧的摘要投影只替换已识别的密封记忆子块，其他业务结果及关联保持；原始帧继续留在授权归档中。Fact 被 Dream 改为文档时，在同一 Memory 事务中继承原 facet、确认时间、有效期及 canonical head；后续语义纠正仍能找到它，不因展示层改变置信度。Vault 可用时按原始不可变谱系幂等补齐旧版本遗漏的身份，已有较新 canonical fact 对应的旧派生分支只退役留审计，不重写正文或冻结回执。
+
+现存 L4 超出维护窗口时返回上下文预算错误并保留原版本，不静默隐藏 head 后让模型盲建冲突的新版本。
+
+当前文档的支持来自本次编辑及当前链接，历史来源留在不可变前驱；Forget 沿完整 supersession 谱系撤销并保留原 suppression，prune 不再因累计历史来源超过 256 而永久失去写入能力。
+
+Dream 私有输入 v3 通过现有维护日志扫描已结束 Worker，读取真实任务和接纳的工具回执，区分调用成功与业务验证失败。来源使用完整 `run:<id>:task`／`run:<id>:tool:<invocation>` 引用，精读校验 Agent、终态、Forget floor 和调用归属；不返回系统提示词或凭据。覆盖按日志位置及源偏移保存，长批次继续处理，重复 task/run 观察不重复摄入；每页额外探测一个回执，只有确有后续来源才保留续页游标，任务原文不计入工具回执页长，避免页长边界触发空维护。普通新日志继续按既有数量／时间合并，部分批次和失效 L4 优先恢复。选定旧笔记还可有界回读其原始 Conversation／Run 来源；工作集限制不等于历史不可访问。
+
+state 51 仅增加原始 intent 的微秒时间索引投影和 Worker 覆盖位置。它们是分页／恢复机制，不是新的业务真相。Transcripts 普通页按授权 scope、精确时间及 ID 游标读取 page-size+1，详情按 ID；精确 Unicode 子串搜索按有界批次扫描并计算完整匹配数，不把页数当总数，不承诺子串扫描为常数开销。
+
+memory_manage v6 在原工具内明确 write／retire 的必填字段，缺项错误不回显私有输入；历史 v1–v5 声明及冻结结果保留。 缺项提示由 Host 在最终错误脱敏之后按冻结能力重建，只含字段名；原生调用及 CodeMode 捕获的异常均可读取，普通 Provider 错误继续脱敏。Worker 原文精读只授予新版本能力，历史能力不扩张。维护列表纳入 observe/dream，模型用量、参考费用、未知值与变更／后续曝光经同一所有者投影展示；曝光仍不代表收益。
+
+**取舍与稳定性。** 新游标、索引、修复及证据投影均为 private。必要复杂度来自原文核验、生命周期、分页和崩溃恢复；候选数、工作集和重读上限仍是可逆策略。不增加图数据库、公共多租户协议、自动“有用性”判官或云厂商适配。

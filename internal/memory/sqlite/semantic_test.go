@@ -264,7 +264,7 @@ func TestSemanticMigrationFromPopulatedV2PreservesOriginals(t *testing.T) {
 	}
 	var original string
 	s.db.QueryRow(`SELECT content FROM memory_record WHERE memory_id='explicit'`).Scan(&original)
-	if _, e := s.db.Exec(`DROP TABLE memory_semantic_record; DROP TABLE memory_retirement; DROP TABLE memory_semantic_event; PRAGMA user_version=2;`); e != nil {
+	if _, e := s.db.Exec(`DROP TABLE memory_document_dependency; DROP TABLE memory_document_receipt; DROP TABLE memory_document; DROP TABLE memory_semantic_record; DROP TABLE memory_retirement; DROP TABLE memory_semantic_event; PRAGMA user_version=2;`); e != nil {
 		t.Fatal(e)
 	}
 	if e := s.migrate(ctx); e != nil {
@@ -274,7 +274,7 @@ func TestSemanticMigrationFromPopulatedV2PreservesOriginals(t *testing.T) {
 	var after string
 	s.db.QueryRow(`PRAGMA user_version`).Scan(&version)
 	s.db.QueryRow(`SELECT content FROM memory_record WHERE memory_id='explicit'`).Scan(&after)
-	if version != 3 || original != after {
+	if version != SchemaVersion || original != after {
 		t.Fatal("migration rewrote existing memory", version)
 	}
 }

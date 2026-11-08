@@ -1,13 +1,7 @@
 /* Trace list and peek share the application's controls at compact density. */
-.trace-workspace .workspace-topbar{height:48px;padding:0 16px;border-bottom:1px solid var(--border)}
-.trace-workspace .breadcrumbs{font-size:13px}.trace-workspace .workspace-topbar #workspace-status{display:none}
 .observability{padding:0;max-width:none;margin:0;min-width:0;font-size:var(--text-ui);container:inspection-layout / inline-size}
 .obs-filters{margin:0;min-width:0}
-.obs-list-heading{display:flex;align-items:center;height:56px;padding:0 16px}
-.obs-list-heading h1{font-size:18px;line-height:24px;margin:0;font-weight:600}
 .obs-list-toolbar{display:flex;align-items:center;gap:6px}
-.obs-search{margin:0 16px;width:calc(100% - 32px)}
-.obs-table-toolbar{display:flex;justify-content:flex-end;align-items:center;min-height:48px;padding:8px 16px;border-bottom:1px solid var(--border)}
 .obs-column-options{display:grid;gap:2px}.obs-column-options label{display:flex;align-items:center;gap:8px;min-height:28px;margin:0;color:var(--foreground)}
 .obs-results-layout{position:relative;display:grid;grid-template-columns:176px minmax(0,1fr);min-height:calc(100dvh - 185px);align-items:stretch}
 .obs-results-layout:has(.obs-filter-rail:not([open])){grid-template-columns:0 minmax(0,1fr)}
@@ -25,10 +19,8 @@
 .obs-trace-list{border:0;border-radius:0;overflow:hidden}.obs-table-scroll{overflow:auto;overscroll-behavior-x:contain}
 .obs-trace-list table{width:100%;min-width:1700px;border-collapse:collapse;table-layout:fixed}
 .obs-col-created{width:164px}.obs-col-role{width:105px}.obs-col-name{width:185px}.obs-col-preview{width:260px}.obs-col-duration{width:85px}.obs-col-model{width:140px}.obs-col-tokens{width:105px}.obs-col-cost{width:176px}.obs-col-status{width:100px}.obs-col-id{width:240px}
-.obs-trace-list th{height:32px;font-size:12px;line-height:18px;font-weight:500;text-align:left;background:var(--card);color:var(--muted-foreground);padding:4px 8px;white-space:nowrap;border-bottom:1px solid var(--border)}.obs-trace-list th>svg{display:inline-block;width:12px;height:12px;vertical-align:middle}
-.obs-trace-list td{height:36px;font-size:12px;line-height:18px;padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums}
 .obs-trace-list tbody tr:hover{background:var(--hover)}.obs-trace-list small{font-size:11px;color:var(--muted-foreground)}.obs-trace-list .obs-number{text-align:right}.obs-cost{display:block}.trace-open,.obs-cell-text{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0;margin:0}.trace-open{font-weight:400;text-decoration:none}.trace-open:hover{text-decoration:underline}
-.obs-trace-list .status-pill{font-size:11px;line-height:16px;padding:0 5px}.obs-list-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding:8px 12px;min-height:40px;border-top:1px solid var(--border);font-size:12px;color:var(--muted-foreground)}
+
 .obs-trace-list .empty-state{white-space:normal;text-align:left;padding:24px 12px;max-width:400px}
 .obs-task-link{font-size:var(--text-ui);margin:0 0 18px;color:var(--muted-foreground)}.obs-task-link a{color:var(--foreground)}
 .obs-trace-header{border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;padding:24px 24px 12px;background:var(--background)}
@@ -77,7 +69,7 @@
 .control-sheet .obs-workbench{height:100%;min-height:0;grid-template-columns:minmax(205px,.38fr) minmax(0,.62fr)}.control-sheet #observability-workbench{height:100%}.control-sheet .obs-tree-pane,.control-sheet .obs-detail-pane{height:100%;min-height:0}
 .observability>#observability-workbench{height:calc(100dvh - 128px);min-height:480px}.observability>#observability-workbench>.obs-workbench{height:100%;min-height:0}.observability .obs-tree-pane,.observability .obs-detail-pane{height:100%}
 @container inspection-layout (max-width:700px){.obs-results-layout{grid-template-columns:minmax(0,1fr)}.obs-filter-rail{border-right:0;border-bottom:1px solid var(--border)}.obs-filter-rail-content{display:grid;grid-template-columns:1fr 1fr;gap:12px}.obs-filter-actions{grid-column:1/-1}.observability>#observability-workbench{height:auto;min-height:0}.observability .obs-workbench{display:block}.observability .obs-tree-pane,.observability .obs-detail-pane{height:auto}.observability .obs-tree-pane{max-height:260px;border-right:0;border-bottom:1px solid var(--border)}}
-@media(max-width:760px){.trace-workspace .workspace-topbar{height:auto;min-height:48px;flex-wrap:wrap;gap:4px;padding:4px 12px}.trace-workspace .topbar-actions{margin-left:auto}.obs-list-heading{height:48px}.obs-results-layout{min-height:calc(100dvh - 170px)}.obs-facet label{min-height:44px}.obs-filter-rail-content{display:block}.obs-column-options label{min-height:44px}.control-sheet .obs-workbench{display:block;height:auto}.control-sheet #observability-workbench{height:auto}.control-sheet .obs-tree-pane{max-height:260px;height:auto}.control-sheet .obs-detail-pane{height:auto;overflow:visible}.obs-tree a.tree-heading{min-height:44px}}
+@media(max-width:760px){.trace-workspace .workspace-topbar{height:auto;min-height:48px;flex-wrap:wrap;gap:4px;padding:4px 12px}.trace-workspace .topbar-actions{margin-left:auto}.obs-results-layout{min-height:calc(100dvh - 170px)}.obs-facet label{min-height:44px}.obs-filter-rail-content{display:block}.obs-column-options label{min-height:44px}.control-sheet .obs-workbench{display:block;height:auto}.control-sheet #observability-workbench{height:auto}.control-sheet .obs-tree-pane{max-height:260px;height:auto}.control-sheet .obs-detail-pane{height:auto;overflow:visible}.obs-tree a.tree-heading{min-height:44px}}
 
 .obs-full-heading{padding:0 16px 12px}.obs-full-heading h1{font-size:18px;margin:0}.observability>.back-link{display:inline-block;margin:12px 16px;font-size:12px}
 
@@ -106,3 +98,6 @@
 .obs-wire-reader{display:grid;gap:20px}.obs-wire-attempt{min-width:0}.obs-wire-attempt>.obs-message{margin:10px 0}.obs-wire-attempt>.obs-message>summary{white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.obs-wire-attempt .obs-message-text{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.75 var(--font-ui);padding:14px}.obs-wire-attempt .obs-json{max-height:480px;overflow:auto}
 
 .obs-message-excerpt{min-width:0;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--muted-foreground);font-weight:400}.obs-message[open]>.obs-message-excerpt{display:none}
+
+/* A read-only inspection with one pane spans the shared workbench grid. */
+.obs-workbench>.obs-detail-pane:only-child{grid-column:1/-1}

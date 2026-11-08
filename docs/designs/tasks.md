@@ -644,3 +644,5 @@ system gate. Model-quality evaluation is maintained outside this repository.
 Task manage 的 create 新增可选 title（1–80 字符、非空白），与完整 task 简报分离；省略字段沿旧行为，序列化 omitempty 保持旧请求重放摘要。标题属于已验证的任务元数据，不通过系统提示词弥补字段缺失。
 
 执行记录默认列出全部，搜索旁共享 Filters 菜单选择执行状态及独立 Needs me 条件；组合条件、搜索、分页游标与实时刷新保持一致，旧 view=attention 深链接仍可用。无脚本使用原生筛选表单。
+
+Root 失败的安全通知由 Host 在终态事务中经既有 notification_intent 创建，包含有界任务标题与可续作说明，不包含原始错误、Worker 文本或 Trace。通知与 task_update 原子提交，并按 Root 身份去重，继承原 Task 交付来源；Main 仍消费带标题的失败 update，组织后续处理。持续工作的 active 状态与本轮失败状态保持独立。

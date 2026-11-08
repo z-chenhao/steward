@@ -38,6 +38,7 @@ type ToolCall struct {
 }
 
 type Message struct {
+	Memory     *MemoryText    `json:"memory_text,omitempty"`
 	Source     *ContextSource `json:"source,omitempty"`
 	ImageRefs  []string       `json:"image_refs,omitempty"`
 	Role       string         `json:"role"`
@@ -62,6 +63,7 @@ type ToolSpec struct {
 }
 
 type GenerationRequest struct {
+	ResolveMemory  func(context.Context, MemoryText) (string, error)     `json:"-"`
 	ToolGeneration *ToolGeneration                                       `json:"tool_generation,omitempty"`
 	ResolveImage   func(context.Context, string) (string, []byte, error) `json:"-"`
 	// DispatchGuard is a trusted Host lease held only while writing the request

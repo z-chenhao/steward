@@ -1,3 +1,4 @@
+import {copyText} from './components/ui/clipboard';
 // Progressive navigation for the server-rendered trace workbench. The server
 // remains the only owner of query/selection state; native links work without JS.
 import {enhanceTraceRequests} from './trace-request';
@@ -33,7 +34,7 @@ export function enhanceObservability() {
   for(const node of root.querySelectorAll<HTMLElement>('.observation-node')){node.id='trace-node-'+node.dataset.observationId;const button=node.querySelector('[data-observation-toggle]');if(button){const children=Array.from(root.querySelectorAll<HTMLElement>('.observation-node')).filter(child=>child.dataset.parentObservation===node.dataset.observationId);button.setAttribute('aria-controls',children.map(child=>'trace-node-'+child.dataset.observationId).join(' '))}}
   const pane=root.querySelector<HTMLElement>('.obs-tree-pane');if(pane)renderTree(pane);
   enhanceTraceRequests(root);enhanceReadOnlyJson(root);setMode(root);
-  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-copy-json]'))button.disabled=!root.querySelector('[data-json-source="'+button.dataset.copyJson+'"]')||!navigator.clipboard?.writeText;
+  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-copy-json]'))button.disabled=!root.querySelector('[data-json-source="'+button.dataset.copyJson+'"]');
  };
  initializeWorkbench(document);
  const dismiss=()=>{pending?.abort();disposeWorkbench();sheet?.dispose();sheet=null};
@@ -45,10 +46,18 @@ export function enhanceObservability() {
   const table=document.querySelector<HTMLTableElement>('.obs-trace-list table')!;
   const columns=Array.from(table.querySelectorAll<HTMLElement>('col'));
   const widths=columns.map(col=>parseFloat(getComputedStyle(col).width)||0);
-  const columnIndexes=[0,1,3,4,5,6,7,8,9,10,11];
+  const columnIndexes=[0,1,2,4,5,6,7,8,9,10];
   const toggles=Array.from(document.querySelectorAll<HTMLInputElement>('[data-trace-column]'));
-  let visible=toggles.map((_,index)=>index<10);
-  try{let saved=JSON.parse(localStorage.getItem('steward.trace.columns.v3')??'null');if(saved===null){const previous=JSON.parse(localStorage.getItem('steward.trace.columns.v2')??'null');if(Array.isArray(previous)&&previous.length===10)saved=[...previous.slice(0,5),true,...previous.slice(5)]};if(Array.isArray(saved)&&saved.length===toggles.length&&saved.every(value=>typeof value==='boolean'))visible=saved}catch{}
+  let visible=toggles.map((_,index)=>index<9);
+  try{
+   let saved=JSON.parse(localStorage.getItem('steward.trace.columns.v4')??'null');
+   if(saved===null){
+    let previous=JSON.parse(localStorage.getItem('steward.trace.columns.v3')??'null');
+    if(previous===null){const older=JSON.parse(localStorage.getItem('steward.trace.columns.v2')??'null');if(Array.isArray(older)&&older.length===10)previous=[...older.slice(0,5),true,...older.slice(5)]}
+    if(Array.isArray(previous)&&previous.length===11&&previous.every(value=>typeof value==='boolean'))saved=[previous[0],previous[1],previous[9],...previous.slice(3,9),previous[10]];
+   }
+   if(Array.isArray(saved)&&saved.length===toggles.length&&saved.every(value=>typeof value==='boolean'))visible=saved;
+  }catch{}
   const render=()=>{
    toggles.forEach((toggle,index)=>{
     toggle.checked=visible[index];toggle.disabled=false;
@@ -57,7 +66,7 @@ export function enhanceObservability() {
    });
    table.style.minWidth=columns.reduce((width,col,index)=>width+(col.hidden?0:widths[index]),0)+'px';
   };
-  toggles.forEach((toggle,index)=>toggle.addEventListener('change',()=>{visible[index]=toggle.checked;render();try{localStorage.setItem('steward.trace.columns.v3',JSON.stringify(visible))}catch{}}));
+  toggles.forEach((toggle,index)=>toggle.addEventListener('change',()=>{visible[index]=toggle.checked;render();try{localStorage.setItem('steward.trace.columns.v4',JSON.stringify(visible))}catch{}}));
   render();
  }
 
@@ -77,7 +86,7 @@ export function enhanceObservability() {
   const target=event.target as Element|null,treeToggle=target?.closest<HTMLButtonElement>('[data-observation-toggle]');
   if(treeToggle){const pane=treeToggle.closest<HTMLElement>('.obs-tree-pane'),node=treeToggle.closest<HTMLElement>('.observation-node');if(pane&&node){const closed=collapsed(pane),id=node.dataset.observationId!;if(closed.has(id))closed.delete(id);else closed.add(id);renderTree(pane)}return}
   const mode=target?.closest<HTMLButtonElement>('[data-json-mode]');if(mode){jsonMode=mode.dataset.jsonMode==='json'?'json':'formatted';const root=mode.closest('.obs-workbench');if(root)setMode(root);return}
-  const copy=target?.closest<HTMLButtonElement>('[data-copy-json]');if(copy&&!copy.disabled){const pane=copy.closest('.obs-detail-pane'),source=pane?.querySelector<HTMLElement>('[data-json-source="'+copy.dataset.copyJson+'"]');if(source)void navigator.clipboard.writeText(source.textContent??'').then(()=>{copy.title=t('Copied');copy.dataset.copyLabel=t('Copied');copy.setAttribute('aria-label',t('Copied'));setTimeout(()=>{copy.setAttribute('aria-label',t(copy.dataset.copyJson==='input'?'Copy input':'Copy output'));copy.title='';delete copy.dataset.copyLabel},1600)}).catch(()=>{copy.title=t('Copy unavailable')})}
+  const copy=target?.closest<HTMLButtonElement>('[data-copy-json]');if(copy&&!copy.disabled){const pane=copy.closest('.obs-detail-pane'),source=pane?.querySelector<HTMLElement>('[data-json-source="'+copy.dataset.copyJson+'"]');if(source)void copyText(source.textContent??'').then(copied=>{if(!copied)throw Error('copy unavailable');copy.title=t('Copied');copy.dataset.copyLabel=t('Copied');copy.setAttribute('aria-label',t('Copied'));setTimeout(()=>{copy.setAttribute('aria-label',t(copy.dataset.copyJson==='input'?'Copy input':'Copy output'));copy.title='';delete copy.dataset.copyLabel},1600)}).catch(()=>{copy.title=t('Copy unavailable')})}
  });
 
  document.addEventListener('click',event=>{
@@ -145,7 +154,7 @@ export function enhanceObservability() {
  document.addEventListener('click',event=>{
   if(!(event instanceof MouseEvent)||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
   const target=event.target as Element|null;
-  let anchor=target?.closest<HTMLAnchorElement>(listPage?'a.obs-select,a.trace-open,.context-reader a':'a.obs-select,.context-reader a');
+  let anchor=target?.closest<HTMLAnchorElement>(listPage?'a.obs-select,a.trace-open,a.control-identifier-link,.context-reader a':'a.obs-select,a.control-identifier-link,.context-reader a');
   if(!anchor&&listPage&&!target?.closest('a,button,input,select,textarea,label,summary,[role=button],[contenteditable]')){
    if(window.getSelection()?.toString())return;
    anchor=target?.closest('tr[data-execution-id]')?.querySelector<HTMLAnchorElement>('a.trace-open');

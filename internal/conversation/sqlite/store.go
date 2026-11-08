@@ -21,6 +21,7 @@ import (
 )
 
 type Store struct {
+	ownerID     string
 	db          *sql.DB
 	engine      recall.Embedding
 	localSearch bool
@@ -103,7 +104,7 @@ CREATE TRIGGER conversation_scope_no_replace BEFORE INSERT ON conversation_scope
 		for rows.Next() {
 			var d sqliteindex.Document
 			var raw string
-			d.UserID = artifact.LocalUser
+			d.UserID = s.owner()
 			d.Active = true
 			if rows.Scan(&d.Ref, &d.AgentID, &d.AuthorRole, &raw, &d.OccurredAt) != nil {
 				rows.Close()
@@ -183,7 +184,7 @@ func (s *Store) Append(ctx context.Context, messages []conversation.Message) err
 		}
 		// Legacy local Conversation IDs are Agent identities. Other channels
 		// register their authenticated ownership before appending messages.
-		if _, err = tx.ExecContext(ctx, `INSERT INTO conversation_scope SELECT ?,?,? WHERE NOT EXISTS(SELECT 1 FROM conversation_scope WHERE conversation_id=?)`, m.ConversationID, artifact.LocalUser, m.ConversationID, m.ConversationID); err != nil {
+		if _, err = tx.ExecContext(ctx, `INSERT INTO conversation_scope SELECT ?,?,? WHERE NOT EXISTS(SELECT 1 FROM conversation_scope WHERE conversation_id=?)`, m.ConversationID, s.owner(), m.ConversationID, m.ConversationID); err != nil {
 			return conversation.ErrStorage
 		}
 		d := sqliteindex.Document{Ref: "conversation:" + m.MessageID, Content: textContent(parts), OccurredAt: m.CreatedAt.UnixMicro(), AuthorRole: m.Role, Active: true}
@@ -285,6 +286,20 @@ func (s *Store) Get(ctx context.Context, id, messageID string) (conversation.Mes
 	return messages[0], nil
 }
 
+// GetScoped reads exactly the same ownership domain as Search; a reference is
+// a selector, never proof of ownership. The binding and message are immutable.
+func (s *Store) GetScoped(ctx context.Context, scope recall.Scope, messageID string) (conversation.Message, error) {
+	var id string
+	err := s.db.QueryRowContext(ctx, `SELECT m.conversation_id FROM conversation_message m JOIN conversation_scope c USING(conversation_id) WHERE m.message_id=? AND c.user_id=? AND (c.agent_id='' OR c.agent_id=?)`, messageID, scope.UserID, scope.AgentID).Scan(&id)
+	if err == sql.ErrNoRows {
+		return conversation.Message{}, conversation.ErrConflict
+	}
+	if err != nil {
+		return conversation.Message{}, conversation.ErrStorage
+	}
+	return s.Get(ctx, id, messageID)
+}
+
 // EvidenceSourceVisible checks an exact source without reading its content.
 // A missing message permits the Host to check an accepted local intent.
 // An existing foreign ownership binding denies that fallback.
@@ -359,4 +374,31 @@ func (s *Store) GetMany(ctx context.Context, id string, ids []string) ([]convers
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].Sequence < result[j].Sequence })
 	return result, nil
+}
+
+func (s *Store) owner() string {
+	if s.ownerID != "" {
+		return s.ownerID
+	}
+	return artifact.LocalUser
+}
+
+// BindOwner runs before serving or starting background workers. Existing
+// conversation ownership is validated, never rewritten.
+func (s *Store) BindOwner(ctx context.Context, owner, agent string) error {
+	var foreign int
+	if owner == "" {
+		owner = artifact.LocalUser
+	}
+	if s.ownerID != "" && s.ownerID != owner {
+		return conversation.ErrConflict
+	}
+	if e := s.db.QueryRowContext(ctx, `SELECT count(*) FROM conversation_scope WHERE conversation_id=? AND user_id<>?`, agent, owner).Scan(&foreign); e != nil {
+		return e
+	}
+	if foreign != 0 {
+		return conversation.ErrConflict
+	}
+	s.ownerID = owner
+	return nil
 }

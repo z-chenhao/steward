@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {selectValue,selectParts} from './channels_controls.mjs';
+import {selectValue,selectParts,assertDataList} from './channels_controls.mjs';
 import {writeFile} from 'node:fs/promises';
 
 // One scenario module for the maintained channels browser driver; no runner,
@@ -461,7 +461,7 @@ export async function taskNavigation(page,url,evidence){
    for(const [route,label]of [['/tasks?view=all','Execution records'],['/tasks/configurations','Configurations']]){
     await page.goto(url+route);await settle();if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Task shell overflowed at '+width);
     if(await page.locator('.tasks-page .section-tabs').count())throw Error('Task categories remain duplicated inside the page');
-    await page.getByRole('heading',{name:label,exact:true}).waitFor();
+    await page.getByRole('heading',{name:label,exact:true}).waitFor();await assertDataList(page);
     if(width<=760){await page.locator('.sidebar-open').click();await page.getByRole('navigation',{name:'Task sections',exact:true}).getByRole('link',{name:label,exact:true}).and(page.locator('[aria-current=page]')).waitFor();await page.screenshot({path:`${evidence}/task-rail-${label.split(' ')[0]}-${theme}-${width}.png`});await page.keyboard.press('Escape');if(!await page.locator('.sidebar-open').evaluate(node=>node===document.activeElement)||await page.locator('#workspace-main').evaluate(node=>node.inert))throw Error('Task drawer lost focus or kept content inert')}
     else await page.screenshot({path:`${evidence}/task-rail-${label.split(' ')[0]}-${theme}-${width}.png`});
    }

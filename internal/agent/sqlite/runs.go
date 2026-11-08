@@ -234,7 +234,7 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 			return err
 		}
 		receipt.MessageID = newID()
-		scope := artifact.Scope{UserID: artifact.LocalUser, AgentID: agentID, Owner: true}
+		scope := artifact.Scope{UserID: r.host.OwnerID(), AgentID: agentID, Owner: true}
 		for _, p := range parts {
 			if p.ArtifactRef != "" {
 				if err = r.host.Artifacts().PinTx(ctx, tx, scope, p.ArtifactRef, "run", receipt.RunID); err != nil {

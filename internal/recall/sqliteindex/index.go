@@ -149,7 +149,7 @@ func Search(ctx context.Context, db *sql.DB, s recall.Scope, q recall.Query, e r
 			end = q.TimeRange.End.UnixMicro()
 		}
 	}
-	excluded, _ := json.Marshal(append([]string{}, q.ExcludeRefs...))
+	excluded, _ := json.Marshal(append(append([]string{}, q.ExcludeRefs...), q.SeenRefs...))
 	if err := catchUp(ctx, db, s, e, start, end, string(excluded)); err != nil {
 		return nil, err
 	}

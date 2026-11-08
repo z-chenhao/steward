@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -157,6 +158,18 @@ func (r *Runs) finishTask(ctx context.Context, tx *sql.Tx, runID, status, reason
 			content = "Automation could not establish an observation. " + content
 		}
 	}
+	if status == "failed" {
+		var title string
+		if err := tx.QueryRowContext(ctx, `SELECT title FROM task WHERE task_id=?`, taskID.String).Scan(&title); err != nil {
+			return err
+		}
+		// A model follow-up can omit or misattribute a failure. The Host owns
+		// this bounded lifecycle notice and the existing source-bound delivery.
+		text := fmt.Sprintf("Task %q did not finish. This attempt failed; the task remains open. You can ask to continue it.", task.Title(title))
+		if err := r.notification(ctx, tx, runID, "failure:"+runID, "failure", "task", text); err != nil {
+			return err
+		}
+	}
 	return r.taskUpdate(ctx, tx, taskID.String, runID, epoch, status, content)
 }
 func (r *Runs) taskUpdate(ctx context.Context, tx *sql.Tx, taskID, runID string, epoch int64, kind, content string) error {
@@ -201,18 +214,18 @@ func (r *Runs) Report(ctx context.Context) error {
 	changed := false
 	err := r.write(ctx, func(tx *sql.Tx) error {
 		changed = false
-		rows, err := tx.QueryContext(ctx, `SELECT u.event_id,u.task_id,u.root_run_id,u.task_epoch,u.kind,u.content,u.artifact_refs,u.occurred_at,t.agent_id,t.task_ref,CASE WHEN t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0) AND `+currentAutomationUpdate+` THEN t.task_epoch ELSE -1 END FROM task_update u JOIN task t USING(task_id) WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND NOT EXISTS(SELECT 1 FROM event_inbox i WHERE i.consumer='task_reporter' AND i.event_id=u.event_id) ORDER BY u.occurred_at,u.event_id`)
+		rows, err := tx.QueryContext(ctx, `SELECT u.event_id,u.task_id,u.root_run_id,u.task_epoch,u.kind,u.content,u.artifact_refs,u.occurred_at,t.agent_id,t.task_ref,t.title,CASE WHEN t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0) AND `+currentAutomationUpdate+` THEN t.task_epoch ELSE -1 END FROM task_update u JOIN task t USING(task_id) WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND NOT EXISTS(SELECT 1 FROM event_inbox i WHERE i.consumer='task_reporter' AND i.event_id=u.event_id) ORDER BY u.occurred_at,u.event_id`)
 		if err != nil {
 			return err
 		}
 		type update struct {
-			eventID, taskID, rootID, kind, content, refs, agentID, taskRef string
-			epoch, current, at                                             int64
+			eventID, taskID, rootID, kind, content, refs, agentID, taskRef, title string
+			epoch, current, at                                                    int64
 		}
 		updates := []update{}
 		for rows.Next() {
 			var u update
-			if err = rows.Scan(&u.eventID, &u.taskID, &u.rootID, &u.epoch, &u.kind, &u.content, &u.refs, &u.at, &u.agentID, &u.taskRef, &u.current); err != nil {
+			if err = rows.Scan(&u.eventID, &u.taskID, &u.rootID, &u.epoch, &u.kind, &u.content, &u.refs, &u.at, &u.agentID, &u.taskRef, &u.title, &u.current); err != nil {
 				rows.Close()
 				return err
 			}
@@ -231,6 +244,9 @@ func (r *Runs) Report(ctx context.Context) error {
 					return agent.ErrStorage
 				}
 				message := taskMessage(u.eventID, u.taskRef, u.kind, u.content, refs, at)
+				if u.kind == "failed" {
+					message.Details.Title = task.Title(u.title)
+				}
 				raw, err := encoded(message)
 				if err != nil {
 					return err

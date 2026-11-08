@@ -17,6 +17,7 @@ var ErrInspectionUnavailable = errors.New("memory inspection unavailable")
 // Inspection is a private owner-facing read projection, independent of recall
 // rankings and Tool results. It never grants access by accepting a scope.
 type InspectionQuery struct {
+	Layer         string    `json:"layer,omitempty"`
 	SourcesOffset int       `json:"sources_after,omitempty"`
 	Since         time.Time `json:"since,omitempty"`
 	Until         time.Time `json:"until,omitempty"`
@@ -33,6 +34,12 @@ type InspectionQuery struct {
 }
 
 func (q InspectionQuery) Validate() error {
+	if q.Layer == Transcripts && (q.Tier != "" || q.Origin != "" || q.Status != "" || q.View != "") || q.Layer != "" && q.View != "" {
+		return ErrInspectionInvalid
+	}
+	if q.Layer != "" && !ValidLayer(q.Layer) {
+		return ErrInspectionInvalid
+	}
 	if q.SourcesOffset < 0 || q.SourcesOffset > 1000000 || q.Ref == "" && q.SourcesOffset != 0 {
 		return ErrInspectionInvalid
 	}
@@ -42,10 +49,13 @@ func (q InspectionQuery) Validate() error {
 	if !utf8.ValidString(q.Search) || len(q.Search) > 200 || strings.ContainsAny(q.Search, "\x00\r\n") || len(q.Cursor) > 1024 || q.Limit < 0 || q.Limit > 50 || q.Offset < 0 || q.Offset > 1<<30 {
 		return ErrInspectionInvalid
 	}
-	if q.Tier != "" && q.Tier != "core" && q.Tier != "recall" || q.Origin != "" && q.Origin != "automatic" && q.Origin != "explicit" && q.Origin != "unknown" || q.Status != "" && q.Status != "active" && q.Status != "superseded" && q.Status != "retired" && q.Status != "all" || q.View != "" && q.View != "maintenance" {
+	if q.Tier != "" && q.Tier != "core" && q.Tier != "recall" || q.Origin != "" && q.Origin != "automatic" && q.Origin != "explicit" && q.Origin != "unknown" && q.Origin != "written" && q.Origin != "dream" || q.Status != "" && q.Status != "active" && q.Status != "superseded" && q.Status != "retired" && q.Status != "all" || q.View != "" && q.View != "maintenance" {
 		return ErrInspectionInvalid
 	}
-	if q.Ref != "" && (!ValidInspectionRef(q.Ref) || q.Cursor != "" || q.View != "") || q.Source != "" && (q.Ref == "" || len(q.Source) > 256 || strings.ContainsAny(q.Source, " /\\\r\n\x00")) || q.Source == "" && q.Offset != 0 {
+	if q.Ref != "" && (!ValidInspectionRef(q.Ref) || q.Cursor != "" || q.View != "" && !(q.View == "maintenance" && strings.HasPrefix(q.Ref, "memory:maintenance-"))) || q.Source != "" && (q.Ref == "" || len(q.Source) > 256 || strings.ContainsAny(q.Source, " /\\\r\n\x00")) || q.Source == "" && q.Offset != 0 {
+		return ErrInspectionInvalid
+	}
+	if q.View == "maintenance" && q.Ref != "" && !strings.HasPrefix(q.Ref, "memory:maintenance-") {
 		return ErrInspectionInvalid
 	}
 	if q.View == "maintenance" && (q.Search != "" || q.Tier != "" || q.Origin != "" || q.Status != "" || q.Source != "" || !q.Since.IsZero() || !q.Until.IsZero()) {
@@ -113,27 +123,38 @@ type InspectionSource struct {
 	NextOffset *int64 `json:"next_offset,omitempty"`
 }
 type InspectionRecord struct {
-	SourceCount       int                `json:"source_count"`
-	NextSourcesOffset *int               `json:"next_sources_offset,omitempty"`
-	Ref               string             `json:"ref"`
-	Content           string             `json:"content,omitempty"`
-	ContentState      string             `json:"content_state"`
-	Tier              string             `json:"tier"`
-	Status            string             `json:"status"`
-	Origin            string             `json:"origin"`
-	CreatedAt         time.Time          `json:"created_at"`
-	Sources           []InspectionSource `json:"sources"`
-	Supersedes        string             `json:"supersedes,omitempty"`
-	ReplacedBy        string             `json:"replaced_by,omitempty"`
+	Related           []InspectionRelated `json:"related,omitempty"`
+	Layer             string              `json:"layer"`
+	Title             string              `json:"title,omitempty"`
+	Revision          int64               `json:"revision,omitempty"`
+	Links             []string            `json:"links,omitempty"`
+	SourceCount       int                 `json:"source_count"`
+	NextSourcesOffset *int                `json:"next_sources_offset,omitempty"`
+	Ref               string              `json:"ref"`
+	Content           string              `json:"content,omitempty"`
+	ContentState      string              `json:"content_state"`
+	Tier              string              `json:"tier"`
+	Status            string              `json:"status"`
+	Origin            string              `json:"origin"`
+	CreatedAt         time.Time           `json:"created_at"`
+	Sources           []InspectionSource  `json:"sources"`
+	Supersedes        string              `json:"supersedes,omitempty"`
+	ReplacedBy        string              `json:"replaced_by,omitempty"`
+}
+
+type InspectionRelated struct {
+	Ref   string `json:"ref"`
+	Title string `json:"title"`
 }
 type MaintenanceRecord struct {
-	Ref       string    `json:"ref"`
-	Operation string    `json:"operation"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	Attempts  int       `json:"attempts"`
-	Error     string    `json:"error,omitempty"`
-	RunID     string    `json:"run_id,omitempty"`
+	Metrics   *MaintenanceMetrics `json:"metrics,omitempty"`
+	Ref       string              `json:"ref"`
+	Operation string              `json:"operation"`
+	Status    string              `json:"status"`
+	CreatedAt time.Time           `json:"created_at"`
+	Attempts  int                 `json:"attempts"`
+	Error     string              `json:"error,omitempty"`
+	RunID     string              `json:"run_id,omitempty"`
 }
 type InspectionPage struct {
 	Items       []InspectionRecord  `json:"items"`

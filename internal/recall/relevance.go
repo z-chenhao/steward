@@ -71,7 +71,7 @@ func Relevance(terms []string, content string) float64 {
 			anchors++
 		}
 		total += weight
-		if strings.Contains(text, term) {
+		if containsTerm(text, term) {
 			matched += weight
 			if anchor {
 				anchorHits++
@@ -82,4 +82,29 @@ func Relevance(terms []string, content string) float64 {
 		return 0
 	}
 	return matched / total
+}
+
+// Latin words match tokens, not incidental substrings such as art in "started".
+// CJK retrieval intentionally uses character bigrams.
+func containsTerm(text, term string) bool {
+	if term == "" {
+		return false
+	}
+	if term[0] >= 128 {
+		return strings.Contains(text, term)
+	}
+	for offset := 0; offset < len(text); {
+		n := strings.Index(text[offset:], term)
+		if n < 0 {
+			return false
+		}
+		at := offset + n
+		end := at + len(term)
+		offset = end
+		word := func(b byte) bool { return b >= 'a' && b <= 'z' || b >= '0' && b <= '9' || b == '_' }
+		if (at == 0 || !word(text[at-1])) && (end == len(text) || !word(text[end])) {
+			return true
+		}
+	}
+	return false
 }

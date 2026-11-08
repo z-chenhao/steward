@@ -63,6 +63,7 @@ type Summary struct {
 	UpdatedAt       string `json:"updatedAt"`
 }
 type UpdateDetails struct {
+	Title        string   `json:"title,omitempty"`
 	TaskRef      string   `json:"task_ref"`
 	Kind         string   `json:"kind"`
 	ArtifactRefs []string `json:"artifact_refs,omitempty"`

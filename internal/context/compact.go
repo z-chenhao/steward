@@ -10,13 +10,19 @@ import (
 )
 
 type Policy struct {
+	SeparateEvidence   bool `yaml:"-" json:"separate_evidence,omitempty"`
+	EvidenceReuse      bool `yaml:"-" json:"evidence_reuse,omitempty"`
+	MetadataNavigation bool `yaml:"-" json:"metadata_navigation,omitempty"`
+	MemoryNavigation   bool `yaml:"-" json:"memory_navigation,omitempty"`
+	FullWindowFallback bool `yaml:"-" json:"full_window_fallback,omitempty"`
+	LayeredMemory      bool `yaml:"-" json:"layered_memory,omitempty"`
 	// Host-frozen projection opt-in. Missing on older Runs means reference-only
 	// user images, preserving their accepted request bytes and replay hashes.
 	UserImages bool `yaml:"-" json:"user_images,omitempty"`
 	DOCXText   bool `yaml:"-" json:"docx_text,omitempty"`
 	// Missing on older policies preserves their query, evidence and placement.
 	ContextualRecall bool `yaml:"-" json:"contextual_recall,omitempty"`
-	// New Runs attach timestamped recall to the current input and expose plain
+	// Historical inline policies attach timestamped recall to the input and expose plain
 	// object IDs. Older policies retain their accepted message representation.
 	InputRecall  bool    `yaml:"-" json:"input_recall,omitempty"`
 	Threshold    float64 `yaml:"threshold_percentage" json:"threshold_percentage"`
@@ -35,7 +41,30 @@ type Result struct {
 	Stage    string
 }
 
-func Size(v any) int { b, _ := json.Marshal(v); return len(b) }
+// Size reserves the expanded memory text as well as the sealed envelope. This
+// conservative bound covers both provider JSON escaping and the Host RPC frame.
+func Size(v any) int {
+	b, _ := json.Marshal(v)
+	size := len(b)
+	memoryBytes := func(m llm.Message) int {
+		if m.Memory == nil {
+			return 0
+		}
+		if m.Memory.EncodedBytes < 2 || m.Memory.EncodedBytes > 1<<20 {
+			return 1 << 20
+		}
+		return m.Memory.EncodedBytes
+	}
+	switch messages := v.(type) {
+	case []llm.Message:
+		for _, m := range messages {
+			size += memoryBytes(m)
+		}
+	case llm.Message:
+		size += memoryBytes(messages)
+	}
+	return size
+}
 
 // Compact first removes complete old Tool exchanges, then builds a bounded
 // extractive summary of old semantic messages. It never changes recent messages

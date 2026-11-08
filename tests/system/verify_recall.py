@@ -3,6 +3,7 @@
 import argparse
 from contextlib import closing
 import json
+import html
 from pathlib import Path
 import signal
 import sqlite3
@@ -173,11 +174,17 @@ class Harness(MainHarness):
                            ('memory:' + id_, user, agent_, text, 1000000, '', 0, 1))
         with closing(sqlite3.connect(root / 'conversation.db')) as db, db:
             for id_, user, owner, text in [('original', 'local', agent, 'chai was my original preference'),
+                                          ('independent', 'local', agent, 'tea from an independent past conversation'),
                                           ('foreign', 'bob', agent, 'tea FOREIGN_CONVERSATION_MARKER')]:
-                conversation_id = agent if legacy and id_ == 'original' else id_
-                db.execute('INSERT INTO conversation_scope VALUES(?,?,?)', (conversation_id, user, owner))
+                conversation_id = agent if legacy and id_ in ('original','independent') else id_
+                sequence = db.execute('SELECT coalesce(max(sequence),0)+1 FROM conversation_message WHERE conversation_id=?',(conversation_id,)).fetchone()[0]
+                binding = db.execute('SELECT user_id,agent_id FROM conversation_scope WHERE conversation_id=?',(conversation_id,)).fetchone()
+                if binding is None:
+                    db.execute('INSERT INTO conversation_scope VALUES(?,?,?)', (conversation_id, user, owner))
+                else:
+                    require(binding == (user,owner), 'fixture attempted to replace an immutable scope')
                 db.execute('INSERT INTO conversation_message VALUES(?,?,?,?,?,?,?,?)',
-                           (id_, conversation_id, 1, 'user', json.dumps([dict(type='text', text=text)]), 'cli', id_, 1000000))
+                           (id_, conversation_id, sequence, 'user', json.dumps([dict(type='text', text=text)]), 'cli', id_, 1000000))
                 db.execute('INSERT INTO recall_document(ref,user_id,agent_id,content,occurred_at,author_role,core,active) VALUES(?,?,?,?,?,?,?,?)',
                            ('conversation:' + id_, user, owner, text, 1000000, 'user', 0, 1))
         return agent
@@ -215,18 +222,37 @@ def verify(value):
     require(roles == {'main', 'root', 'child'}, 'search roles incorrect')
     for t in tools:
         hits = json.loads(json.loads(t['result_json'])['text'])
-        require({'memory', 'conversation'} <= {h['source_type'] for h in hits}, 'source missing')
-        require(any(h['source_ref'] == 'memory:semantic' for h in hits), 'vector-only synonym missing')
-        selected = {h['source_ref'] for h in hits}
+        # A source already fully visible in the frozen request should not be
+        # returned by the tool again. Verify evidence coverage and non-repetition
+        # across BOTH real outputs rather than demanding duplicate tool payloads.
+        generation = next(g for g in value['generations'] if g['generation_id'] == t['provider_exchange_id'])
+        messages = json.loads(generation['request_json'])['messages']
+        blocks = [m.get('text', '') for m in messages if '<recall_memory>' in m.get('text', '')]
+        visible = []
+        for recall in value['recall']:
+            if recall['run_id'] != t['run_id']:
+                continue
+            for hit in json.loads(recall['hits_json']):
+                if any(html.escape(hit['content'], quote=False) in block for block in blocks):
+                    visible.append(hit)
+        evidence = hits + visible
+        require({'memory', 'conversation'} <= {h['source_type'] for h in evidence}, 'source missing from request and tool')
+        require(any(h['source_ref'] == 'memory:semantic' for h in evidence), 'vector-only synonym missing')
+        tool_refs = {h['source_ref'] for h in hits}
+        for hit in visible:
+            if not hit.get('offset') and hit.get('total_bytes', 0) in (0, len(hit['content'].encode())):
+                require(hit['source_ref'] not in tool_refs, 'tool repeated already visible complete evidence')
+        selected = {h['source_ref'] for h in evidence}
         derived_sources = {source['source_ref'] for record in value['memories']
                            if 'memory:' + record['memory_id'] in selected
                            for source in json.loads(record['source_refs'])}
         require('conversation:original' in derived_sources,
                 'derived facts lost their persisted original provenance')
-        require('conversation:original' not in selected,
-                'Memory and its original Conversation were both recalled')
-        require(all(set(h) <= {'content', 'source_type', 'source_ref', 'occurred_at', 'author_role'} for h in hits), 'score or private field leaked')
-        require('FOREIGN_' not in json.dumps(hits), 'cross-scope recall')
+        require('conversation:independent' in selected, 'independent historical Conversation source missing')
+        require('conversation:original' in selected,
+                'derived memory hid its original Conversation evidence')
+        require(all(set(h) <= {'content', 'source_type', 'source_ref', 'occurred_at', 'author_role', 'offset', 'total_bytes', 'layer', 'evidence'} for h in hits), 'score or private field leaked')
+        require('FOREIGN_' not in json.dumps(evidence), 'cross-scope recall')
     require(all(r['status'] == 'completed' for r in value['runs']), 'nonterminal Run')
     require(len([c for c in value['children'] if c['worker_position'] == 'child']) == 1, 'Child count')
     for c in value['children']:
@@ -264,13 +290,16 @@ def verify_complete_workflow(value):
             request = json.loads(generation['request_json'])
             messages = request['messages']
             recalled = [m for m in messages if '<recall_memory>' in m.get('text', '')]
-            require(all(m['role'] == 'user' and m.get('origin') != 'runtime' and
+            require(all(m['role'] == 'user' and m.get('origin') == 'runtime' and m.get('source', {}).get('kind') == 'recall' and
                         m['text'].count('<recall_memory>') == 1 and
                         m['text'].endswith('</recall_memory>') for m in recalled),
-                    'recall became a synthetic turn or escaped the current input')
+                    'recall escaped its separate untrusted evidence block')
             require(len(recalled) <= 1 and not any(
                 m.get('origin') == 'runtime' and m.get('text', '').startswith('Retrieved durable context')
                 for m in messages), 'recall displaced chronological messages')
+            current = [i for i, m in enumerate(messages) if m['role'] == 'user' and m.get('origin') != 'runtime']
+            if recalled:
+                require(current and messages.index(recalled[0]) < current[-1], 'recall follows current input')
             for message in messages:
                 if message['role'] == 'tool':
                     require(not any(prefix in message.get('text', '') for prefix in

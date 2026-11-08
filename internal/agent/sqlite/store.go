@@ -170,9 +170,19 @@ var costEstimatesSQL string
 //go:embed migrations/048_semantic_memory.sql
 var semanticMemorySQL string
 
-var migrations = []string{bootstrapSQL, eventsSQL, modelsSQL, providerSQL, localProviderSQL, accountAuthSQL, mainLoopSQL, tasksSQL, taskControlSQL, toolPolicySQL, artifactsSQL, deliverySQL, childrenSQL, schedulerSQL, spendSQL, codemodeSQL, codeRecoverySQL, recallSQL, memoryMaintenanceSQL, mainSuccessorSQL, computersSQL, computerUseSQL, automationSQL, automationPrivacySQL, channelsSQL, operationsSQL, contextSQL, toolNamesSQL, nativeExecutionSQL, inspectionSQL, dispatchObservationsSQL, responsiveMainSQL, githubObservationsSQL, taskFeedbackSQL, feishuReplySourcesSQL, githubTaskContinuationSQL, taskCodeEnvironmentsSQL, githubRuleObservationSQL, feishuTaskQuestionsSQL, feishuReviewLinksSQL, githubFailedCheckRuleSQL, providerTimingsSQL, uiWidgetsSQL, accountCatalogSelectionSQL, uiInteractionsSQL, connectedAppsSQL, costEstimatesSQL, semanticMemorySQL}
+//go:embed migrations/049_layered_memory.sql
+var layeredMemorySQL string
+
+//go:embed migrations/050_memory_runtime.sql
+var memoryRuntimeSQL string
+
+//go:embed migrations/051_memory_evidence.sql
+var memoryEvidenceSQL string
+
+var migrations = []string{bootstrapSQL, eventsSQL, modelsSQL, providerSQL, localProviderSQL, accountAuthSQL, mainLoopSQL, tasksSQL, taskControlSQL, toolPolicySQL, artifactsSQL, deliverySQL, childrenSQL, schedulerSQL, spendSQL, codemodeSQL, codeRecoverySQL, recallSQL, memoryMaintenanceSQL, mainSuccessorSQL, computersSQL, computerUseSQL, automationSQL, automationPrivacySQL, channelsSQL, operationsSQL, contextSQL, toolNamesSQL, nativeExecutionSQL, inspectionSQL, dispatchObservationsSQL, responsiveMainSQL, githubObservationsSQL, taskFeedbackSQL, feishuReplySourcesSQL, githubTaskContinuationSQL, taskCodeEnvironmentsSQL, githubRuleObservationSQL, feishuTaskQuestionsSQL, feishuReviewLinksSQL, githubFailedCheckRuleSQL, providerTimingsSQL, uiWidgetsSQL, accountCatalogSelectionSQL, uiInteractionsSQL, connectedAppsSQL, costEstimatesSQL, semanticMemorySQL, layeredMemorySQL, memoryRuntimeSQL, memoryEvidenceSQL}
 
 type Store struct {
+	runtimeOwner  atomic.Pointer[string]
 	costEstimator agent.CostEstimator
 	inspector     *inspectionsqlite.Inspector
 	taskReader    *tasksqlite.Reader
@@ -238,6 +248,12 @@ func Open(ctx context.Context, dataRoot string) (*Store, error) {
 	s := &Store{db: db, path: path, codeRoot: canonicalRoot + ".task-code"}
 	if err := s.bootstrap(ctx); err != nil {
 		return nil, errors.Join(err, db.Close())
+	}
+	var owner string
+	if e := db.QueryRowContext(ctx, `SELECT user_id FROM runtime_owner WHERE singleton=1`).Scan(&owner); e == nil {
+		s.runtimeOwner.Store(&owner)
+	} else if e != sql.ErrNoRows {
+		return nil, errors.Join(e, db.Close())
 	}
 	// These fixed scheduling scans are frequent while Workers are held. Let
 	// database/sql own their lifetime and reprepare on connection replacement.

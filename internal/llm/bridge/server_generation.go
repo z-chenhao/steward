@@ -196,7 +196,7 @@ func (s *Server) generate(ctx context.Context, r generationRequest, j *job) {
 		cancel()
 	})
 	defer deadline.Stop()
-	o := provider.Options{HTTPClient: s.client(), APIKey: r.Connection.APIKey, AccessToken: r.Connection.AccessToken, MaxTokens: snapshot.MaxOutputTokens, SessionID: r.SessionID, HeaderTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxRetries: 2, MaxResponseBytes: 4 << 20, MaxEvents: 4096, Observe: func(obs provider.Observation) {
+	o := provider.Options{HTTPClient: s.client(), APIKey: r.Connection.APIKey, AccessToken: r.Connection.AccessToken, MaxTokens: snapshot.MaxOutputTokens, SessionID: r.SessionID, HeaderTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxRetries: 2, MaxResponseBytes: 4 << 20, MaxEvents: 64 << 10, Observe: func(obs provider.Observation) {
 		if obs.Phase == "header_timeout" || obs.Phase == "stream_idle_timeout" {
 			expired.Store(true)
 		}
@@ -218,6 +218,19 @@ func (s *Server) generate(ctx context.Context, r generationRequest, j *job) {
 			p.sent = time.Now()
 		}
 	}
+	// Provider chunk boundaries do not change the accepted result. Coalesce
+	// small text fragments so a bounded long report cannot exhaust the Host's
+	// event-count safety limit before its byte budget. Keep first text prompt.
+	var text strings.Builder
+	var textSent time.Time
+	flushText := func() {
+		if text.Len() == 0 {
+			return
+		}
+		event("text_delta", map[string]any{"text": text.String()})
+		text.Reset()
+		textSent = time.Now()
+	}
 	invalid := false
 	result, err := (&provider.Client{}).Stream(work, m, in, o, func(e provider.Event) {
 		switch e.Type {
@@ -229,8 +242,15 @@ func (s *Server) generate(ctx context.Context, r generationRequest, j *job) {
 				cancel()
 				return
 			}
-			event("text_delta", map[string]any{"text": e.Delta})
+			if text.Len()+len(e.Delta) > 16<<10 {
+				flushText()
+			}
+			text.WriteString(e.Delta)
+			if textSent.IsZero() || text.Len() >= 512 || time.Since(textSent) >= 80*time.Millisecond {
+				flushText()
+			}
 		case "toolcall_delta":
+			flushText()
 			// Only presentation arguments have a browser-preview consumer. Other
 			// tool parameters, source code and reasoning stay on the execution path.
 			if r.UIPreview && e.Content != nil && e.Content.Name == "builtin__intelligent_ui_show" && e.Content.ID != "" {
@@ -252,6 +272,7 @@ func (s *Server) generate(ctx context.Context, r generationRequest, j *job) {
 				}
 			}
 		case "toolcall_end":
+			flushText()
 			if e.Content == nil {
 				invalid = true
 				cancel()
@@ -268,6 +289,7 @@ func (s *Server) generate(ctx context.Context, r generationRequest, j *job) {
 			event("tool_call", map[string]any{"tool_call": llm.ToolCall{ID: e.Content.ID, Name: e.Content.Name, Arguments: string(raw)}})
 		}
 	})
+	flushText()
 	if invalid {
 		fail(provider.ErrInvalidResponse)
 		return

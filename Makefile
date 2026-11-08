@@ -32,7 +32,7 @@ run: build
 test: test-go test-node test-browser test-infra
 
 test-prompts:
-	go test ./internal/agent ./internal/agent/sqlite -run '^Test(ContextPromptBytes|ContextRolesAndFrozenResources|AgentStartsWithOneFrozenSystemMessage|ChildInheritsOnlyFrozenSystemSections|SkillsUseSearchWithoutPromptCatalog|SplitSystemMessagesAreRejected|RootLoopPublishesStageUpdatesWithoutMainWork|Progress.*|ContextInspectionRealMainRootChildAndReplayPreservesSnapshots|RecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory|RecallFrozenPerTurnAndFenced|RecallInputKeepsChronologyAndEscapesHistoricalMessages|ConversationalRecallQueryBoundsAndEvidenceIsolation|ContextPlainObjectIDs.*|TaskInstructionUsesPlainObjectIDs|ContextDeferredOperationIDsKeepBatchAndLegacyCorrelation)$$' -count=1
+	go test ./internal/agent ./internal/agent/sqlite -run '^Test(MemoryCompactionPreservesMixedCodeBusinessReceipt|RecallCompleteSearchStillAllowsReadingCASMetadata|RecallRepeatedReadReusesVisibleEvidenceWithoutDuplicatingBody|RecallUnifiedVisibilityIncludesSealedReadsAndAutomaticEvidence|LayeredMemoryNavigationSelectsScopedLinksWithoutRewritingSources|RecallVisibleResultsRequireOwnedReceiptAndCompleteVisibleFrame|LayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch|LayeredMemoryCodeReadProjectionIsStableScopedAndDoesNotRewriteReceipt|LayeredMemoryTranscriptReadIsScopedPagedSealedAndRevoked|ContextPromptBytes|ContextRolesAndFrozenResources|AgentStartsWithOneFrozenSystemMessage|ChildInheritsOnlyFrozenSystemSections|SkillsUseSearchWithoutPromptCatalog|SplitSystemMessagesAreRejected|RootLoopPublishesStageUpdatesWithoutMainWork|Progress.*|ContextInspectionRealMainRootChildAndReplayPreservesSnapshots|RecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory|RecallFrozenPerTurnAndFenced|RecallInputKeepsChronologyAndEscapesHistoricalMessages|ConversationalRecallQueryBoundsAndEvidenceIsolation|ContextPlainObjectIDs.*|TaskInstructionUsesPlainObjectIDs|ContextDeferredOperationIDsKeepBatchAndLegacyCorrelation)$$' -count=1
 
 test-go:
 	go test ./...
@@ -43,8 +43,10 @@ test-web-access:
 
 # Privacy, provenance and lifecycle regressions run in the required CI lane.
 test-memory:
-	go test -race ./internal/memory/... ./internal/recall/... ./internal/conversation/... ./internal/tool -count=1
-	go test -race ./internal/agent/sqlite -run 'Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs' -count=1
+	go test -race ./internal/memory/... ./internal/recall/... ./internal/conversation/... ./internal/tool ./internal/context ./internal/llm -count=1
+	go test -race ./internal/agent/sqlite -run 'Memory|Layered|Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs|RootFailureNotice' -count=1
+	go test -race ./internal/llm/bridge -run 'LayeredMemory|NativeFragmented' -count=1
+	go test -race ./internal/app -run 'MemoryExternalSecrets' -count=1
 
 test-connected-apps:
 	go test -race ./internal/connector/composio ./internal/connectedapps ./internal/plugin/connectedapps ./internal/interaction/web ./internal/tool ./internal/app ./internal/agent/sqlite -run '^Test(ConnectedApps|Apps|AppLogo|ToolDescriptor|RegistryGroup|Client)' -count=1
@@ -56,7 +58,7 @@ test-node:
 	npm test --prefix runtime/javascript
 
 test-browser:
-	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_BROWSER_EVIDENCE="$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}" go test ./internal/interaction/web -run '^Test(AppsBrowserConnectionLifecycle|ComposerModelsBrowserLoadingAndRefresh)$$' -count=1
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_BROWSER_EVIDENCE="$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}" go test ./internal/interaction/web -run '^Test(AppsBrowserConnectionLifecycle|ComposerModelsBrowserLoadingAndRefresh|MemoryMaintenanceBrowser)$$' -count=1
 	npm test --prefix guest-browser
 	node web/artwork/icons.mjs --check
 

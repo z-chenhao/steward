@@ -1,4 +1,4 @@
-import {assertDeveloperList} from './channels_controls.mjs';
+import {assertDataList} from './channels_controls.mjs';
 import {writeFile} from 'node:fs/promises';
 // The trace list and peek panel use the actual Web query and read model.
 export async function traceList(page,context,browser,url,evidence,facts){
@@ -27,17 +27,26 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await page.keyboard.press('Escape');
  await page.getByRole('button',{name:'Custom range',exact:true}).and(page.locator(':focus')).waitFor();
  await page.goto(list);
+ const headers=await page.locator('.obs-trace-list thead th').allTextContents();
+ if(headers.some(text=>/^(Name|Input)$/.test(text.trim()))||headers[2].trim()!=='Status'||headers[3].trim()!=='Trace')throw Error('trace identity/status columns regressed');
+ if(await page.locator('th[aria-sort] svg').count()||await page.locator('.obs-cost small').count())throw Error('fixed sort or cost rows imply redundant actions/explanations');
+ // Preserve existing column preferences while dropping the former Input column.
+ await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v4');localStorage.setItem('steward.trace.columns.v3',JSON.stringify([true,true,true,false,true,true,true,true,true,false,false]))});
+ await page.reload();
+ await page.getByRole('columnheader',{name:'Output',exact:true}).waitFor({state:'hidden'});
+ await page.getByRole('columnheader',{name:'Status',exact:true}).waitFor({state:'hidden'});
+ await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v3');localStorage.removeItem('steward.trace.columns.v4')});await page.reload();
  await page.getByRole('button',{name:'Columns',exact:true}).click();
- await page.getByRole('checkbox',{name:'Show column: Input',exact:true}).uncheck();
+ await page.getByRole('checkbox',{name:'Show column: Output',exact:true}).uncheck();
  await page.keyboard.press('Escape');await page.reload();
- await page.getByRole('columnheader',{name:'Input',exact:true}).waitFor({state:'hidden'});
+ await page.getByRole('columnheader',{name:'Output',exact:true}).waitFor({state:'hidden'});
  await page.getByRole('button',{name:'Columns',exact:true}).click();
- await page.getByRole('checkbox',{name:'Show column: Input',exact:true}).check();
+ await page.getByRole('checkbox',{name:'Show column: Output',exact:true}).check();
  await page.keyboard.press('Escape');
  const density=await page.locator('.obs-trace-list tbody tr').first().evaluate(row=>({height:row.getBoundingClientRect().height,font:parseFloat(getComputedStyle(row.querySelector('td')).fontSize)}));
  if(density.height>38||density.font!==12)throw Error('trace rows left the compact density: '+JSON.stringify(density));
  if(!await page.locator('.workspace-topbar').getByRole('button',{name:'All time',exact:true}).isVisible())throw Error('time range left the global header');
- await assertDeveloperList(page);
+ await assertDataList(page);
  const total=(await (await context.request.get(url+'/api/developer/traces')).json()).total;
  const activity=await page.locator('[data-trace-activity]').evaluate(node=>JSON.parse(node.dataset.traceActivity));
  if(activity.reduce((sum,bucket)=>sum+bucket.count,0)!==total)throw Error('activity histogram is not the complete filtered trace count');
@@ -54,7 +63,7 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await setViewport({width:390,height:844});
  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('trace list overflowed the mobile viewport');
  await page.waitForFunction(()=>document.querySelector('.obs-filter-rail')?.open===false);
- await assertDeveloperList(page);
+ await assertDataList(page);
  await page.screenshot({animations:'disabled',path:evidence+'/trace-list-mobile.png',fullPage:true});
  await page.getByRole('button',{name:'All time',exact:true}).click();
  const bounds=await page.getByRole('dialog',{name:'All time',exact:true}).boundingBox();
@@ -65,6 +74,25 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await traceRow.locator('td').nth(1).click();
  const sheet=page.getByRole('dialog',{name:'Trace details',exact:true});await sheet.waitFor();
  await page.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();
+ // Full identifiers are copied from dynamic detail fragments, including LAN
+ // HTTP without Clipboard API. Do not write the developer's real clipboard.
+ await page.evaluate(()=>{
+  window.copyTestClipboard=Object.getOwnPropertyDescriptor(navigator,'clipboard');
+  window.copyTestExec=document.execCommand;
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined});
+  document.execCommand=command=>{if(command!=='copy')return false;window.copyTestValue=document.querySelector('.control-copy-buffer')?.value;return true};
+ });
+ await writeFile(evidence+'/trace-copy-controls.json',JSON.stringify(await page.locator('.obs-node-facts').evaluateAll(nodes=>nodes.map(node=>node.outerHTML)),null,2));
+ const runCopy=page.locator('.obs-detail-pane .obs-node-facts button[data-copy-value]').last();
+ await runCopy.waitFor();if(await runCopy.getAttribute('data-copy-value')!==facts.main)throw Error('copy control value differs from the Run ID: '+await runCopy.getAttribute('data-copy-value'));await runCopy.focus();await page.keyboard.press('Enter');
+ await page.waitForFunction(id=>window.copyTestValue===id,facts.main);
+ if(await page.locator('.control-copy-buffer').count()||!await runCopy.evaluate(node=>node===document.activeElement))throw Error('copy fallback leaked a buffer or moved focus');
+ await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}}));
+ await runCopy.click();await page.waitForFunction(id=>window.copyTestValue===id,facts.main);
+ await page.evaluate(()=>{document.execCommand=()=>false});await runCopy.click();
+ const manual=page.locator('.obs-detail-pane input[data-copy-fallback]');await manual.waitFor();
+ if(await manual.inputValue()!==facts.main||!await manual.evaluate(node=>node.readOnly&&node.selectionStart===0&&node.selectionEnd===node.value.length))throw Error('manual copy lost the complete identifier');
+ await page.evaluate(()=>{document.querySelectorAll('[data-copy-fallback]').forEach(node=>node.remove());document.execCommand=window.copyTestExec;if(window.copyTestClipboard)Object.defineProperty(navigator,'clipboard',window.copyTestClipboard);else delete navigator.clipboard;delete window.copyTestExec;delete window.copyTestClipboard;delete window.copyTestValue});
  const peek=await sheet.boundingBox();
  if(!peek||Math.abs(peek.width-700)>2||await sheet.evaluate(node=>node.matches(':modal')))throw Error('trace preview did not preserve the half-width non-modal layout');
  if((await page.locator('.obs-tree-pane').boundingBox()).height<500)throw Error('desktop trace tree was constrained to mobile height');

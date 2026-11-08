@@ -1,12 +1,39 @@
-import {assertDeveloperList} from './channels_controls.mjs';
+import {assertDataList} from './channels_controls.mjs';
 import {writeFile} from 'node:fs/promises';
 export async function memoryInspection({page,context,browser,url,evidence}) {
  await page.getByRole('navigation',{name:'Workspace'}).getByRole('link',{name:'Developer',exact:true}).click();
  await page.getByRole('navigation',{name:'Developer sections'}).getByRole('link',{name:'Memory',exact:true}).click();
  await page.locator('.memory-page').waitFor();
  await page.getByRole('button',{name:'Apply filters',exact:true}).waitFor({state:'hidden'});
+ for(const layer of ['transcripts','notes','representations','injected']){
+  await page.goto(url+'/developer/memory?layer='+layer);
+  await page.locator('#memory-page[data-memory-ready]').waitFor();
+  if(await page.locator('[data-memory-ref]').count()<1)throw Error('Empty memory layer '+layer);
+  await page.locator('a.memory-open').first().click();
+  const layerSheet=page.getByRole('dialog',{name:'Memory details',exact:true});
+  await layerSheet.waitFor();
+  if(!await layerSheet.locator('[data-memory-content]').count())throw Error('Missing memory layer detail '+layer);
+  await page.setViewportSize({width:1440,height:1000});
+  await page.screenshot({path:evidence+'/memory-layer-'+layer+'-light.png',fullPage:true});
+  await page.evaluate(()=>document.documentElement.classList.add('dark'));
+  await page.screenshot({path:evidence+'/memory-layer-'+layer+'-dark.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Layer overflow '+layer);
+  await page.screenshot({path:evidence+'/memory-layer-'+layer+'-mobile.png'});
+  if(layer==='injected'){
+   await layerSheet.getByRole('link',{name:'Research wiki',exact:true}).click();
+   await layerSheet.getByRole('heading',{name:'Research wiki',exact:true}).waitFor();
+   if(await page.getByRole('dialog',{name:'Memory details',exact:true}).count()!==1)throw Error('Related memory opened a second sheet');
+  }
+
+  await page.evaluate(()=>document.documentElement.classList.remove('dark'));
+ }
+ await page.setViewportSize({width:1440,height:1000});
+ await page.goto(url+'/developer/memory');
+ await page.locator('#memory-page[data-memory-ready]').waitFor();
+
  await page.getByRole('radio',{name:'Recall',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('tier')==='recall');
- if(await page.locator('[data-memory-ref]').count()<1||await page.locator('[data-memory-ref] td:nth-child(2)').allTextContents().then(values=>values.some(value=>value.trim()!=='Recall')))throw Error('Memory filter did not apply automatically');
+ if(await page.locator('[data-memory-ref]').count()<1||await page.locator('[data-memory-ref] td:nth-child(2)').allTextContents().then(values=>values.some(value=>value.trim()!=='Memory notes')))throw Error('Memory filter did not apply automatically');
  await page.getByRole('radio',{name:'All tiers',exact:true}).check();await page.waitForURL(target=>!target.searchParams.get('tier'));
 
  if(await page.getByRole('link',{name:'Database',exact:true}).count())throw Error('Database navigation remains');
@@ -19,7 +46,7 @@ export async function memoryInspection({page,context,browser,url,evidence}) {
  await page.evaluate(()=>document.fonts.ready);
  await page.setViewportSize({width:1920,height:1080});
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
- await assertDeveloperList(page);
+ await assertDataList(page);
  await page.screenshot({path:evidence+'/memory-list-light-wide.png',fullPage:true});
  // Exercise a delayed bundle explicitly: native links remain usable, while
  // enhanced-sheet assertions wait for the actual feature initialization.
@@ -61,8 +88,8 @@ export async function memoryInspection({page,context,browser,url,evidence}) {
  await page.waitForURL(listURL);await dialog.waitFor({state:'detached'});
  await page.goto(url+'/developer/memory');
  await page.evaluate(()=>document.documentElement.classList.remove('dark'));
- for(const width of [320,390,760,761,1024,1400]){await page.setViewportSize({width,height:844});await assertDeveloperList(page)}
- await page.setViewportSize({width:390,height:844});await assertDeveloperList(page);
+ for(const width of [320,390,760,761,1024,1400]){await page.setViewportSize({width,height:844});await assertDataList(page)}
+ await page.setViewportSize({width:390,height:844});await assertDataList(page);
  await page.screenshot({path:evidence+'/memory-list-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1000});
  await page.goto(url+'/developer/memory?status=superseded');
@@ -74,14 +101,14 @@ export async function memoryInspection({page,context,browser,url,evidence}) {
  await page.locator('#observability-workbench').waitFor();
  await page.goto(url+'/developer/memory?view=maintenance');
  if(!await page.locator('.memory-maintenance tbody tr').count()||!(await page.locator('.memory-maintenance').innerText()).includes('applied'))throw Error('Memory maintenance receipts missing');
- await page.screenshot({path:evidence+'/memory-maintenance.png',fullPage:true});
+ await maintenanceInspection({page,url,evidence});
  await page.goto(url+'/settings/preferences');
  await page.locator('[data-language-trigger]').click();
  await page.locator('[data-language-option="zh-CN"]').click();
  await page.locator('html[lang="zh-CN"]').waitFor();
  await page.goto(url+'/developer/memory');
  if(!await page.getByRole('heading',{name:'记忆',exact:true}).count())throw Error('Memory page did not localize');
- await assertDeveloperList(page);
+ await assertDataList(page);
  await page.screenshot({path:evidence+'/memory-list-chinese.png',fullPage:true});
  await page.goto(url+'/settings/preferences');
  await page.locator('[data-language-trigger]').click();
@@ -98,4 +125,36 @@ export async function memoryInspection({page,context,browser,url,evidence}) {
   if(!(await native.locator('[data-memory-source-content]').innerText()).includes('walking by the river'))throw Error('No-JS memory source navigation failed');
  } finally {await nativeContext.close()}
  await writeFile(evidence+'/memory-contract.json',JSON.stringify({firstPage:first.length,secondPage:second.length,sourceBody:true,resizable:true,halfWidth:true,noJavaScript:true,mobile:true},null,2));
+}
+
+// Shared by the real-domain channels flow and the priced/unknown presentation fixture.
+export async function maintenanceInspection({page,url,evidence,priced=false}){
+ await page.goto(url+'/developer/memory?view=maintenance');
+ await page.locator('#memory-page[data-memory-ready]').waitFor();
+ const list=page.locator('.memory-maintenance');
+ if(!await list.locator('tbody tr a.memory-open').count())throw Error('Maintenance rows have no detail links');
+ if(priced&&(!(await list.innerText()).includes('USD 0.125000')||!(await list.innerText()).includes('Not priced')))throw Error('Priced/unknown maintenance values missing');
+ await page.setViewportSize({width:1440,height:1000});await assertDataList(page);
+ await page.screenshot({path:evidence+'/memory-maintenance-list-light.png',fullPage:true});
+ await list.locator('.obs-table-scroll').evaluate(n=>n.scrollLeft=n.scrollWidth);
+ await page.screenshot({path:evidence+'/memory-maintenance-list-costs.png',fullPage:true});
+ await list.locator('a.memory-open').first().click();
+ const sheet=page.getByRole('dialog',{name:'Memory details',exact:true});await sheet.waitFor();
+ await sheet.getByText('Documents written',{exact:true}).waitFor();
+ const pane=await sheet.locator('.obs-detail-pane').boundingBox(),frame=await sheet.boundingBox();
+ if(pane.width<frame.width-36)throw Error('Single-pane maintenance detail does not fill the sheet');
+ if(priced&&!(await sheet.innerText()).includes('0.125000'))throw Error('Detail cost missing');
+ await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+ await writeFile(evidence+'/memory-maintenance-geometry.json',JSON.stringify(await sheet.locator('[data-copy-value]').evaluate(n=>({text:n.innerText,color:getComputedStyle(n).color,visibility:getComputedStyle(n).visibility,rect:n.getBoundingClientRect().toJSON(),value:n.querySelector('.control-identifier-value')?.getBoundingClientRect().toJSON()})),null,2));
+ await page.screenshot({path:evidence+'/memory-maintenance-detail-light.png'});
+ await page.evaluate(()=>document.documentElement.classList.add('dark'));
+ await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+ await page.screenshot({path:evidence+'/memory-maintenance-detail-dark.png'});
+ await page.setViewportSize({width:390,height:844});
+ if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Maintenance viewport overflow');
+ await page.screenshot({path:evidence+'/memory-maintenance-detail-mobile.png'});
+ await sheet.getByRole('button',{name:'Close details',exact:true}).click();await sheet.waitFor({state:'detached'});
+ await page.waitForURL(u=>u.searchParams.get('view')==='maintenance'&&!u.searchParams.has('ref'));
+ await page.evaluate(()=>document.documentElement.classList.remove('dark'));
+ await page.setViewportSize({width:1440,height:1000});
 }

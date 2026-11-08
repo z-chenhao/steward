@@ -144,3 +144,7 @@ to survive the command or test harness.
 执行记录默认列出全部，搜索旁共享 Filters 菜单选择执行状态及独立 Needs me 条件；组合条件、搜索、分页游标与实时刷新保持一致，旧 view=attention 深链接仍可用。无脚本使用原生筛选表单。
 
 `channels` 的 attention 场景用真实待处理／失败执行验证桌面及 390px、320px 的明暗列表：读屏标记保留，页面不横向溢出，宽表格仍可在自身区域通过键盘滚动。不能只用无待处理记录的列表验证宽表格裁剪。
+
+`TestRootFailureNoticeSurvivesUnrelatedMainReplyAndRecovery` 用 Main 故意答复另一话题复现漏报：真实 Root 失败后仍有一条 Host 失败交付、正确任务标题与 failed 执行记录；Task 继续 active，重复 Recover 不增加通知或交付。`tasks` 系统门禁同时核对实际 CLI 失败场景的安全通知。
+
+列表回归通过共享 `assertDataList` 检查 Refresh 仅位于全局顶栏右侧、Filters 在搜索下方左侧且展开收起不移位；覆盖桌面／手机和明暗主题，保留原生筛选与分页。

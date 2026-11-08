@@ -16,11 +16,13 @@ import (
 // These types are private Curator inputs and proposals. A proposal cannot mutate
 // Memory: the store rechecks scope, current targets, evidence and privacy policy.
 type Observation struct {
-	EventID string    `json:"event_id"`
-	Source  SourceRef `json:"source"`
-	Author  string    `json:"author"`
-	Text    string    `json:"text"`
-	At      time.Time `json:"occurred_at"`
+	Offset     int64     `json:"offset,omitempty"`
+	TotalBytes int64     `json:"total_bytes,omitempty"`
+	EventID    string    `json:"event_id"`
+	Source     SourceRef `json:"source"`
+	Author     string    `json:"author"`
+	Text       string    `json:"text"`
+	At         time.Time `json:"occurred_at"`
 }
 type Fact struct {
 	Ref      string    `json:"ref"`
@@ -30,8 +32,18 @@ type Fact struct {
 	At       time.Time `json:"occurred_at"`
 }
 type CurationInput struct {
-	Observation Observation `json:"observation"`
-	Existing    []Fact      `json:"existing"`
+	WorkerThrough int64         `json:"worker_sequence,omitempty"`
+	WorkerOffset  int64         `json:"worker_offset,omitempty"`
+	Version       int           `json:"version,omitempty"`
+	NextOffset    int64         `json:"next_offset,omitempty"`
+	Goal          string        `json:"goal,omitempty"`
+	Through       int64         `json:"through_sequence,omitempty"`
+	Mode          string        `json:"mode,omitempty"`
+	Pass          int           `json:"pass,omitempty"`
+	Observations  []Observation `json:"observations,omitempty"`
+	Documents     []Document    `json:"documents,omitempty"`
+	Observation   Observation   `json:"observation"`
+	Existing      []Fact        `json:"existing"`
 }
 type Candidate struct {
 	Operation string `json:"operation"`
@@ -43,7 +55,9 @@ type Candidate struct {
 	Tentative bool   `json:"tentative"`
 }
 type Proposal struct {
-	Facts []Candidate `json:"facts"`
+	Facts     []Candidate     `json:"facts"`
+	Documents []DocumentWrite `json:"documents,omitempty"`
+	Done      bool            `json:"done,omitempty"`
 }
 
 var ErrProposal = errors.New("invalid memory proposal")
@@ -90,6 +104,9 @@ func durableQuote(text, category string) bool {
 	return true
 }
 func ParseProposal(text string, in CurationInput) (Proposal, error) {
+	if in.Mode == "dream" {
+		return parseDreamProposal(text, in)
+	}
 	var p Proposal
 	if len(text) > 32<<10 {
 		return p, ErrProposal
@@ -97,6 +114,9 @@ func ParseProposal(text string, in CurationInput) (Proposal, error) {
 	d := json.NewDecoder(bytes.NewBufferString(text))
 	d.DisallowUnknownFields()
 	if d.Decode(&p) != nil || d.Decode(new(any)) != io.EOF || p.Facts == nil || len(p.Facts) > 8 {
+		return p, ErrProposal
+	}
+	if len(p.Documents) > 0 || p.Done {
 		return p, ErrProposal
 	}
 	if !EligibleObservation(in.Observation) && len(p.Facts) > 0 {

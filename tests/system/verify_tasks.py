@@ -80,7 +80,7 @@ def assertions(value, tasks, roots, updates):
         "durable_report_dedup": len(value["inbox"]) == updates == len(value["reporter_dedup"]),
         "no_worker_task_controls": all(not any((s["name"].startswith("builtin__task_") or s["name"] == "builtin__automation_manage") for s in json.loads(caps[r["capability_snapshot_id"]]["tools_json"])) for r in workers),
         "main_cannot_spawn": all(not c["can_spawn_agents"] and not any(s["name"] == "builtin__agent_run" for s in json.loads(c["tools_json"])) for c in caps.values() if c["role"] == "main"),
-        "runtime_origin_and_named_details": all(json.loads(b["message_json"])["origin"] == "runtime" and set(json.loads(b["message_json"])["details"]) <= {"task_ref", "kind", "artifact_refs"} for b in value["inbox"]),
+        "runtime_origin_and_named_details": all(json.loads(b["message_json"])["origin"] == "runtime" and set(json.loads(b["message_json"])["details"]) <= {"task_ref", "kind", "artifact_refs", "title"} for b in value["inbox"]),
         "runtime_never_system": all(m["role"] != "system" for req in requests for m in req["messages"] if m.get("origin") == "runtime"),
         "worker_not_in_conversation": all(m["role"] in ("user", "assistant") and m["source"] != "runtime" for m in value["conversation"]),
         "frozen_snapshots_and_schemas": frozen_generation_contracts(value),
@@ -345,6 +345,8 @@ def run(binary):
             h.command("chat", "work")
             value = state(h); check(value)
             require(value["tasks"][0]["status"] == "active" and value["updates"][0]["kind"] == "failed", "Root failure failed/completed Task")
+            notices = [m for m in value["conversation"] if m["source"] == "task"]
+            require(len(notices) == 1 and "did not finish" in json.dumps(notices[0]), "Root failure lifecycle notice missing or duplicated")
             return value
 
         report["failure"] = scenario("failure", failure)

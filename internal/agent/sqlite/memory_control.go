@@ -3,10 +3,12 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/tool"
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/agent"
-	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/recall"
 )
@@ -20,6 +22,37 @@ func (r *Runs) ManageMemory(ctx context.Context, key string, m memory.Mutation) 
 	raw, _ := encoded(m)
 	if _, ok := memory.Parse(raw); !ok || key == "" || len(key) > 128 {
 		return nil, recall.ErrInvalid
+	}
+	if documentOperation(m.Operation) {
+		var result tool.Result
+		err := r.write(ctx, func(tx *sql.Tx) error {
+			var owner string
+			if e := tx.QueryRowContext(ctx, `SELECT agent_id FROM agent_config WHERE singleton=1`).Scan(&owner); e != nil {
+				return e
+			}
+			var e error
+			result, e = r.manageDocument(ctx, tx, owner, "", "control:"+key, m)
+			return e
+		})
+		if err != nil {
+			return nil, err
+		}
+		if result.Error != nil {
+			return nil, recall.ErrConflict
+		}
+		var envelope struct {
+			Memory *llm.MemoryText `json:"memory_text"`
+		}
+		raw := result.Text
+		if json.Unmarshal([]byte(raw), &envelope) == nil && envelope.Memory != nil {
+			raw, err = r.vault.Open(ctx, envelope.Memory.Sealed, envelope.Memory.Binding)
+			if err != nil {
+				return nil, err
+			}
+		}
+		var out map[string]any
+		err = json.Unmarshal([]byte(raw), &out)
+		return out, err
 	}
 	id := ""
 	ref := "control:" + key
@@ -58,7 +91,7 @@ func (r *Runs) ManageMemory(ctx context.Context, key string, m memory.Mutation) 
 			check = m.Supersedes
 		}
 		if check != "" {
-			if e := r.memory.CheckRef(ctx, recall.Scope{UserID: artifact.LocalUser, AgentID: agentID}, strings.TrimPrefix(check, "memory:"), m.Operation == "forget"); e != nil {
+			if e := r.memory.CheckRef(ctx, recall.Scope{UserID: r.host.OwnerID(), AgentID: agentID}, strings.TrimPrefix(check, "memory:"), m.Operation == "forget"); e != nil {
 				return e
 			}
 		}
@@ -91,5 +124,16 @@ func (r *Runs) MemoryStatus(ctx context.Context) ([]map[string]any, error) {
 		}
 		out = append(out, map[string]any{"receipt": "memory-event:" + id, "operation": op, "applied": at.Valid, "attempts": attempts, "rejected": failed.Valid, "last_error": code.String})
 	}
-	return out, rows.Err()
+	if e = rows.Err(); e != nil {
+		return nil, e
+	}
+	rows.Close()
+	for _, item := range out {
+		metrics, e := r.memoryMetrics(ctx, strings.TrimPrefix(item["receipt"].(string), "memory-event:"))
+		if e != nil {
+			return nil, e
+		}
+		item["metrics"] = metrics
+	}
+	return out, nil
 }

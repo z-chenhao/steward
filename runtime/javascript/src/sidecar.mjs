@@ -144,7 +144,7 @@ async function deliverResult(e, message, result, callId) {
   if (e.finished) return;
   e.idle = undefined;
   e.worker.postMessage({type: 'result', id: message.id, ok: !result.error,
-    payload: result.error ? result.error.code : JSON.stringify(result.value),
+    payload: result.error ? (result.error.message || result.error.code) : JSON.stringify(result.value),
     properties: result.error ? JSON.stringify(result.error) : undefined,
     seq: ++e.delivered, now: 0});
 }

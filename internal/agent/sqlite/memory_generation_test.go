@@ -24,11 +24,12 @@ type semanticProvider struct {
 	calls        int
 	reply        func(memory.CurationInput) llm.GenerationResult
 	beforeAccept func()
+	beforeReply  func(context.Context, llm.GenerationRequest)
 }
 
 func (p *semanticProvider) Generate(ctx context.Context, req llm.GenerationRequest, _ func(llm.GenerationEvent)) (llm.GenerationResult, error) {
 	p.calls++
-	if len(req.Tools) != 0 || len(req.Messages) != 2 || req.Messages[0].Text != memory.CurationInstruction || !strings.HasPrefix(req.SessionID, "memory:") {
+	if len(req.Tools) != 0 || len(req.Messages) != 2 || (req.Messages[0].Text != memory.CurationInstruction && req.Messages[0].Text != memory.DreamInstruction && req.Messages[0].Text != memory.GroundedDreamInstruction && req.Messages[0].Text != memory.WorkerDreamInstruction) || !strings.HasPrefix(req.SessionID, "memory:") {
 		return llm.GenerationResult{}, llm.InvalidProviderResponse
 	}
 	release, e := req.DispatchGuard(ctx)
@@ -36,6 +37,9 @@ func (p *semanticProvider) Generate(ctx context.Context, req llm.GenerationReque
 		return llm.GenerationResult{}, e
 	}
 	release()
+	if p.beforeReply != nil {
+		p.beforeReply(ctx, req)
+	}
 	var in memory.CurationInput
 	if json.Unmarshal([]byte(req.Messages[1].Text), &in) != nil {
 		return llm.GenerationResult{}, llm.InvalidProviderResponse
@@ -86,6 +90,57 @@ func semanticRuntime(t *testing.T) (*Store, *Runs, *memorysqlite.Store, agent.Ac
 	r.ConfigureSemanticMemory(p)
 	return s, r, m, a, p
 }
+func TestSemanticDreamDeadlineRetainsAcceptanceLeaseHeadroom(t *testing.T) {
+	s, r, _, a, p := semanticRuntime(t)
+	seen := map[string]bool{}
+	p.beforeReply = func(ctx context.Context, req llm.GenerationRequest) {
+		var input memory.CurationInput
+		if err := json.Unmarshal([]byte(req.Messages[1].Text), &input); err != nil {
+			t.Fatal(err)
+		}
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			t.Fatal("maintenance call has no deadline")
+		}
+		remaining := time.Until(deadline)
+		if input.Mode == "dream" {
+			if remaining <= time.Minute || remaining > 3*time.Minute {
+				t.Fatal("document synthesis has no bounded extended window", remaining)
+			}
+		} else if remaining > time.Minute {
+			t.Fatal("ordinary extraction inherited the longer synthesis deadline", remaining)
+		}
+		var lease int64
+		if err := s.db.QueryRow(`SELECT lease_until FROM memory_generation WHERE generation_id=?`, req.GenerationID).Scan(&lease); err != nil {
+			t.Fatal(err)
+		}
+		if !time.UnixMicro(lease).After(deadline.Add(15 * time.Second)) {
+			t.Fatal("generation could finish after its acceptance lease expired")
+		}
+		seen[curationPurpose(input)] = true
+	}
+	p.reply = func(in memory.CurationInput) llm.GenerationResult {
+		if in.Mode != "dream" {
+			return llm.GenerationResult{Text: `{"facts":[]}`}
+		}
+		return llm.GenerationResult{Text: `{"facts":[],"documents":[],"done":true}`}
+	}
+	ctx := context.Background()
+	mustSubmit(t, a, "history", "我喜欢无糖绿茶")
+	if err := r.Flush(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := r.ManageMemory(ctx, "consolidate", memory.Mutation{Operation: "dream"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.CurateMemory(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if !seen["facts"] || !seen["dream"] || scalar(t, s, `SELECT count(*) FROM memory_generation WHERE status!='completed'`) != 0 {
+		t.Fatal("both maintenance purposes must complete through normal acceptance", seen)
+	}
+}
+
 func TestSemanticRuntimeAcceptedReplayAndNoUserTask(t *testing.T) {
 	s, r, m, a, p := semanticRuntime(t)
 	ctx := context.Background()
@@ -259,13 +314,13 @@ func TestSemanticMigrationFromV46PreservesAcceptedWork(t *testing.T) {
 	ctx := context.Background()
 	receipt := mustSubmit(t, a, "accepted-before-upgrade", "original accepted request")
 	original := scalar(t, s, `SELECT count(*) FROM conversation_intent`)
-	if _, e := s.db.Exec(`DROP TABLE generation_cost_estimate; DROP TABLE memory_cost_reservation; DROP TABLE memory_generation; DROP TABLE memory_semantic_receipt; PRAGMA user_version=46;`); e != nil {
+	if _, e := s.db.Exec(removeLayeredMemoryFixtureSchema + `DROP TABLE generation_cost_estimate; DROP TABLE memory_cost_reservation; DROP TABLE memory_generation; DROP TABLE memory_semantic_receipt; PRAGMA user_version=46;`); e != nil {
 		t.Fatal(e)
 	}
 	if e := migrate(ctx, s.db, migrations); e != nil {
 		t.Fatal(e)
 	}
-	if SchemaVersion() != 48 || scalar(t, s, `PRAGMA user_version`) != 48 || scalar(t, s, `SELECT count(*) FROM conversation_intent`) != original || scalar(t, s, `SELECT count(*) FROM run WHERE run_id=?`, receipt.RunID) != 1 {
+	if SchemaVersion() != 51 || scalar(t, s, `PRAGMA user_version`) != 51 || scalar(t, s, `SELECT count(*) FROM conversation_intent`) != original || scalar(t, s, `SELECT count(*) FROM run WHERE run_id=?`, receipt.RunID) != 1 {
 		t.Fatal("forward migration changed accepted work")
 	}
 	if scalar(t, s, `SELECT count(*) FROM memory_generation`) != 0 {

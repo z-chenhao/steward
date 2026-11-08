@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
-	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/recall"
@@ -54,6 +53,30 @@ func (r *Runs) queueMemory(ctx context.Context, tx *sql.Tx, agentID, operation, 
 
 func (t *tools) manageMemory(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
 	result := tool.Failure("PERMISSION_DENIED")
+	visibleReads := map[string]bool{}
+	if m, ok := memory.Parse(inv.Call.Arguments); ok && m.Operation == "read" && m.Layer != memory.Transcripts && m.Offset == 0 {
+		reuse, e := t.runs.evidenceReuse(ctx, t.claim.RunID())
+		if e != nil {
+			return tool.Result{}, e
+		}
+		if reuse {
+			run, e := t.runs.Load(ctx, t.claim)
+			if e != nil {
+				return tool.Result{}, e
+			}
+			messages, _, e := t.runs.workingMessages(run, false, true)
+			if e != nil {
+				return tool.Result{}, e
+			}
+			refs, e := t.runs.visibleDocumentReadRefs(ctx, run, messages)
+			if e != nil {
+				return tool.Result{}, e
+			}
+			for _, ref := range refs {
+				visibleReads[ref] = true
+			}
+		}
+	}
 	e := t.runs.write(ctx, func(tx *sql.Tx) error {
 		if e := t.fence(ctx, tx); e != nil {
 			return e
@@ -63,7 +86,7 @@ func (t *tools) manageMemory(ctx context.Context, inv tool.Invocation) (tool.Res
 		if e := tx.QueryRowContext(ctx, `SELECT i.arguments_json,r.kind,r.agent_id,(SELECT count(*) FROM capability_snapshot c,json_each(c.tools_json) j WHERE c.snapshot_id=r.capability_snapshot_id AND json_extract(j.value,'$.name')=?) FROM tool_invocation i JOIN run r USING(run_id) WHERE i.invocation_id=? AND i.run_id=? AND i.status='running' AND i.tool_name=?`, memory.ManageName, inv.ID, t.claim.RunID(), memory.ManageName).Scan(&args, &kind, &agentID, &visible); e != nil {
 			return e
 		}
-		if kind != "main" || visible != 1 {
+		if visible != 1 {
 			return nil
 		}
 		if t.runs.memory == nil {
@@ -75,12 +98,63 @@ func (t *tools) manageMemory(ctx context.Context, inv tool.Invocation) (tool.Res
 			result = tool.Failure("INVALID_ARGUMENT")
 			return nil
 		}
+		if m.Operation == "read" && strings.HasPrefix(m.MemoryRef, "run:") {
+			var version int
+			if e := tx.QueryRowContext(ctx, `SELECT coalesce(json_extract(j.value,'$.version'),1) FROM run r JOIN capability_snapshot c ON c.snapshot_id=r.capability_snapshot_id,json_each(c.tools_json) j WHERE r.run_id=? AND json_extract(j.value,'$.name')=?`, t.claim.RunID(), memory.ManageName).Scan(&version); e != nil {
+				return e
+			}
+			if version < 6 {
+				result = tool.Failure("INVALID_ARGUMENT")
+				return nil
+			}
+		}
+		if documentOperation(m.Operation) {
+			if kind != "main" && m.Operation == "dream" {
+				return nil
+			}
+			if m.Operation == "read" && m.Layer != memory.Transcripts && m.Offset == 0 {
+				ref := m.MemoryRef
+				if !strings.HasPrefix(ref, "memory:") {
+					ref = "memory:" + ref
+				}
+				if visibleReads[ref] {
+					reader, ok := t.runs.memory.(memory.NavigationReader)
+					if ok {
+						var floor int64
+						if e := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=?),0)`, agentID).Scan(&floor); e != nil {
+							return e
+						}
+						docs, e := reader.ReadNavigation(ctx, recall.Scope{UserID: t.runs.host.OwnerID(), AgentID: agentID}, floor, []string{ref})
+						if e != nil {
+							return e
+						}
+						if len(docs) > 0 {
+							if e = recordMemoryAccess(ctx, tx, t.claim.RunID(), inv.ID, "read", []string{ref}); e != nil {
+								return e
+							}
+							text, _ := encoded(struct {
+								Ref     string `json:"ref"`
+								Visible bool   `json:"already_visible"`
+							}{ref, true})
+							result = tool.Result{Text: text}
+							return nil
+						}
+					}
+				}
+			}
+			var err error
+			result, err = t.runs.manageDocument(ctx, tx, agentID, t.claim.RunID(), inv.ID, m)
+			return err
+		}
+		if kind != "main" {
+			return nil
+		}
 		check := m.MemoryRef
 		if check == "" {
 			check = m.Supersedes
 		}
 		if check != "" {
-			if e := t.runs.memory.CheckRef(ctx, recall.Scope{UserID: artifact.LocalUser, AgentID: agentID}, strings.TrimPrefix(check, "memory:"), m.Operation == "forget"); e != nil {
+			if e := t.runs.memory.CheckRef(ctx, recall.Scope{UserID: t.runs.host.OwnerID(), AgentID: agentID}, strings.TrimPrefix(check, "memory:"), m.Operation == "forget"); e != nil {
 				result = tool.Failure("NOT_FOUND")
 				return nil
 			}
@@ -151,14 +225,23 @@ func (r *Runs) CurateMemory(ctx context.Context) error {
 		var at, revoked int64
 		e := r.host.db.QueryRowContext(ctx, `SELECT e.event_id,e.agent_id,e.operation,e.source_type,e.source_ref,e.payload,e.accepted_at,coalesce(p.updated_at,0) FROM memory_mutation e LEFT JOIN memory_privacy p USING(agent_id) WHERE e.failed_at IS NULL AND ((e.operation!='observe' AND e.applied_at IS NULL) OR (e.operation='observe' AND NOT EXISTS(SELECT 1 FROM memory_semantic_receipt s WHERE s.event_id=e.event_id))) ORDER BY (e.operation='observe'),e.sequence LIMIT 1`).Scan(&id, &agentID, &op, &typ, &ref, &payload, &at, &revoked)
 		if e == sql.ErrNoRows {
+			queued, err := r.scheduleDream(ctx)
+			if err != nil {
+				return err
+			}
+			if queued {
+				continue
+			}
 			return nil
 		}
 		if e != nil {
 			return agent.ErrStorage
 		}
-		scope := recall.Scope{UserID: artifact.LocalUser, AgentID: agentID}
+		scope := recall.Scope{UserID: r.host.OwnerID(), AgentID: agentID}
 		if op == "observe" && at <= revoked {
 			e = nil
+		} else if op == "observe" && typ == "dream" {
+			e = r.curateDream(ctx, scope, id, time.UnixMicro(at).UTC(), revoked)
 		} else if op == "observe" {
 			var content, author string
 			observedAt := time.UnixMicro(at).UTC()
@@ -223,6 +306,9 @@ func (r *Runs) CurateMemory(ctx context.Context) error {
 			}
 		}
 		if e != nil {
+			if errors.Is(e, agent.ErrBusy) {
+				return nil
+			} // Another Host owns the durable generation lease.
 			if errors.Is(e, memory.ErrProposal) {
 				// Malformed/unsupported output gets a bounded fresh proposal,
 				// never a raw-text fallback or an indefinitely poisoned queue.

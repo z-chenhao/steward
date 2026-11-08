@@ -21,7 +21,7 @@ type artifactStore interface {
 
 func (a *App) artifactOwner(ctx context.Context) (artifact.Scope, error) {
 	d, e := a.store.Diagnostics(ctx)
-	return artifact.Scope{UserID: artifact.LocalUser, AgentID: d.AgentID, Owner: true}, e
+	return artifact.Scope{UserID: a.store.OwnerID(), AgentID: d.AgentID, Owner: true}, e
 }
 func (a *App) SaveArtifact(ctx context.Context, in artifact.Input, src io.Reader) (artifact.Descriptor, error) {
 	scope, err := a.artifactOwner(ctx)
