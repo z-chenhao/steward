@@ -13,6 +13,8 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
  if(await page.evaluate(()=>performance.getEntriesByType('navigation').length)!==navigationCount)throw Error('row inspection navigated away from its list');
  await page.getByRole('heading',{name:'Execution result',exact:true}).waitFor();
  if(!await sheet.locator('#task-messages').innerText().then(text=>text.includes('Main Task follow-up through Pi.')))throw Error('execution omitted its accepted Main delivery');
+ await sheet.locator('.task-delivery .semantic').first().waitFor();
+ await sheet.locator('.task-delivery .markdown table').first().waitFor();
  if(!await sheet.getByRole('link',{name:'View trace →',exact:true}).getAttribute('href').then(value=>value.includes(facts.root)))throw Error('execution trace escaped its Root');
  // The background poller retains the original list filters after the URL
  // changes to the selected execution. Both read regions remain independent.
@@ -52,9 +54,15 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
   const heading=await sheet.locator('.execution-heading').boundingBox();
   if(width===1400&&heading.height>170)throw Error('execution heading crowded out its delivery');
   if(await sheet.locator('.execution-heading h1').evaluate(node=>parseFloat(getComputedStyle(node).fontSize))>18)throw Error('execution title left the compact type scale');
-  for(const body of await sheet.locator('.task-delivery .semantic').all()){
+  const bodies=await sheet.locator('.task-delivery .semantic').all();
+  if(!bodies.length||!await sheet.locator('.task-delivery .markdown table').count())throw Error('execution typography fixture lost prose or table coverage');
+  for(const body of bodies){
    const type=await body.evaluate(node=>({size:getComputedStyle(node).fontSize,family:getComputedStyle(node).fontFamily}));
    if(type.size!=='14px'||type.family.includes('Source Serif'))throw Error('task delivery does not use the shared UI type scale');
+   for(const table of await body.locator('table').all()){
+    const tableType=await table.evaluate(node=>({size:getComputedStyle(node).fontSize,family:getComputedStyle(node).fontFamily}));
+    if(tableType.size!==type.size||tableType.family!==type.family)throw Error('task table typography differs from its prose');
+   }
   }
   const result=await sheet.locator('.execution-result').boundingBox(),details=await sheet.locator('.execution-side').boundingBox();
   if(width===390&&result.y>=details.y)throw Error('mobile execution metadata precedes the result');
