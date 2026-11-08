@@ -103,3 +103,34 @@ python3 tests/system/verify_ui_interactions.py --binary bin/steward --evidence e
 verify_ui_interactions 的超宽沙箱夹具在桌面及 390px 视口验证：内容宽于组件、ArrowRight 实际滚动、最右侧标记可达、滚动条隐藏、外层页面无横向溢出；同时保留导出、模式切换及持久状态回归。
 
 空脚本列表回归：`TestSandboxEmptyExpressionsNormalizeWithoutCoercingCode` 覆盖空字符串、数组及非空字符串/null/对象/布尔拒绝；`TestUIEmptyExpressionsPersistCanonicalArtifactAndRejectNonemptyString` 验证真实执行器保存规范产物而不改写请求，并继续拒绝非空字符串。`verify_intelligent_ui.py` 的 direct 与 Code Mode 流式场景均包含 `jsExpressions: ""` 静态周计划，浏览器验证同页提交、刷新及 kill/restart 后内容仍在、完成态表达式为数组，并保留桌面/手机明暗截图。以上复用现有必需 PR CI 的 Go 分片、startup-ui 与 capabilities-race 门禁。
+
+## 主动展示、typed 工具与本地可视化
+
+`TestPresentationToolDescribesAndValidatesActualComponentProps` 覆盖完整执行 Schema 和 Code Mode 类型声明中的逐组件参数、缺失字段、错误类型和跨组件字段；`TestMainDirectUIAcceptsCatalogSizedVisualWithoutCodeMode` 通过实际 Main/Store 证明大于普通工具 16 KiB 上限但在 UI 64 KiB 内的完整图解可直接交付；其他普通工具上限不变。空表达式兼容继续使用既有规范化回归。`verify_intelligent_ui.py` 检查真实 HTTP 请求中已包含精确的紧凑参数签名。模型声明与完整执行校验分离；普通 8K Main 并发输入继续由 core main 门禁覆盖，冻结声明与旧快照省略字段的兼容由 Agent/Registry 回归覆盖。
+
+内建 Skill 回归同时检查未配置本地目录时的读取声明不误报为空，且内建方法确实可读取；继续校验四份新增配方经过真实 UI catalog。相同系统门禁经 Main 与普通执行器交付架构图、多方案费用比较、Three.js SVG 几何、带来源署名的离线地理底图，浏览器实际选择节点、修改用量和角度，核对计算/图形变化、刷新恢复、明暗/桌面/手机截图、无外部资源请求与无脚本预览。几何动画不产生重复状态写入，控件和结果变化仍可保存。原生长分类/大数值场景归 ui-interactions 浏览器回归。
+
+主动选择和视觉质量仍须真实模型同题评测；固定 peer、可运行模板和浏览器通过不证明模型主动性已达到特定在线产品，也不证明在线地图或真实照片来源已经接入。
+
+三维配方检查固定轴标签、三角度真实几何变化、旋转顺序切换和刷新后的角度/顺序恢复；类别标签检查实际测量宽度及左边界，组件详情截图临时隐藏固定宿主工具栏，整页截图仍保留真实宿主布局。
+
+## 同轮修正与共轴比较
+
+`TestUICorrectionSelectsOnePendingTargetAndPreservesHistory` 经真实 Main/执行器并发修正同一目标，检查只成功一个修正、不同区块保留、原证据未改和后续输入不能改已交付内容。补充失败提交恢复覆盖同一替换回执；有效版本的恢复预览与回复绑定使用同一派生关系。
+
+`TestSharedAxisLineSeriesAndFallback` 和前端 schema 回归覆盖原单序列兼容、错位数值/重复序列名/双表示拒绝和带单位的文字替代；ui-interactions 浏览器门禁检查共用 Y 轴、两条折线、提示、CSV、明暗/窄屏截图。intelligent-ui 门禁使用实际沙箱验证 SVGRenderer 默认主题、显式背景保留、resize 和中心投影不修改输入向量，并继续检查三角度、顺序和状态恢复。真实模型同题结果单独记录，不以配方或工具调用数替代质量结论。
+
+### 图文叙事与生成连续性
+
+- `TestPublicUISectionsPreserveOrderWithoutPublishingToolNarration` 经真实 Main／Executor 验证正文与视觉顺序、非 Web 替代、临时工具文字不发布、组件身份和冻结投影匹配；旧无 text 回归继续通过。
+- `TestPreviewWaitsForCompleteCSSAndPreservesPublicText` 验证不完整样式不绘制。`ui_preview_test.go` 验证授权／撤权／终止、清理、nonce CSP 与无原始源码的 SSE。
+- `verify_intelligent_ui.py`／`channels_browser.mjs` 验证同一 iframe 和已有节点在第二次实际参数增量后保留、正式实例未就绪时预览持续可见、正文与视觉交替、生成脚本关闭，覆盖明暗／桌面／手机与重启。真实模型同题另记录首次有效画面、重载与位移，不能用受控 peer 推断 Agent 的表达质量。
+
+### 阅读与关系布局
+
+- `web/markdown.test.mjs` 用同题中复现的中文强调、代码与转义、半个强调、危险链接／HTML 验证解析边界；只有临时显示使用格式补全。
+- `channels_browser.mjs` 的 streaming 场景覆盖真实模型 HTTP 增量、CJK 强调、已显示段落的 DOM 身份、断线恢复与持久原文；direct preview 场景验证 iframe 异步增高时的跟随以及上滚后的保留。
+- 架构配方沿 intelligent-ui 浏览器门禁验证有向分支、无节点重叠、标签大小、键盘选择与刷新恢复，覆盖 1400／390 和明暗主题。真实模型是否使用 Dagre 另从实际工具产物记录，不能由配方回归推断。
+- `TestUIStagedRecoveryKeepsAcceptedOrderDespiteReverseCompletion` 与 `TestUIPreviewRestoredAndNewSectionsKeepPrivateAcceptedOrder` 覆盖逆序完成、释放／重新取得 claim 后的接纳顺序及私有排序键不外泄。`TestUIPreviewUsesCatalogCharacterLimitsForPublicText` 与前端 wire 回归覆盖中文／补充平面字符到达和超出字符上限，防止以字节或 UTF-16 长度过早拒绝合法正文。
+
+以上单元与真实 SQLite 回归由现有 CI 的 go／frontend 分片执行；图文连续性、阅读位置和配方渲染由 startup-ui／channels-web 系统分片执行，UI 竞态继续归 capabilities-race。复用现有必需 `Ubuntu checks` 聚合门禁，不增加重复工作流。测试容量显式配置在渠道夹具内，预算恢复仍由所属上下文门禁覆盖，不改变产品的模型窗口。

@@ -1,24 +1,13 @@
 import {randomUUID} from './lib/random-id';
-import {useEffect,useMemo,useRef} from 'react';
-import {Marked,Renderer} from 'marked';
+import {useEffect,useLayoutEffect,useMemo,useRef} from 'react';
+import {parseMarkdown} from './markdown-parser';
+import {morphChildren} from './lib/morph-children';
 import DOMPurify from 'dompurify';
 import {t} from './i18n';
 
-const escape=(text:string)=>text.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-export function markdownLink(href:string,origin=location.origin):string|null{
- if(/^artifact:[A-Za-z0-9_-]{1,128}$/.test(href))return '/artifact?ref='+encodeURIComponent(href);
- try{const url=new URL(href,origin);return ['http:','https:'].includes(url.protocol)?url.href:null}catch{return null}
-}
-const renderer=new Renderer();
-renderer.html=({text})=>escape(text);
-renderer.image=({text})=>escape(text);
-renderer.link=function({href,title,tokens}){
- const content=this.parser.parseInline(tokens),target=markdownLink(href);
- return target?`<a href="${escape(target)}"${title?` title="${escape(title)}"`:''} rel="noopener noreferrer">${content}</a>`:content;
-};
-const markdown=new Marked({renderer,gfm:true,breaks:true});
-export function markdownHTML(text:string):string{
- return DOMPurify.sanitize(markdown.parse(text,{async:false}),{ALLOWED_TAGS:['p','br','strong','em','del','s','blockquote','pre','code','ul','ol','li','hr','h1','h2','h3','h4','h5','h6','table','thead','tbody','tr','th','td','a'],ALLOWED_ATTR:['href','title','class','start','colspan','rowspan'],ALLOW_DATA_ATTR:false});
+export {markdownLink} from './markdown-parser';
+export function markdownHTML(text:string,streaming=false):string{
+ return DOMPurify.sanitize(parseMarkdown(text,streaming,location.origin),{ALLOWED_TAGS:['p','br','strong','em','del','s','blockquote','pre','code','ul','ol','li','hr','h1','h2','h3','h4','h5','h6','table','thead','tbody','tr','th','td','a'],ALLOWED_ATTR:['href','title','class','start','colspan','rowspan'],ALLOW_DATA_ATTR:false});
 }
 
 declare global{interface Window{stewardDiagram?:(source:string,id:string)=>Promise<string>}}
@@ -48,9 +37,14 @@ export function enhanceDiagrams(scope:ParentNode){
   })();
  }
 }
-export function Markdown({text}:{text:string}){
+export function Markdown({text,streaming=false}:{text:string;streaming?:boolean}){
  const ref=useRef<HTMLDivElement>(null),html=useMemo(()=>markdownHTML(text),[text]);
- useEffect(()=>{if(ref.current)enhanceDiagrams(ref.current)},[html]);
- return <div ref={ref} className="semantic markdown" dangerouslySetInnerHTML={{__html:html}}/>;
+ useLayoutEffect(()=>{if(streaming&&ref.current)renderDraftMarkdown(ref.current,text)},[text,streaming]);
+ useEffect(()=>{if(!streaming&&ref.current)enhanceDiagrams(ref.current)},[html,streaming]);
+ return <div ref={ref} className="semantic markdown" {...(!streaming?{dangerouslySetInnerHTML:{__html:html}}:{})}/>;
 }
-export function renderDraftMarkdown(node:HTMLElement,text:string){node.classList.add('markdown');node.innerHTML=markdownHTML(text)}
+export function renderDraftMarkdown(node:HTMLElement,text:string){
+ node.classList.add('markdown');
+ const next=document.createElement('template');next.innerHTML=markdownHTML(text,true);
+ morphChildren(node,next.content);
+}

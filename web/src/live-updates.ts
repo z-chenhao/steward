@@ -1,4 +1,5 @@
 import {t} from './i18n';
+import {createChatScroll} from './chat-scroll';
 import {z} from 'zod';
 import {enhanceProjections,releaseProjections,retainProjectionNodes} from './projections';
 import {captureRichFormDrafts} from './rich-forms';
@@ -93,14 +94,16 @@ function viewportAnchor(){
  });
  return node?{node,top:node.getBoundingClientRect().top}:null;
 }
-function atBottom(){return scrollY+innerHeight>=document.documentElement.scrollHeight-100&&!(document.activeElement instanceof HTMLElement&&document.activeElement.closest('.intelligent-widget,.openintelligentui-native,.rich-answer-form'))}
-function scrollToLatest(){window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})}
 
 export function startLiveUpdates(){
  const main=document.querySelector<HTMLElement>('main[data-live-view]');
  if(!main)return null;
  const view=main.dataset.liveView??'';const regionSet=viewRegions(view);if(!regionSet)return null;const regions:readonly string[]=regionSet;
  const patch=regionPatcher(regions);
+ const thread=view==='/'?document.querySelector<HTMLElement>('.thread'):null;
+ const reader=thread?createChatScroll(thread,()=>syncJump()):null;
+ const atBottom=()=>reader?.isFollowing()??(scrollY+innerHeight>=document.documentElement.scrollHeight-100);
+ const scrollToLatest=()=>reader?reader.toBottom():window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'});
  const feedback=document.getElementById('live-update-status');
  const jump=document.querySelector<HTMLButtonElement>('#new-messages');
  const draft=document.querySelector<HTMLElement>('#conversation-draft');
@@ -305,6 +308,7 @@ export function startLiveUpdates(){
  });
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refresh();else pause()});
  window.addEventListener('pagehide',pause);
+ window.addEventListener('pagehide',event=>{if(!(event as PageTransitionEvent).persisted)reader?.dispose()});
  window.addEventListener('pageshow',event=>{if(event.persisted)void refresh()});
  if(before)showJump();
  return {messageAccepted:(target:URL)=>{

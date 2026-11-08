@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"sort"
 	"sync"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -71,6 +72,13 @@ func (s *Server) observeUIPreview(e agent.Event) {
 					items = append(items, item)
 				}
 			}
+			ordered := len(items) > 0
+			for _, item := range items {
+				ordered = ordered && item.Order != ""
+			}
+			if ordered {
+				sort.SliceStable(items, func(i, j int) bool { return items[i].Order < items[j].Order })
+			}
 			raw, _ := json.Marshal(items)
 			if len(raw) > 512<<10 {
 				return
@@ -112,6 +120,7 @@ func (p *uiPreview) read(version *uint64) (uiPreviewFrame, <-chan struct{}) {
 			if c.Name == "generateSandboxedUi" {
 				var visual struct {
 					InitialHeight float64 `json:"initialHeight"`
+					CSSComplete   bool    `json:"cssComplete"`
 				}
 				_ = json.Unmarshal(c.Props, &visual)
 				frame.Items[i].Components[j].Props, _ = json.Marshal(visual)

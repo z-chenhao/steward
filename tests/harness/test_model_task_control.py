@@ -41,6 +41,25 @@ class FrozenTaskGenerationTests(unittest.TestCase):
                 broken['generations'][index]['request_json'] = json.dumps(request)
                 self.assertFalse(frozen_generation_contracts(broken))
 
+    def test_compact_model_schema_is_frozen_separately_from_execution(self):
+        value = self.fixture()
+        compact = '{"type":"object","description":"Frozen direct declaration"}'
+        frozen = json.loads(value['capabilities'][0]['tools_json'])
+        frozen[0]['input_schema'] = '{"type":"object","required":["execution_field"]}'
+        frozen[0]['model_input_schema'] = compact
+        value['capabilities'][0]['tools_json'] = json.dumps(frozen)
+        for index in (0, 2):
+            request = json.loads(value['generations'][index]['request_json'])
+            request['tools'][0]['input_schema'] = compact
+            value['generations'][index]['request_json'] = json.dumps(request)
+        self.assertTrue(frozen_generation_contracts(value))
+        for replacement in (frozen[0]['input_schema'], '{}', '{"changed":true}'):
+            broken = copy.deepcopy(value)
+            request = json.loads(broken['generations'][2]['request_json'])
+            request['tools'][0]['input_schema'] = replacement
+            broken['generations'][2]['request_json'] = json.dumps(request)
+            self.assertFalse(frozen_generation_contracts(broken))
+
 
 class TaskControlModelTests(unittest.TestCase):
     def test_one_shot_completion_uses_root_outcome_after_child_drains(self):

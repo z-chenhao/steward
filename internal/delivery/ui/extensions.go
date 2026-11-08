@@ -50,7 +50,20 @@ type ActionProps struct {
 
 func validExtension(c Component) bool {
 	switch c.Name {
-	case "steward.lineChart", "steward.scatterChart":
+	case "steward.lineChart":
+		var p LineProps
+		if json.Unmarshal(c.Props, &p) != nil {
+			return false
+		}
+		seen := map[string]bool{}
+		for _, series := range p.Series {
+			if strings.TrimSpace(series.Name) == "" || seen[series.Name] || len(series.Values) != len(p.Labels) {
+				return false
+			}
+			seen[series.Name] = true
+		}
+		return true
+	case "steward.scatterChart":
 		return true // Full bounded schema was already validated.
 	case "steward.action":
 		var p ActionProps
@@ -129,6 +142,15 @@ func validExtension(c Component) bool {
 	return false
 }
 
+type LineProps struct {
+	Labels []string `json:"labels"`
+	Unit   string   `json:"unit"`
+	Series []struct {
+		Name   string    `json:"name"`
+		Values []float64 `json:"values"`
+	} `json:"series"`
+}
+
 func extensionSummary(c Component) string {
 	var p struct {
 		Title, Description, Label string
@@ -143,6 +165,15 @@ func extensionSummary(c Component) string {
 		return ""
 	}
 	lines := []string{p.Title, p.Description, p.Label}
+	if c.Name == "steward.lineChart" {
+		var chart LineProps
+		_ = json.Unmarshal(c.Props, &chart)
+		for _, series := range chart.Series {
+			for i, value := range series.Values {
+				lines = append(lines, fmt.Sprintf("%s / %s: %g %s", series.Name, chart.Labels[i], value, chart.Unit))
+			}
+		}
+	}
 	for _, f := range p.Fields {
 		lines = append(lines, f.Label)
 	}

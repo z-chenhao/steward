@@ -47,18 +47,23 @@ func (s *Server) widget(w http.ResponseWriter, r *http.Request) {
 		theme = "dark"
 	}
 	styles, _ := assets.ReadFile("assets/widget.css")
+	runtime, err := assets.ReadFile("assets/widget-runtime.js")
+	if err != nil {
+		fail(w, 503)
+		return
+	}
 	meta, _ := json.Marshal(map[string]any{"type": "open-generative-ui", "content": map[string]any{"initialHeight": visual.InitialHeight, "generating": false, "css": visual.CSS, "cssComplete": true, "html": []string{visual.HTML}, "htmlComplete": true, "jsFunctions": visual.JSFunctions, "jsFunctionsComplete": true, "jsExpressions": visual.JSExpressions, "jsExpressionsComplete": true}})
 	_, _ = fmt.Fprint(w, `<!doctype html><html class="ogui-theme" data-widget-theme="`+theme+`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>`+html.EscapeString(doc.Title)+`</title><script>
 (()=>{
 for(const name of ['RTCPeerConnection','webkitRTCPeerConnection','Worker','SharedWorker']){try{Object.defineProperty(window,name,{value:undefined,writable:false,configurable:false})}catch{}}
-const channel='open-generative-ui';let id=0,hydrated=false,restoring=false,interacted=false,gesture=-Infinity,local={},modelContext={},stateResolve;
+const channel='open-generative-ui';let id=0,hydrated=false,restoring=false,interacted=false,gesture=-Infinity,local={},modelContext={},stateResolve,lastSaved='';
 const stateReady=new Promise(resolve=>stateResolve=resolve),pending=new Map();
 const send=(type,value={})=>parent.postMessage({channel,type,...value},'*');
 const invoke=(method,args)=>new Promise(resolve=>{const key=String(++id);pending.set(key,resolve);send('invoke',{id:key,method,args})});
 const controls=()=>Array.from(document.querySelectorAll('input:not([type=password]):not([type=hidden]):not([type=file]),textarea,select'));
 const key=(node,index)=>node.dataset.stateKey||node.id||node.name||node.tagName.toLowerCase()+':'+index;
 function capture(){const values={},context={};controls().forEach((node,index)=>{const name=key(node,index),value=node.type==='checkbox'||node.type==='radio'?node.checked:node.multiple?Array.from(node.selectedOptions,o=>o.value):node.value;values[name]=value;context[(node.getAttribute('aria-label')||node.labels?.[0]?.innerText||name).slice(0,128)]=value});const outputs={};document.querySelectorAll('output,[data-state-output]').forEach((node,index)=>outputs[node.id||String(index)]=node.textContent.slice(0,4096));return {state:{controls:values,outputs,local,interacted},model_context:interacted?{controls:context,widget:modelContext}:{}}}
-function save(event){if(!hydrated||restoring)return;if(event?.type==='input'||event?.type==='change')interacted=true;send('view-state',capture())}
+function save(event){if(!hydrated||restoring)return;if(event?.type==='input'||event?.type==='change')interacted=true;const value=capture(),snapshot=JSON.stringify(value);if(snapshot===lastSaved)return;lastSaved=snapshot;send('view-state',value)}
 function restore(state){restoring=true;local=state.local||{};interacted=state.interacted===true;controls().forEach((node,index)=>{const name=key(node,index);if(!Object.prototype.hasOwnProperty.call(state.controls||{},name))return;const value=state.controls[name];if(node.type==='checkbox'||node.type==='radio')node.checked=!!value;else if(node.multiple&&Array.isArray(value))Array.from(node.options,o=>o.selected=value.includes(o.value));else node.value=String(value??'');node.dispatchEvent(new Event('input',{bubbles:true}));node.dispatchEvent(new Event('change',{bubbles:true}))});document.querySelectorAll('output,[data-state-output]').forEach((node,index)=>{const value=state.outputs?.[node.id||String(index)];if(typeof value==='string')node.textContent=value});restoring=false;hydrated=true;stateResolve(local);reportHeight();send('restored',{graphic:!!document.querySelector('svg')})}
 function trusted(method,args){if(performance.now()-gesture>1200)return Promise.resolve({accepted:false,error:'USER_GESTURE_REQUIRED'});gesture=-Infinity;if(hydrated)send('view-state',capture());return invoke(method,args)}
 Object.defineProperty(window,'Websandbox',{value:Object.freeze({connection:Object.freeze({remote:Object.freeze({sendPrompt:args=>invoke('sendPrompt',args),openLink:args=>invoke('openLink',args),getState:()=>stateReady.then(()=>local),setState:async args=>{await stateReady;local=args?.state??args??{};if(args?.modelContext){modelContext=args.modelContext;interacted=true;}save();return {accepted:true}},updateModelContext:async value=>{await stateReady;modelContext=value??{};interacted=true;save();return {accepted:true}},callTool:args=>trusted('callTool',args),requestDisplayMode:args=>trusted('displayMode',args),requestModal:()=>trusted('displayMode',{mode:'modal'})})})}),writable:false,configurable:false});
@@ -87,7 +92,7 @@ let layoutTimer;function scheduleLayout(){clearTimeout(layoutTimer);layoutTimer=
 let last=0;function reportHeight(){scrollRegions();const height=Math.ceil(document.body.scrollHeight);if(height!==last){last=height;send('resize',{height})}}
 addEventListener('DOMContentLoaded',()=>{document.fonts.ready.then(()=>{send('ready',{});reportHeight()});new ResizeObserver(reportHeight).observe(document.body);new MutationObserver(()=>{save();scheduleLayout()}).observe(document.body,{subtree:true,childList:true,characterData:true});addEventListener('resize',reportHeight);addEventListener('load',reportHeight);reportHeight()});
 })();
-</script><script type="application/json" id="open-generative-ui-activity">`+string(meta)+`</script><style>`+string(styles)+`
+</script><script>`+strings.ReplaceAll(string(runtime), "</script", "<\\/script")+`</script><script type="application/json" id="open-generative-ui-activity">`+string(meta)+`</script><style>`+string(styles)+`
 html,body{height:auto!important;min-height:0!important}html{overflow-x:auto!important;overflow-y:hidden!important}body{overflow:visible!important;margin:0;padding:0;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}*{box-sizing:border-box}svg,img,canvas{max-width:100%}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 `+visual.CSS+`
 html,[data-ui-horizontal]{scrollbar-width:none}html::-webkit-scrollbar,[data-ui-horizontal]::-webkit-scrollbar{display:none}html:focus-visible,[data-ui-scroll-focus]:focus-visible{outline:1px solid var(--color-border-primary);outline-offset:-1px}

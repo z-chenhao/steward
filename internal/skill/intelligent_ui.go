@@ -62,6 +62,7 @@ func IncludeIntelligentUI(defs []tool.Definition) ([]tool.Definition, error) {
 			out[i].Execute = func(_ context.Context, args string) tool.Result { return skillListing(entries, args) }
 		}
 		if out[i].Spec.Name == "builtin__skill_view" {
+			out[i].Spec.Description = viewDescription
 			old := out[i].Execute
 			out[i].Execute = func(ctx context.Context, args string) tool.Result {
 				request, ok := parseView(args)

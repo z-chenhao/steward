@@ -2,6 +2,8 @@ package web
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"html"
@@ -18,6 +20,7 @@ import (
 func (s *Server) previewWidget(w http.ResponseWriter, r *http.Request) {
 	p := &s.uiPreviews
 	p.mu.Lock()
+	revision := p.frame.Revision
 	var props json.RawMessage
 	title := ""
 	if p.frame.State == "draft" && p.frame.Key == r.URL.Query().Get("key") {
@@ -32,14 +35,21 @@ func (s *Server) previewWidget(w http.ResponseWriter, r *http.Request) {
 	}
 	p.mu.Unlock()
 	var visual struct {
-		HTML string `json:"html"`
-		CSS  string `json:"css"`
+		HTML        string `json:"html"`
+		CSS         string `json:"css"`
+		CSSComplete bool   `json:"cssComplete"`
 	}
 	if props == nil || json.Unmarshal(props, &visual) != nil {
 		fail(w, 404)
 		return
 	}
-	w.Header().Set("Content-Security-Policy", "sandbox; default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; font-src data:; img-src 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'self'")
+	nonceBytes := make([]byte, 24)
+	if _, err := rand.Read(nonceBytes); err != nil {
+		fail(w, 500)
+		return
+	}
+	nonce := base64.RawStdEncoding.EncodeToString(nonceBytes)
+	w.Header().Set("Content-Security-Policy", "sandbox allow-scripts; default-src 'none'; script-src 'nonce-"+nonce+"'; style-src 'unsafe-inline'; font-src data:; img-src 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'self'")
 	w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), clipboard-read=(), clipboard-write=()")
 	w.Header().Set("Origin-Agent-Cluster", "?1")
 	w.Header().Set("Referrer-Policy", "no-referrer")
@@ -53,9 +63,24 @@ func (s *Server) previewWidget(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("theme") == "dark" {
 		theme = "dark"
 	}
+
+	markup := ""
+	if visual.CSSComplete {
+		markup = previewMarkup(visual.HTML)
+	}
+	key := r.URL.Query().Get("key") + ":" + r.URL.Query().Get("item") + ":" + r.URL.Query().Get("component")
+	if r.URL.Query().Get("format") == "json" {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"channel": "steward-preview", "key": key, "revision": revision, "html": markup, "css": visual.CSS, "theme": theme})
+		return
+	}
 	styles, _ := assets.ReadFile("assets/widget.css")
+	runtime, _ := assets.ReadFile("assets/preview-runtime.js")
 	css := strings.ReplaceAll(visual.CSS, "<", `\3c `)
-	_, _ = fmt.Fprint(w, `<!doctype html><html class="ogui-theme" data-widget-theme="`+theme+`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>`+html.EscapeString(title)+`</title><style>`+string(styles)+"\n"+css+"\n"+`html,body{height:auto!important;min-height:0!important;margin:0;overflow-wrap:anywhere}*{box-sizing:border-box}svg,canvas{max-width:100%}</style></head><body inert>`+previewMarkup(visual.HTML)+`</body></html>`)
+	config, _ := json.Marshal(map[string]string{"key": key})
+	_, _ = fmt.Fprint(w, `<!doctype html><html class="ogui-theme" data-widget-theme="`+theme+`"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>`+html.EscapeString(title)+`</title><style>`+string(styles)+`
+html,body{height:auto!important;min-height:0!important;margin:0;overflow-wrap:anywhere}*{box-sizing:border-box}svg,canvas{max-width:100%}</style><style id="preview-style">`+css+`</style><script type="application/json" id="preview-config">`+string(config)+`</script></head><body inert><div id="preview-content">`+markup+`</div><script nonce="`+nonce+`">`+strings.ReplaceAll(string(runtime), "</script", `<\/script`)+`</script></body></html>`)
+
 }
 
 func previewMarkup(source string) string {
@@ -94,7 +119,11 @@ func previewMarkup(source string) string {
 						continue
 					}
 					switch key {
-					case "href", "src", "srcset", "srcdoc", "action", "formaction", "autofocus", "contenteditable", "tabindex", "form", "background", "poster":
+					case "id":
+						if a.Val == "preview-content" || a.Val == "preview-config" || a.Val == "preview-style" {
+							continue
+						}
+					case "nonce", "href", "src", "srcset", "srcdoc", "action", "formaction", "autofocus", "contenteditable", "tabindex", "form", "background", "poster":
 						continue
 					}
 					attrs = append(attrs, a)

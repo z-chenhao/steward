@@ -52,6 +52,16 @@ class ChannelHarness(MainHarness):
         self.bind = self.command('channel','manage',text=json.dumps(dict(op='bind',channel='feishu',subject='sandbox-tenant:sandbox-app:owner',destination='bound-chat',enabled=True,version=0)))
         self.process = None
 
+    def setup(self, model='fixture-model', metadata=None):
+        # Channel lifecycle cases retain multi-turn receipts through delivery;
+        # budget recovery has separate gates, rather than the peer's 8K default.
+        if metadata is None:
+            metadata = dict(name='Channel workload', provider_kind='openai_compatible',
+                            endpoint='http://127.0.0.1:1/v1', wire_api='openai_completions',
+                            model_id=model, context_window=32768, max_output_tokens=1024,
+                            compatibility=dict(tool_result_format='openai'), capabilities=dict(text_input=True))
+        return super().setup(model, metadata)
+
     def args(self, *args):
         return [str(self.binary), '-config', str(self.config), '-test-bridge', self.fixture, *(['-test-events'] if getattr(self, 'production_events', False) else []), *(['-test-automation-now',self.now] if hasattr(self,'now') else []), *args]
 
@@ -683,7 +693,7 @@ def streaming_replies(binary, evidence, report):
             h.wait(lambda state: sorted(r['status'] for r in state['runs']) == ['completed', 'failed'], 'committed and failed stream outcomes')
             messages = h.http('/api/conversation')
             replies = [m for m in messages if m['message_id'].startswith('reply:')]
-            expected = 'First chunk <img src=x onerror=unsafe()>\nSecond chunk 中文.\nFinal tail.'
+            expected = 'First chunk <img src=x onerror=unsafe()>\n\n**增长趋势：**A在增长。\n\n**正在解释，继续说明**\n\nSecond chunk 中文.\nFinal tail.'
             require(len(replies)==1 and replies[0]['content'][0]['text'].rstrip()==expected and
                     'Interrupted draft only.' not in json.dumps(messages), 'preview changed durable reply history')
             report['scenarios']['streaming-replies'] = dict(durable_replies=1, failure_discarded=True, late_subscriber=True,

@@ -5,14 +5,13 @@ description: Present a compact native component or interactive visual when it ma
 
 # Intelligent UI
 
-Use OpenIntelligentUI native components first, then its generateSandboxedUi contract for HTML/SVG diagrams, architecture diagrams, calculators, simulations, teaching tools and custom controls. Prefer ordinary text for simple facts. This is an answer in the conversation, not a standalone website. Main owns presentation; Workers return evidence and artifacts. Keep the page compact: content, controls and necessary status only; no feature introductions, protocol explanations or duplicate text-version controls.
+Choose the representation that explains the user's task. Proactively visualize comparisons, trends, mechanisms, spatial relationships and adjustable scenarios; do not wait for the user to say "make a chart". Use native components when their parameters fit the task, and generateSandboxedUi for diagrams, multi-series charts, calculators, simulations and 3D explanations. Simple facts, writing and code stay text. This is an answer in the conversation, not a standalone website. Main owns presentation; Workers return evidence and artifacts. Keep the page focused: content, meaningful controls and necessary status only; no feature introductions, protocol explanations or duplicate text-version controls.
 
-## Workflow
+## Tool and method entry points
 
-1. Verify the facts and choose the smallest useful presentation. Never invent chart data. State sources, units and illustrative assumptions.
-2. Read `references/design.md` and one relevant template: `templates/native-comparison.json`, `templates/calculator.json`, `templates/flow-diagram.json`, or `templates/native-explorer.json`.
-3. Call `builtin__intelligent_ui_show` directly, or through Code Mode. Supply `title`, complete readable `fallback`, and `components:[{name,props}]`. Names and props come from the upstream catalog below, not a private markdown/table/progress/form vocabulary. The Host validates every component and generates all response identities.
-4. Inspect the receipt. `staged` means saved for your next reply, not delivered. Finish with a concise ordinary reply; the Host binds the presentation and fallback. Never print component JSON, HTML source or result fences in the reply. Do not generate a duplicate after a successful receipt.
+Call `builtin__intelligent_ui_show` with `title`, a complete `fallback`, and `components:[{name,props}]`. Its full typed catalog is available through Code Mode `describeTool('builtin__intelligent_ui_show')`. Read `references/presentation.md` for representation choices, `references/design.md` for theme and controls, or `references/visualization.md` for the local runtime when needed. The templates are executable examples, not required steps: architecture-diagram, scenario-comparison, three-dimensional, geographic-overview, calculator, flow-diagram, native-comparison and native-explorer.
+
+Optional top-level `text` is public Markdown placed immediately before this visual. Use it when a paragraph and a visual form one explanation section; distinct calls retain staging order, and the final reply follows them. Omit it when the visual stands alone. Intermediate tool-turn prose is not published as durable answer content. A successful `staged` receipt means the section is ready: continue only for another distinct section or finish with a concise reply; the Host binds the answer. To correct one earlier successful visual in this same pending reply, supply its exact `ui_ref` in optional `replace`; send the complete corrected document. Omit `replace` to add a distinct visual. A correction preserves the old invocation as evidence and only the replacement is delivered. Delivered messages cannot be replaced. Do not repeat a successful call merely to obtain a different receipt.
 
 ## Upstream catalog
 
@@ -26,7 +25,7 @@ Use OpenIntelligentUI native components first, then its generateSandboxedUi cont
 
 The Host injects upstream theme tokens, SVG classes and form styles. Use `--color-background-primary`, `--color-background-secondary`, `--color-text-primary`, `--color-text-secondary`, `--color-border-primary`, `--font-sans`, and `--border-radius-md`. Do not hardcode light/dark backgrounds or restyle standard inputs. The Host selects the theme and resizes the frame.
 
-Custom code runs only in an opaque-origin sandbox. Parent DOM, storage, credentials, external network, remote fonts, CDNs and Host tools are unavailable. No external libraries are promised by the local adapter. Query only your widget root; use event listeners. Controls and sliders update local state.
+Custom code runs only in an opaque-origin sandbox. Parent DOM, storage, credentials, external network, remote fonts, CDNs and Host tools are unavailable. The Host bundles local `d3`, `dagre` (directed graph layout) and `THREE` globals, including `THREE.SVGRenderer` for 3D without a GPU, with a theme-aware default background, plus `StewardSVG.resize(renderer,camera,element)` for measured sizing, `StewardSVG.project(vector,camera,renderer)` for centered SVG label coordinates, plus `GEO.countries` GeoJSON and `GEO.source` for an offline geographic overview. Use them directly; no import, dynamic import or remote script tags. Native SVG/Canvas, requestAnimationFrame and Web Animations are also available. Query only your widget root; use event listeners. Controls and sliders update local state. Use existing `steward.cards` for authorized artifact images; use the bundled geographic outlines or supplied GeoJSON with verified coordinates, retain source attribution, and never claim live tiles, directions or live imagery.
 
 For a user-requested follow-up use `await Websandbox.connection.remote.sendPrompt({text})` from a button handler. The Host previews an editable draft and the user presses Send to Ghost. Existing drafts are never overwritten. `await Websandbox.connection.remote.openLink({url})` proposes an HTTPS link which the user opens in the Host. Neither method approves external actions. Do not call these on load, timers or ordinary input changes.
 
@@ -34,7 +33,7 @@ For a user-requested follow-up use `await Websandbox.connection.remote.sendPromp
 
 Keep the same `components:[{name,props}]` envelope. These names are Steward extensions, not upstream components:
 
-- `steward.lineChart`: `{title,description,data:[{label,value}]}`.
+- `steward.lineChart`: single series `{title,description,data:[{label,value}]}` or shared-axis comparison `{title,description,labels:string[],series:[{name,values:number[]}],unit?}`. Each values array matches labels in order; 1–6 uniquely named series, at most 200 labels. Both use one scale; units apply to all series.
 - `steward.scatterChart`: `{title,description,data:[{label,x,y}]}`. Charts are bounded to 200 finite points. Descriptions contain evidence, units and assumptions rather than UI instructions.
 - `steward.form`: `{title,fields:[{name,label,type,required?,options?:[{value,label}],min?,max?}],submitLabel?}`. Types: text, textarea, number, date, email, select, multiselect, boolean. Up to 16 unique field names and 32 unique options. Min/max apply only to numbers. A required boolean is an explicit positive answer. Forms reuse ordinary reply admission and restore accepted answers; they never approve tools.
 - `steward.cards`: `{title?,items:[{title,text?,image_ref?,url?,label?}]}`. Up to 16 items; images must be accessible artifact references, links must be credential-free HTTPS. Do not invent images or URLs. Cards support selection and a compact carousel.

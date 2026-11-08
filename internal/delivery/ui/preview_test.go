@@ -73,3 +73,38 @@ func TestUIPreviewRejectsInvalidDataAndAuthority(t *testing.T) {
 		t.Fatal(string(data), ok)
 	}
 }
+
+func TestPreviewWaitsForCompleteCSSAndPreservesPublicText(t *testing.T) {
+	prefix := `{"text":"Main receives the request.","title":"Roles","components":[{"name":"generateSandboxedUi","props":{"initialHeight":240,"css":"#roles{color:var(--color-text-primary)}`
+	for _, test := range []struct {
+		raw   string
+		ready bool
+	}{
+		{prefix, false},
+		{prefix + `}","html":"<svg><text>Main`, true},
+	} {
+		p, ok := ParsePreview(test.raw)
+		if !ok || p.Text != "Main receives the request." || len(p.Components) != 1 {
+			t.Fatal(p, ok)
+		}
+		var props struct {
+			CSSComplete bool `json:"cssComplete"`
+		}
+		if err := json.Unmarshal(p.Components[0].Props, &props); err != nil || props.CSSComplete != test.ready {
+			t.Fatal("partial CSS became visible", string(p.Components[0].Props), err)
+		}
+	}
+}
+
+func TestUIPreviewUsesCatalogCharacterLimitsForPublicText(t *testing.T) {
+	for _, character := range []string{"中", "😀"} {
+		for _, count := range []int{8192, 8193} {
+			text := strings.Repeat(character, count)
+			raw, _ := json.Marshal(map[string]any{"title": strings.Repeat(character, 200), "text": text, "components": []any{}})
+			preview, ok := ParsePreview(string(raw))
+			if ok != (count == 8192) || ok && preview.Text != text {
+				t.Fatal("preview disagrees with catalog character limits", character, count, ok)
+			}
+		}
+	}
+}

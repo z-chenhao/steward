@@ -28,7 +28,9 @@ def run(binary, evidence):
         h = ChannelHarness(binary, Path(temp), platform, '')
         try:
             h.config.write_text(h.config.read_text() + 'llm:\n  provider_bridge_command: ' + json.dumps(str(binary)) + '\n  provider_bridge_script: -model-bridge\n  provider_bridge_version: steward-go-v1\nnats:\n  url: ' + json.dumps(broker.url) + '\n')
-            h.setup(metadata=dict(name='Intelligent UI peer', provider_kind='openai_compatible', endpoint=f'http://127.0.0.1:{server.server_port}/v1', wire_api='openai_completions', model_id='fixture-model', context_window=32768, max_output_tokens=4096, compatibility=dict(tool_result_format='openai'), capabilities=dict(text_input=True)))
+            # Seven complete code-bearing answers plus both streaming paths need
+            # room for their history; this peer does not implement compaction.
+            h.setup(metadata=dict(name='Intelligent UI peer', provider_kind='openai_compatible', endpoint=f'http://127.0.0.1:{server.server_port}/v1', wire_api='openai_completions', model_id='fixture-model', context_window=131072, max_output_tokens=4096, compatibility=dict(tool_result_format='openai'), capabilities=dict(text_input=True)))
             def visual(title,fallback,html,functions,css=''):
                 return dict(title=title,fallback=fallback,components=[dict(name='generateSandboxedUi',props=dict(initialHeight=240,placeholderMessages=['Preparing the answer'],css=css,html=html,jsFunctions='function initialize(){'+functions+'}',jsExpressions=['initialize()']))])
             server.widgets = [
@@ -39,6 +41,11 @@ def run(binary, evidence):
                        '</style><script>window.earlyRTC=window.RTCPeerConnection</script><style>'),
                 visual('Broken visual','The visual failed; this text remains available.','<p>Visual</p>','throw Error("owned-widget-failure")'),
             ]
+            templates = Path(__file__).resolve().parents[2] / 'internal/skill/builtin/intelligent_ui/templates'
+            for name in ('architecture-diagram', 'scenario-comparison', 'three-dimensional', 'geographic-overview'):
+                server.widgets.append(json.loads((templates / (name + '.json')).read_text()))
+            server.widgets[0] = dict(text='First, compare the exact values.\n\n**调用与回传：**用户向 Main 提问。', **server.widgets[0])
+            server.widgets[1] = dict(text='Next, explore a value with the calculator.', **server.widgets[1])
             server.mode = 'intelligent-ui'
             h.start()
             h.wait_state(lambda status: status['readiness']=='ready', 'UI runtime ready', lambda _: h.http('/api/status'))
@@ -48,8 +55,10 @@ def run(binary, evidence):
             require(not any('steward-result' in json.dumps(m) for m in history), 'UI protocol leaked into prose')
             with closing(sqlite3.connect(h.root / 'data/state.db')) as db, db:
                 before = db.execute('SELECT count(*) FROM ui_widget WHERE message_id IS NOT NULL').fetchone()[0]
-                require(before == 3, 'UI staging lost or repeated artifacts')
-                require(db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__intelligent_ui_show' AND status='succeeded' AND attempt_count=1").fetchone()[0] == 3, 'UI bypassed the ordinary executor')
+                diagnostics = db.execute("SELECT tool_name,status,result_json FROM tool_invocation WHERE tool_name='builtin__intelligent_ui_show'").fetchall() + db.execute("SELECT 'run',status,error_code FROM run").fetchall() + db.execute("SELECT 'generation',status,error_code FROM model_generation").fetchall()
+                evidence.parent.joinpath('requests.json').write_text(json.dumps([r['body'] for r in server.requests if r.get('method') == 'POST']))
+                require(before == len(server.widgets), f'UI staging lost or repeated artifacts: {before}/{len(server.widgets)}; {diagnostics}')
+                require(db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__intelligent_ui_show' AND status='succeeded' AND attempt_count=1").fetchone()[0] == len(server.widgets), 'UI bypassed the ordinary executor')
                 require(db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name IN ('builtin__skill_list','builtin__skill_view') AND status='succeeded' AND attempt_count=1").fetchone()[0] == 2, 'Skill discovery or loading bypassed the ordinary executor')
                 ref = db.execute("SELECT ui_ref FROM ui_widget WHERE json_extract(document_json,'$.title')='Calculator'").fetchone()[0]+'#0'
             response = h.http('/ui/widget?ref=' + quote(ref,safe=''))
@@ -64,9 +73,10 @@ def run(binary, evidence):
             for mode in ('direct', 'code'):
                 server.preview_path = mode
                 server.preview_ready, server.preview_release = threading.Event(), threading.Event()
+                server.preview_advance = threading.Event()
                 server.stream_widgets = [
                     dict(title='Streaming comparison', fallback='A is 10 and B is 20.', components=[dict(name='Table', props=dict(title='Streaming comparison',columns=['Name','Value'],rows=[['A','10'],['B','20']],source='Fixture data'))]),
-                    visual('Streaming visual', 'Scripts activate after delivery.', '<p id="preview-text">Script stays off</p><button id="preview-button">Compute</button><script>parent.postMessage({previewExecuted:true},"*")</script>', 'document.querySelector("#preview-text").textContent="Activated after delivery";'),
+                    visual('Streaming visual', 'Scripts activate after delivery.', '<p id="preview-text">Script stays off</p><svg id="stream-diagram" viewBox="0 0 200 80" fill="currentColor"><text id="main-node" x="20" y="30">Main</text><text id="root-node" x="100" y="30">Root</text></svg><button id="preview-button">Compute</button><script>parent.postMessage({previewExecuted:true},"*")</script>', 'document.querySelector("#preview-text").textContent="Activated after delivery";'),
                     dict(title='Weekly roadmap', fallback='Week 1–2: interview customers. Week 3–4: build an MVP.', components=[dict(name='generateSandboxedUi', props=dict(initialHeight=240, placeholderMessages=[], css='', html='<p>Script stays off</p><p id="weekly-roadmap">Week 1–2: interview customers. Week 3–4: build an MVP.</p>', jsFunctions='', jsExpressions=''))]),
                 ]
                 server.mode = 'intelligent-ui-stream'
@@ -75,6 +85,13 @@ def run(binary, evidence):
                 failures = []
                 def release_preview():
                     try:
+                        if mode == 'direct':
+                            advance = evidence.parent / ('preview-'+mode) / 'preview-advance.json'
+                            advance_deadline = time.monotonic()+25
+                            while not advance.exists() and time.monotonic()<advance_deadline:
+                                time.sleep(.05)
+                            require(advance.exists(), 'browser did not request an incremental drawing')
+                            server.preview_advance.set()
                         observed = evidence.parent / ('preview-'+mode) / 'preview-observed.json'
                         deadline = time.monotonic()+30
                         while not observed.exists() and time.monotonic()<deadline:
@@ -116,9 +133,13 @@ def run(binary, evidence):
             requests = [r['body'] for r in server.requests if r.get('method') == 'POST' and r.get('session') in runs and r['body'].get('tools')]
             require(len(requests)>=3, 'business HTTP requests not captured')
             require(all({t['function']['name'] for t in body['tools']} == MAIN_DIRECT for body in requests), 'frequent UI and discovery declarations differ from the production surface')
+            for body in requests:
+                ui_tool = next(t['function'] for t in body['tools'] if t['function']['name'] == 'builtin__intelligent_ui_show')
+                signatures = ui_tool['parameters']['properties']['components']['items']['properties']['props']['description']
+                require('generateSandboxedUi:{initialHeight:number' in signatures and 'jsExpressions:string[]' in signatures, 'actual provider lost the compact exact props signatures')
             require(all(sum(m['role'] == 'system' for m in body['messages']) == 1 for body in requests), 'multiple system messages reached the provider')
             require(all('<skills>' not in m['content'] and '<skill_index>' not in m['content'] and 'Present a compact native component' not in m['content'] for body in requests for m in body['messages'] if m['role']=='system'), 'business requests preloaded the Skill catalog')
-            return dict(checks=['real Go model peer and Main Code Mode', 'Main-owned durable UI tool; upstream Table and generateSandboxedUi contract', 'opaque origin, storage/parent/network blocked', 'upstream shared theme/SVG/form styles, calculator, SVG simulation, expansion, failure/text fallback, mobile', 'Host-confirmed ordinary message follow-up', 'direct argument and Code Mode staged previews before reply commit; scriptless, inert, theme and mobile rendering', 'SIGKILL/restart without regeneration', 'one Agent system message and the fixed frequent direct tool surface'], widget_count=before, projection=first['projections'])
+            return dict(checks=['real Go model peer and Main Code Mode', 'Main-owned durable UI tool; upstream Table and generateSandboxedUi contract', 'opaque origin, storage/parent/network blocked', 'upstream shared theme/SVG/form styles, calculator, SVG simulation, expansion, failure/text fallback, mobile', 'Host-confirmed ordinary message follow-up', 'ordered public paragraphs and visuals; direct incremental DOM identity, inert preview, theme and mobile rendering; Code Mode staging', 'SIGKILL/restart without regeneration', 'one Agent system message and the fixed frequent direct tool surface'], widget_count=before, projection=first['projections'])
         finally:
             h.cleanup()
             server.shutdown()
