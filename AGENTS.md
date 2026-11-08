@@ -27,6 +27,12 @@ Use Go `testing` (`*_test.go`, beside sources), Node `node:test` (`*.test.mjs`),
 
 Finish edits and focused regressions before starting final acceptance. Keep the source and binary fixed during a gate; changes invalidate that gate's evidence and require a fresh run of the affected checks.
 
+Recovery regressions must assert the dependent behavior immediately after the real recovery action, including the original selection and version fences. Do not silently repair the fixture with an extra select, update or reload absent from the intended user flow. Check both persisted readiness and the affected user interaction.
+
+External CLI/protocol fixtures must reflect observed output from the pinned official artifact, with version/hash evidence recorded in the PR. Cover successful output, incompatible output and command failure. A runtime handshake or version probe does not prove the full integration works. Preserve required CI reachability for recovery and inspection scenarios.
+
+Status changes must distinguish the latest outcome from retained attempt history. Unknown errors must not invent a specific cause; missing diagnostics remain unavailable, and raw private errors must not enter user-facing messages.
+
 Use disposable `STEWARD_DATA_ROOT` directories. Close Python SQLite connections with `contextlib.closing`; use read transactions for consistent cross-table predicates.
 
 ## Agent Context Changes
@@ -51,6 +57,7 @@ Before changing Web UI, read [design.md](design.md), especially the [global comp
 - Keep Steward typography, page layout and branding when adopting or replacing components, unless the user explicitly requests those changes. Follow the documented OpenIntelligentUI protocol and extension boundaries.
 - Preserve each feature's validation, persistence, authorization and native fallback semantics. A visual replacement does not authorize changing autosave or explicit-save behavior.
 - Run the existing control-ownership/build checks and relevant behavior regressions. Review desktop/mobile and light/dark screenshots for visual changes. Update `design.md` and the owning regression when an approved design rule changes; retain third-party notices.
+- Typography, units and pane geometry regressions must use nonempty representative content and inspect rendered/computed values. An empty locator collection, matching text or a CSS class alone is not evidence of visual conformance.
 
 ## Commit & Pull Request Guidelines
 

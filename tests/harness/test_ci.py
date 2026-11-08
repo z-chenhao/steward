@@ -28,6 +28,8 @@ class CIChecksTests(unittest.TestCase):
         binary, evidence = Path('/unused/steward'), Path('/unused/evidence/report.json')
         with patch.multiple(verify_channels, **dict.fromkeys(scenarios, DEFAULT)) as checks:
             ci.CHANNEL_GROUPS['web'](binary, evidence, report)
+        for name in scenarios:
+            checks[name].assert_called_once()
         for name in ('preference_settings', 'page_transitions', 'model_connections',
                      'task_control_components', 'capability_settings'):
             checks[name].assert_called_once_with(binary, evidence, report)
@@ -105,7 +107,8 @@ class CIChecksTests(unittest.TestCase):
         self.assertIn('python3 tests/system/race.py --part memory', dry_run)
         for test in ('TestMemoryWorkerEvidencePageBoundaryAndContinuation',
                      'TestMemoryMissingFieldsSurviveNativeAndCodeModeReceipts',
-                     'TestMemoryDreamDoesNotBlindlyRecreateOversizedInjectedHead'):
+                     'TestMemoryDreamDoesNotBlindlyRecreateOversizedInjectedHead',
+                     'TestMemoryDreamFailureDiagnosticsAndSuccessfulRetry'):
             self.assertTrue(re.search(race.MEMORY_PATTERN, test),
                             f'{test} is missing from required memory race checks')
 
