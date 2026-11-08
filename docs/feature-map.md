@@ -36,21 +36,21 @@ F-020：飞书自建应用通过 SecretStore 引用自动获取/刷新 tenant ac
 | [F-001](features/model-connections.md#f-001) | 本地模型连接与选择 | Settings 的 Models 支持账户登录或 API 密钥连接，连接时自动校验，聊天输入框预取完整模型目录，首次加载明确提示，后台刷新保持可选，切换后保留列表。模型协议由 Steward 内部 Go 适配层实现；生成分别限制等待响应头、响应流空闲和整轮耗时。 | 是 · 已完成 |
 | [F-002](features/model-connections.md#f-002) | ChatGPT 登录与跨平台凭据 | ChatGPT 账户凭据统一保存在 Steward 私有文件中，支持登录、按需刷新、重新认证、退出和中断恢复，后台状态检查只读配置与账户元数据。 | 是 · 已完成 |
 | [F-003](features/conversation.md#f-003) | 可恢复的 Main 对话 | 用户能连续对话、追问和纠正要求，慢操作期间仍可交代、查询和纠正工作。Main/Worker 系统提示统一按角色、安全、执行规则和能力指导拼为一条；Main 可通过 Code Mode 调用 MCP 和 Skill，复杂工作委派 Task Worker。 | 是 · 已完成 |
-| [F-004](features/tasks.md#f-004) | Task 生命周期与继续工作 | 支持显式 GitHub PR→已有 Task 关联，经 Main 有界接续并保留停止/隐私裁决；CLI/Web 与个人飞书具名问题、确切成果审阅接通，真实渠道与模型质量待验证。 | 否 · 部分完成 |
+| [F-004](features/tasks.md#f-004) | Task 生命周期与继续工作 | Root 失败有 Host 持久提醒，Task 保留可续作状态；支持显式 GitHub PR→已有 Task 关联，经 Main 有界接续并保留停止/隐私裁决；CLI/Web 与个人飞书具名问题、确切成果审阅接通，真实渠道与模型质量待验证。 | 否 · 部分完成 |
 | [F-005](features/tasks.md#f-005) | 执行中的有意义进度 | 用户主动查看时能了解当前阶段、摘要与子任务完成情况。 | 是 · 已完成 |
 | [F-006](features/delegation.md#f-006) | 可递归的 Child Worker | 复杂工作可由 Worker 拆成独立子任务，并由父级汇总。 | 是 · 已完成 |
 | [F-007](features/tools-approvals.md#f-007) | 工具、审批与未知副作用处理 | Main 与 Worker 以 Code Mode 组合工具，直接声明少量高频工具，调用权限按角色冻结；MCP 不提供暴露模式，双方共用具体审批与恢复。 | 是 · 已完成 |
 | [F-008](features/codemode.md#f-008) | 可恢复的 JavaScript 编排 | Agent 能用标准 JavaScript 串联工具、处理并发并显式输出结果。 | 是 · 已完成 |
-| [F-009](features/memory-context.md#f-009) | 自动记忆形成与语义归并 | 独立后台提炼并校验证据，同义归并、纠正替代、撤回、晋升/老化、遗忘屏障和幂等恢复；真实模型质量持续评测。 | 是 · 已完成 |
-| [F-010](features/memory-context.md#f-010) | 按作用域召回记忆与对话 | 候选阶段排除当前工作集；Main 以普通对象 ID 沿消息、Task、授权产物续读。本机另可精读当前 Memory、可见来源及 Task 已关联的确切 GitHub 观察。Main Memory 与更广外部导航待接通。 | 否 · 部分完成 |
-| [F-011](features/memory-context.md#f-011) | 长期上下文压缩 | 长对话保留目标、决策、约束和待办，省略内容可追溯；新 Main 召回结合最近问答，按时间戳附在当前 user message 内并按逻辑输入冻结，工具续轮保持消息前缀。 | 否 · 部分完成 |
+| [F-009](features/memory-context.md#f-009) | 自动记忆形成与语义归并 | 四层记忆支持执行期笔记、链接表示、会话注入和后台 Dreaming；复用证据、版本、费用与遗忘屏障，兼容旧事实归并；失败重试使用独立 Bridge 会话，已接纳结果重放不重复推理；语义质量持续评测。 | 是 · 已完成 |
+| [F-010](features/memory-context.md#f-010) | 按作用域召回记忆与对话 | 候选阶段排除当前工作集；Main 以普通对象 ID 沿消息、Task、授权产物续读。本机另可精读当前 Memory、可见来源及 Task 已关联的确切 GitHub 观察。Main/Worker 可经 memory_manage 分页精读密封记忆文档和同一作用域 transcript；显式搜索返回带偏移的短摘录并排除当前工作集，Dream 文档逐条绑定引文。更广外部导航待接通。 | 否 · 部分完成 |
+| [F-011](features/memory-context.md#f-011) | 长期上下文压缩 | 长对话保留目标、决策、约束和待办，省略内容可追溯；新 Main 召回结合最近问答，以独立的不可信证据消息放在当前输入之前并按逻辑输入冻结；工具续轮保持消息前缀，旧 inline 策略按原快照恢复。 | 否 · 部分完成 |
 | [F-012](features/artifacts-media.md#f-012) | 可重新打开的文件产物 | 用户能上传、保存、搜索、下载交付物，引用具有访问边界。 | 是 · 已完成 |
 | [F-013](features/artifacts-media.md#f-013) | 用户图片视觉输入与本地 OCR | 视觉模型收到授权图片；纯文本模型可通过 Linux/macOS 本地沙箱 OCR 读取图片文字。 | 是 · 已完成 |
 | [F-014](features/artifacts-media.md#f-014) | 音视频与文档内容处理 | 已支持授权 DOCX 正文与普通表格分页读取，保留原文件引用。音视频、其他格式与复杂版面仍待覆盖。 | 否 · 部分完成 |
 | [F-015](features/automation.md#f-015) | 一次性与周期自动化 | 用户可在 Web 手动配置单次／周期安排、时区、指令及启停；CLI/Main 原有控制保留。 | 是 · 已完成 |
 | [F-016](features/automation.md#f-016) | 阈值状态与安静通知 | 周期观察在首次进入阈值区间时通知，其余成功检查保持安静。 | 是 · 已完成 |
 | [F-017](features/channels.md#f-017) | 终端交互 | 用户能完成模型设置、交代工作、查历史和状态。 | 是 · 已完成 |
-| [F-018](features/channels.md#f-018) | 基础 Web 工作台 | Steward 四入口本机工作台；导航按钮就绪后才可操作，保留慢脚本及原生回退；默认免 token、对话、Worker 任务、审批提示、只读 Computer 预览与中英文界面；Enter 发送、Shift + Enter 换行及橙色发送按钮；Models 分组管理账户与 API 连接，连接时自动校验，Chat 输入区选择模型，工作待办定位问题、成果审阅、审批及任务故障。 | 是 · 已完成 |
+| [F-018](features/channels.md#f-018) | 基础 Web 工作台 | Steward 四入口本机工作台；空白对话的标题与输入框整体居中，标题在中线之上，Tasks 与 Developer 复用紧凑列表规范；导航按钮就绪后才可操作，保留慢脚本及原生回退；默认免 token、对话、Worker 任务、审批提示、只读 Computer 预览与中英文界面；Enter 发送、Shift + Enter 换行及橙色发送按钮；Models 分组管理账户与 API 连接，连接时自动校验，Chat 输入区选择模型，工作待办定位问题、成果审阅、审批及任务故障。 | 是 · 已完成 |
 | [F-019](features/channels.md#f-019) | Web 实时状态与回复更新 | 模型生成时，Web 逐段显示 Main 回复；完成后展示正式消息。审批、状态更新和输入保留仍独立工作。 | 是 · 已完成 |
 | [F-020](features/channels.md#f-020) | 可维护的飞书交互与通知 | 个人原消息同步/Task 结果回复、具名问题及成果审阅卡、可选工作台成果链接与通知去重；显式 PR 接续复用原话题；真实平台验收仍待补，未知投递不盲目重发。 | 否 · 部分完成 |
 | [F-021](features/intelligent-ui.md#f-021) | 富组件从生成到交互的闭环 | Main 主动选择原生组件或沙箱，有序交付正文与视觉；流式预览保持节点和阅读位置，衔接正式交互；支持中文排版、共轴多序列／数值横轴、同轮修正与本地图形／地理能力；表单、卡片及已声明动作保留 CAS 状态、冻结上下文、宿主授权、导出和响应式共享控件。 | 是 · 已完成 |
@@ -68,7 +68,7 @@ F-020：飞书自建应用通过 SecretStore 引用自动获取/刷新 tenant ac
 | [F-035](features/observability.md#f-035) | 供应商最终请求观测 | 开发者能区分 Host 冻结请求与 Bridge/SDK 转换后实际发送的请求。 | 是 · 已完成 |
 | [F-036](features/observability.md#f-036) | 调用、等待、恢复与用量时间线 | 开发者能检查执行、等待、恢复、用量和模型流时间点，并区分各阶段超时。 | 是 · 已完成 |
 | [F-032](features/evals.md#f-032) | Web Evals 入口 | 后续可从 Developer 查看评测结果，并关联对应执行。 | 否 · 待定义 |
-| [F-033](features/memory.md#f-033) | Web Memory 记忆浏览 | Developer 中查看真实记忆正文、层级、形成方式与可见来源，支持搜索、筛选、分页、展开详情和维护回执。 | 是 · 已完成 |
+| [F-033](features/memory.md#f-033) | Web Memory 记忆浏览 | Developer 按四层展示原始记录与记忆文档，复用 Traces 列表与详情侧栏，支持来源、关系、修订、筛选和分页；逐 Run 冻结注入在 Trace 核对，尚无版本差异或逐事件文档改动明细。 | 是 · 已完成 |
 | [F-037](features/installation.md#f-037) | 安装、首次启动与显式部署 | 安装、检查、前台启动及自定义部署，并保持持久数据。 | 是 · 已完成 |
 | [F-038](features/engineering.md#f-038) | 标准开发与显式发布流程 | 固定依赖、构建、风险分层验证、隔离并行 CI 与可审查交付。 | 是 · 已完成 |
 | [F-039](features/engineering.md#f-039) | 运行时工程基础重构 | 故障隔离、短事务、只读分页、加密召回复用、明确模块与工具分发边界。 | 是 · 已完成 |
@@ -183,3 +183,8 @@ Web Settings 五个分类共用内容容器、标题位置与配置行选择器�
 Tasks 按真实 Root 派发分离[执行记录与任务配置](features/tasks.md)，短标题独立于完整任务简报，历史轮次保持可查。
 
 Tasks 的执行记录、任务配置采用共享二级侧栏；详情选中态及列表筛选边界见[任务说明](features/tasks.md)。
+
+F-010 的新 Run 复用完整可见证据并用有界密封元数据导航；F-009 的维护记录区分 token／参考费用、知识修改与后续曝光。Host 所有者绑定和外部 SecretStore 接入边界见[记忆技术方案](designs/memory-context.md#云端接入前的身份与密钥边界)。
+
+
+Memory 当前实现还覆盖：混合工具结果压缩保留、跨表示事实纠正、全语料相关候选与固定 L4、原始 Worker 回执核验及精确续页、历史支持裁剪、Dream 维护列表／详情及有界 Transcripts 检视。边界和必需 CI 回归归 [Memory 方案](designs/memory-context.md#原始执行证据纠错身份与有界检视) 与 [测试方案](test-plans/memory.md)。

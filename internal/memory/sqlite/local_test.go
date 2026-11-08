@@ -100,6 +100,19 @@ func TestRecallExcludesDerivedWorkingFactsBeforeCandidateLimit(t *testing.T) {
 			if err != nil || len(hits) != 1 || hits[0].SourceRef != "memory:fact-000" {
 				t.Fatal("derived echoes starved missing fact", hits, err)
 			}
+			visible := []string{}
+			for i := 1; i < 65; i++ {
+				visible = append(visible, fmt.Sprintf("memory:fact-%03d", i))
+			}
+			hits, err = s.Search(ctx, scope, recall.Query{Query: "tea", Limit: 1, SeenRefs: visible})
+			if err != nil || len(hits) != 1 || hits[0].SourceRef != "memory:fact-000" {
+				t.Fatal("seen references consumed candidate limit", hits, err)
+			}
+			hits, err = s.Search(ctx, scope, recall.Query{Query: "tea", Limit: 50, SeenRefs: []string{"conversation:working"}})
+			if err != nil || len(hits) < 2 {
+				t.Fatal("seen source transitively hid unread memory", hits, err)
+			}
+
 		})
 	}
 }

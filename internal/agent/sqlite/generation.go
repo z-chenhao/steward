@@ -125,6 +125,12 @@ func (r *Runs) Generation(ctx context.Context, c agent.RunClaim, run agent.Run) 
 	})
 	if err == nil && gen.Result == nil && gen.ErrorCode == "" && !gen.Waiting && !gen.Denied {
 		r.resolveGenerationImages(c, &gen.Request)
+		for _, message := range gen.Request.Messages {
+			if message.Memory != nil {
+				gen.Request.ResolveMemory = r.memoryResolver(run.ID)
+				break
+			}
+		}
 		if run.Kind == "worker" {
 			r.host.boundary("before_worker_generation")
 		}

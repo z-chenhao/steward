@@ -272,13 +272,19 @@ def attention_workspace(binary, evidence, report):
             h.send('failed-question',f'Question: {failed_ref} | Which source should this work use?');h.command('chat','work')
             initial_delivery_count=len(h.rows()['deliveries'])
             h.start(); h.browser(evidence.parent/'attention-ui', 'attention')
-            state = h.wait(lambda state: len([run for run in state['runs'] if run['kind']=='worker']) == 6 and all(run['status'] in ('completed','failed','cancelled') for run in state['runs']) and len(state['deliveries'])==initial_delivery_count+6 and all(delivery['status']=='sent' for delivery in state['deliveries']), 'three feedback continuations and Main follow-up deliveries')
+            # Each reply has its normal Main/follow-up delivery. The retried
+            # failed Root also emits one Host-owned lifecycle notice.
+            state = h.wait(lambda state: len([run for run in state['runs'] if run['kind']=='worker']) == 6 and all(run['status'] in ('completed','failed','cancelled') for run in state['runs']) and len(state['deliveries'])==initial_delivery_count+7 and all(delivery['status']=='sent' for delivery in state['deliveries']), 'three feedback continuations, Main follow-ups and the failed-attempt notice')
             with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
                 db.row_factory=sqlite3.Row; db.execute('BEGIN')
                 rows=[dict(row) for row in db.execute('SELECT f.feedback_ref,f.kind,f.status,f.response_message_id,t.task_ref FROM task_feedback f JOIN task t USING(task_id) ORDER BY f.rowid')]
                 require(len(rows)==3 and all(row['status']=='answered' for row in rows), 'feedback was not answered once')
                 require(db.execute("SELECT count(*) FROM task_instruction").fetchone()[0]==3, 'feedback/stale retry duplicated continuation')
                 require(db.execute("SELECT count(*) FROM approval").fetchone()[0]==0, 'review became action approval')
+                failures={"failure:"+run['run_id'] for run in state['runs'] if run['kind']=='worker' and run['status']=='failed'}
+                notices={row[0] for row in db.execute("SELECT message_id FROM notification_intent WHERE intent='failure'")}
+                require(notices==failures, 'failed Root is missing its unique Host notice')
+                require(all(db.execute('SELECT count(*) FROM delivery_request WHERE message_id=?',(message,)).fetchone()[0]==1 for message in notices), 'failure notice duplicated its source-bound delivery')
                 for row in rows:
                     message=db.execute("SELECT json_extract(message_json,'$.source') FROM main_input WHERE message_id=?",(row['response_message_id'],)).fetchone()[0]
                     require(message=='web' and db.execute('SELECT count(*) FROM message_route WHERE message_id=?',(row['response_message_id'],)).fetchone()[0]==1, 'Web feedback lost authenticated route')
@@ -768,6 +774,11 @@ def transport_channels(binary, evidence, report):
             require(state['approvals'][0]['status']=='invalidated','old Monday approval remained valid')
             approval=state['approvals'][-1]
             h.callback('old-approve','/approve '+old['approval_id']+' '+old['frozen_arguments_hash'],expected=409)
+            # Crash while awaiting approval, not while committing its notice.
+            # An interrupted external send must legitimately remain unknown;
+            # delivery_leases separately exercises that ambiguity boundary.
+            h.wait(lambda s:len(s['deliveries'])==4 and all(d['status']=='sent' for d in s['deliveries']),
+                   'approval notices durable before restart')
             h.stop(kill=True);h.start()
             h.http('/approval',data=urlencode(dict(approval_id=approval['approval_id'],hash='drift',decision='approved')).encode(),headers={'Content-Type':'application/x-www-form-urlencoded'},expected=409)
             command='/approve '+approval['approval_id']+' '+approval['frozen_arguments_hash']
@@ -904,17 +915,25 @@ def memory_inspection(binary, evidence, report):
             for index in range(23):
                 h.command('memory', 'manage', 'memory-list-' + str(index), text=json.dumps(dict(operation='remember', content='I prefer local memory item %02d' % index)))
             h.command('memory', 'work')
+            note = h.command('memory', 'manage', 'layer-note', text=json.dumps(dict(operation='write', layer='notes', title='Research plan', content='Preserve the constraints and validate the research findings.')))
+            wiki = h.command('memory', 'manage', 'layer-wiki', text=json.dumps(dict(operation='write', layer='representations', title='Research wiki', content='Synthesized research guidance with a link to the detailed plan.', links=[note['ref']])))
+            h.command('memory', 'manage', 'layer-injected', text=json.dumps(dict(operation='write', layer='injected', title='Session memory', content='Use the research wiki for detailed guidance.', links=[wiki['ref']])))
             h.start()
             h.wait(lambda state: all(row['status'] in ('completed','failed','cancelled') for row in state['runs']), 'completed memory fixture')
             def fingerprint():
                 result = {}
                 for name, tables in {'state.db': ('run','tool_invocation','memory_mutation','memory_privacy'),
-                                     'conversation.db': ('conversation_message',), 'memory.db': ('memory_record','memory_receipt','memory_fact','memory_evidence')}.items():
+                                     'conversation.db': ('conversation_message',), 'memory.db': ('memory_record','memory_receipt','memory_fact','memory_evidence','memory_document','memory_document_dependency','memory_document_receipt')}.items():
                     with closing(sqlite3.connect(h.root/'data'/name)) as db:
                         db.execute('BEGIN')
                         for table in tables:
                             result[name+':'+table] = hashlib.sha256(json.dumps(db.execute('SELECT * FROM '+table+' ORDER BY 1').fetchall(), default=str).encode()).hexdigest()
                 return result
+            for layer in ('transcripts','notes','representations','injected'):
+                layer_page = h.http('/api/developer/memory?' + urlencode(dict(layer=layer)))
+                require(layer_page['items'] and all(item['layer']==layer for item in layer_page['items']), 'layer projection missing or mixed: '+layer)
+                detail = h.http('/api/developer/memory?' + urlencode(dict(layer=layer,ref=layer_page['items'][0]['ref'])))
+                require(len(detail['items'])==1 and detail['items'][0].get('content'), 'layer detail missing: '+layer)
             items, cursor = [], ''
             for _ in range(100):
                 page = h.http('/api/developer/memory?' + urlencode(dict(limit=2, cursor=cursor)))

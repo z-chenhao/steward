@@ -310,7 +310,7 @@ Web 默认英文；Settings → Preferences → Language 确认简体中文后�
 
 ### Steward 工作区精修
 
-一级导航上方保留 Chat、Tasks、Developer，Settings 固定左下；Settings 与 Developer 的内部分类在相邻二级栏展开，Task 当前筛选留在内容区。Chat 顶部居中两行显示 Agent 名称 Ghost 与动态头像，下方持续对话；右上角显示 Computer 和当前 Worker，点击分别打开互斥详情面板。Worker 包括正在执行和已经结束的记录，按实际开始时间（未开始则取创建时间）倒排，状态保持后端原值，不把 Worker 结果标为用户交付。Task 恢复独立列表与详情，不额外查询 Conversation。成果从任务详情及交付消息进入。
+一级导航上方保留 Chat、Tasks、Developer，Settings 固定左下；Settings 与 Developer 的内部分类在相邻二级栏展开，Task 当前筛选留在内容区。Chat 顶部居中两行显示 Agent 名称 Ghost 与动态头像，下方持续对话；空会话欢迎标题与输入框作为整体位于主内容区中部，文案在中线之上、输入框靠近中线，短窗口和长草稿允许正常滚动；右上角显示 Computer 和当前 Worker，点击分别打开互斥详情面板。Worker 包括正在执行和已经结束的记录，按实际开始时间（未开始则取创建时间）倒排，状态保持后端原值，不把 Worker 结果标为用户交付。Task 恢复独立列表与详情，不额外查询 Conversation。成果从任务详情及交付消息进入。
 
 首页待审批提示与实际审批卡片使用同一份权威读取，覆盖已内嵌消息及独立待审批卡片，解决后同步移除。打开具体审批保留草稿；向上阅读可主动回到最新消息。当前提示仅覆盖已有审批，不宣称 F-004 的待回答、审阅闭环已实现。
 
@@ -328,6 +328,8 @@ Chat 的 Computer、Worker 与待确认入口依次在右上角上下排列；�
 设置页保留一级导航，在相邻二级分类与居中单列中呈现偏好、通知、模型和能力。五个固定分类直接展示，不设导航搜索；支持下拉与键盘选择；输入、开关、按钮与分组行保持统一。界面外观可在偏好设置中选择浅色、深色或跟随系统，也可开关头像动效。一级侧栏底部只保留 Settings，公共规则见 [design.md](../../design.md)。退出模型账户前显示确认框，取消不改变连接；模型切换仍保留显式授权。详细说明和连接诊断按需展开，移动端和无 JavaScript 的原生表单可继续使用。
 
 ### Chat 呈现与设置保存
+
+就绪的空白 Chat 将欢迎标题与输入框整体放在视口中部偏下，随高度伸缩；已有对话继续使用底部输入框。Tasks 的执行记录与任务配置采用和 Developer 相同的全宽紧凑列表、搜索、操作栏、状态样式及底部分页，当前页计数只统计实际显示的行。详情、编辑和审批保留原有页面。
 
 用户消息显示右侧橙色气泡，Ghost 显示左侧主题灰色气泡；处理请求时只显示三点动效，状态名称保留为辅助标签。Web 安全渲染 Markdown、认证 artifact 下载链接与 Mermaid 图；源语义和无脚本回退保留。桌面折叠导航保留 64px 图标栏，Computer/Worker 固定在视口。标签页 Ghost 图标随页面深浅主题切换。
 
@@ -357,3 +359,5 @@ Settings 单值配置按左侧标签／右侧控件同行排列，同级命令�
 Models 为 Settings 的独立分类，包含「Sign in with an account」和「Connect with an API key」。账户目录自动进入聊天模型选择器；API 连接使用现有私有文件 SecretStore，凭据与首个模型元数据一次事务保存，失败清理新文件。连接后自动验证；首次无当前模型自动选用，后续连接不覆盖选择。连接操作复用共享菜单和原生表单，断开采用模型及凭据双版本确认并撤销后续使用，保留历史冻结配置。Apps 工具栏 App settings 进入服务配置；原 Models/Resources 服务入口移除，旧 setup 与 services/apps 深链接保留重定向。浏览器回归覆盖实际 HTTP provider 的 API key、聊天模型切换、断开及明暗／窄屏布局。
 
 浏览器请求标识在 HTTPS 使用原生 UUID，在 HTTP 来源使用 Web Crypto 加密随机源生成同格式的 UUIDv4；聊天发送、Intelligent UI 交互／导出和图表渲染不依赖 HTTPS 专属的 `randomUUID` 接口。重试继续复用原请求标识，不改动 Host 授权或监听策略。
+
+Developer Traces 的状态前置，Trace 识别列合并原 Name／Input；固定倒序不展示排序操作图标。费用口径集中在标题帮助，首轮仅工具调用时 TTFT 保持未知。工具内模型调用按归属与用途展示，工具 Preview 展示业务内容，原始回执仍可读取。Session／Run／Trace／Task 和来源 ID 使用共享完整值复制，包含局域网 HTTP 与手动回退。

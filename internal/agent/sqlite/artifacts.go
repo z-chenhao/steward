@@ -15,12 +15,13 @@ import (
 	"github.com/z-chenhao/assistant/internal/artifact"
 	artifactsqlite "github.com/z-chenhao/assistant/internal/artifact/sqlite"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
+	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
 func runScope(ctx context.Context, tx *sql.Tx, id string) (artifact.Scope, error) {
-	a := artifact.Scope{UserID: artifact.LocalUser, RunID: id}
-	err := tx.QueryRowContext(ctx, `SELECT agent_id,coalesce(task_id,'') FROM run WHERE run_id=?`, id).Scan(&a.AgentID, &a.TaskID)
+	a := artifact.Scope{RunID: id}
+	err := tx.QueryRowContext(ctx, `SELECT agent_id,coalesce(task_id,''),coalesce((SELECT user_id FROM runtime_owner WHERE singleton=1),'local') FROM run WHERE run_id=?`, id).Scan(&a.AgentID, &a.TaskID, &a.UserID)
 	return a, err
 }
 func artifactFailure(err error) tool.Result {
@@ -154,7 +155,19 @@ func (r *Runs) storeOutput(ctx, outputCtx context.Context, tx *sql.Tx, runID, id
 		p.OutputBytes = 16384
 	}
 	if result.Error != nil {
-		return tool.Normalize(result), nil
+		result = tool.Normalize(result)
+		if name == memory.ManageName && result.Error.Code == "INVALID_ARGUMENT" {
+			// Restore only Host-generated field names after provider error
+			// sanitization. Frozen older capabilities retain their old receipt.
+			var allowed bool
+			if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM run r JOIN capability_snapshot c ON c.snapshot_id=r.capability_snapshot_id,json_each(c.tools_json) s WHERE r.run_id=? AND json_extract(s.value,'$.name')=? AND json_extract(s.value,'$.version')>=6)`, runID, name).Scan(&allowed); err != nil {
+				return tool.Result{}, err
+			}
+			if allowed {
+				result.Error.Message = memory.MutationError(args)
+			}
+		}
+		return result, nil
 	}
 	// Agent results keep their two-field business envelope while reusing the
 	// ordinary output/Artifact transaction for large text and reference pins.

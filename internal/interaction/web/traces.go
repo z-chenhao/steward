@@ -31,6 +31,7 @@ type traceView struct {
 	Input, Output, Wire                observability.Body
 	Messages                           []observability.ChatPreview
 	ModelOutput                        *llm.GenerationResult
+	ToolOutput                         *toolOutputView
 	Diff                               *observability.ContextDiff
 	Relations                          *observability.Relationships
 	FullContext                        *contextView
@@ -211,6 +212,9 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 		return err
 	}
 	v.Output, err = read("output")
+	if err == nil && tree.Selected.Type == "tool" {
+		v.ToolOutput = previewToolOutput(tree.Selected.Name, v.Output, v.Offset)
+	}
 	return err
 }
 
@@ -250,4 +254,13 @@ func (s *Server) traceAPI(w http.ResponseWriter, r *http.Request, kind string) {
 		return
 	}
 	jsonResult(w, result)
+}
+
+// Trace identity is the task title for workers and the incoming message for Main.
+// The full input remains available in the detail; this is a read-only label.
+func traceLabel(trace observability.Trace) string {
+	if trace.Role == "main" && strings.TrimSpace(trace.Input) != "" {
+		return trace.Input
+	}
+	return trace.Title
 }

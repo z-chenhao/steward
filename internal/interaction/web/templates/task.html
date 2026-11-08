@@ -12,7 +12,7 @@
  </div><div class="task-side">
   {{with .Tasks.Detail}}<section class="panel"><h2>{{tr "Adjust this task"}}</h2><a class="button {{if $.Tasks.Approvals}}secondary{{end}}" href="/?task={{.TaskRef}}">{{tr "Continue this task →"}}</a>{{if .SourceSequence}}<p><a href="{{conversationURL .SourceSequence}}">{{tr "View original request"}}</a></p>{{end}}</section>{{end}}
   <details class="panel task-history"><summary>{{tr "Request & milestone history"}}</summary><div id="task-milestones">{{template "task-milestones" .}}</div></details>
-  {{with .Tasks.Detail}}<details class="technical-details"><summary>{{tr "Technical details"}}</summary><p>{{tr "Task reference:"}} <code>{{.TaskRef}}</code> {{tr "· epoch"}} {{.Epoch}}</p><a href="/developer/observability?task={{.TaskRef}}">{{tr "Inspect execution epochs →"}}</a></details>{{end}}
+  {{with .Tasks.Detail}}<details class="technical-details"><summary>{{tr "Technical details"}}</summary><p>{{tr "Task reference:"}} {{template "identifier" (identifier "" .TaskRef "")}} {{tr "· epoch"}} {{.Epoch}}</p><a href="/developer/observability?task={{.TaskRef}}">{{tr "Inspect execution epochs →"}}</a></details>{{end}}
  </div></div>
 
 </section>

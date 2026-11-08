@@ -145,7 +145,7 @@ func (s *Store) requireFeishuReviewArtifacts(ctx context.Context, tx *sql.Tx, ra
 	if len(refs) == 0 {
 		return task.ErrFeedbackStale
 	}
-	scope := artifact.Scope{UserID: artifact.LocalUser, AgentID: agentID, Owner: true}
+	scope := artifact.Scope{UserID: s.OwnerID(), AgentID: agentID, Owner: true}
 	for _, ref := range refs {
 		file, err := s.Artifacts().OpenFileTx(ctx, tx, scope, ref)
 		if errors.Is(err, artifact.ErrNotFound) || errors.Is(err, artifact.ErrIntegrity) {

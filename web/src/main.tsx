@@ -1,3 +1,5 @@
+import {enhanceFilterRails} from './components/ui/filter-rail';
+import {enhanceCopyControls} from './components/ui/clipboard';
 import {enhanceFilterForms} from './components/ui/filter-form';
 import {enhanceTimeDetails} from './components/ui/time-detail';
 import {enhanceLocalTimes} from './local-time';
@@ -23,6 +25,7 @@ import {enhanceRichForms} from './rich-forms';
 
 // Capture server markup before enhancement, so unchanged React islands remain
 // mounted. The composer has a separate lifetime from every live region.
+enhanceCopyControls();
 enhanceShell();
 enhanceComputerView();
 enhanceWorkers();
@@ -37,6 +40,7 @@ live?.start();
 
 enhanceObservability();
 enhanceMemory();
+enhanceFilterRails();
 
 enhanceAppConnections();
 enhanceContextHelp();

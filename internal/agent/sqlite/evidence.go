@@ -42,7 +42,7 @@ func (r *Runs) evidenceReadTx(ctx context.Context, read func(*sql.Tx) error) err
 }
 
 func (r *Runs) evidenceAccess(ctx context.Context, tx *sql.Tx, c agent.RunClaim) (a evidenceAccess, err error) {
-	a.scope.UserID = artifact.LocalUser
+	a.scope.UserID = r.host.OwnerID()
 	a.claim = c
 	if c == nil {
 		a.scope.Owner = true

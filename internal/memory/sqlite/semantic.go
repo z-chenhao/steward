@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/recall"
@@ -55,8 +56,8 @@ func (s *Store) RetireAutomatic(ctx context.Context, eventIDs []string) error {
 	return nil
 }
 
-func (s *Store) SemanticContext(ctx context.Context, scope recall.Scope, floor int64) ([]memory.Fact, error) {
-	rows, e := s.db.QueryContext(ctx, `SELECT m.memory_id,m.content,m.tier,m.scope_type,m.scope_id,m.created_at,coalesce((SELECT metadata FROM memory_semantic_record x WHERE x.memory_id=m.memory_id),'')`+currentMemoryRows+` AND m.created_at>? ORDER BY m.created_at DESC,m.memory_id LIMIT 129`, scope.UserID, scope.UserID, scope.AgentID, floor)
+func (s *Store) semanticContext(ctx context.Context, scope recall.Scope, floor int64, ids string) ([]memory.Fact, error) {
+	rows, e := s.db.QueryContext(ctx, `SELECT m.memory_id,m.content,m.tier,m.scope_type,m.scope_id,m.created_at,coalesce((SELECT metadata FROM memory_semantic_record x WHERE x.memory_id=m.memory_id),'')`+currentMemoryRows+` AND m.created_at>? AND (NOT EXISTS(SELECT 1 FROM memory_document doc WHERE doc.memory_id=m.memory_id) OR EXISTS(SELECT 1 FROM memory_semantic_record semantic WHERE semantic.memory_id=m.memory_id)) AND (?='null' OR m.memory_id IN(SELECT value FROM json_each(?))) ORDER BY m.created_at DESC,m.memory_id LIMIT 129`, scope.UserID, scope.UserID, scope.AgentID, floor, ids, ids)
 	if e != nil {
 		return nil, recall.ErrUnavailable
 	}
@@ -298,8 +299,26 @@ func (s *Store) MergeSemantic(ctx context.Context, scope recall.Scope, in memory
 func (s *Store) addProvenance(ctx context.Context, hits []recall.Hit) ([]recall.Hit, error) {
 	for i := range hits {
 		var raw string
-		if s.db.QueryRowContext(ctx, `SELECT source_refs FROM memory_record WHERE memory_id=?`, strings.TrimPrefix(hits[i].SourceRef, "memory:")).Scan(&raw) != nil {
+		if s.db.QueryRowContext(ctx, `SELECT source_refs,coalesce((SELECT layer FROM memory_document x WHERE x.memory_id=memory_record.memory_id),'') FROM memory_record WHERE memory_id=?`, strings.TrimPrefix(hits[i].SourceRef, "memory:")).Scan(&raw, &hits[i].Layer) != nil {
 			return nil, recall.ErrUnavailable
+		}
+		if hits[i].Layer != "" {
+			hits[i].AuthorRole = "agent " + hits[i].Layer
+		}
+		if hits[i].Layer != "" {
+			var sealed string
+			if s.db.QueryRowContext(ctx, `SELECT metadata FROM memory_document WHERE memory_id=?`, strings.TrimPrefix(hits[i].SourceRef, "memory:")).Scan(&sealed) != nil {
+				return nil, recall.ErrUnavailable
+			}
+			plain, e := s.vault.Open(ctx, sealed, "document:"+strings.TrimPrefix(hits[i].SourceRef, "memory:"))
+			if e != nil {
+				return nil, e
+			}
+			var meta documentMetadata
+			if json.Unmarshal([]byte(plain), &meta) != nil {
+				return nil, recall.ErrUnavailable
+			}
+			hits[i].Evidence = meta.Evidence
 		}
 		var refs []memory.SourceRef
 		if json.Unmarshal([]byte(raw), &refs) != nil {
@@ -342,4 +361,41 @@ func (s *Store) resetSemanticWorking(ctx context.Context) {
 		s.clearWorking()
 		s.unlockSearch()
 	}
+}
+
+func (s *Store) SemanticContext(ctx context.Context, scope recall.Scope, floor int64) ([]memory.Fact, error) {
+	return s.semanticContext(ctx, scope, floor, "null")
+}
+
+// Large corpora select related candidates; they no longer stop all maintenance
+// merely because the total fact count exceeds one model request's capacity.
+func (s *Store) SemanticCandidates(ctx context.Context, scope recall.Scope, floor int64, text string) ([]memory.Fact, error) {
+	var count int
+	if err := s.db.QueryRowContext(ctx, `SELECT count(*)`+currentMemoryRows+` AND m.created_at>? AND (NOT EXISTS(SELECT 1 FROM memory_document doc WHERE doc.memory_id=m.memory_id) OR EXISTS(SELECT 1 FROM memory_semantic_record semantic WHERE semantic.memory_id=m.memory_id))`, scope.UserID, scope.UserID, scope.AgentID, floor).Scan(&count); err != nil {
+		return nil, recall.ErrUnavailable
+	}
+	if count <= 128 {
+		return s.SemanticContext(ctx, scope, floor)
+	}
+	if len(text) > 4000 {
+		text = text[:4000]
+		for !utf8.ValidString(text) {
+			text = text[:len(text)-1]
+		}
+	}
+	if strings.TrimSpace(text) == "" {
+		return []memory.Fact{}, nil
+	}
+	hits, err := s.Search(ctx, scope, recall.Query{Query: text, Limit: 50})
+	if err != nil {
+		return nil, err
+	}
+	ids := []string{}
+	for _, hit := range hits {
+		if hit.Layer == "" || hit.Layer == "notes" {
+			ids = append(ids, strings.TrimPrefix(hit.SourceRef, "memory:"))
+		}
+	}
+	raw, _ := json.Marshal(ids)
+	return s.semanticContext(ctx, scope, floor, string(raw))
 }

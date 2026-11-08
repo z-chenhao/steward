@@ -27,6 +27,9 @@ func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 	if err != nil {
 		return memory.InspectionPage{}, memory.ErrInspectionUnavailable
 	}
+	if q.Layer == memory.Transcripts {
+		return r.inspectMemoryTranscripts(ctx, q, access)
+	}
 	if q.View == "maintenance" {
 		return r.inspectMemoryMaintenance(ctx, q, access)
 	}
@@ -40,6 +43,13 @@ func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 	}
 	for i := range page.Items {
 		record := &page.Items[i]
+		for _, ref := range record.Links {
+			doc, e := store.ReadDocument(ctx, scope, access.floor, ref)
+			if e != nil {
+				continue
+			}
+			record.Related = append(record.Related, memory.InspectionRelated{Ref: ref, Title: doc.Title})
+		}
 		sources := []memory.InspectionSource{}
 		for _, source := range record.Sources {
 			switch source.Kind {
@@ -54,6 +64,16 @@ func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 				if !visible {
 					continue
 				}
+			case "run":
+				id := strings.Split(strings.TrimPrefix(source.Ref, "run:"), ":")[0]
+				var visible bool
+				if err = r.host.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM run WHERE run_id=? AND agent_id=? AND kind='worker' AND status IN('completed','failed','cancelled') AND created_at>?)`, id, scope.AgentID, access.floor).Scan(&visible); err != nil {
+					return memory.InspectionPage{}, err
+				}
+				if !visible {
+					continue
+				}
+				source.RunID = id
 			case "feedback":
 				id, ok := strings.CutPrefix(source.Ref, "feedback:")
 				if !ok {
@@ -63,6 +83,12 @@ func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 					var exists bool
 					if err = r.host.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM memory_mutation WHERE agent_id=? AND source_type='feedback' AND source_ref=? AND accepted_at>?)`, scope.AgentID, id, access.floor).Scan(&exists); err != nil {
 						return memory.InspectionPage{}, memory.ErrInspectionUnavailable
+					}
+					if !exists {
+						exists, err = store.HasDocumentReceipt(ctx, scope, record.Ref, "document:"+id)
+						if err != nil {
+							return memory.InspectionPage{}, memory.ErrInspectionUnavailable
+						}
 					}
 					if !exists {
 						continue
@@ -152,10 +178,10 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 		return out, err
 	}
 	err = r.evidenceReadTx(ctx, func(tx *sql.Tx) error {
-		if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM memory_mutation WHERE agent_id=? AND operation IN('remember','forget')`, access.scope.AgentID).Scan(&out.Total); err != nil {
+		if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM memory_mutation WHERE agent_id=? AND (operation IN('remember','forget') OR operation='observe' AND source_type='dream')`, access.scope.AgentID).Scan(&out.Total); err != nil {
 			return err
 		}
-		rows, err := tx.QueryContext(ctx, `SELECT e.event_id,e.operation,e.accepted_at,e.applied_at,e.failed_at,coalesce(e.last_error,''),e.attempts,coalesce((SELECT i.run_id FROM tool_invocation i JOIN run r USING(run_id) WHERE i.invocation_id=e.source_ref AND i.tool_name='builtin__memory_manage' AND r.agent_id=e.agent_id AND i.created_at>?), '') FROM memory_mutation e WHERE e.agent_id=? AND e.operation IN('remember','forget') AND (?='' OR (e.accepted_at,e.event_id)<(?,?)) ORDER BY e.accepted_at DESC,e.event_id DESC LIMIT ?`, access.floor, access.scope.AgentID, position.Ref, position.At, strings.TrimPrefix(position.Ref, "memory:"), q.PageSize()+1)
+		rows, err := tx.QueryContext(ctx, `SELECT e.event_id,CASE WHEN e.source_type='dream' THEN 'dream' ELSE e.operation END,e.accepted_at,e.applied_at,e.failed_at,coalesce(e.last_error,''),e.attempts,coalesce((SELECT i.run_id FROM tool_invocation i JOIN run r USING(run_id) WHERE i.invocation_id=e.source_ref AND i.tool_name='builtin__memory_manage' AND r.agent_id=e.agent_id AND i.created_at>?), '') FROM memory_mutation e WHERE e.agent_id=? AND (e.operation IN('remember','forget') OR e.operation='observe' AND e.source_type='dream') AND (?='' OR e.event_id=?) AND (?='' OR (e.accepted_at,e.event_id)<(?,?)) ORDER BY e.accepted_at DESC,e.event_id DESC LIMIT ?`, access.floor, access.scope.AgentID, q.Ref, strings.TrimPrefix(q.Ref, "memory:maintenance-"), position.Ref, position.At, strings.TrimPrefix(position.Ref, "memory:"), q.PageSize()+1)
 		if err != nil {
 			return err
 		}
@@ -188,6 +214,16 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 	})
 	if err != nil {
 		return memory.InspectionPage{}, memory.ErrInspectionUnavailable
+	}
+	if q.Ref != "" && len(out.Maintenance) != 1 {
+		return out, memory.ErrInspectionNotFound
+	}
+	for i := range out.Maintenance {
+		m, e := r.memoryMetrics(ctx, strings.TrimPrefix(out.Maintenance[i].Ref, "memory-event:"))
+		if e != nil {
+			return memory.InspectionPage{}, e
+		}
+		out.Maintenance[i].Metrics = &m
 	}
 	if err = r.recheckMemoryOwner(ctx, access); err != nil {
 		return memory.InspectionPage{}, err

@@ -33,7 +33,7 @@ func SearchLocal(ctx context.Context, db *sql.DB, scope recall.Scope, q recall.Q
 		return out, nil
 	}
 	conditions := []string{}
-	excluded, _ := json.Marshal(append([]string{}, q.ExcludeRefs...))
+	excluded, _ := json.Marshal(append(append([]string{}, q.ExcludeRefs...), q.SeenRefs...))
 	args := []any{scope.UserID, scope.AgentID, start, end, string(excluded)}
 	for _, term := range terms {
 		conditions = append(conditions, "instr(lower(d.content),?)>0")
@@ -67,7 +67,7 @@ AND (`+strings.Join(conditions, " OR ")+`)`, args...)
 		}
 		h.SourceType, h.OccurredAt = source, time.UnixMicro(at).UTC()
 		h.Relevance = recall.Relevance(terms, h.Content)
-		if h.Relevance >= .25 {
+		if h.Relevance >= .25 && recall.QuotedMatch(q.Query, h.Content) {
 			if core {
 				h.Relevance += .001
 			}

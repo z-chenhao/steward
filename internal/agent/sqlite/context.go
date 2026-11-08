@@ -22,6 +22,7 @@ type workingPreparation struct {
 
 func (r *Runs) workingMessages(run agent.Run, userImages, plainIDs bool) ([]llm.Message, map[string]int, error) {
 	all, e := agent.ProviderMessages(run.Checkpoint.Messages, userImages, plainIDs)
+	all = memoryReadProjection(all)
 	if e != nil {
 		return nil, nil, e
 	}
@@ -100,6 +101,16 @@ func (r *Runs) prepareWorkingContext(ctx context.Context, c agent.RunClaim, run 
 	if e != nil {
 		return workingPreparation{}, e
 	}
+	in, e = r.codeMemoryProjection(ctx, run, in)
+	if e != nil {
+		return workingPreparation{}, e
+	}
+	if p.LayeredMemory {
+		in, e = r.injectMemory(ctx, c, run, in, p.MemoryNavigation, p.MetadataNavigation, p.SeparateEvidence)
+		if e != nil {
+			return workingPreparation{}, e
+		}
+	}
 	tools := contextbuilder.Size(agent.ProviderTools(run.Tools, run.Checkpoint.LoadedTools))
 	budget := contextbuilder.BudgetFor(run.Snapshot.ContextWindow, run.Snapshot.MaxOutputTokens, tools, p, run.Checkpoint.ContextRetries > 0)
 	required := []llm.Message{}
@@ -149,7 +160,7 @@ func (r *Runs) prepareWorkingContext(ctx context.Context, c agent.RunClaim, run 
 		// unchanged, including monetary admission and usage accounting.
 		summaryLimits := contextbuilder.BudgetFor(run.Snapshot.ContextWindow, run.Snapshot.MaxOutputTokens, 0, p, run.Checkpoint.ContextRetries > 0)
 		summaryBudget := min(summaryLimits.ModelBytes, summaryLimits.FrameBytes) - 1024
-		sources := selection.Sources
+		sources := memorySummarySources(selection.Sources)
 		if p.InputRecall {
 			sources, anchors = summaryObjectIDs(sources), summaryObjectIDs(anchors)
 		}
@@ -271,6 +282,34 @@ func summaryObjectIDs(in []llm.Message) []llm.Message {
 			out[i].Source = &source
 		}
 		out[i].ImageRefs = tool.ObjectIDs(out[i].ImageRefs)
+	}
+	return out
+}
+
+// Exact memory reads remain encrypted in the archive. Compaction carries a
+// stable reopening hint instead of copying sealed payloads into summary prose.
+func memorySummarySources(in []llm.Message) []llm.Message {
+	out := append([]llm.Message(nil), in...)
+	for i, m := range out {
+		if m.Memory != nil {
+			out[i].Memory = nil
+			if m.Memory.CodeMode {
+				text, changed, err := llm.SummaryCodeMemory(m.Memory.Sealed)
+				if err == nil && changed {
+					out[i].Text += text
+					continue
+				}
+				// Preserve an unrecognized mixed frame rather than silently losing
+				// its business outcomes. The ordinary summary budget still applies.
+				out[i].Text += m.Memory.Sealed
+				continue
+			}
+			if m.Memory.Ref != "" {
+				out[i].Text += "\nPrivate memory content omitted; use memory_manage read with memory_ref=" + m.Memory.Ref + " to reopen the document."
+			} else {
+				out[i].Text += "\nPrivate memory listing/injected content omitted; use memory_manage list to find current documents."
+			}
+		}
 	}
 	return out
 }

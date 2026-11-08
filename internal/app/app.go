@@ -119,6 +119,15 @@ func Open(ctx context.Context, cfg config.Config) (*App, error) {
 	return open(ctx, cfg, "", secret.Files{DataRoot: cfg.App.DataRoot}, false)
 }
 
+// OpenRuntimeWithSecrets binds an operator-authenticated principal and an
+// externally managed SecretStore without selecting a cloud vendor or files.
+func OpenRuntimeWithSecrets(ctx context.Context, cfg config.Config, secrets llm.SecretStore) (*App, error) {
+	if secrets == nil {
+		return nil, llm.ErrSecretStore
+	}
+	return open(ctx, cfg, "", secrets, true)
+}
+
 func OpenWithTestSecrets(ctx context.Context, cfg config.Config, path string) (*App, error) {
 	return open(ctx, cfg, "", secret.TestSocket{Path: path}, false)
 }
@@ -177,6 +186,11 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 		startup.End(err)
 		return nil, errors.Join(err, t.Close())
 	}
+	if err = store.BindOwner(ctx, cfg.App.OwnerID); err != nil {
+		_ = store.Close()
+		_ = t.Close()
+		return nil, err
+	}
 	store.Artifacts().Policy = cfg.Artifact
 	store.ConfigureCostEstimator(pricing.New())
 	a := &App{capabilitySettings: configsetup.New(cfg, secrets), rootLock: lock, store: store, telemetry: t, artifacts: store.Artifacts(), skillConfig: cfg.Skills}
@@ -186,6 +200,15 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 	if err != nil {
 		_ = store.Close()
 		_ = t.Close()
+		return nil, err
+	}
+	identity, identityErr := store.Diagnostics(ctx)
+	if identityErr != nil {
+		a.Close()
+		return nil, identityErr
+	}
+	if err = a.history.BindOwner(ctx, store.OwnerID(), identity.AgentID); err != nil {
+		a.Close()
 		return nil, err
 	}
 	a.terminalInbox = store.TerminalInbox()

@@ -362,7 +362,7 @@ func (s *Store) ImportChannelArtifact(ctx context.Context, e interaction.Inbound
 	if err != nil {
 		return "", err
 	}
-	ref, err = s.Artifacts().Put(ctx, artifact.Scope{UserID: artifact.LocalUser, AgentID: d.AgentID, Owner: true}, input, src)
+	ref, err = s.Artifacts().Put(ctx, artifact.Scope{UserID: s.OwnerID(), AgentID: d.AgentID, Owner: true}, input, src)
 	if err != nil {
 		return "", err
 	}

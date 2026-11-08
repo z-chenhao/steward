@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/memory"
@@ -15,9 +16,10 @@ type MemoryReader interface {
 	InspectMemory(context.Context, memory.InspectionQuery) (memory.InspectionPage, error)
 }
 type memoryView struct {
-	Query    memory.InspectionQuery
-	Page     memory.InspectionPage
-	Selected *memory.InspectionRecord
+	Query               memory.InspectionQuery
+	Page                memory.InspectionPage
+	Selected            *memory.InspectionRecord
+	MaintenanceSelected *memory.MaintenanceRecord
 }
 
 func memoryQuery(r *http.Request) (memory.InspectionQuery, error) {
@@ -28,11 +30,12 @@ func memoryQuery(r *http.Request) (memory.InspectionQuery, error) {
 			return q, memory.ErrInspectionInvalid
 		}
 		switch key {
-		case "ref", "search", "tier", "origin", "status", "view", "cursor", "limit", "source", "offset", "since", "until", "sources_after":
+		case "layer", "ref", "search", "tier", "origin", "status", "view", "cursor", "limit", "source", "offset", "since", "until", "sources_after":
 		default:
 			return q, memory.ErrInspectionInvalid
 		}
 	}
+	q.Layer = values.Get("layer")
 	q.Ref = values.Get("ref")
 	q.Search = values.Get("search")
 	q.Tier = values.Get("tier")
@@ -86,6 +89,13 @@ func (s *Server) loadMemory(ctx context.Context, r *http.Request) (*memoryView, 
 		return nil, err
 	}
 	v := &memoryView{Query: q, Page: p}
+	if q.Ref != "" && q.View == "maintenance" {
+		if len(p.Maintenance) != 1 {
+			return nil, memory.ErrInspectionNotFound
+		}
+		v.MaintenanceSelected = &v.Page.Maintenance[0]
+		return v, nil
+	}
 	if q.Ref != "" {
 		if len(p.Items) != 1 {
 			return nil, memory.ErrInspectionNotFound
@@ -111,13 +121,20 @@ func (s *Server) memoryAPI(w http.ResponseWriter, r *http.Request) {
 }
 func memoryURL(q memory.InspectionQuery, key, value string) string {
 	switch key {
+	case "layer":
+		q = memory.InspectionQuery{Layer: value}
 	case "ref":
+		if q.View == "maintenance" {
+			value = strings.Replace(value, "memory-event:", "memory:maintenance-", 1)
+		}
 		q.Ref = value
 		q.Cursor = ""
 		q.Source = ""
 		q.Offset = 0
 		q.SourcesOffset = 0
-		q.View = ""
+		if q.View != "maintenance" {
+			q.View = ""
+		}
 	case "source":
 		q.Source = value
 		q.Offset = 0
@@ -133,7 +150,7 @@ func memoryURL(q memory.InspectionQuery, key, value string) string {
 		q = memory.InspectionQuery{View: value}
 	}
 	values := url.Values{}
-	for key, value := range map[string]string{"ref": q.Ref, "search": q.Search, "tier": q.Tier, "origin": q.Origin, "status": q.Status, "view": q.View, "cursor": q.Cursor, "source": q.Source} {
+	for key, value := range map[string]string{"layer": q.Layer, "ref": q.Ref, "search": q.Search, "tier": q.Tier, "origin": q.Origin, "status": q.Status, "view": q.View, "cursor": q.Cursor, "source": q.Source} {
 		if value != "" {
 			values.Set(key, value)
 		}
@@ -173,6 +190,12 @@ func memorySourceLabel(kind string) string {
 }
 func memoryOriginLabel(origin string) string {
 	switch origin {
+	case "written":
+		return "Written note"
+	case "dream":
+		return "Dreaming"
+	case "original":
+		return "Original record"
 	case "automatic":
 		return "Automatically extracted"
 	case "explicit":
@@ -199,4 +222,17 @@ func memorySourcesOffset(n *int) string {
 		return "0"
 	}
 	return strconv.Itoa(*n)
+}
+
+func memoryLayerLabel(layer string) string {
+	switch layer {
+	case memory.Transcripts:
+		return "Transcripts"
+	case memory.Representations:
+		return "Memory representations"
+	case memory.Injected:
+		return "Injected context"
+	default:
+		return "Memory notes"
+	}
 }

@@ -29,7 +29,7 @@ type Store struct {
 	indexed      map[string]sqliteindex.Document
 }
 
-const SchemaVersion = 3
+const SchemaVersion = 4
 
 const schema = `CREATE TABLE memory_record(
  memory_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,scope_type TEXT NOT NULL CHECK(scope_type IN('user','agent')),
@@ -98,6 +98,11 @@ func (s *Store) migrate(ctx context.Context) error {
 	}
 	if version < 3 {
 		if _, err = tx.ExecContext(ctx, semanticSchema+`PRAGMA user_version=3;`); err != nil {
+			return recall.ErrUnavailable
+		}
+	}
+	if version < 4 {
+		if _, err = tx.ExecContext(ctx, documentSchema+`PRAGMA user_version=4;`); err != nil {
 			return recall.ErrUnavailable
 		}
 	}

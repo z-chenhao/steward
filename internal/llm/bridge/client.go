@@ -474,12 +474,17 @@ func (c *Client) generate(ctx context.Context, method string, r llm.GenerationRe
 	if imageErr != nil {
 		return llm.GenerationResult{}, imageErr
 	}
+	wire := r
+	wire.Messages, err = llm.ResolveMemoryMessages(ctx, r)
+	if err != nil {
+		return llm.GenerationResult{}, err
+	}
 	var params any = struct {
 		llm.GenerationRequest
 		Images    map[string]imagePayload `json:"images,omitempty"`
 		Observe   bool                    `json:"observe,omitempty"`
 		UIPreview bool                    `json:"ui_preview,omitempty"`
-	}{r, images, observe, sink != nil}
+	}{wire, images, observe, sink != nil}
 	if c.resolver != nil {
 		resolved, resolveErr := c.resolver(ctx, r.Snapshot)
 		if resolveErr != nil {
@@ -492,7 +497,7 @@ func (c *Client) generate(ctx context.Context, method string, r llm.GenerationRe
 			Images     map[string]imagePayload `json:"images,omitempty"`
 			Observe    bool                    `json:"observe,omitempty"`
 			UIPreview  bool                    `json:"ui_preview,omitempty"`
-		}{r, connection, images, observe, sink != nil}
+		}{wire, connection, images, observe, sink != nil}
 	}
 	if ctx.Err() != nil {
 		return llm.GenerationResult{}, llm.GenerationCancelled
@@ -509,7 +514,17 @@ func (c *Client) generate(ctx context.Context, method string, r llm.GenerationRe
 	}
 	stream = newEventStream(r.GenerationID, r.Snapshot.MaxOutputTokens)
 	if observe {
-		stream.capture = func(d llm.Dispatch) { capture(r, d) }
+		stream.capture = func(d llm.Dispatch) {
+			for _, m := range r.Messages {
+				if m.Memory != nil && d.Body != nil {
+					d.Body = nil
+					d.BodyHash = ""
+					d.Omitted = "Memory-bearing request body omitted"
+					break
+				}
+			}
+			capture(r, d)
+		}
 		stream.wireSecrets = []string{connection.APIKey, connection.AccessToken}
 	}
 	if r.OutputLimitBytes > 0 && r.OutputLimitBytes < stream.remaining {

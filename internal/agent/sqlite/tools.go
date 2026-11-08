@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/z-chenhao/assistant/internal/memory"
 	"sort"
 	"time"
 
@@ -490,6 +491,9 @@ func (t *tools) Prepare(ctx context.Context, id string) (tool.Invocation, error)
 		if rejection != "" {
 			// A rejection still uses the single accepted invocation lifecycle.
 			inv.Result = tool.Failure(rejection)
+			if rejection == "INVALID_ARGUMENT" && d.Spec.Name == memory.ManageName && d.Spec.Version >= 6 {
+				inv.Result.Error.Message = memory.MutationError(inv.Call.Arguments)
+			}
 			return nil
 		}
 		if inv.Status == "waiting" && inv.WaitReason == "retry_backoff" {

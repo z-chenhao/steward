@@ -128,8 +128,11 @@ func serve(in io.Reader, out io.Writer, fixture string, audit io.Writer) error {
 			if err = reply(struct{}{}); err != nil {
 				return err
 			}
-			if len(request.Messages) > 0 && request.Messages[0].Text == memory.CurationInstruction {
+			if len(request.Messages) > 0 && (request.Messages[0].Text == memory.CurationInstruction || strings.HasPrefix(request.Messages[0].Text, memory.DreamInstruction)) {
 				value := memoryReply(request)
+				if strings.HasPrefix(request.Messages[0].Text, memory.DreamInstruction) {
+					value = llm.GenerationResult{Text: `{"facts":[],"documents":[],"done":true}`}
+				}
 				if err = event(llm.GenerationEvent{GenerationID: request.GenerationID, Sequence: 1, Kind: "text_delta", Text: value.Text}); err != nil {
 					return err
 				}

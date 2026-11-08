@@ -215,7 +215,9 @@ func TestInspectionIndexUpgradeRollbackAndFrozenData(t *testing.T) {
 	}
 	actor := agent.Actor{Store: s.Runs(history, registry), Registry: registry, Ready: func(context.Context) bool { return true }}
 	receipt := mustSubmit(t, actor, "before-inspection-upgrade", "frozen before index upgrade")
-	if _, err = db.Exec(`DROP TRIGGER main_tool_protocol_retained; DROP TRIGGER main_tool_protocol_immutable; DROP TRIGGER main_tool_protocol_initial; DROP TABLE main_tool_protocol;` + removeGitHubFixtureSchema); err != nil {
+	// This pre-v30 fixture never seeded the v51 message-time projection.
+	cleanup := strings.Replace(removeGitHubFixtureSchema, "ALTER TABLE conversation_intent DROP COLUMN memory_created_at; ", "", 1)
+	if _, err = db.Exec(`DROP TRIGGER main_tool_protocol_retained; DROP TRIGGER main_tool_protocol_immutable; DROP TRIGGER main_tool_protocol_initial; DROP TABLE main_tool_protocol;` + cleanup); err != nil {
 		t.Fatal(err)
 	}
 	var checkpoint string

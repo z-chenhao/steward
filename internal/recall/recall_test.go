@@ -2,8 +2,11 @@ package recall_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"github.com/z-chenhao/assistant/internal/recall"
+	"github.com/z-chenhao/assistant/internal/tool"
 	"strings"
 	"testing"
 	"time"
@@ -85,5 +88,42 @@ func TestHostExclusionsAndSourceContentDeduplication(t *testing.T) {
 	hits, e = s.Search(context.Background(), scope, recall.Query{Query: "fact"}, 200)
 	if e != nil || len(hits) != 1 || hits[0].SourceRef != "conversation:short" {
 		t.Fatal(hits, e)
+	}
+}
+
+func TestRecallTimeBoundsAndDeployedSnapshotContracts(t *testing.T) {
+	d := recall.Definition(recall.UnconfiguredIdentity)
+	if fmt.Sprintf("%x", sha256.Sum256([]byte(d.PreviousSpecs[1].Description))) != "1c53e044788bfcb545db169dfa6166caf2f258f0bcc19ff67856559ac90fe73f" || fmt.Sprintf("%x", sha256.Sum256([]byte(d.PreviousSpecs[1].InputSchema))) != "6aefeed5beee9451e02b924e56f1d5e0f4b92b5f3371aa47cf567e2d8d6881e6" {
+		t.Fatal("deployed v2 bytes changed")
+	}
+
+	if fmt.Sprintf("%x", sha256.Sum256([]byte(d.PreviousSpecs[2].Description))) != "8805fe9ab4ca56644b4a7bbd35e0e685b126aab9a7b7809ab100927e35aa482e" || fmt.Sprintf("%x", sha256.Sum256([]byte(d.PreviousSpecs[2].InputSchema))) != "e2a014e453d0a0dc78005b5274a7011fd8af807b406bc7bbd4c0260bf0d4fec3" {
+		t.Fatal("deployed v3 bytes changed")
+	}
+	registry, err := tool.NewRegistry([]tool.Definition{d})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, spec := range d.PreviousSpecs {
+		selected, err := registry.Select([]tool.Spec{spec})
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, _ := selected.Resolve(recall.ToolName)
+		if got.Spec.InputSchema != spec.InputSchema || got.Spec.Description != spec.Description {
+			t.Fatal("deployed frozen tool changed")
+		}
+	}
+	for _, raw := range []string{`{"query":"record","time_range":{"end":"2023-07-17T02:55:00Z"}}`, `{"query":"record","time_range":{"end":"2023-07-17T02:55:00+08:00"}}`} {
+		if _, err := recall.Parse(raw); err != nil {
+			t.Fatal(err)
+		}
+	}
+	naive := `{"query":"record","time_range":{"end":"2023-07-17T02:55:00"}}`
+	if tool.Validate(d.Spec.InputSchema, naive) {
+		t.Fatal("advertised time bound accepts an unqualified local clock")
+	}
+	if _, err := recall.Parse(naive); err == nil {
+		t.Fatal("Host assumed timezone")
 	}
 }

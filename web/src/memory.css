@@ -1,16 +1,15 @@
 /* Memory composes the same compact list, filter rail, split panes and sheet as Traces. */
 .memory-page .obs-list-heading{justify-content:space-between;gap:12px}
-.memory-page .obs-filter-rail:not([open])>summary{left:auto;right:12px}
-.memory-list-toolbar{justify-content:flex-start;padding-top:6px;padding-bottom:6px;min-height:48px}
-.memory-list-toolbar .section-tabs{margin:0;border:0;gap:16px}.memory-list-toolbar .section-tabs a{padding:6px 0;border-radius:0;font-size:12px}
-.memory-record-list table{min-width:1100px}.memory-col-content{width:360px}.memory-col-tier{width:85px}.memory-col-origin{width:160px}.memory-col-status{width:105px}.memory-col-sources{width:190px}.memory-col-created{width:170px}
+.memory-list-toolbar{justify-content:flex-start;min-height:48px}
+.memory-list-toolbar .section-tabs{margin:0;border:0;gap:16px;min-width:0;max-width:100%}.memory-list-toolbar .section-tabs a{padding:6px 0;border-radius:0;font-size:12px}
+.memory-record-list table{min-width:1200px}.memory-col-content{width:360px}.memory-col-tier{width:185px}.memory-col-origin{width:160px}.memory-col-status{width:105px}.memory-col-sources{width:190px}.memory-col-created{width:170px}
 .memory-maintenance{min-height:calc(100dvh - 152px)}
 .memory-open{text-decoration:none}.memory-open:hover{text-decoration:underline}.memory-workbench .obs-tree-pane,.memory-workbench .obs-detail-pane{max-height:none}
 .memory-preview-tab{font-size:12px;font-weight:600;padding-bottom:8px;border-bottom:2px solid var(--foreground)}
 .memory-source-list{display:grid;gap:4px;padding-top:8px}.memory-source{min-width:0;padding:4px 0}.memory-source>a.memory-select,.memory-source-label{display:flex;align-items:flex-start;gap:8px;min-width:0;padding:8px;border-radius:6px;text-decoration:none}
 .memory-source>a.memory-select:hover{background:var(--hover)}.memory-source>a[aria-current]{background:color-mix(in srgb,var(--trace-agent) 10%,var(--card))}.memory-source svg{width:15px;height:15px;flex:none;color:var(--trace-agent)}.memory-source span{min-width:0}.memory-source strong{font-size:12px;font-weight:500;display:block}.memory-source small{display:block;font-size:11px;color:var(--muted-foreground);overflow-wrap:anywhere;margin-top:3px}.memory-source>.text-link{font-size:11px;margin-left:31px;color:var(--trace-agent)}
 .memory-content{font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.memory-content-section{margin-bottom:24px}.memory-content-section h3{font-size:12px}.memory-source-content{padding-top:12px;border-top:1px solid var(--border)}.memory-source-reference{font-size:11px;overflow-wrap:anywhere}
-.memory-lineage{margin-top:24px;padding-top:12px;border-top:1px solid var(--border)}.memory-lineage h3{font-size:12px}.memory-lineage a{font-size:12px;display:block;padding:8px 0}.memory-lineage small{display:block;overflow-wrap:anywhere;font-size:11px;color:var(--muted-foreground)}
+.memory-lineage{margin-top:24px;padding-top:12px;border-top:1px solid var(--border)}.memory-lineage h3{font-size:12px}.memory-lineage a{font-size:12px;display:block;padding:8px 0;overflow-wrap:anywhere}.memory-lineage small{display:block;overflow-wrap:anywhere;font-size:11px;color:var(--muted-foreground)}
 .memory-metadata{padding-top:12px;border-top:1px solid var(--border);font-size:12px}.memory-metadata dl{display:grid;gap:6px}.memory-metadata dt{color:var(--muted-foreground)}.memory-metadata dd{margin:0;overflow-wrap:anywhere}
 .control-sheet #memory-workbench{height:100%}.memory-page>#memory-workbench{height:calc(100dvh - 96px)}.memory-page>#memory-workbench>.obs-workbench{height:100%;min-height:0}
 @container inspection-layout (max-width:700px){.memory-page>#memory-workbench{height:auto}.memory-page .memory-workbench{display:block}.memory-page .memory-sources{max-height:240px;height:auto}}

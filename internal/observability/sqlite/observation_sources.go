@@ -7,10 +7,17 @@ var observationSources = []string{
 	`SELECT 'agent:'||r.run_id id,coalesce('agent:'||r.parent_run_id,'') parent,'agent' type,
  CASE WHEN r.kind='main' THEN 'Main' WHEN r.worker_position='root' THEN 'Root Worker' ELSE 'Child Worker' END name,
  r.run_id run,r.run_id key,NULL step,r.status status,r.created_at started,r.ended_at ended,'lifecycle' timing,coalesce(r.wait_reason,'') detail FROM members r`,
-	`SELECT 'generation:'||g.generation_id,'agent:'||r.run_id,'generation',
- CASE WHEN json_extract(c.provenance_json,'$.stage')='summary_request' THEN 'Summarize context' ELSE 'Generate response' END,
- r.run_id,g.generation_id,g.step_index,g.status,g.created_at,g.completed_at,'admission to acceptance',g.error_code
- FROM model_generation g JOIN members r USING(run_id) LEFT JOIN context_compaction c ON c.run_id=g.run_id AND c.step_index=g.step_index`,
+	`SELECT 'generation:'||g.generation_id,coalesce('tool:'||owner.invocation_id,'agent:'||r.run_id),'generation',
+ CASE WHEN json_extract(c.provenance_json,'$.stage')='summary_request' THEN 'Summarize context'
+ WHEN json_extract(g.request_json,'$.tool_generation.kind')='hosted_search' OR json_type(g.request_json,'$.web_search')='object' THEN 'Hosted web search'
+ WHEN json_extract(g.request_json,'$.tool_generation.kind')='summary' THEN 'Summarize search results'
+ WHEN json_extract(g.request_json,'$.tool_generation.kind')='page_answer' THEN 'Answer from page'
+ WHEN json_type(g.request_json,'$.tool_generation')='object' THEN 'Tool model call' ELSE 'Generate response' END,
+ r.run_id,g.generation_id,g.step_index,g.status,g.created_at,g.completed_at,'admission to acceptance',
+ CASE WHEN coalesce(g.error_code,'')!='' THEN g.error_code WHEN owner.invocation_id IS NOT NULL THEN 'Internal model call for the parent tool; not an Agent loop turn.' ELSE '' END
+ FROM model_generation g JOIN members r USING(run_id)
+ LEFT JOIN context_compaction c ON c.run_id=g.run_id AND c.step_index=g.step_index
+ LEFT JOIN tool_invocation owner ON owner.run_id=g.run_id AND owner.invocation_id=coalesce(json_extract(g.request_json,'$.tool_generation.invocation_id'),json_extract(g.request_json,'$.web_search.invocation_id'))`,
 	`SELECT 'tool:'||i.invocation_id,coalesce('tool:'||i.parent_invocation_id,'agent:'||r.run_id),'tool',i.tool_name,r.run_id,i.invocation_id,g.step_index,i.status,i.created_at,
  CASE WHEN i.status IN ('succeeded','failed','cancelled','unknown') THEN coalesce(i.result_ready_at,i.updated_at) END,
  'tool lifecycle',coalesce(i.wait_reason||' · ','')||'Host execution starts: '||i.attempt_count FROM tool_invocation i JOIN members r USING(run_id) JOIN model_generation g ON g.generation_id=i.provider_exchange_id`,

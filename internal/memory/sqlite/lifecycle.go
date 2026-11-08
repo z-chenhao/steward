@@ -14,7 +14,7 @@ import (
 // for a year. Explicit memories are outside this policy. Immutable successors
 // preserve the original observation time and provenance; decay is not evidence.
 func (s *Store) AgeSemantic(ctx context.Context, now time.Time) error {
-	rows, err := s.db.QueryContext(ctx, `SELECT m.memory_id,m.user_id,m.scope_type,m.scope_id,m.content,m.source_refs,m.created_at,x.facet_key,x.metadata,x.confirmed_at FROM memory_record m JOIN memory_semantic_record x USING(memory_id) WHERE m.tier='core' AND x.confirmed_at<=? AND m.deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id) AND NOT EXISTS(SELECT 1 FROM memory_retirement r WHERE r.memory_id=m.memory_id) LIMIT 32`, now.Add(-365*24*time.Hour).UnixMicro())
+	rows, err := s.db.QueryContext(ctx, `SELECT m.memory_id,m.user_id,m.scope_type,m.scope_id,m.content,m.source_refs,m.created_at,x.facet_key,x.metadata,x.confirmed_at FROM memory_record m JOIN memory_semantic_record x USING(memory_id) WHERE (m.tier='core' OR x.expires_at=0) AND x.confirmed_at<=? AND m.deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id) AND NOT EXISTS(SELECT 1 FROM memory_retirement r WHERE r.memory_id=m.memory_id) LIMIT 32`, now.Add(-365*24*time.Hour).UnixMicro())
 	if err != nil {
 		return recall.ErrUnavailable
 	}

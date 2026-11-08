@@ -394,3 +394,30 @@ func TestMediaOnlyOriginalDoesNotBlockTextRecall(t *testing.T) {
 		t.Fatal(original, e)
 	}
 }
+
+func TestMemoryHostOwnerPreservesForeignChannelsWithoutRebindingThem(t *testing.T) {
+	ctx := context.Background()
+	s, e := Open(ctx, t.TempDir())
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer s.Close()
+	if e = s.BindConversation(ctx, "other-channel", recall.Scope{UserID: "bob", AgentID: "other-agent"}); e != nil {
+		t.Fatal(e)
+	}
+	if e = s.BindOwner(ctx, "alice", "agent-a"); e != nil {
+		t.Fatal("foreign channel prevented scoped runtime", e)
+	}
+	if e = s.BindOwner(ctx, "", "agent-a"); e == nil {
+		t.Fatal("implicit local owner replaced bound identity")
+	}
+	if e = s.BindOwner(ctx, "bob", "other-agent"); e == nil {
+		t.Fatal("in-process owner switched")
+	}
+	if e = s.BindConversation(ctx, "agent-a", recall.Scope{UserID: "bob", AgentID: "agent-a"}); e != nil {
+		t.Fatal(e)
+	}
+	if e = s.BindOwner(ctx, "alice", "agent-a"); e == nil {
+		t.Fatal("main conversation rebound")
+	}
+}

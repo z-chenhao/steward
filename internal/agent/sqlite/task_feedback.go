@@ -219,7 +219,7 @@ func (s *Store) requireCurrentFeedback(ctx context.Context, tx *sql.Tx, ref, tas
 	// Artifact refs are immutable revisions; a new review supersedes the old
 	// request, and deletion/expiry must not turn into a review of missing data.
 	for _, ref := range artifacts {
-		if _, err := s.Artifacts().DescribeTx(ctx, tx, artifact.Scope{UserID: artifact.LocalUser, AgentID: agentID, Owner: true}, ref, true); err != nil {
+		if _, err := s.Artifacts().DescribeTx(ctx, tx, artifact.Scope{UserID: s.OwnerID(), AgentID: agentID, Owner: true}, ref, true); err != nil {
 			if errors.Is(err, artifact.ErrNotFound) || errors.Is(err, artifact.ErrIntegrity) {
 				return task.ErrFeedbackStale
 			}

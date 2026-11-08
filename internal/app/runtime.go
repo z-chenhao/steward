@@ -237,6 +237,9 @@ func builtinDefinitions(cfg config.Config, secrets llm.SecretStore) ([]tool.Defi
 	manageMemory := memory.Definition()
 	if cfg.Memory == nil {
 		manageMemory.Spec.Description += " Not configured: requires memory.encryption_key_ref; calls fail with PROVIDER_UNAVAILABLE until configured."
+		for i := range manageMemory.PreviousSpecs {
+			manageMemory.PreviousSpecs[i].Description += " Not configured: requires memory.encryption_key_ref; calls fail with PROVIDER_UNAVAILABLE until configured."
+		}
 	}
 	defs = append(defs, manageMemory)
 	recallIdentity := recall.UnconfiguredIdentity

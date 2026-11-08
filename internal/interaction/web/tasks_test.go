@@ -32,6 +32,25 @@ func (f workspaceReader) Scheduled(context.Context, string) ([]task.ScheduledWor
 
 type unavailableScheduleReader struct{ workspaceReader }
 
+func TestTaskPageCountMatchesRenderedRows(t *testing.T) {
+	v := &taskView{
+		Configurations: true,
+		Scheduled:      []task.ScheduledWork{{}},
+		List: task.List{Items: []task.Entry{
+			{Schedule: &task.Schedule{}}, // This entry is already shown as a schedule.
+			{},
+		}},
+		Executions: task.ExecutionList{Items: []task.Execution{{}, {}, {}}},
+	}
+	if taskPageCount(v) != 2 {
+		t.Fatal("configuration count includes a hidden scheduled entry")
+	}
+	v.Configurations = false
+	if taskPageCount(v) != 3 {
+		t.Fatal("execution count included configurations")
+	}
+}
+
 func (unavailableScheduleReader) Scheduled(context.Context, string) ([]task.ScheduledWork, error) {
 	return nil, errors.New("PRIVATE_SCHEDULE_ERROR")
 }
@@ -115,7 +134,7 @@ func TestTaskSidebarMatchesListAndDetailCategories(t *testing.T) {
 		}
 		markup := w.Body.String()
 		_, sidebar, ok := strings.Cut(markup, `<aside class="section-sidebar" aria-label="Task navigation">`)
-		if !ok || !strings.Contains(markup, `class="has-section-navigation"`) {
+		if !ok || !strings.Contains(markup, `<body class="has-section-navigation`) {
 			t.Fatal("Task page did not use the shared two-rail shell", test.path)
 		}
 		sidebar, _, _ = strings.Cut(sidebar, "</aside>")

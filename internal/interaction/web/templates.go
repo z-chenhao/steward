@@ -16,15 +16,16 @@ func newLayout(language string) *template.Template {
 		"tr":                  func(text string) string { return translate(language, text) },
 		"fontURL":             fontURL,
 		"help":                help,
-		"memorySourcesOffset": memorySourcesOffset, "memoryOffset": memoryOffset, "memoryURL": memoryURL, "memorySourceLabel": memorySourceLabel, "memoryOriginLabel": memoryOriginLabel, "memoryStatus": memoryStatus,
+		"identifier":          identifier,
+		"memorySourcesOffset": memorySourcesOffset, "memoryOffset": memoryOffset, "memoryURL": memoryURL, "memorySourceLabel": memorySourceLabel, "memoryOriginLabel": memoryOriginLabel, "memoryStatus": memoryStatus, "memoryLayerLabel": memoryLayerLabel,
 		"capabilityURL": capabilityURL,
 		"traceColumns": func() []string {
-			return []string{"Created time", "Type", "Input", "Output", "Wall time", "TTFT", "Model", "Tokens", "Model cost", "Status", "Trace ID"}
+			return []string{"Created time", "Type", "Status", "Output", "Wall time", "TTFT", "Model", "Tokens", "Model cost", "Trace ID"}
 		},
-		"traceURL": traceURL, "traceListURL": traceListURL, "traceClearURL": traceClearURL, "tracePresetURL": tracePresetURL,
+		"traceLabel": traceLabel, "traceURL": traceURL, "traceListURL": traceListURL, "traceClearURL": traceClearURL, "tracePresetURL": tracePresetURL,
 		"canSend":       canSend,
 		"bindingTarget": bindingTarget, "toolLabel": toolLabel,
-		"taskConfigurationPage": taskConfigurationPage, "taskURL": taskURL, "executionURL": executionURL, "taskTitle": task.Title, "taskListURL": taskListURL, "historyLabel": historyLabel,
+		"taskConfigurationPage": taskConfigurationPage, "taskURL": taskURL, "executionURL": executionURL, "taskTitle": task.Title, "taskListURL": taskListURL, "taskPageCount": taskPageCount, "historyLabel": historyLabel,
 		"scheduleTime":      func(raw, zone string) string { return localScheduleTime(language, raw, zone) },
 		"scheduleFrequency": scheduleFrequency,
 		"conversationURL":   conversationURL, "tabLabel": tabLabel,

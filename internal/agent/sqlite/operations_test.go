@@ -43,7 +43,9 @@ func TestOperationsPriorSchemaRollbackAndActiveWorkUpgrade(t *testing.T) {
 	r := s.Runs(h, registry)
 	a := agent.Actor{Store: r, Registry: registry, Ready: func(context.Context) bool { return true }}
 	receipt := mustSubmit(t, a, "before-upgrade", "PRIVATE_USER_TEXT_29")
-	if _, e = db.Exec(`DROP TRIGGER main_tool_protocol_retained; DROP TRIGGER main_tool_protocol_immutable; DROP TRIGGER main_tool_protocol_initial; DROP TABLE main_tool_protocol;` + removeGitHubFixtureSchema); e != nil {
+	// This pre-v26 fixture never seeded the v51 message-time projection.
+	cleanup := strings.Replace(removeGitHubFixtureSchema, "ALTER TABLE conversation_intent DROP COLUMN memory_created_at; ", "", 1)
+	if _, e = db.Exec(`DROP TRIGGER main_tool_protocol_retained; DROP TRIGGER main_tool_protocol_immutable; DROP TRIGGER main_tool_protocol_initial; DROP TABLE main_tool_protocol;` + cleanup); e != nil {
 		t.Fatal(e)
 	}
 	var snapshot string

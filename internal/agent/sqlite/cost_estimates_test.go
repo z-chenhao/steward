@@ -136,7 +136,7 @@ func TestEstimateMigrationDoesNotRepriceHistoricalGenerations(t *testing.T) {
 	mustDrain(t, a)
 	// Reconstruct a populated schema 46. The new table is empty; accepted
 	// generation, snapshot and usage records remain untouched.
-	if _, err := s.db.Exec(`DROP TABLE memory_cost_reservation; DROP TABLE memory_generation; DROP TABLE memory_semantic_receipt; DROP TABLE generation_cost_estimate; PRAGMA user_version=46`); err != nil {
+	if _, err := s.db.Exec(removeLayeredMemoryFixtureSchema + `DROP TABLE memory_cost_reservation; DROP TABLE memory_generation; DROP TABLE memory_semantic_receipt; DROP TABLE generation_cost_estimate; PRAGMA user_version=46`); err != nil {
 		t.Fatal(err)
 	}
 	path := filepath.Dir(s.path)
