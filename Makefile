@@ -32,7 +32,7 @@ run: build
 test: test-go test-node test-browser test-infra
 
 test-prompts:
-	go test ./internal/agent ./internal/agent/sqlite -run '^Test(MemoryCompactionPreservesMixedCodeBusinessReceipt|RecallCompleteSearchStillAllowsReadingCASMetadata|RecallRepeatedReadReusesVisibleEvidenceWithoutDuplicatingBody|RecallUnifiedVisibilityIncludesSealedReadsAndAutomaticEvidence|LayeredMemoryNavigationSelectsScopedLinksWithoutRewritingSources|RecallVisibleResultsRequireOwnedReceiptAndCompleteVisibleFrame|LayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch|LayeredMemoryCodeReadProjectionIsStableScopedAndDoesNotRewriteReceipt|LayeredMemoryTranscriptReadIsScopedPagedSealedAndRevoked|ContextPromptBytes|ProviderToolUsesFrozenModelDeclarationAndKeepsLegacySchema|ContextRolesAndFrozenResources|AgentStartsWithOneFrozenSystemMessage|ChildInheritsOnlyFrozenSystemSections|SkillsUseSearchWithoutPromptCatalog|SplitSystemMessagesAreRejected|RootLoopPublishesStageUpdatesWithoutMainWork|Progress.*|ContextInspectionRealMainRootChildAndReplayPreservesSnapshots|RecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory|RecallFrozenPerTurnAndFenced|RecallInputKeepsChronologyAndEscapesHistoricalMessages|ConversationalRecallQueryBoundsAndEvidenceIsolation|ContextPlainObjectIDs.*|TaskInstructionUsesPlainObjectIDs|ContextDeferredOperationIDsKeepBatchAndLegacyCorrelation)$$' -count=1
+	go test ./internal/agent ./internal/agent/sqlite -run '^Test(MemoryCompactionPreservesMixedCodeBusinessReceipt|RecallCompleteSearchStillAllowsReadingCASMetadata|RecallRepeatedReadReusesVisibleEvidenceWithoutDuplicatingBody|RecallUnifiedVisibilityIncludesSealedReadsAndAutomaticEvidence|LayeredMemoryNavigationSelectsScopedLinksWithoutRewritingSources|RecallVisibleResultsRequireOwnedReceiptAndCompleteVisibleFrame|LayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch|RecallEmptyEvidenceOmittedFromAgentMessagesAndFrozen|LayeredMemoryCodeReadProjectionIsStableScopedAndDoesNotRewriteReceipt|LayeredMemoryTranscriptReadIsScopedPagedSealedAndRevoked|ContextPromptBytes|ProviderToolUsesFrozenModelDeclarationAndKeepsLegacySchema|ContextRolesAndFrozenResources|AgentStartsWithOneFrozenSystemMessage|ChildInheritsOnlyFrozenSystemSections|SkillsUseSearchWithoutPromptCatalog|SplitSystemMessagesAreRejected|RootLoopPublishesStageUpdatesWithoutMainWork|Progress.*|ContextInspectionRealMainRootChildAndReplayPreservesSnapshots|RecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory|RecallFrozenPerTurnAndFenced|RecallInputKeepsChronologyAndEscapesHistoricalMessages|ConversationalRecallQueryBoundsAndEvidenceIsolation|ContextPlainObjectIDs.*|TaskInstructionUsesPlainObjectIDs|ContextDeferredOperationIDsKeepBatchAndLegacyCorrelation)$$' -count=1
 
 test-go:
 	go test ./...
@@ -44,7 +44,7 @@ test-web-access:
 # Privacy, provenance and lifecycle regressions run in the required CI lane.
 test-memory:
 	go test -race ./internal/memory/... ./internal/recall/... ./internal/conversation/... ./internal/tool ./internal/context ./internal/llm -count=1
-	go test -race ./internal/agent/sqlite -run 'Memory|Layered|Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs|RootFailureNotice' -count=1
+	python3 tests/system/race.py --part memory
 	go test -race ./internal/llm/bridge -run 'LayeredMemory|NativeFragmented' -count=1
 	go test -race ./internal/app -run 'MemoryExternalSecrets' -count=1
 
@@ -91,6 +91,8 @@ lint: lint-actions
 	npm run lint --prefix web
 	node --check tests/system/apps_connections_browser.mjs
 	node --check tests/system/channels_help.mjs
+	node --check tests/system/channels_task_executions.mjs
+	node --check tests/system/channels_trace_time.mjs
 
 # Tool versions are explicit and do not alter the application's go.mod.
 lint-actions:

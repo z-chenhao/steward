@@ -208,7 +208,7 @@ func TestTraceMissingHTTPTerminalRemainsUnknownAfterCompletion(t *testing.T) {
 	}
 }
 
-func TestTraceTTFTUsesFirstGenerationTextAndPreservesMissingEvidence(t *testing.T) {
+func TestTraceTTFTUsesFirstGenerationOutputAndPreservesMissingEvidence(t *testing.T) {
 	s, _, a, p := childFixture(t)
 	p.respond = childPolicy
 	main := mustSubmit(t, a, "first-token", "Inspect first model output")
@@ -244,5 +244,75 @@ func TestTraceTTFTUsesFirstGenerationTextAndPreservesMissingEvidence(t *testing.
 	}
 	if got := read(); got == nil || *got != 1691 {
 		t.Fatal("TTFT ignored retries or used headers/first transport data", got)
+	}
+	if _, err := s.db.Exec(`INSERT INTO dispatch_observation VALUES(?,'retry-two','first_tool_call',1800000,'test',NULL,'','',0,'')`, generation); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(); got == nil || *got != 800 {
+		t.Fatal("TTFT excluded tool-call output before text", got)
+	}
+	if _, err := s.db.Exec(`DELETE FROM dispatch_observation WHERE phase='first_text'`); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(); got == nil || *got != 800 {
+		t.Fatal("tool-only generation has no TTFT", got)
+	}
+}
+
+func TestTraceActivityRangesMatchFilteredRowsAtExclusiveBoundaries(t *testing.T) {
+	s, _, a, p := childFixture(t)
+	p.respond = childPolicy
+	mustSubmit(t, a, "histogram", "Inspect histogram boundaries")
+	mustDrain(t, a)
+	reader := s.Inspector()
+	ctx := context.Background()
+	all, err := reader.Traces(ctx, observability.TraceQuery{})
+	if err != nil || len(all.Items) == 0 {
+		t.Fatal(all, err)
+	}
+	trace := all.Items[0]
+	at, err := time.Parse(time.RFC3339Nano, trace.CreatedAt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	q := observability.TraceQuery{Search: trace.ID, ExecutionQuery: observability.ExecutionQuery{Since: at, Until: at.Add(time.Second)}}
+	data, err := reader.Traces(ctx, q)
+	if err != nil || data.Total != 1 || len(data.Activity) == 0 {
+		t.Fatal(data, err)
+	}
+	var total int64
+	for _, bucket := range data.Activity {
+		total += bucket.Count
+		start, e := time.Parse(time.RFC3339Nano, bucket.At)
+		if e != nil {
+			t.Fatal(e)
+		}
+		end, e := time.Parse(time.RFC3339Nano, bucket.Until)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if start.Before(q.Since) || end.After(q.Until) || !start.Before(end) {
+			t.Fatal("bucket escaped exact filter", bucket, q)
+		}
+		selected := q
+		selected.Since, selected.Until = start, end
+		rows, e := reader.Traces(ctx, selected)
+		if e != nil || rows.Total != bucket.Count {
+			t.Fatal("bucket and table diverged", bucket, rows, e)
+		}
+	}
+	if total != data.Total {
+		t.Fatal(total, data.Total)
+	}
+	q.Since = at.Add(-time.Second)
+	q.Until = at
+	empty, err := reader.Traces(ctx, q)
+	if err != nil || empty.Total != 0 || len(empty.Activity) == 0 {
+		t.Fatal("exclusive end included a boundary event or discarded empty time range", empty, err)
+	}
+	for _, bucket := range empty.Activity {
+		if bucket.Count != 0 {
+			t.Fatal(bucket)
+		}
 	}
 }

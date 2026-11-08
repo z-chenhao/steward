@@ -21,6 +21,11 @@ type TraceReader interface {
 
 type traceView struct {
 	MetadataOpen                       bool
+	ShowInternal                       bool
+	HiddenInternal                     int
+	InputComplete                      bool
+	OutputRate                         *float64
+	TimelineStart, TimelineEnd         int64
 	Query                              observability.TraceQuery
 	Run, Task, Node, After, Tab, Field string
 	Offset                             int
@@ -46,6 +51,8 @@ type traceRow struct {
 	HasChildren   bool
 	Guides        []bool
 	X, Width      float64
+	Running       bool
+	FirstOutput   *int64
 }
 
 func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
@@ -109,7 +116,7 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 		}
 	}
 	for _, mark := range tree.ProviderTimings {
-		if at, ok := starts[mark.Attempt]; ok && mark.Phase == "first_text" && mark.At >= at && (firstText == 0 || mark.At < firstText) {
+		if at, ok := starts[mark.Attempt]; ok && (mark.Phase == "first_text" || mark.Phase == "first_tool_call") && mark.At >= at && (firstText == 0 || mark.At < firstText) {
 			firstText = mark.At
 		}
 	}
@@ -119,30 +126,28 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 	}
 	v.Node = tree.Selected.ID
 	query.Selected = v.Node
-	v.Rows = traceRows(tree)
+	visible := tree
+	if !v.ShowInternal {
+		visible.Items, v.HiddenInternal = primaryObservations(tree)
+	}
+	v.Rows = traceRows(visible)
+	v.TimelineStart, v.TimelineEnd = traceTimeRange(tree)
+	for i := range v.Rows {
+		if v.Rows[i].ID == tree.Selected.ID && firstText > 0 {
+			v.Rows[i].FirstOutput = &firstText
+		}
+	}
 	v.Tabs = observationTabs(tree.Selected)
-	if tree.Selected.Type == "generation" && s.Contexts != nil && tree.Selected.Step != nil {
-		rounds, e := s.Contexts.Rounds(ctx, observability.RoundQuery{RunID: tree.Selected.RunID, After: -1})
-		if e != nil {
-			return e
+	switch v.Tab {
+	case "context", "wire", "diff":
+		if tree.Selected.Type != "generation" && !(v.Tab == "wire" && tree.Selected.Name == "Provider HTTP") {
+			v.Tab = "overview"
 		}
-		if len(rounds.Items) == 0 || rounds.Items[0].Step >= *tree.Selected.Step {
-			v.Tabs = []string{"overview", "context", "wire"}
-		}
-	}
-	if v.Tab == "metadata" {
-		v.MetadataOpen = true
+	case "overview", "metadata":
+	default:
 		v.Tab = "overview"
 	}
-	valid := false
-	for _, tab := range v.Tabs {
-		if tab == v.Tab {
-			valid = true
-		}
-	}
-	if !valid && v.Tab != "metadata" {
-		v.Tab = "overview"
-	}
+	v.OutputRate = generationOutputRate(tree)
 	if v.Tab == "context" && tree.Selected.Type == "generation" {
 		if v.FullContext == nil {
 			v.FullContext = &contextView{Query: observability.ContextQuery{RunID: tree.Selected.RunID, Step: *tree.Selected.Step, Section: "messages"}, RoundAfter: -1}
@@ -155,30 +160,30 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 		if field == v.Field {
 			offset = v.Offset
 		}
-		return s.Traces.ObservationBody(ctx, observability.BodyQuery{ObservationQuery: query, Field: field, Offset: offset})
+		body, e := s.Traces.ObservationBody(ctx, observability.BodyQuery{ObservationQuery: query, Field: field, Offset: offset})
+		if e != nil || offset != 0 || body.Next == nil || body.Length > 2<<20 || len(body.Content) > body.Length || *body.Next != len(body.Content) {
+			return body, e
+		}
+		// Assemble immutable saved JSON only within a fixed budget. Incomplete or
+		// changing evidence retains the original lossless byte-paging route.
+		var all strings.Builder
+		all.WriteString(body.Content)
+		next := body.Next
+		for next != nil {
+			part, e := s.Traces.ObservationBody(ctx, observability.BodyQuery{ObservationQuery: query, Field: field, Offset: *next})
+			if e != nil || !part.Available || part.Length != body.Length || len(part.Content) == 0 || len(part.Content) > body.Length-all.Len() || (part.Next != nil && *part.Next != *next+len(part.Content)) {
+				return body, nil
+			}
+			all.WriteString(part.Content)
+			next = part.Next
+		}
+		if all.Len() == body.Length && json.Valid([]byte(all.String())) {
+			body.Content, body.Next = all.String(), nil
+		}
+		return body, nil
 	}
 	if v.Tab == "wire" {
 		v.Wire, err = read("wire")
-		// Capture is bounded and immutable after dispatch. Assemble small saved
-		// requests so a byte boundary does not turn valid JSON into unreadable
-		// fragments; the original paging route remains for larger captures.
-		if err == nil && v.Offset == 0 && v.Wire.Length <= 2<<20 && v.Wire.Next != nil {
-			first := v.Wire
-			var body strings.Builder
-			body.WriteString(first.Content)
-			next := first.Next
-			for next != nil {
-				part, e := s.Traces.ObservationBody(ctx, observability.BodyQuery{ObservationQuery: query, Field: "wire", Offset: *next})
-				if e != nil || !part.Available || part.Length != first.Length || (part.Next != nil && *part.Next <= *next) {
-					break
-				}
-				body.WriteString(part.Content)
-				next = part.Next
-			}
-			if next == nil && body.Len() == first.Length && json.Valid([]byte(body.String())) {
-				v.Wire.Content, v.Wire.Next = body.String(), nil
-			}
-		}
 		return err
 	}
 	if v.Tab == "metadata" {
@@ -194,12 +199,21 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 			return e
 		}
 
-		v.Messages, err = s.Traces.ChatPreview(ctx, query)
+		v.Input, err = read("input")
 		if err != nil {
 			return err
 		}
+		if v.Input.Available && v.Input.Next == nil && !(v.Field == "input" && v.Offset > 0) {
+			v.Messages, v.InputComplete = completeMessages(v.Input.Content)
+		}
+		if !v.InputComplete {
+			v.Messages, err = s.Traces.ChatPreview(ctx, query)
+			if err != nil {
+				return err
+			}
+		}
 		v.Output, err = read("output")
-		if err == nil && v.Output.Available && v.Offset == 0 && v.Output.Next == nil {
+		if err == nil && v.Output.Available && !(v.Field == "output" && v.Offset > 0) && v.Output.Next == nil {
 			var out llm.GenerationResult
 			if json.Unmarshal([]byte(v.Output.Content), &out) == nil {
 				v.ModelOutput = &out

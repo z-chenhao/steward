@@ -9,8 +9,9 @@ export function enhanceTaskFilters(){
  const status=fallback?.querySelector<HTMLSelectElement>('select[name=view]');
  const needsMe=fallback?.querySelector<HTMLInputElement>('input[name=needs_me]');
  if(!fallback||!mount||!status||!needsMe)return;
+ const listQuery=new URLSearchParams(location.search);
  const navigate=(view:string,checked:boolean)=>{
-  const query=new URLSearchParams(location.search);query.delete('cursor');query.delete('feedback_before');query.set('view',view);
+  const query=new URLSearchParams(listQuery);query.delete('cursor');query.delete('feedback_before');query.set('view',view);
   if(checked)query.set('needs_me','1');else query.delete('needs_me');
   location.assign('/tasks?'+query.toString());
  };

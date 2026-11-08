@@ -1,5 +1,5 @@
 {{define "tasks-page"}}
-<section class="workspace-page tasks-page">
+<section class="workspace-page tasks-page"{{if not .Tasks.Configurations}} data-execution-list{{end}}>
 <div class="control-list-heading"><h1>{{if .Tasks.Configurations}}{{tr "Configurations"}}{{else}}{{tr "Execution records"}}{{end}}</h1></div>
 
 <form class="control-search control-list-search" method="get" action="{{if .Tasks.Configurations}}/tasks/configurations{{else}}/tasks{{end}}">{{if not .Tasks.Configurations}}<input type="hidden" name="view" value="{{.Tasks.Query.View}}">{{if .Tasks.Query.NeedsMe}}<input type="hidden" name="needs_me" value="1">{{end}}{{end}}{{template "icon-search"}}<label class="sr-only" for="task-search">{{tr "Find a task"}}</label><input id="task-search" type="search" name="q" value="{{.Tasks.Query.Query}}" placeholder="{{tr "Find a task by title or goal"}}"><button type="submit" class="control-icon-button" aria-label="{{tr "Search"}}">{{template "icon-arrow-right"}}</button></form>
@@ -22,22 +22,34 @@
 {{range .Tasks.List.Items}}{{if not .Schedule}}<tr data-live-key="task:{{.TaskRef}}"><td><a class="task-list-title" href="{{taskURL .TaskRef}}" title="{{.Title}}">{{.Title}}</a></td><td>{{if eq .CompletionPolicy "ongoing"}}{{tr "Ongoing task"}}{{else}}{{tr "One-time task"}}{{end}}</td><td><span class="status-pill control-status-badge" data-status="{{.Status}}">{{tr .Status}}</span></td><td>{{humanTime .CreatedAt}}</td><td>{{humanTime .UpdatedAt}}</td></tr>{{end}}{{end}}
 {{if eq (taskPageCount .Tasks) 0}}<tr><td colspan="5" class="task-table-empty">{{tr "No matching tasks"}}</td></tr>{{end}}
 {{else}}
-{{range .Tasks.Executions.Items}}<tr data-task-ref="{{.TaskRef}}" id="execution-{{.ID}}" data-live-key="execution:{{.ID}}"><td><a class="task-list-title" href="{{if .NeedsAttention}}{{taskURL .TaskRef}}{{else}}{{executionURL .ID}}{{end}}" title="{{.Title}}">{{.Title}}</a></td><td>{{if eq .CompletionPolicy "ongoing"}}{{tr "Ongoing task"}}{{else}}{{tr "One-time task"}}{{end}}</td><td><span class="task-row-state status-pill control-status-badge" data-status="{{.Status}}">{{tr .Status}}</span>{{if .NeedsAttention}}<span class="sr-only">{{tr "Needs you"}}</span>{{end}}</td><td>{{humanTime .CreatedAt}}</td><td>{{humanTime .UpdatedAt}}</td></tr>{{else}}<tr><td colspan="5" class="task-table-empty">{{if eq .Tasks.Query.View "attention"}}{{tr "Nothing needs your attention"}}{{else if eq .Tasks.Query.View "closed"}}{{tr "No finished tasks yet"}}{{else}}{{tr "No matching tasks"}}{{end}}</td></tr>{{end}}
+{{range .Tasks.Executions.Items}}<tr data-execution-row data-task-ref="{{.TaskRef}}" id="execution-{{.ID}}" data-live-key="execution:{{.ID}}"><td><a class="task-list-title" data-execution-open href="{{executionURL .ID}}" title="{{.Title}}">{{.Title}}</a></td><td>{{if eq .CompletionPolicy "ongoing"}}{{tr "Ongoing task"}}{{else}}{{tr "One-time task"}}{{end}}</td><td><span class="task-row-state status-pill control-status-badge" data-status="{{.Status}}">{{tr .Status}}</span>{{if .NeedsAttention}}<span class="sr-only">{{tr "Needs you"}}</span>{{end}}</td><td>{{humanTime .CreatedAt}}</td><td>{{humanTime .UpdatedAt}}</td></tr>{{else}}<tr><td colspan="5" class="task-table-empty">{{if eq .Tasks.Query.View "attention"}}{{tr "Nothing needs your attention"}}{{else if eq .Tasks.Query.View "closed"}}{{tr "No finished tasks yet"}}{{else}}{{tr "No matching tasks"}}{{end}}</td></tr>{{end}}
 {{end}}
 </tbody></table></div>
 <div class="control-list-footer"><span>{{taskPageCount .Tasks}} {{tr "records on this page"}}</span>{{if .Tasks.Configurations}}{{if .Tasks.List.Next}}<a class="button secondary" href="{{taskListURL .Tasks "cursor" .Tasks.List.Next}}">{{tr "Older tasks →"}}</a>{{end}}{{else}}{{if .Tasks.Executions.Next}}<a class="button secondary" href="{{taskListURL .Tasks "cursor" .Tasks.Executions.Next}}">{{tr "Older tasks →"}}</a>{{end}}{{end}}</div>
 {{end}}
 {{define "execution-page"}}
-<section class="workspace-page task-page">
-<a class="back-link" href="/tasks?view=all">← {{tr "Execution records"}}</a>
-{{with .Tasks.Execution}}<div class="page-heading"><div><h1>{{.Title}}</h1></div><span class="status-pill state" data-status="{{.Status}}">{{tr .Status}}</span></div>
-<dl class="execution-facts"><div><dt>{{tr "Type"}}</dt><dd>{{if eq .CompletionPolicy "ongoing"}}{{tr "Ongoing task"}}{{else}}{{tr "One-time task"}}{{end}}</dd></div><div><dt>{{tr "Execution round"}}</dt><dd>{{.Epoch}}</dd></div><div><dt>{{tr "Created"}}</dt><dd>{{humanTime .CreatedAt}}</dd></div><div><dt>{{tr "Updated"}}</dt><dd>{{humanTime .UpdatedAt}}</dd></div></dl>
-{{if and .Description (ne .Description .Title)}}<section class="task-objective"><h2>{{tr "Planned objective"}}</h2><div class="semantic">{{.Description}}</div></section>{{end}}
-{{if .Instructions}}<section class="task-instructions"><h2>{{tr "Accepted instructions"}}</h2><ol>{{range .Instructions}}<li><div class="semantic">{{.Text}}</div></li>{{end}}</ol></section>{{end}}
-<section class="task-results"><h2>{{tr "Execution result"}}</h2><div id="task-messages">{{template "task-messages" $}}</div></section>
-<a class="text-link" href="{{taskURL .TaskRef}}">{{tr "Task configuration →"}}</a>
-{{end}}</section>
+<section id="execution-detail" class="workspace-page task-page execution-page" data-execution-id="{{.Tasks.Execution.ID}}">
+<a class="back-link" href="/tasks">← {{tr "Execution records"}}</a>
+<div id="execution-header">{{template "execution-header" $}}</div>
+<div class="execution-main">
+<div id="execution-progress">{{template "execution-progress" $}}</div>
+<section class="execution-result" aria-label="{{tr "Execution result"}}"><h2 class="sr-only">{{tr "Execution result"}}</h2><div id="task-messages">{{template "execution-result" $}}</div></section>
+</div>
+<div id="execution-side" class="execution-side">{{template "execution-side" $}}</div>
+</section>
 {{end}}
+{{define "execution-header"}}{{with .Tasks.Execution}}<header class="execution-heading">
+<h1>{{.Title}}</h1>
+<div class="execution-summary"><span class="status-pill control-status-badge" data-status="{{.Status}}">{{tr .Status}}</span><span>{{if eq .CompletionPolicy "ongoing"}}{{tr "Ongoing task"}}{{else}}{{tr "One-time task"}}{{end}}</span><span>{{tr "Execution round"}} {{.Epoch}}</span>{{humanTime .CreatedAt}}<a class="text-link execution-trace" href="/developer/observability/{{.ID}}">{{tr "View trace →"}}</a></div>
+{{if .NeedsAttention}}<nav class="execution-actions" aria-label="{{tr "Execution actions"}}"><a class="button secondary" href="{{taskURL .TaskRef}}">{{tr "Needs your attention"}}</a></nav>{{end}}
+</header>{{end}}{{end}}
+{{define "execution-side"}}{{with .Tasks.Execution}}
+{{if or (and .Description (ne .Description .Title)) .Instructions}}<details class="execution-instructions" data-live-key="instructions"><summary>{{tr "Task instructions"}}</summary>{{if and .Description (ne .Description .Title)}}<div class="semantic">{{.Description}}</div>{{end}}{{if .Instructions}}<h3>{{tr "Accepted instructions"}}</h3><ol>{{range .Instructions}}<li><div class="semantic">{{.Text}}</div>{{humanTime .At}}</li>{{end}}</ol>{{end}}</details>{{end}}
+{{if gt (len .RecentRuns) 1}}<details class="execution-history" data-live-key="history"><summary>{{tr "Recent runs"}} <span class="execution-count">{{len .RecentRuns}}</span></summary><ol>{{range .RecentRuns}}<li><a href="{{executionURL .ID}}" {{if eq .ID $.Tasks.Execution.ID}}aria-current="page"{{end}}><span>{{tr "Execution round"}} {{.Epoch}}</span><span class="status-pill control-status-badge" data-status="{{.Status}}">{{tr .Status}}</span>{{humanTime .CreatedAt}}</a></li>{{end}}</ol></details>{{end}}
+<details class="execution-metadata" data-live-key="metadata"><summary>{{tr "Run details"}}</summary><dl class="execution-facts"><div><dt>{{tr "Created"}}</dt><dd>{{humanTime .CreatedAt}}</dd></div><div><dt>{{tr "Updated"}}</dt><dd>{{humanTime .UpdatedAt}}</dd></div><div><dt>{{tr "Trace ID"}}</dt><dd>{{template "identifier" (identifier "" .ID "")}}</dd></div></dl><nav class="execution-actions" aria-label="{{tr "Execution actions"}}"><a class="text-link" href="{{taskURL .TaskRef}}">{{tr "Task configuration →"}}</a><a class="control-icon-button" data-execution-refresh href="{{executionURL .ID}}" aria-label="{{tr "Refresh"}}" title="{{tr "Refresh"}}">{{template "icon-refresh"}}</a></nav></details>
+{{end}}{{end}}
+{{define "execution-progress"}}{{with .Tasks.Execution}}{{if and .ProgressSummary (not $.Tasks.Messages)}}<section class="execution-progress"><h2>{{tr "Latest progress"}}</h2><p>{{.ProgressSummary}}</p></section>{{end}}{{end}}{{end}}
+{{define "execution-result"}}{{if .Tasks.Messages}}{{template "task-messages" $}}{{else}}{{with .Tasks.Execution}}<p class="execution-empty" role="status">{{if eq .Status "running"}}{{tr "Work is in progress. Updates will appear here when delivered."}}{{else if eq .Status "queued"}}{{tr "This run is queued. Results will appear here when delivered."}}{{else if eq .Status "waiting"}}{{tr "This run is waiting. Open task configuration to review any required action."}}{{else if eq .Status "failed"}}{{tr "This run did not finish. Open task configuration to review the task."}}{{else if eq .Status "cancelled"}}{{tr "This run was cancelled. No result has been delivered."}}{{else}}{{tr "No result has been delivered for this run yet."}}{{end}}</p>{{end}}{{end}}{{end}}
 
 {{define "tasks-navigation"}}
 {{$configuration := taskConfigurationPage .Path}}

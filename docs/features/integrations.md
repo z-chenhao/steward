@@ -361,7 +361,7 @@ F-069 Web Access Plugin 是用户统一使用的搜索／网页访问接入，�
 
 **归属**：按[统一术语](#术语与登记边界)，Web Access 是随程序装配的内置能力插件，组织搜索、读取、问答和证据工具。Exa／SearXNG／Tavily 是外部搜索服务连接器，各自的协议适配器实现服务调用；当前 Tavily 仅接 Search，Extract 尚未实现。实例／凭据绑定与当前模型连接由平台提供。原生搜索属于模型适配能力，本地解析属于内容处理能力；研究配方当前为代码组合，尚未提供独立可安装 Skill。F-070 的安装／启停管理仍未实现。
 
-**入口与行为**：`builtin__web_search` 支持单查询或最多八个查询、显式 provider、域名条件、时间偏好、来源正文及摘要工作流。`builtin__fetch_content` 支持最多八个公开 HTTP(S) URL 的 readable／raw／answer 模式：本地提取 HTML Markdown、文本、PDF 和图片；问答使用当前冻结模型，并保存原始提取证据。`builtin__get_search_content` 从返回的 `responseId` 续读或 exact／case-insensitive／fuzzy 查找；分页和片段坐标是 UTF-8 字节偏移，不拆分字符，fuzzy 按顺序匹配忽略空白的词组。`builtin__source_check` 收集来源、原文片段及哈希供人工判断；有来源为 `unclear`，无证据为 `missing-evidence`，不声称自动裁定支持或反驳。旧 `builtin__web_fetch` 继续提供原有公开 HTML／文本读取。
+**执行能力与历史兼容**：`builtin__web_search` 支持单查询或最多八个查询、显式 provider、域名条件、时间偏好、来源正文及摘要工作流。`builtin__fetch_content` 支持最多八个公开 HTTP(S) URL 的 readable／raw／answer 模式：本地提取 HTML Markdown、文本、PDF 和图片；问答使用当前冻结模型，并保存原始提取证据。`builtin__get_search_content` 从返回的 `responseId` 续读或 exact／case-insensitive／fuzzy 查找；分页和片段坐标是 UTF-8 字节偏移，不拆分字符，fuzzy 按顺序匹配忽略空白的词组。`builtin__source_check` 收集来源、原文片段及哈希供人工判断；有来源为 `unclear`，无证据为 `missing-evidence`，不声称自动裁定支持或反驳。保留的 `builtin__web_fetch` 提供原有公开 HTML／文本读取。
 
 **选路与配置**：默认按已配置 SearXNG → 当前账户原生搜索 → 显式启用的 Exa → 已配置 Tavily 顺序尝试。零命中成功即停止；认证拒绝、预算阻断、无效响应和取消不换源。临时不可用、限流和明确不支持可进入下一来源。显式 provider 不换源，也不能绕过冻结的 `source_order` 目的地限制；不并发广播或自动部署／选择公共实例。
 
@@ -507,3 +507,5 @@ F-048–F-054 分别属于执行能力、历史资料导入或模型能力，保
 **凭据与费用**：本地仅保存项目凭据引用、安装独有 user ID 和账户标识／状态；OAuth token 由 Composio 托管。Composio 会处理所连接应用的数据及工具参数，需在创建项目、授予权限时了解其服务条款与用量。工具执行沿用现有审批与 Artifact 保存；网络中断或响应不确定时登记 unknown，重启也不自动重复远程动作。未启用 Composio instant、workbench、代理或批量执行能力。
 
 **当前限制**：尚无真实 Composio 项目，代码链路通过 HTTP 协议 peer、SQLite、Web 与 Code Mode 集成验证；不宣称所有应用、OAuth scope 或生产结果已经验收。特定服务、权限、付费计划和 auth configuration 的可用性以项目实时目录及授权结果为准。F-047／F-059／F-062／F-064 等领域目标继续独立验收；HealthKit、EventKit、本机资料及飞书等能力如不在项目支持范围内，不能据此视为接通。既有 Web Access、Tavily 和原生监听保留原配置与职责；F-070 插件生命周期不由本项代替。
+
+新生产 Run 的 Web Access builtin 面只保留 `builtin__web_search` 与 `builtin__web_fetch`。`fetch_content`、`get_search_content`、`source_check` 与独立的 `artifact_search` 不进入 Main／Worker 冻结工具快照、发现结果或 Code Mode 可调用面；保存证据沿既有 `artifact_manage` 读取。旧冻结能力继续保留原规格与执行器以便恢复，不改写历史请求；web_search v2 说明同步指向保留入口，v1 显式兼容。测试专用 fixture 不代表生产工具政策。

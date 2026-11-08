@@ -1,3 +1,4 @@
+import {traceActivity,traceTimeline} from './channels_trace_time.mjs';
 import {assertDataList} from './channels_controls.mjs';
 import {writeFile} from 'node:fs/promises';
 // The trace list and peek panel use the actual Web query and read model.
@@ -28,14 +29,19 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await page.getByRole('button',{name:'Custom range',exact:true}).and(page.locator(':focus')).waitFor();
  await page.goto(list);
  const headers=await page.locator('.obs-trace-list thead th').allTextContents();
- if(headers.some(text=>/^(Name|Input)$/.test(text.trim()))||headers[2].trim()!=='Status'||headers[3].trim()!=='Trace')throw Error('trace identity/status columns regressed');
+ if(headers.some(text=>/^(Name|Input)$/.test(text.trim()))||headers[0].trim()!=='Trace ID'||headers[3].trim()!=='Status'||headers[4].trim()!=='Trace')throw Error('trace identity/status columns regressed');
  if(await page.locator('th[aria-sort] svg').count()||await page.locator('.obs-cost small').count())throw Error('fixed sort or cost rows imply redundant actions/explanations');
  // Preserve existing column preferences while dropping the former Input column.
- await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v4');localStorage.setItem('steward.trace.columns.v3',JSON.stringify([true,true,true,false,true,true,true,true,true,false,false]))});
+ await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v5');localStorage.removeItem('steward.trace.columns.v4');localStorage.setItem('steward.trace.columns.v3',JSON.stringify([true,true,true,false,true,true,true,true,true,false,false]))});
  await page.reload();
  await page.getByRole('columnheader',{name:'Output',exact:true}).waitFor({state:'hidden'});
  await page.getByRole('columnheader',{name:'Status',exact:true}).waitFor({state:'hidden'});
- await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v3');localStorage.removeItem('steward.trace.columns.v4')});await page.reload();
+ await page.getByRole('columnheader',{name:'Trace ID',exact:true}).waitFor({state:'hidden'});
+ await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v3');localStorage.setItem('steward.trace.columns.v4',JSON.stringify([true,true,true,true,true,false,true,true,true,true]))});await page.reload();
+ await page.getByRole('columnheader',{name:'TTFT',exact:true}).waitFor({state:'hidden'});
+ await page.getByRole('columnheader',{name:'Trace ID',exact:true}).waitFor({state:'visible'});
+ await page.evaluate(()=>{localStorage.removeItem('steward.trace.columns.v4');localStorage.removeItem('steward.trace.columns.v5')});await page.reload();
+ await page.getByRole('columnheader',{name:'Trace ID',exact:true}).waitFor({state:'visible'});
  await page.getByRole('button',{name:'Columns',exact:true}).click();
  await page.getByRole('checkbox',{name:'Show column: Output',exact:true}).uncheck();
  await page.keyboard.press('Escape');await page.reload();
@@ -47,9 +53,12 @@ export async function traceList(page,context,browser,url,evidence,facts){
  if(density.height>38||density.font!==12)throw Error('trace rows left the compact density: '+JSON.stringify(density));
  if(!await page.locator('.workspace-topbar').getByRole('button',{name:'All time',exact:true}).isVisible())throw Error('time range left the global header');
  await assertDataList(page);
+ const createdWidth=await page.locator('.obs-col-created').evaluate(node=>node.getBoundingClientRect().width);
+ if(createdWidth>120)throw Error('Created time column is no longer compact: '+createdWidth);
  const total=(await (await context.request.get(url+'/api/developer/traces')).json()).total;
  const activity=await page.locator('[data-trace-activity]').evaluate(node=>JSON.parse(node.dataset.traceActivity));
  if(activity.reduce((sum,bucket)=>sum+bucket.count,0)!==total)throw Error('activity histogram is not the complete filtered trace count');
+ await traceActivity(page,context,browser,url,evidence);
  for(const theme of ['light','dark']){
   await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);
   await page.screenshot({animations:'disabled',path:evidence+'/trace-list-'+theme+'.png',fullPage:true});
@@ -65,6 +74,8 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await page.waitForFunction(()=>document.querySelector('.obs-filter-rail')?.open===false);
  await assertDataList(page);
  await page.screenshot({animations:'disabled',path:evidence+'/trace-list-mobile.png',fullPage:true});
+ await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.screenshot({animations:'disabled',path:evidence+'/trace-list-mobile-dark.png',fullPage:true});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
+ if((await page.locator('.obs-trace-list .control-identifier-button').first().boundingBox()).height<44)throw Error('Trace ID copy control lost its mobile touch target');
  await page.getByRole('button',{name:'All time',exact:true}).click();
  const bounds=await page.getByRole('dialog',{name:'All time',exact:true}).boundingBox();
  if(!bounds||bounds.x<0||bounds.x+bounds.width>391)throw Error('date range popover clipped on mobile');
@@ -100,7 +111,7 @@ export async function traceList(page,context,browser,url,evidence,facts){
  const shell=await page.evaluate(()=>({sidebar:document.documentElement.classList.contains('sidebar-collapsed')}));
  const navigationCount=await page.evaluate(()=>performance.getEntriesByType('navigation').length);
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
- await page.getByRole('link',{name:'Context',exact:true}).click();
+ await page.getByRole('link',{name:'Frozen context, tools & sources',exact:true}).click();
  await page.locator('.context-item-link').nth(1).click();
  await page.locator('.context-content[data-context-index="1"]').waitFor();
  if(await sheet.count()!==1||await page.evaluate(()=>performance.getEntriesByType('navigation').length)!==navigationCount||await page.evaluate(()=>document.documentElement.classList.contains('sidebar-collapsed'))!==shell.sidebar)throw Error('Context item escaped its existing detail sheet or changed navigation');
@@ -131,7 +142,7 @@ export async function traceList(page,context,browser,url,evidence,facts){
  if(!await page.locator('pre[data-json-source=input]').isVisible()||await page.locator('pre[data-json-source=input]').textContent()!==rawInput)throw Error('JSON toggle changed saved evidence');
  await page.getByRole('button',{name:'Formatted',exact:true}).click();
  const tones=await page.locator('.obs-type-icon').evaluateAll(nodes=>[...new Set(nodes.map(node=>getComputedStyle(node).color))]);if(tones.length<3)throw Error('trace types lost their semantic colors');
- await page.getByRole('searchbox',{name:'Search observations',exact:true}).fill('Provider');
+ await page.getByRole('searchbox',{name:'Search observations',exact:true}).fill('Model call');
  if(await page.locator('.observation-node:visible').count()>=await page.locator('.observation-node').count()||!await page.locator('.obs-tree .run-node').first().isVisible())throw Error('node search lost filtering or ancestry');
  await page.getByRole('searchbox',{name:'Search observations',exact:true}).fill('');
  await page.getByRole('button',{name:'Expand details',exact:true}).click();
@@ -142,6 +153,35 @@ export async function traceList(page,context,browser,url,evidence,facts){
   await prior.click();await page.waitForFunction(id=>document.querySelector('[data-trace-id]')?.dataset.traceId!==id,facts.main);
   await page.getByRole('button',{name:'Next trace',exact:true}).click();await page.waitForFunction(id=>document.querySelector('[data-trace-id]')?.dataset.traceId===id,facts.main);
  }
+ await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
+ await page.getByRole('link',{name:'Input / Output',exact:true}).click();
+ if(await page.locator('.obs-detail-tabs a').count()!==2)throw Error('observation repeated overlapping primary tabs');
+ await traceTimeline(page,evidence);
+ if(await page.locator('.obs-tree .obs-node-name').filter({hasText:'Prepare context'}).count())throw Error('routine context preparation clutters the primary trace tree');
+ for(const node of await page.locator('.observation-node[data-observation-kind=http]').all())if(!['failed','http_error'].includes(await node.locator('.obs-node-status').getAttribute('data-status')))throw Error('normal HTTP node clutters the primary trace tree');
+ const normalCount=await page.locator('.observation-node').count();
+ await page.getByRole('link',{name:/^Show internal observations/}).click();await page.waitForURL(target=>target.searchParams.get('internal')==='1');await page.getByRole('link',{name:'Hide internal observations',exact:true}).waitFor();
+ if(await page.locator('.observation-node').count()<=normalCount||!await page.locator('.obs-tree .obs-node-name').filter({hasText:'Prepare context'}).count())throw Error('internal evidence was removed instead of hidden');
+ await page.getByRole('link',{name:'Hide internal observations',exact:true}).click();await page.waitForURL(target=>target.searchParams.get('internal')!=='1');await page.getByRole('link',{name:/^Show internal observations/}).waitFor();
+ for(const label of ['Input tokens','Output tokens','Cached input tokens','Cache write tokens','Output speed'])if(!await page.locator('.obs-generation-metrics dt').filter({hasText:label}).count())throw Error('missing model call metric '+label);
+ for(const width of [1400,390,1920])for(const theme of ['light','dark']){
+  if(width===1920&&theme==='dark')continue;
+  await setViewport({width,height:980});await page.evaluate(value=>document.documentElement.classList.toggle('dark',value==='dark'),theme);
+  for(const view of ['io','details']){
+   await page.getByRole('link',{name:view==='io'?'Input / Output':'Details',exact:true}).click();
+   if(view==='details'){
+    await page.getByRole('heading',{name:'Model configuration',exact:true}).waitFor();
+    if(await page.locator('.obs-io-section').count())throw Error('diagnostic view repeats message input/output');
+   }else await page.locator('.obs-io-input .obs-message').first().waitFor();
+   await page.locator('.obs-detail-pane').evaluate(node=>node.scrollTop=0);await sheet.locator('.control-sheet-body').evaluate(node=>node.scrollTop=0);
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)||await sheet.locator('.control-sheet-body').evaluate(node=>node.scrollWidth>node.clientWidth))throw Error('model details overflowed');
+   await page.screenshot({animations:'disabled',path:`${evidence}/trace-model-${view}-${theme}-${width}.png`});
+   if(width===390){await page.locator(view==='io'?'.obs-io-input':'.obs-generation-config').scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:`${evidence}/trace-model-${view}-${theme}-${width}-content.png`})}
+  }
+ }
+ await setViewport({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
+ await page.getByRole('link',{name:'Input / Output',exact:true}).click();
  await page.screenshot({animations:'disabled',path:evidence+'/trace-drawer-light.png',fullPage:true});
  await setViewport({width:1920,height:1080});
  await page.screenshot({animations:'disabled',path:evidence+'/trace-drawer-wide.png',fullPage:true});
@@ -174,6 +214,8 @@ export async function traceList(page,context,browser,url,evidence,facts){
   await fallback.getByRole('searchbox',{name:'Search traces',exact:true}).press('Enter');
   await fallback.waitForURL(target=>target.searchParams.get('search')===facts.main);
   if(await fallback.locator('[data-execution-id]').count()!==1)throw Error('trace search requires JavaScript');
+  await fallback.locator('.obs-activity-bucket[href]').first().click();await fallback.waitForURL(target=>target.searchParams.has('since')&&target.searchParams.has('until')&&target.searchParams.get('search')===facts.main);
+  if(await fallback.locator('[data-execution-id]').count()!==1)throw Error('native histogram link lost the exact time bucket');
   await fallback.locator('a.trace-open').click();await fallback.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();
  }finally{await plain.close()}
 }

@@ -3,7 +3,7 @@ import {createResizeHandle} from './resize-handle';
 
 // The shared shell supports a non-modal peek beside a working list, or a modal
 // sheet. The feature supplies content and navigation; native links still work.
-export function createSideSheet(label:string,onClose:()=>void,options:{modal?:boolean;storageKey?:string}={}){
+export function createSideSheet(label:string,onClose:()=>void,options:{modal?:boolean;storageKey?:string;previousLabel?:string;nextLabel?:string}={}){
  const dialog=document.createElement('dialog');dialog.className='control-sheet';dialog.setAttribute('aria-label',label);
  const header=document.createElement('div');header.className='control-sheet-header';
  const title=document.createElement('strong');title.textContent=label;
@@ -13,7 +13,7 @@ export function createSideSheet(label:string,onClose:()=>void,options:{modal?:bo
  };
  const action=(name:string,path:string)=>{const button=document.createElement('button');button.type='button';button.className='control-icon-button';button.setAttribute('aria-label',t(name));button.title=t(name);button.append(icon(path));return button};
  const full=document.createElement('a');full.className='control-icon-button';full.setAttribute('aria-label',t('Open full page'));full.title=t('Open full page');full.append(icon('M14 3h7v7m0-7L10 14M10 4H4v16h16v-6'));
- const previous=action('Previous trace','m6 14 6-6 6 6'),next=action('Next trace','m6 10 6 6 6-6');previous.hidden=true;next.hidden=true;
+ const previous=action(options.previousLabel??'Previous trace','m6 14 6-6 6 6'),next=action(options.nextLabel??'Next trace','m6 10 6 6 6-6');previous.hidden=true;next.hidden=true;
  const expand=action('Expand details','M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5');
  const close=action('Close details','m6 6 12 12M6 18 18 6');
  const body=document.createElement('div');body.className='control-sheet-body';

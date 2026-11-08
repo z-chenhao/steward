@@ -60,12 +60,15 @@ func (s Inspector) ObservationBody(ctx context.Context, q observability.BodyQuer
 		if q.Field == "input" {
 			selection = `SELECT json_group_array(json(message_json)) FROM main_input WHERE run_id=?`
 			if o.Name != "Main" {
-				selection = `SELECT json_object('title',t.title,'epoch',r.task_epoch,'task_ref',t.task_ref) FROM run r JOIN task t USING(task_id) WHERE r.run_id=?`
+				selection = `SELECT CASE WHEN count(*)>0 THEN json_group_array(json(j.value)) END FROM model_generation g,json_each(g.request_json,'$.messages') j WHERE g.generation_id=(SELECT generation_id FROM model_generation WHERE run_id=? ORDER BY created_at,generation_id LIMIT 1) AND json_extract(j.value,'$.source.kind')='task'`
 			}
 		} else if q.Field == "output" {
 			selection = `SELECT result_json FROM model_generation g WHERE run_id=? AND status='completed' AND NOT EXISTS(SELECT 1 FROM context_compaction c WHERE c.run_id=g.run_id AND c.step_index=g.step_index AND json_extract(c.provenance_json,'$.stage')='summary_request') ORDER BY step_index DESC LIMIT 1`
 		}
-		note = "Saved input metadata / last accepted model result; not a delivery receipt"
+		note = "Saved incoming messages / last accepted model result; not a delivery receipt"
+		if o.Name != "Main" && q.Field == "input" {
+			note = "Original task brief from the first frozen model request; current task edits are not substituted"
+		}
 	case "retriever":
 		args = []any{o.RunID, o.Step}
 		if q.Field == "input" {
@@ -134,7 +137,7 @@ func (s Inspector) ChatPreview(ctx context.Context, q observability.ObservationQ
 	if o.Type != "generation" {
 		return out, observability.ErrInvalid
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT cast(j.key AS integer),json_extract(j.value,'$.role'),substr(coalesce(json_extract(j.value,'$.text'),''),1,1400),coalesce(json_extract(j.value,'$.source.kind'),''),coalesce(json_extract(j.value,'$.tool_call_id'),''),substr(coalesce(json_extract(j.value,'$.tool_calls'),''),1,1000),length(coalesce(json_extract(j.value,'$.text'),''))>1400 FROM model_generation g,json_each(g.request_json,'$.messages') j WHERE g.generation_id=? ORDER BY cast(j.key AS integer) LIMIT 20`, o.Key)
+	rows, err := tx.QueryContext(ctx, `SELECT cast(j.key AS integer),json_extract(j.value,'$.role'),substr(`+messageTextSQL+`,1,1400),coalesce(json_extract(j.value,'$.source.kind'),''),coalesce(json_extract(j.value,'$.tool_call_id'),''),substr(coalesce(json_extract(j.value,'$.tool_calls'),''),1,1000),length(`+messageTextSQL+`)>1400 FROM model_generation g,json_each(g.request_json,'$.messages') j WHERE g.generation_id=? ORDER BY cast(j.key AS integer) LIMIT 20`, o.Key)
 	if err != nil {
 		return out, err
 	}

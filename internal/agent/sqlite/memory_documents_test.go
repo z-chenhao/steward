@@ -10,6 +10,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/memory"
+	"github.com/z-chenhao/assistant/internal/observability"
 	"github.com/z-chenhao/assistant/internal/recall"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
@@ -94,6 +95,20 @@ func TestLayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch(t *test
 	if !strings.Contains(string(text), "PRIVATE_BOOTSTRAP_MARKER") || !strings.Contains(string(text), link["ref"].(string)) || strings.Contains(string(text), "PRIVATE_LINK_CONTENT") {
 		t.Fatal("bootstrap depended on recall", string(text))
 	}
+	preview, err := s.Inspector().ChatPreview(ctx, observability.ObservationQuery{RunID: run.ID, Selected: "generation:" + gen.Request.GenerationID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	marked := false
+	for _, message := range preview {
+		marked = marked || strings.Contains(message.Text, "Encrypted memory content")
+		if strings.Contains(message.Text, "PRIVATE_BOOTSTRAP_MARKER") || strings.Contains(message.Text, "sealed:") {
+			t.Fatal("preview exposed sealed memory", message)
+		}
+	}
+	if !marked {
+		t.Fatal("preview made sealed memory look empty", preview)
+	}
 	var stored string
 	if err = s.db.QueryRow(`SELECT request_json FROM model_generation WHERE run_id=?`, run.ID).Scan(&stored); err != nil {
 		t.Fatal(err)
@@ -121,6 +136,85 @@ func TestLayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch(t *test
 	if _, err = r.Generation(ctx, c, run); err == nil {
 		t.Fatal("forget did not revoke unfinished memory context")
 	}
+}
+
+func TestRecallEmptyEvidenceOmittedFromAgentMessagesAndFrozen(t *testing.T) {
+	s, r, _, a, _ := semanticRuntime(t)
+	ctx := context.Background()
+	registry, err := tool.NewRegistry([]tool.Definition{recall.Definition("empty-test")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.registry, a.Registry = registry, registry
+	r.ConfigureRecall(recall.Service{Memory: recall.EmptyMemory{}, Conversation: recall.EmptyMemory{}})
+	receipt := mustSubmit(t, a, "empty-evidence", "Current request")
+	c, err := r.Claim(ctx, receipt.RunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Release(ctx, c)
+	if err = r.Initialize(ctx, c); err != nil {
+		t.Fatal(err)
+	}
+	run, err := r.Load(ctx, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := agent.TextMessage("user", "Current request")
+	input.MessageID = "empty-evidence-input"
+	run.Checkpoint.Messages = append(run.Checkpoint.Messages, input)
+	if err = r.Checkpoint(ctx, c, run.Version, run.Checkpoint); err != nil {
+		t.Fatal(err)
+	}
+	run, err = r.Load(ctx, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := r.Generation(ctx, c, run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first.Request.Messages) != 2 || first.Request.Messages[0].Role != "system" || first.Request.Messages[1].Text != "Current request" {
+		t.Fatal("empty evidence added an agent message", first.Request.Messages)
+	}
+	for _, m := range first.Request.Messages {
+		if m.Memory != nil || m.Origin == "runtime" {
+			t.Fatal("empty evidence retained in agent messages", m)
+		}
+	}
+	var hits, sealed string
+	if err = s.db.QueryRow(`SELECT hits_json FROM run_recall WHERE run_id=?`, run.ID).Scan(&hits); err != nil || hits != "[]" {
+		t.Fatal("empty retrieval was not frozen", hits, err)
+	}
+	if err = s.db.QueryRow(`SELECT content_sealed FROM run_injected_memory WHERE run_id=?`, run.ID).Scan(&sealed); err != nil {
+		t.Fatal(err)
+	}
+	if plain, e := r.vault.Open(ctx, sealed, "memory-injected:"+run.ID); e != nil || plain != "" {
+		t.Fatal("empty injection was not frozen", e)
+	}
+	if _, err = r.ManageMemory(ctx, "late-memory", memory.Mutation{Operation: "write", Layer: memory.Injected, Title: "Session memory", Content: "LATE_MEMORY"}); err != nil {
+		t.Fatal(err)
+	}
+	// A continuation must reuse both empty snapshots, even if retrieval is now unavailable.
+	r.ConfigureRecall(recall.Service{})
+	run.Checkpoint.Step++
+	if err = r.Checkpoint(ctx, c, run.Version, run.Checkpoint); err != nil {
+		t.Fatal(err)
+	}
+	run, err = r.Load(ctx, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	next, err := r.Generation(ctx, c, run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, _ := json.Marshal(first.Request.Messages)
+	after, _ := json.Marshal(next.Request.Messages)
+	if string(before) != string(after) || scalar(t, s, `SELECT count(*) FROM run_recall WHERE run_id=?`, run.ID) != 1 {
+		t.Fatal("continuation refreshed empty evidence", string(after))
+	}
+	assertFrozenContextRun(t, s, run.ID)
 }
 
 func TestLayeredMemoryDreamBuildsAllRepresentationsAndRecoversAcceptedPasses(t *testing.T) {

@@ -5,6 +5,7 @@ import {enhanceTimeDetails} from './components/ui/time-detail';
 import {enhanceLocalTimes} from './local-time';
 import {enhanceFormMenus} from './components/ui/form-menu';
 import {enhanceTaskFilters} from './task-filters';
+import {enhanceTaskExecutions} from './task-executions';
 import {enhanceContextHelp} from './components/ui/help';
 import {enhanceWorkers} from './workers';
 import {enhanceAppConnections} from './app-connections';
@@ -40,6 +41,7 @@ live?.start();
 
 enhanceObservability();
 enhanceMemory();
+enhanceTaskExecutions();
 enhanceFilterRails();
 
 enhanceAppConnections();

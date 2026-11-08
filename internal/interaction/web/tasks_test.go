@@ -2,11 +2,13 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/task"
 )
 
@@ -31,6 +33,77 @@ func (f workspaceReader) Scheduled(context.Context, string) ([]task.ScheduledWor
 }
 
 type unavailableScheduleReader struct{ workspaceReader }
+
+type executionWorkspaceReader struct {
+	workspaceReader
+	value task.ExecutionDetail
+}
+
+func (f executionWorkspaceReader) Execution(context.Context, string) (task.ExecutionDetail, error) {
+	return f.value, nil
+}
+
+func (f executionWorkspaceReader) Executions(context.Context, task.ListQuery) (task.ExecutionList, error) {
+	return task.ExecutionList{Items: []task.Execution{f.value.Execution}}, nil
+}
+
+func TestExecutionDetailPrioritizesDeliveryAndRefreshesRunFacts(t *testing.T) {
+	f := executionWorkspaceReader{value: task.ExecutionDetail{
+		Execution:   task.Execution{ID: "owned-root", TaskRef: "task:visible", Title: "Review report", Status: "running", Epoch: 2, NeedsAttention: true},
+		Description: "Long instructions <img src=x>", ProgressSummary: "Comparing primary sources",
+		RecentRuns: []task.Execution{{ID: "owned-root", Epoch: 2, Status: "running"}, {ID: "older-root", Epoch: 1, Status: "completed"}},
+	}}
+	s := &Server{Core: &updatesCore{allowed: true, status: "idle"}, Tasks: f}
+	get := func(path string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+path, nil)
+		r.RemoteAddr = "127.0.0.1:4321"
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		return w
+	}
+	w := get("/tasks/executions/owned-root")
+	markup := w.Body.String()
+	if w.Code != 200 || strings.Index(markup, `class="execution-result"`) > strings.Index(markup, `class="execution-instructions"`) || !strings.Contains(markup, "Long instructions &lt;img") {
+		t.Fatal("delivery does not lead or instructions escaped incorrectly", w.Code)
+	}
+	if strings.Contains(markup, `class="execution-instructions" open`) || strings.Contains(markup, `action="/task/`) || !strings.Contains(markup, "Work is in progress.") {
+		t.Fatal("execution detail changed configuration authority or hid its live state")
+	}
+	if !strings.Contains(markup, `href="/tasks/task:visible">Needs your attention</a>`) {
+		t.Fatal("read-only inspection lost the native attention action")
+	}
+	list := get("/tasks")
+	if list.Code != 200 || !strings.Contains(list.Body.String(), `data-execution-open href="/tasks/executions/owned-root"`) || strings.Contains(list.Body.String(), `class="task-list-title" href="/tasks/task:visible"`) {
+		t.Fatal("attention row bypassed execution inspection", list.Code, list.Body.String())
+	}
+	for _, status := range []string{"running", "queued", "waiting", "failed", "cancelled", "completed"} {
+		f.value.Status = status
+		s.Tasks = f
+		w = get("/api/updates?view=/tasks/executions/owned-root")
+		var update struct{ Regions map[string]string }
+		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &update) != nil || len(update.Regions) != 5 {
+			t.Fatal("execution live fragments unavailable", status, w.Code, w.Body.String())
+		}
+		if !strings.Contains(update.Regions["execution-header"], `data-status="`+status+`"`) || !strings.Contains(update.Regions["execution-side"], "/tasks/executions/older-root") || !strings.Contains(update.Regions["execution-progress"], "Comparing primary sources") || update.Regions["task-messages"] == "" {
+			t.Fatal("live execution lost status, history, progress or empty result", status, update)
+		}
+	}
+	f.value.Messages = []conversation.Message{{Role: "assistant", Sequence: 1, Content: conversation.Text("Approved Main delivery")}}
+	f.value.RecentRuns = f.value.RecentRuns[:1]
+	s.Tasks = f
+	w = get("/tasks/executions/owned-root")
+	if !strings.Contains(w.Body.String(), "Approved Main delivery") || strings.Contains(w.Body.String(), "No result has been delivered") {
+		t.Fatal("Main delivery did not replace the empty state")
+	}
+	if strings.Contains(w.Body.String(), `class="execution-history"`) || strings.Contains(w.Body.String(), "Comparing primary sources") {
+		t.Fatal("completed delivery repeated a single run or stale progress")
+	}
+	for _, label := range []string{`class="execution-instructions"`, `class="execution-metadata"`} {
+		if !strings.Contains(w.Body.String(), label) || strings.Contains(w.Body.String(), label+` open`) {
+			t.Fatal("secondary execution content must start collapsed", label)
+		}
+	}
+}
 
 func TestTaskPageCountMatchesRenderedRows(t *testing.T) {
 	v := &taskView{

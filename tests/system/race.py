@@ -25,6 +25,8 @@ BRIDGE = 'github.com/z-chenhao/assistant/internal/llm/bridge'
 RECORDER = 'github.com/z-chenhao/assistant/internal/observability/sqlite'
 SQLITE = 'github.com/z-chenhao/assistant/internal/agent/sqlite'
 RACE = ['go', 'test', '-race', '-count=1', '-timeout=15m']
+MEMORY_PATTERN = 'Memory|Layered|Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs|RootFailureNotice'
+MEMORY_RACE = ['go', 'test', '-race', '-count=1', '-timeout=10m']
 # One unchanged five-second context spans three approval/Drain phases. Give
 # this measured timing-sensitive contract the full CPU budget before overlap.
 SERIAL_SQLITE = ['TestChildApprovalIsPerInvocationAndWaitingTreeReleasesLeases']
@@ -43,7 +45,7 @@ def groups(packages, part=None):
             any(not isinstance(p, str) or not p.startswith('github.com/z-chenhao/assistant/') or
                 any(c.isspace() for c in p) for p in packages)):
         raise ValueError('invalid or incomplete Go package inventory')
-    if part == 'sqlite':
+    if part in ('sqlite', 'memory'):
         return [('remainder', [SQLITE])]
     # The recorder intentionally drops diagnostics after 100 ms. Its 60 ms
     # lock-release contract needs CPU time, just like Bridge's RPC deadlines;
@@ -134,9 +136,10 @@ def sqlite_verdict(path, expected):
     return outcomes
 
 
-def run_remainder(selected, folder, stopped):
+def run_remainder(selected, folder, stopped, memory=False):
     started = time.monotonic()
-    discovery, metrics = RACE + ['-list', '.', SQLITE], {}
+    flags = MEMORY_RACE if memory else RACE
+    discovery, metrics = flags + ['-list', '.', SQLITE], {}
     listing = folder / 'sqlite-list.log'
     code = run_command(discovery, os.environ.copy(), listing, stopped, metrics)
     row = dict(name='remainder', packages=selected, discovery=discovery,
@@ -147,16 +150,21 @@ def run_remainder(selected, folder, stopped):
     names = test_names(listing.read_text())
     if not set(SERIAL_SQLITE) <= set(names):
         raise ValueError('timing-sensitive SQLite inventory changed')
+    if memory:
+        names = [name for name in names if re.search(MEMORY_PATTERN, name)]
+        if not names:
+            raise ValueError('missing memory race inventory')
+    serial = [name for name in SERIAL_SQLITE if name in names]
     budget = cpu_budget()
     seconds = timing_hints()
-    slices = partitions([n for n in names if n not in SERIAL_SQLITE], max(1, min(3, budget - 1)), seconds)
+    slices = partitions([n for n in names if n not in serial], max(1, min(3, budget - 1)), seconds)
     row.update(partition_strategy='longest_measured_first', timing_hints=seconds,
                unmeasured_tests=[n for n in names if n not in seconds])
-    jobs = [(f'sqlite-{i + 1}', RACE + ['-json', '-run', '^(' + '|'.join(group) + ')$', SQLITE], group, 1)
+    jobs = [(f'sqlite-{i + 1}', flags + ['-json', '-run', '^(' + '|'.join(group) + ')$', SQLITE], group, 1)
             for i, group in enumerate(slices)]
     others = [p for p in selected if p != SQLITE]
     if others:
-        jobs.append(('other-packages', RACE + ['-p=1', *others], None, 1))
+        jobs.append(('other-packages', flags + ['-p=1', *others], None, 1))
     def drive(job):
         name, command, expected, cpus = job
         output, metrics = folder / (name + '.log'), {}
@@ -177,9 +185,9 @@ def run_remainder(selected, folder, stopped):
             show_failure(output, result['returncode'])
         print(f"[race] {name}: {result['wall_seconds']:.2f}s (exit {result['returncode']})", flush=True)
         return result
-    workers = [drive(('sqlite-serial', RACE + ['-json', '-run', '^(' + '|'.join(SERIAL_SQLITE) + ')$', SQLITE],
-                      SERIAL_SQLITE, budget))]
-    if workers[0]['returncode'] == 0:
+    workers = [drive(('sqlite-serial', flags + ['-json', '-run', '^(' + '|'.join(serial) + ')$', SQLITE],
+                      serial, budget))] if serial else []
+    if not workers or workers[0]['returncode'] == 0:
         with ThreadPoolExecutor(max_workers=budget) as pool:
             workers.extend(pool.map(drive, jobs))
     observed = Counter(name for worker in workers for name in worker.get('tests', {}))
@@ -188,7 +196,7 @@ def run_remainder(selected, folder, stopped):
     # wait4 in run_command measures each owned child independently, so summing
     # concurrent workers does not double-count global RUSAGE_CHILDREN deltas.
     costs = [metrics.get('cpu_seconds'), *[w.get('cpu_seconds') for w in workers]]
-    return dict(row, expected_tests=names, isolated_tests=SERIAL_SQLITE, cpu_budget=budget, workers=workers,
+    return dict(row, expected_tests=names, isolated_tests=serial, cpu_budget=budget, workers=workers,
                 selection_complete=observed == Counter(names),
                 returncode=0 if drained and observed == Counter(names) and all(w['returncode'] == 0 for w in workers) else 1,
                 owned_group_drained=drained,
@@ -216,7 +224,7 @@ def main(part=None):
             if not selected:
                 continue
             if name == 'remainder':
-                row = run_remainder(selected, folder, stopped)
+                row = run_remainder(selected, folder, stopped, memory=part == 'memory')
             else:
                 command, metrics = RACE + (['-p=1'] if name == 'other-packages' else []) + selected, {}
                 env = dict(os.environ, GOMAXPROCS='1') if name == 'other-packages' else os.environ.copy()
@@ -242,5 +250,5 @@ def main(part=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--part', choices=['packages', 'sqlite'])
+    parser.add_argument('--part', choices=['packages', 'sqlite', 'memory'])
     raise SystemExit(main(parser.parse_args().part))

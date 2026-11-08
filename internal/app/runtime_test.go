@@ -51,14 +51,18 @@ func TestProductionToolSurfaceKeepsOnlyFrequentControlsDirect(t *testing.T) {
 					t.Errorf("unintended native capability: %s", spec.Name)
 				}
 			}
-			found := tool.SearchTools(agent.MainTools(registry.Describe()), nil, "builtin__artifact_search", 1)
-			if len(found.Tools) != 1 || found.Tools[0].Name != "builtin__artifact_search" || len(found.Loaded) != 0 {
+			found := tool.SearchTools(agent.MainTools(registry.Describe()), nil, "builtin__web_search", 1)
+			if len(found.Tools) != 1 || found.Tools[0].Name != "builtin__web_search" || len(found.Loaded) != 0 {
 				t.Fatalf("native search must discover a Code Mode tool without declaring it: %+v", found)
 			}
 			for role, specs := range map[string][]tool.Spec{"main": agent.MainTools(registry.Describe()), "worker": agent.WorkerTools(registry.Describe())} {
 				loaded := make([]string, 0, len(specs))
 				want := map[string]bool{}
 				for _, spec := range specs {
+					switch spec.Name {
+					case "builtin__fetch_content", "builtin__get_search_content", "builtin__source_check", "builtin__artifact_search":
+						t.Fatalf("%s retained a superseded tool: %s", role, spec.Name)
+					}
 					loaded = append(loaded, spec.Name)
 					if direct[spec.Name] && !spec.Internal {
 						want[spec.Name] = true
@@ -75,6 +79,20 @@ func TestProductionToolSurfaceKeepsOnlyFrequentControlsDirect(t *testing.T) {
 				}
 				if !configured && want[codemode.ToolName] {
 					t.Fatal("missing runtime registered Code Mode")
+				}
+			}
+			for _, name := range []string{"builtin__fetch_content", "builtin__get_search_content", "builtin__source_check", "builtin__artifact_search"} {
+				legacy, ok := registry.Resolve(name)
+				if !ok {
+					t.Fatal("old frozen capability lost its executor", name)
+				}
+				legacy.Spec.Exposure = tool.CodeMode
+				selected, e := registry.Select([]tool.Spec{legacy.Spec})
+				if e != nil {
+					t.Fatal("old Run cannot select its frozen tool", name, e)
+				}
+				if frozen, ok := selected.Resolve(name); !ok || !frozen.Spec.ScriptCallable() {
+					t.Fatal("old Run cannot call its frozen tool", name)
 				}
 			}
 

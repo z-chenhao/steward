@@ -12,7 +12,7 @@ var observationSources = []string{
  WHEN json_extract(g.request_json,'$.tool_generation.kind')='hosted_search' OR json_type(g.request_json,'$.web_search')='object' THEN 'Hosted web search'
  WHEN json_extract(g.request_json,'$.tool_generation.kind')='summary' THEN 'Summarize search results'
  WHEN json_extract(g.request_json,'$.tool_generation.kind')='page_answer' THEN 'Answer from page'
- WHEN json_type(g.request_json,'$.tool_generation')='object' THEN 'Tool model call' ELSE 'Generate response' END,
+ WHEN json_type(g.request_json,'$.tool_generation')='object' THEN 'Tool model call' ELSE 'Model call' END,
  r.run_id,g.generation_id,g.step_index,g.status,g.created_at,g.completed_at,'admission to acceptance',
  CASE WHEN coalesce(g.error_code,'')!='' THEN g.error_code WHEN owner.invocation_id IS NOT NULL THEN 'Internal model call for the parent tool; not an Agent loop turn.' ELSE '' END
  FROM model_generation g JOIN members r USING(run_id)
@@ -34,7 +34,7 @@ var observationSources = []string{
 
 	`SELECT 'recall:'||r.run_id||':'||c.step_index,'agent:'||r.run_id,'retriever','Retrieve context',r.run_id,cast(c.step_index AS text),c.step_index,'saved',c.created_at,NULL,'saved point','Start time not recorded'
  FROM run_recall c JOIN members r USING(run_id)`,
-	`SELECT 'context:'||r.run_id||':'||c.step_index,'agent:'||r.run_id,'chain','Prepare context',r.run_id,cast(c.step_index AS text),c.step_index,'saved',c.created_at,NULL,'saved point',coalesce(json_extract(c.provenance_json,'$.stage'),'unknown')
+	`SELECT 'context:'||r.run_id||':'||c.step_index,'agent:'||r.run_id,'chain',CASE WHEN json_extract(c.provenance_json,'$.stage')='summary_request' THEN 'Compact context' ELSE 'Prepare context' END,r.run_id,cast(c.step_index AS text),c.step_index,'saved',c.created_at,NULL,'saved point',coalesce(json_extract(c.provenance_json,'$.stage'),'unknown')
  FROM context_compaction c JOIN members r USING(run_id)`,
 	`SELECT 'dispatch:'||d.attempt,'generation:'||d.generation_id,'span','Provider HTTP',r.run_id,d.attempt,g.step_index,
  CASE WHEN e.phase='error' THEN 'failed' WHEN e.http_status>=300 THEN 'http_error' WHEN e.phase='headers' THEN 'headers_received' WHEN g.status!='pending' OR r.status IN ('completed','failed','cancelled') THEN 'unknown' ELSE 'in_flight' END,

@@ -325,3 +325,5 @@ Apps 复用全局组件契约：分类原生 select 由共享 Base UI 适配器�
 
 
 Apps 不展示服务初始化入口或部署提示；服务统一从 Resources 管理。类别改变后提交只读 GET 筛选，搜索保留当前类别；无 JavaScript 时使用原生筛选按钮。服务未就绪时，详情中的 Connect 禁用并提供按需帮助，不引入项目配置入口。
+
+Web Access 的读取／检索执行机制与新 Run 的入口政策分离：生产组合将 fetch_content、get_search_content、source_check、artifact_search 标为 Hidden；Main／Worker 快照排除 Hidden，已冻结快照经 Registry.Select 仍验证原权限并选择原执行器。保留 web_search 和 web_fetch，证据读取组合既有 artifact_manage；不新增统一网络工具、别名或公共扩展协议。web_search v2 仅调整提示说明，PreviousSpecs 显式允许 v1，避免为收敛新入口破坏旧 Run 恢复。执行器暂为私有历史兼容，不继续推广为稳定 builtin。

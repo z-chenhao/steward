@@ -148,3 +148,11 @@ to survive the command or test harness.
 `TestRootFailureNoticeSurvivesUnrelatedMainReplyAndRecovery` 用 Main 故意答复另一话题复现漏报：真实 Root 失败后仍有一条 Host 失败交付、正确任务标题与 failed 执行记录；Task 继续 active，重复 Recover 不增加通知或交付。`tasks` 系统门禁同时核对实际 CLI 失败场景的安全通知。
 
 列表回归通过共享 `assertDataList` 检查 Refresh 仅位于全局顶栏右侧、Filters 在搜索下方左侧且展开收起不移位；覆盖桌面／手机和明暗主题，保留原生筛选与分页。
+
+`TestExecutionRecordsKeepHistoricalRoundsSeparateFromTaskConfiguration` 核对最近运行的 owner／task 范围、历史轮次不导入当前进展、读取不写状态。`TestExecutionDetailPrioritizesDeliveryAndRefreshesRunFacts` 覆盖结果优先、说明折叠及转义、六种执行状态空态、Main 交付和实时区域。native-trace 浏览器场景保留执行结果页桌面／手机、明／暗截图，检查窄屏结果先于次级信息、Trace 对应 Root、配置仍走原入口。
+
+`channels_task_executions.mjs` 在两个真实 Root 与 Main 交付上验证整行半屏非模态检查、前后执行、返回／前进、Escape／关闭与焦点恢复、调宽／展开、背景列表与详情独立更新及查询保留、原生全页／无脚本。保留 1400／1920／390px 明暗截图并检查溢出和窄屏结果优先。所属 native-trace 场景由既有 channels 门禁执行。
+
+执行抽屉初始化依赖稳定的列表容器，不依赖已有行；native-trace 启动时先在真实空列表接纳一次用户输入，等待实时出现执行并点击验证共享抽屉及最终 Main 交付，避免空态后的新记录退回全页。
+
+执行详情阅读回归使用实际 HTTP 模型 peer 产出的合成中文标题、长说明及含表格的 Main 报告；首轮 Root 受控延迟用于截取运行中桌面／手机状态。native-trace 核对说明默认折叠及轮询后仍展开、单次历史去重、18px 标题与首屏高度、桌面／手机明暗布局，继续验证独立刷新、前后记录、原生全页及无脚本。模板回归覆盖交付后隐藏旧进展与单次历史。

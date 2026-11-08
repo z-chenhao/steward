@@ -24,6 +24,9 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 		fragments["tasks-attention"] = "tasks-attention"
 	case p.Tab == "/tasks" || p.Tab == "/tasks/configurations":
 		fragments["ongoing-work"] = "tasks-list"
+	case strings.HasPrefix(p.Tab, "/tasks/executions/"):
+		fragments["execution-header"], fragments["execution-progress"], fragments["task-messages"] = "execution-header", "execution-progress", "execution-result"
+		fragments["execution-side"] = "execution-side"
 	case strings.HasPrefix(p.Tab, "/tasks/"):
 		fragments["task-header"] = "task-header"
 		fragments["task-feedback"] = "task-feedback"

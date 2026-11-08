@@ -7,6 +7,7 @@ import {sendFeedback} from './channels_sending.mjs';
 import {memoryInspection} from './channels_memory.mjs';
 import {preferences} from './channels_preferences.mjs';
 import {traceList} from './channels_traces.mjs';
+import {executionDetails} from './channels_task_executions.mjs';
 import {chromium} from '../../guest-browser/node_modules/playwright-core/index.mjs';
 import {mkdir,writeFile} from 'node:fs/promises';
 const [url,evidence,phase='conversation']=process.argv.slice(2);
@@ -410,7 +411,7 @@ try{
   await page.getByRole('button',{name:'Help: Model cost',exact:true}).click();
   await page.getByRole('tooltip').filter({hasText:'Estimates are not invoices'}).waitFor();
   await page.keyboard.press('Escape');
-  if(!/USD \d+\.\d{6}/.test(await cost.innerText())||!(await cost.getAttribute('title')).includes('openai-codex'))throw Error('automatic price lost its amount or provenance');
+  if(!/^USD \d+\.\d{2}$/.test(await cost.innerText())||!/^.*USD \d+\.\d{6}$/.test(await cost.getAttribute('title'))||!(await cost.getAttribute('title')).includes('openai-codex'))throw Error('automatic price lost its rounded display, exact amount or provenance');
   for(const width of [1400,390])for(const theme of ['light','dark']){
    await page.setViewportSize({width,height:980});
    await page.evaluate(value=>{localStorage.setItem('steward-theme',value);document.documentElement.classList.toggle('dark',value==='dark')},theme);
@@ -420,16 +421,40 @@ try{
     const text=range.getBoundingClientRect(),box=cell.getBoundingClientRect();
     return {left:text.left-box.left,right:box.right-text.right,paddingLeft:parseFloat(style.paddingLeft),paddingRight:parseFloat(style.paddingRight),height:cell.parentElement.getBoundingClientRect().height,font:parseFloat(style.fontSize),overflow:document.documentElement.scrollWidth-innerWidth};
    });
-   if(geometry.left<geometry.paddingLeft-1||geometry.right<geometry.paddingRight-1||geometry.height>38||geometry.font!==12||geometry.overflow>1)throw Error('estimated cost overlaps or breaks compact layout: '+JSON.stringify(geometry));
+   if(geometry.left<geometry.paddingLeft-1||geometry.right<geometry.paddingRight-1||geometry.height>(width<=760?58:38)||geometry.font!==12||geometry.overflow>1)throw Error('estimated cost overlaps or breaks compact layout: '+JSON.stringify(geometry));
    await page.screenshot({path:evidence+'/estimated-cost-'+theme+'-'+width+'.png',fullPage:true});
   }
   await row.locator('a.trace-open').click();await page.locator('.control-sheet').waitFor();
   await page.getByText('Trace metrics',{exact:true}).click();
-  await page.locator('.obs-metrics .obs-cost').waitFor();
-  if(await page.locator('.obs-metrics .obs-cost').getByText('Estimated',{exact:true}).count()||!(await page.locator('#trace-detail-cost-help').textContent()).includes('not invoices'))throw Error('cost detail lost its single help disclosure');
+  await page.locator('.obs-run-overview .obs-cost').waitFor();
+  if(await page.locator('.obs-run-overview .obs-cost').getByText('Estimated',{exact:true}).count()||!(await page.locator('#trace-detail-cost-help').textContent()).includes('not invoices'))throw Error('cost detail lost its single help disclosure');
+  await page.locator('.control-sheet').getByRole('button',{name:'Help: Model cost',exact:true}).hover();
+  await page.getByRole('tooltip').filter({hasText:'Estimates are not invoices'}).waitFor();await page.keyboard.press('Escape');
   await page.setViewportSize({width:1400,height:980});await page.goto(url);
  }
 
+ if(phase==='execution-empty'){
+  await page.goto(url+'/tasks');
+  if(await page.locator('[data-execution-open]').count())throw Error('empty execution fixture already has rows');
+  const response=await context.request.post(url+'/api/message',{data:{source_id:'native-trace',content:[{type:'text',text:'Compare the available evidence and prepare an independent report. Keep the original sources and return a concise summary.'}]}});
+  if(!response.ok()||!(await response.json()).accepted)throw Error('empty execution fixture did not accept its real user input');
+  await page.locator('[data-execution-open]').first().waitFor();
+  await page.locator('[data-execution-open]').first().click();
+  const sheet=page.getByRole('dialog',{name:'Execution details',exact:true});await sheet.waitFor();
+  await sheet.locator('.execution-summary [data-status="running"]').waitFor();
+  for(const [width,theme] of [[1400,'light'],[390,'dark']]){
+   await page.setViewportSize({width,height:980});
+   await page.evaluate(value=>document.documentElement.classList.toggle('dark',value==='dark'),theme);
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   if(await page.locator('.control-sheet').count()!==1)throw Error('running execution duplicated its sheet');
+   const bounds=await sheet.boundingBox();if(Math.abs(bounds.y)>1||Math.abs(bounds.height-980)>2)throw Error('running execution sheet did not settle to the viewport');
+   await page.screenshot({path:`${evidence}/execution-running-${theme}-${width}.png`,animations:'disabled',fullPage:width>760});
+  }
+  await page.setViewportSize({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
+  await sheet.locator('#task-messages').filter({hasText:'Main Task follow-up through Pi.'}).waitFor();
+  await page.screenshot({path:evidence+'/empty-to-live-execution.png',animations:'disabled',fullPage:true});
+  await sheet.getByRole('button',{name:'Close details',exact:true}).click();await page.waitForURL(url+'/tasks');
+ }
  if(phase==='native-trace'){
   const facts=JSON.parse(process.env.STEWARD_NATIVE_TRACE_FACTS);
   await page.getByRole('link',{name:'Developer',exact:false}).click();
@@ -448,15 +473,15 @@ try{
   }
   const gen=page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first();
   await gen.click();
-  await page.locator('.obs-selected-name').filter({hasText:'Generate response'}).waitFor();
-  await page.getByRole('link',{name:'Context',exact:true}).click();
+  await page.locator('.obs-selected-name').filter({hasText:'Model call'}).waitFor();
+  await page.getByRole('link',{name:'Frozen context, tools & sources',exact:true}).click();
   if(!await page.locator('.frozen-content').innerText().then(text=>text.length>40))throw Error('system prompt missing from unified context');
   await page.screenshot({path:evidence+'/trace-prompt.png',fullPage:true});
-  await page.getByRole('link',{name:'Preview',exact:true}).click();
+  await page.getByRole('link',{name:'Input / Output',exact:true}).click();
   await page.screenshot({path:evidence+'/trace-overview.png',fullPage:true});
   await page.locator('#observability-workbench').screenshot({path:evidence+'/trace-workbench.png'});
   const treeScroll=await page.locator('.obs-tree-pane').evaluate(node=>{node.scrollTop=60;return node.scrollTop});
-  await page.getByRole('link',{name:'Requests',exact:true}).click();
+  await page.getByRole('link',{name:'Provider request',exact:true}).click();
   await page.getByRole('heading',{name:'Final provider request',exact:true}).waitFor();
   if(await page.locator('.obs-tree-pane').evaluate(node=>node.scrollTop)!==treeScroll)throw new Error('node selection lost tree position');
   if(!await page.locator('.wire-body').innerText().then(text=>text.includes('"messages"')&&text.includes('"attempt"')))throw new Error('final request view missing');
@@ -466,14 +491,14 @@ try{
   await page.locator('.wire-body').waitFor();
   await page.getByRole('button',{name:'Formatted',exact:true}).click();
   await page.screenshot({path:evidence+'/trace-wire.png',fullPage:true});
-  await page.goBack();await page.locator('.obs-detail-tabs a[aria-current="page"]').filter({hasText:'Preview'}).waitFor();
+  await page.goBack();await page.locator('.obs-detail-tabs a[aria-current="page"]').filter({hasText:'Input / Output'}).waitFor();
   await page.goto(url+'/developer/observability?run='+encodeURIComponent(facts.root));
   await page.getByText('Trace metrics',{exact:true}).click();
   await page.getByRole('button',{name:'Help: Root Worker',exact:true}).hover();
   await page.getByRole('tooltip').filter({hasText:'Task root · no parent Worker.'}).waitFor();
   await page.keyboard.press('Escape');
-  await page.locator('.obs-tree .observation-node').filter({hasText:'Generate response'}).last().locator('a').first().click();
-  await page.locator('.obs-selected-name').filter({hasText:'Generate response'}).waitFor();
+  await page.locator('.obs-tree .observation-node').filter({hasText:'Model call'}).last().locator('a').first().click();
+  await page.locator('.obs-selected-name').filter({hasText:'Model call'}).waitFor();
   await page.screenshot({path:evidence+'/trace-worker.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('mobile trace overflowed viewport');
@@ -482,10 +507,8 @@ try{
   const plain=await browser.newContext({javaScriptEnabled:false});
   try{await plain.addCookies(await context.cookies());const fallback=await plain.newPage();await fallback.goto(page.url());await fallback.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();if(!await fallback.locator('.obs-tree .observation-node').count())throw new Error('trace requires JavaScript')}finally{await plain.close()}
   await page.locator('.app-sidebar').getByRole('link',{name:'Tasks',exact:true}).click();
-  await page.locator('.task-list-title').first().click();
-  await page.getByRole('heading',{name:'Prepare a safe independent report. Return evidence; perform no external actions.',exact:true}).waitFor();
-  if(await page.getByRole('heading',{name:'Planned objective',exact:true}).count())throw Error('task detail repeats its title as the objective');
-  if(!await page.locator('#task-messages').innerText().then(text=>text.includes('Main Task follow-up through Pi.')))throw Error('completed task did not show Main delivery');
+  await executionDetails(page,context,browser,url,evidence,facts);
+  await page.locator('.execution-metadata > summary').click();
   await page.getByRole('link',{name:'Task configuration →',exact:true}).click();
   await page.locator('.task-configuration').waitFor();
   if(await page.locator('.primary-settings svg').innerHTML()===await page.locator('.task-configuration h2>svg').innerHTML())throw Error('Settings and task configuration reuse one icon');
@@ -512,7 +535,8 @@ try{
   }
   if(await page.locator('.obs-task-link img').count()||!await page.locator('.obs-task-link').innerText().then(text=>text.includes('<img src=x')))throw new Error('Task title was interpreted as HTML');
   await page.locator('.run-node[data-run-id="'+child.id+'"] a.tree-heading').click();
-  await page.getByText('Raw observation',{exact:true}).click();
+  await page.getByRole('link',{name:'Details',exact:true}).click();
+  await page.getByText('Raw observation',{exact:true}).waitFor();
   if(!await page.locator('[data-observation-parent] a.control-identifier-link').innerText().then(text=>text.includes(child.parent)))throw new Error('selected Child lost parent navigation');
   await page.locator('[data-observation-parent] a.control-identifier-link').click();
   await page.getByText('Trace metrics',{exact:true}).click();
@@ -546,7 +570,7 @@ try{
   await page.getByRole('tooltip').filter({hasText:'Task root · no parent Worker.'}).waitFor();
   await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Help: Input',exact:true}).hover();
-  await page.getByRole('tooltip').filter({hasText:'Saved input metadata / last accepted model result; not a delivery receipt'}).waitFor();
+  await page.getByRole('tooltip').filter({hasText:'Original task brief from the first frozen model request; current task edits are not substituted'}).waitFor();
   await page.keyboard.press('Escape');
   await page.screenshot({path:evidence+'/inspection-tree.png',fullPage:true});
   const compact=await context.newPage();
@@ -563,17 +587,18 @@ try{
    await guide.locator('summary').click();
    await guide.getByText('Task root · no parent Worker. A Main-created Task is a causal link, not a parent/child Run relationship.',{exact:true}).waitFor();
   }finally{await plain.close()}
-  const generationLink=page.locator('.obs-tree .observation-node').filter({hasText:'Generate response'}).last().locator('a').first();
+  const generationLink=page.locator('.obs-tree .observation-node').filter({hasText:'Model call'}).last().locator('a').first();
   const generationHref=await generationLink.getAttribute('href');
   await generationLink.focus();
   const selectedGeneration=page.waitForResponse(response=>response.url()===new URL(generationHref,url).href);
   await generationLink.press('Enter');await selectedGeneration;
   await page.waitForFunction(()=>!document.querySelector('#observability-workbench')?.classList.contains('obs-loading'));
   if(!await page.evaluate(href=>document.activeElement?.getAttribute('href')===href&&!!document.activeElement?.closest('.obs-tree'),generationHref))throw Error('trace selection lost keyboard focus in its tree row');
-  await page.getByRole('link',{name:'Compare',exact:true}).click();
+  await page.getByRole('link',{name:'Details',exact:true}).click();
+  await page.getByRole('link',{name:'Compare inputs',exact:true}).click();
   await page.getByRole('heading',{name:'Adjacent input diff',exact:true}).waitFor();
   if(!await page.locator('.context-diff [data-change="added"]').count())throw Error('tool continuation additions missing from diff');
-  await page.getByRole('link',{name:'Context',exact:true}).click();
+  await page.getByRole('link',{name:'Frozen context',exact:true}).click();
   await page.getByRole('heading',{name:'Full frozen context',exact:true}).waitFor();
   const system=page.locator('.context-item-link').filter({hasText:'system'}).first();await system.click();await page.waitForFunction(()=>!document.querySelector('#observability-workbench')?.classList.contains('obs-loading'));
   const meta=await page.locator('.context-reader').evaluate(node=>({...node.dataset}));

@@ -80,6 +80,10 @@ func contextSection(section string) string {
 
 const itemColumns = `cast(j.key AS integer),coalesce(json_extract(j.value,'$.role'),json_extract(j.value,'$.name'),json_extract(j.value,'$.stage'),json_extract(j.value,'$.source_type'),'record'),coalesce(json_extract(j.value,'$.source.kind'),''),coalesce(json_extract(j.value,'$.source.ref'),json_extract(j.value,'$.source_ref'),''),coalesce(json_extract(j.value,'$.tool_call_id'),'')`
 
+// A sealed memory envelope is content, even when the persisted text is empty.
+// Inspection never decrypts it or substitutes current Memory for frozen input.
+const messageTextSQL = `coalesce(json_extract(j.value,'$.text'),'') || CASE WHEN json_type(j.value,'$.memory_text')='object' THEN CASE WHEN coalesce(json_extract(j.value,'$.text'),'')='' THEN '' ELSE char(10) END || '[Encrypted memory content; resolved before model transport. Not shown in this view.]' ELSE '' END`
+
 func scanItem(row scanner) (observability.ContextItem, error) {
 	var v observability.ContextItem
 	err := row.Scan(&v.Index, &v.Label, &v.SourceKind, &v.SourceRef, &v.ToolCallID)
@@ -134,7 +138,7 @@ func (s Inspector) Context(ctx context.Context, q observability.ContextQuery) (o
 	out.Selected = &selected
 	content := `j.value`
 	if !q.JSON && (q.Section == "messages" || q.Section == "response") {
-		content = `coalesce(json_extract(j.value,'$.text'),'')`
+		content = messageTextSQL
 	}
 	// BLOB offsets preserve embedded NULs; trim only an incomplete final rune.
 	// A continuation URL always starts at the resulting UTF-8 boundary.

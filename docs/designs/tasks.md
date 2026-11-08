@@ -646,3 +646,9 @@ Task manage 的 create 新增可选 title（1–80 字符、非空白），与�
 执行记录默认列出全部，搜索旁共享 Filters 菜单选择执行状态及独立 Needs me 条件；组合条件、搜索、分页游标与实时刷新保持一致，旧 view=attention 深链接仍可用。无脚本使用原生筛选表单。
 
 Root 失败的安全通知由 Host 在终态事务中经既有 notification_intent 创建，包含有界任务标题与可续作说明，不包含原始错误、Worker 文本或 Trace。通知与 task_update 原子提交，并按 Root 身份去重，继承原 Task 交付来源；Main 仍消费带标题的失败 update，组织后续处理。持续工作的 active 状态与本轮失败状态保持独立。
+
+执行详情的当前消费者仍是 owner Web Tasks；参考 ChatGPT Scheduled 的结果／历史与配置分工，扩展私有读取投影为 ProgressSummary 和 RecentRuns。进展来自已接受的 task.progress_summary，仅 task_epoch 相等时读取；旧轮次保留空值，不把当前摘要伪造为历史。RecentRuns 在同一只读事务中按同一 owner 的 task_ref 限定，最多 20 个 Root；该有界导航不是完整历史导出。结果继续只取该 Root 关联的 Main 已提交消息，执行结束与用户交付保持不同语义。没有新增事件表、公共 Run API 或调度控制，也不以 Worker 原始文本替代交付。折叠说明、内容顺序与排版断点是可替换的展示政策。
+
+执行检查复用既有 createSideSheet 外壳、尺寸与焦点行为，页面只拥有 Root 选择、列表内前后导航及历史状态；不另造抽屉皮肤或通用路由器。抽屉读取现有完整页面投影，以相同只读 updates 协议和区域补丁刷新，关闭／切换取消请求并释放投影。背景列表的查询条件固定为打开列表时的条件，避免详情 URL 反向污染筛选。新导航只改变呈现政策，不增加写入权限或第二条执行通道。
+
+执行详情的结果／进展、属性与证据仍使用同一 owner 读取投影；本轮只调整呈现政策：单列阅读替代常驻次级栏、元信息压缩、说明与历史按需展开。原始标题不改写，Task／Root／Main 交付身份不变，未增加过程事件或模型推理。原生 details 的打开状态只在 execution-side 同键区域更新时延续，不覆盖其他受控业务区域的服务端状态。

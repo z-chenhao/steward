@@ -74,8 +74,9 @@ def verify(binary, script):
             with closing(sqlite3.connect(root / "data/state.db")) as db:
                 frozen = json.loads(db.execute("SELECT tools_json FROM capability_snapshot WHERE role='main' ORDER BY created_at LIMIT 1").fetchone()[0])
             names = {spec['name'] for spec in frozen}
-            require({'builtin__artifact_search','builtin__artifact_manage','builtin__memory_search',
+            require({'builtin__artifact_manage','builtin__memory_search',
                      'builtin__memory_manage','builtin__image_ocr'} <= names, 'internal tool authority disappeared')
+            require(not names & {'builtin__artifact_search','builtin__fetch_content','builtin__get_search_content','builtin__source_check'}, 'production snapshot retained retired tools')
             require(all(spec.get('codemode_only') for spec in frozen if spec['name'] not in MAIN_DIRECT),
                     'production authority permits a direct tool bypass')
             report["production_surface"] = surface

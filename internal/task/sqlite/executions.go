@@ -110,7 +110,24 @@ func (r *Reader) Execution(ctx context.Context, id string) (task.ExecutionDetail
 		return out, err
 	}
 	out.Execution = v
-	if err = tx.QueryRowContext(ctx, executionsCTE+`SELECT anchor_task FROM executions WHERE run_id=?`, id).Scan(&out.Description); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT t.anchor_task,CASE WHEN t.task_epoch=r.task_epoch THEN t.progress_summary ELSE '' END FROM run r JOIN task t USING(task_id) WHERE r.run_id=?`, id).Scan(&out.Description, &out.ProgressSummary); err != nil {
+		return out, err
+	}
+	runs, err := tx.QueryContext(ctx, executionsCTE+`SELECT `+executionColumns+` FROM executions WHERE task_ref=? ORDER BY task_epoch DESC,created_at DESC,run_id DESC LIMIT 20`, v.TaskRef)
+	if err != nil {
+		return out, err
+	}
+	for runs.Next() {
+		x, _, e := scanExecution(runs)
+		if e != nil {
+			runs.Close()
+			return out, e
+		}
+		out.RecentRuns = append(out.RecentRuns, x)
+	}
+	err = runs.Err()
+	runs.Close()
+	if err != nil {
 		return out, err
 	}
 	rows, err := tx.QueryContext(ctx, `SELECT i.instruction,i.task_epoch,i.created_at FROM task_instruction i JOIN task t USING(task_id) WHERE t.task_ref=? AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND i.task_epoch<=? ORDER BY sequence DESC LIMIT 20`, v.TaskRef, v.Epoch)

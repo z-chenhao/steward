@@ -90,6 +90,17 @@ func TestDefinitionsFreezePolicy(t *testing.T) {
 	if defs[0].Spec.ReplayPolicy != "never" {
 		t.Fatal("search can replay paid request")
 	}
+	if defs[0].Spec.Version != 2 || strings.Contains(defs[0].Spec.Description, "get_search_content") || len(defs[0].PreviousSpecs) != 1 {
+		t.Fatal("new search advertises a retired entry point or lost its predecessor")
+	}
+	registry, err := tool.NewRegistry(defs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	previous := defs[0].PreviousSpecs[0]
+	if _, err := registry.Select([]tool.Spec{previous}); err != nil {
+		t.Fatal("frozen search v1 no longer resumes", err)
+	}
 }
 
 func TestLivePublicWebAccess(t *testing.T) {

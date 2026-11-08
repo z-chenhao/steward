@@ -21,6 +21,40 @@ def events(names):
 
 
 class SQLiteRaceInventoryTests(unittest.TestCase):
+    def test_memory_selection_admits_new_roots_and_rejects_lost_or_repeated_evidence(self):
+        names = [*race.SERIAL_SQLITE, 'TestUnrelated', 'TestFreshMemoryRegression',
+                 'TestRecallEvidence', 'TestAutomationForget', 'TestObjectIDs']
+        expected = {'TestFreshMemoryRegression', 'TestRecallEvidence', 'TestAutomationForget', 'TestObjectIDs'}
+        for fault in (None, 'missing', 'duplicate'):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as directory:
+                commands = []
+                def execute(command, env, output, stopped, metrics):
+                    commands.append(command)
+                    metrics.update(owned_group_drained=True, cpu_seconds=.01)
+                    if '-list' in command:
+                        output.write_text('\n'.join(names) + '\nok\t' + race.SQLITE + '\t0.01s\n')
+                    else:
+                        self.assertEqual(env['GOMAXPROCS'], '1')
+                        selected = command[command.index('-run') + 1][2:-2].split('|')
+                        if 'TestFreshMemoryRegression' in selected:
+                            if fault == 'missing':
+                                selected.remove('TestFreshMemoryRegression')
+                            elif fault == 'duplicate':
+                                selected.append('TestFreshMemoryRegression')
+                        output.write_text('\n'.join(map(json.dumps, events(selected))))
+                    return 0
+                with patch.object(race, 'run_command', side_effect=execute), \
+                     patch.object(race, 'cpu_budget', return_value=4):
+                    result = race.run_remainder([race.SQLITE], Path(directory), threading.Event(), memory=True)
+                self.assertEqual(set(result['expected_tests']), expected)
+                self.assertLessEqual(len(result['workers']), 3)
+                self.assertFalse(result['isolated_tests'])
+                self.assertEqual(result['returncode'] == 0, fault is None)
+                self.assertEqual(result['selection_complete'], fault is None)
+                for command in commands:
+                    for flag in ('-race', '-count=1', '-timeout=10m'):
+                        self.assertIn(flag, command)
+
     def test_deadline_packages_are_isolated_without_losing_or_repeating_inventory(self):
         extra = 'github.com/z-chenhao/assistant/new/pkg'
         packages = [race.SQLITE, extra, race.RECORDER, race.BRIDGE]

@@ -13,7 +13,7 @@ function viewRegions(view:string):string[]|null {
  if(view==='/')return ['workspace-status','conversation-attention','conversation-messages','conversation-approvals'];
  if(view==='/tasks/attention')return ['workspace-status','tasks-attention'];
  if(view==='/tasks'||view==='/tasks/configurations')return ['workspace-status','ongoing-work'];
- if(view.startsWith('/tasks/executions/'))return null;
+ if(view.startsWith('/tasks/executions/'))return ['workspace-status','execution-header','execution-progress','task-messages','execution-side'];
  if(view.startsWith('/tasks/'))return ['workspace-status','task-header','task-feedback','task-progress','task-decisions','task-messages','task-milestones'];
  if(view.startsWith('/settings/'))return ['workspace-status','signin-status'];
  return null;
@@ -32,15 +32,15 @@ function keepFeedbackDraft(form:HTMLFormElement,message:string){
 
 // Cache Host markup, not React's enhanced DOM. Stable keyed islands retain
 // their component state, focus and nodes when unrelated content changes.
-function regionPatcher(ids:readonly string[]){
+function regionPatcher(ids:readonly string[],scope:ParentNode=document){
  const originals=new WeakMap<Element,string>();
  const markup=new Map<string,string>();
  for(const id of ids){
-  const region=document.getElementById(id);
+  const region=scope.querySelector<HTMLElement>('#'+id);
   if(region){markup.set(id,region.innerHTML);for(const child of region.children)originals.set(child,child.outerHTML)}
  }
  return (id:string,html:string)=>{
-  const region=document.getElementById(id);
+  const region=scope.querySelector<HTMLElement>('#'+id);
   if(!region||markup.get(id)===html)return;
   const parsed=document.createElement('template');parsed.innerHTML=html;
   const restoreDrafts=captureRichFormDrafts(region);
@@ -59,6 +59,7 @@ function regionPatcher(ids:readonly string[]){
     const key=(incoming as HTMLElement).dataset.liveKey??`position:${i}`;
     const old=keyed.get(key),raw=incoming.outerHTML;
     let child=old&&originals.get(old)===raw?old:incoming;
+    if(id==='execution-side'&&old instanceof HTMLDetailsElement&&incoming instanceof HTMLDetailsElement)incoming.open=old.open;
     if(id==='conversation-messages'&&old&&child!==old&&retainProjectionNodes(old,incoming))child=old;
     if(id==='task-feedback'&&old){
      const native=old.querySelector<HTMLFormElement>('form[action="/task/feedback"]');
@@ -86,6 +87,43 @@ function regionPatcher(ids:readonly string[]){
  };
 }
 
+// An execution peek has its own read-only lifetime beside the live task list.
+// Reuse the committed region protocol without installing conversation/form handlers.
+export function watchExecutionDetail(root:HTMLElement,view:string){
+ const regions=viewRegions(view)!.filter(id=>id!=='workspace-status');
+ const patch=regionPatcher(regions,root);
+ const status=document.createElement('p');status.className='field-help';status.setAttribute('role','status');status.hidden=true;root.append(status);
+ let etag='',timer=0,delay=1000,stopped=false,request:AbortController|null=null;
+ const pause=()=>{clearTimeout(timer);request?.abort();request=null};
+ const refresh=async()=>{
+  if(stopped||document.hidden)return;
+  pause();const controller=new AbortController();request=controller;
+  const timeout=setTimeout(()=>controller.abort(),10000);
+  try{
+   const response=await fetch('/api/updates?'+new URLSearchParams({view}),{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:etag?{'If-None-Match':etag}:{}});
+   if(stopped||request!==controller)return;
+   if(response.status===401||response.status===403||response.status===404){location.assign(view);return}
+   if(response.status!==304){
+    if(!response.ok)throw new Error('execution updates unavailable');
+    const value=snapshot.parse(await response.json());
+    if(stopped||request!==controller)return;
+    if(value.view!==view||regions.some(id=>typeof value.regions[id]!=='string'))throw new Error('invalid execution view');
+    for(const id of regions)patch(id,value.regions[id]);
+    etag=response.headers.get('ETag')??'';
+   }
+   delay=1000;status.hidden=true;
+  }catch{
+   if(!stopped&&request===controller&&!document.hidden){status.textContent=t('Execution updates are temporarily unavailable. Retrying…');status.hidden=false;delay=Math.min(delay*2,30000)}
+  }finally{
+   clearTimeout(timeout);
+   if(request===controller){request=null;if(!stopped&&!document.hidden)timer=window.setTimeout(refresh,delay)}
+  }
+ };
+ const visibility=()=>{if(document.hidden)pause();else void refresh()};
+ document.addEventListener('visibilitychange',visibility);void refresh();
+ return ()=>{stopped=true;pause();document.removeEventListener('visibilitychange',visibility);status.remove()};
+}
+
 function viewportAnchor(){
  const focused=document.activeElement;
  if(focused instanceof HTMLElement&&focused!==document.body&&!focused.closest('#composer-root,.workspace-panel,.workspace-topbar'))return {node:focused,top:focused.getBoundingClientRect().top};
@@ -99,6 +137,7 @@ export function startLiveUpdates(){
  const main=document.querySelector<HTMLElement>('main[data-live-view]');
  if(!main)return null;
  const view=main.dataset.liveView??'';const regionSet=viewRegions(view);if(!regionSet)return null;const regions:readonly string[]=regionSet;
+ const taskQuery=new URLSearchParams(location.search);
  const patch=regionPatcher(regions);
  const thread=view==='/'?document.querySelector<HTMLElement>('.thread'):null;
  const reader=thread?createChatScroll(thread,()=>syncJump()):null;
@@ -188,7 +227,7 @@ export function startLiveUpdates(){
   const timeout=setTimeout(()=>controller.abort(),10000);
   try{
    const query=new URLSearchParams({view});if(before)query.set('before',String(before));
-   if(view==='/tasks'||view.startsWith('/tasks/')){const pageQuery=new URLSearchParams(location.search);for(const key of ['q','cursor','history','feedback_before','needs_me']){const value=pageQuery.get(key);if(value)query.set(key,value)}const taskView=pageQuery.get('view');if(taskView)query.set('task_view',taskView)}
+   if(view==='/tasks'||view.startsWith('/tasks/')){for(const key of ['q','cursor','history','feedback_before','needs_me']){const value=taskQuery.get(key);if(value)query.set(key,value)}const taskView=taskQuery.get('view');if(taskView)query.set('task_view',taskView)}
    const response=await fetch('/api/updates?'+query,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:etag?{'If-None-Match':etag}:{}});
    if(current!==generation)return;
    if(response.status===401||response.status===403){accessLost();return}
