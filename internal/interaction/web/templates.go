@@ -33,20 +33,14 @@ func newLayout(language string) *template.Template {
 		"providerTimingLabel": providerTimingLabel,
 		"duration":            duration,
 		"elapsed":             elapsed,
-		"milliseconds": func(value *int64) string {
-			if value == nil {
-				return "—"
-			}
-			return (time.Duration(*value) * time.Millisecond).String()
-		},
-		"obsStatuses": func() []string { return []string{"queued", "running", "waiting", "completed", "failed", "cancelled"} },
-		"obsKind":     observationKind,
-		"obsRole":     observationRole,
-		"parentRun":   observationParent,
-		"obsIcon":     observationIcon,
+		"milliseconds":        milliseconds,
+		"obsStatuses":         func() []string { return []string{"queued", "running", "waiting", "completed", "failed", "cancelled"} },
+		"obsKind":             observationKind,
+		"obsRole":             observationRole,
+		"parentRun":           observationParent,
+		"obsIcon":             observationIcon,
 
 		"money":       money,
-		"traceMoney":  traceMoney,
 		"hasPrevious": func(step *int64) bool { return step != nil && *step > 0 }, "tokenRate": tokenRate, "totalInput": totalInput,
 		"obsJSON":         viewJSON,
 		"authURL":         AuthURL,

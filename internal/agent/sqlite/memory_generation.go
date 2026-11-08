@@ -27,6 +27,9 @@ type curationWork struct {
 	Input   memory.CurationInput
 	Request llm.GenerationRequest
 }
+type memoryFailure struct {
+	Reason string `json:"validation_error"`
+}
 
 func curationModelText(in memory.CurationInput) string {
 	if in.Mode == "dream" {
@@ -116,6 +119,16 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 			if status == "failed" {
 				work.Input = in
 				work.Request.Messages = []llm.Message{{Role: "system", Text: curationInstruction(in)}, {Role: "user", Text: curationModelText(in)}}
+				if result != "" {
+					plain, err := r.vault.Open(ctx, result, priorID+":result")
+					var failure memoryFailure
+					if err != nil || json.Unmarshal([]byte(plain), &failure) != nil {
+						return recall.ErrUnavailable
+					}
+					if failure.Reason != "" {
+						work.Request.Messages[0].Text += "\nThe previous attempt was rejected: " + failure.Reason + " Correct this in the new proposal; preserve all evidence and schema requirements."
+					}
+				}
 			}
 		} else if err != sql.ErrNoRows {
 			return agent.ErrStorage
@@ -231,6 +244,18 @@ func (r *Runs) AcceptMemoryGeneration(ctx context.Context, tx *sql.Tx, req llm.G
 	if cause == nil {
 		next = "completed"
 		output, e = r.vault.Seal(ctx, result.Text, req.GenerationID+":result")
+		if e != nil {
+			return e
+		}
+	} else if errors.Is(cause, memory.ErrProposal) {
+		reason := memory.ProposalReason(cause)
+		if result.Clipped {
+			reason = "Provider output was clipped before the proposal completed."
+		} else if len(result.ToolCalls) > 0 {
+			reason = "Proposal returned tool calls instead of the required JSON."
+		}
+		raw, _ := json.Marshal(memoryFailure{Reason: reason})
+		output, e = r.vault.Seal(ctx, string(raw), req.GenerationID+":result")
 		if e != nil {
 			return e
 		}

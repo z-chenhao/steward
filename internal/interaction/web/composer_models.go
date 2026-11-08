@@ -233,7 +233,7 @@ func (s *Server) accountModel(ctx context.Context, account, model string) (llm.P
 	}
 	return s.Models.AddProfile(ctx, llm.ProfileInput{Name: model, ProviderKind: "openai_account", WireAPI: "openai_responses", AuthConnectionID: account, ModelID: model, ContextWindow: metadata.ContextWindow, MaxOutputTokens: min(metadata.MaxOutputTokens, metadata.ContextWindow), Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true, ImageInput: metadata.ImageInput}})
 }
-func (s *Server) selectFirstAccountModel(ctx context.Context, account string) error {
+func (s *Server) selectAccountModelAfterLogin(ctx context.Context, account string) error {
 	if s.Models == nil || s.Control.Store == nil || s.Core == nil || s.AccountCatalog == nil {
 		return nil
 	}
@@ -243,19 +243,29 @@ func (s *Server) selectFirstAccountModel(ctx context.Context, account string) er
 	if err != nil {
 		return err
 	}
-	if activeProfile(status) != "" {
-		return nil
-	}
-	models, err := s.AccountCatalog(ctx, account)
-	if err != nil {
-		return err
-	}
-	if len(models) == 0 {
-		return llm.ModelNotFound
-	}
-	p, err := s.accountModel(ctx, account, models[0].ModelID)
-	if err != nil {
-		return err
+	var p llm.Profile
+	if current := activeProfile(status); current != "" {
+		p, err = s.Control.Store.Profile(ctx, current)
+		if err != nil {
+			return err
+		}
+		// Reauthorization invalidates profile readiness as well as credentials.
+		// Restore only this account's current model; never replace another choice.
+		if p.ProviderKind != "openai_account" || p.AuthConnectionID != account {
+			return nil
+		}
+	} else {
+		models, e := s.AccountCatalog(ctx, account)
+		if e != nil {
+			return e
+		}
+		if len(models) == 0 {
+			return llm.ModelNotFound
+		}
+		p, err = s.accountModel(ctx, account, models[0].ModelID)
+		if err != nil {
+			return err
+		}
 	}
 	if err = s.Control.SelectWithProbe(ctx, p.ProfileID, p.Version, status.ConfigVersion); err != nil {
 		return err

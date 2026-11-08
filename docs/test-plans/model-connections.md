@@ -36,6 +36,8 @@
 
 ## 详细测试入口与证明边界
 
+重连恢复由 `TestAccountReconnectRestoresOnlyItsCurrentModelThroughVersionedActivation` 覆盖原模型保留、其他账户/API 选择、目录或认证失败、模型消失、配置/模型并发冲突及运行时等待失败。`account_presentation` 重新授权后直接断言同一模型就绪及浏览器发送按钮启用，不用额外的选模型请求修复状态；同时断言没有生成推理或 Probe。浏览器证据覆盖桌面/移动端及明暗主题，沿用必需的 `channels-web` CI 门禁。
+
 本功能协议在此维护。既有编号用于追溯协议，不代表所有设计目标均已实现；完成状态以需求主索引为准。
 
 <a id="provider-bridge-verification-and-operations"></a>

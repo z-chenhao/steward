@@ -15,15 +15,15 @@ import (
 
 type traceReader struct{}
 
-func TestTraceCostRoundsDisplayAndKeepsExactSourceInTooltip(t *testing.T) {
+func TestTraceCostUsesSharedPrecisionAndKeepsSourceInTooltip(t *testing.T) {
 	for _, tt := range []struct {
 		metrics observability.Metrics
 		want    []string
 		absent  string
 	}{
 		{observability.Metrics{}, []string{"Not priced"}, "Estimated"},
-		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 42}}}, []string{">USD 0.00</span>", "USD 0.000042"}, "Estimated"},
-		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 736270, Estimated: true, Source: "catalog-v1 <script>"}}, Unpriced: 1}, []string{">USD 0.74</span>", "USD 0.736270", "catalog-v1 &lt;script&gt;"}, "<script>"},
+		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 42}}}, []string{">USD 0.01</span>", "USD 0.01"}, "Estimated"},
+		{observability.Metrics{Costs: []observability.Cost{{Currency: "USD", Micros: 736270, Estimated: true, Source: "catalog-v1 <script>"}}, Unpriced: 1}, []string{">USD 0.74</span>", "USD 0.74", "catalog-v1 &lt;script&gt;"}, "<script>"},
 	} {
 		var html strings.Builder
 		if err := localizedLayout("en").ExecuteTemplate(&html, "trace-cost", tt.metrics); err != nil {

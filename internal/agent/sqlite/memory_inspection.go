@@ -199,6 +199,8 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 			item.Status = "pending"
 			if applied.Valid {
 				item.Status = "applied"
+				// Older successful retries may retain their previous failure code.
+				item.Error = ""
 			}
 			if failed.Valid {
 				item.Status = "rejected"
@@ -224,7 +226,14 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 			return memory.InspectionPage{}, e
 		}
 		out.Maintenance[i].Metrics = &m
+		if q.Ref != "" {
+			out.Maintenance[i].Generations, e = r.memoryInspectionGenerations(ctx, strings.TrimPrefix(out.Maintenance[i].Ref, "memory-event:"), access)
+			if e != nil {
+				return memory.InspectionPage{}, memory.ErrInspectionUnavailable
+			}
+		}
 	}
+	r.host.boundary("after_memory_maintenance_inspection")
 	if err = r.recheckMemoryOwner(ctx, access); err != nil {
 		return memory.InspectionPage{}, err
 	}

@@ -25,11 +25,11 @@ func DreamEvidence(in CurationInput, w DocumentWrite) ([]SourceRef, []recall.Evi
 	proof := []recall.Evidence{}
 	for _, q := range w.Support {
 		if q.Observation < 0 || q.Observation >= len(in.Observations) {
-			return nil, nil, ErrProposal
+			return nil, nil, invalidProposal("Evidence refers to an observation outside the supplied batch.")
 		}
 		o := in.Observations[q.Observation]
 		if !strings.Contains(o.Text, q.Quote) || strings.TrimSpace(q.Quote) == "" {
-			return nil, nil, ErrProposal
+			return nil, nil, invalidProposal("Supporting quote is empty or is not an exact substring of its observation.")
 		}
 		sources = append(sources, o.Source)
 		proof = append(proof, recall.Evidence{SourceRef: o.Source.Ref, Quote: q.Quote, Author: o.Author, At: o.At})
@@ -41,7 +41,7 @@ func DreamEvidence(in CurationInput, w DocumentWrite) ([]SourceRef, []recall.Evi
 		}
 	}
 	if in.Version >= 2 && !w.Retire && len(sources) == 0 {
-		return nil, nil, ErrProposal
+		return nil, nil, invalidProposal("Document has no supporting observations or linked evidence.")
 	}
 	return sources, proof, nil
 }
@@ -57,12 +57,15 @@ func containsRef(refs []string, ref string) bool {
 func parseDreamProposal(text string, in CurationInput) (Proposal, error) {
 	var p Proposal
 	if len(text) > 32<<10 {
-		return p, ErrProposal
+		return p, invalidProposal("Proposal exceeds the 32 KiB output limit.")
 	}
 	d := json.NewDecoder(bytes.NewBufferString(text))
 	d.DisallowUnknownFields()
-	if d.Decode(&p) != nil || d.Decode(new(any)) != io.EOF || len(p.Facts) != 0 || len(p.Documents) > 8 {
-		return p, ErrProposal
+	if d.Decode(&p) != nil || d.Decode(new(any)) != io.EOF {
+		return p, invalidProposal("Output must be one JSON object with only supported fields.")
+	}
+	if len(p.Facts) != 0 || len(p.Documents) > 8 {
+		return p, invalidProposal("Dream proposals must contain no facts and at most eight document edits.")
 	}
 	known := map[string]Document{}
 	for _, doc := range in.Documents {
@@ -74,16 +77,16 @@ func parseDreamProposal(text string, in CurationInput) (Proposal, error) {
 		for j, ref := range w.Links {
 			w.Links[j] = normalizeDreamRef(ref, known)
 			if _, ok := known[w.Links[j]]; !ok {
-				return p, ErrProposal
+				return p, invalidProposal("Document links must refer to supplied current documents.")
 			}
 		}
 		if !w.Valid() {
-			return p, ErrProposal
+			return p, invalidProposal("Document fields violate the layer, revision, content or supporting quote limits.")
 		}
 		if w.Ref != "" {
 			doc, ok := known[w.Ref]
 			if !ok || doc.Revision != w.Revision || doc.Layer != w.Layer || seen[w.Ref] {
-				return p, ErrProposal
+				return p, invalidProposal("Document edit has an unknown target, stale revision, changed layer or duplicate target.")
 			}
 			seen[w.Ref] = true
 		}
@@ -95,7 +98,7 @@ func parseDreamProposal(text string, in CurationInput) (Proposal, error) {
 		p.Documents[i] = w
 	}
 	if _, err := DreamWriteOrder(p.Documents); err != nil {
-		return p, err
+		return p, invalidProposal("Document edits contain cyclic dependencies or link to a retired target.")
 	}
 	p.Facts = []Candidate{}
 	return p, nil

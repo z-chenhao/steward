@@ -64,7 +64,13 @@ export function enhanceMemory() {
   }
   document.addEventListener('click', event => {
     if (!(event instanceof MouseEvent) || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    const anchor = (event.target as Element | null)?.closest<HTMLAnchorElement>(listPage ? 'a.memory-open,a.memory-select' : 'a.memory-select');
+    const target = event.target as Element | null;
+    let anchor = target?.closest<HTMLAnchorElement>(listPage ? 'a.memory-open,a.memory-select' : 'a.memory-select');
+    if (listPage && !anchor && !target?.closest('a,button,input,select,textarea,label,summary,[role=button],[contenteditable]')) {
+      if (window.getSelection()?.toString()) return;
+      anchor = target?.closest('tr[data-memory-ref]')?.querySelector<HTMLAnchorElement>('a.memory-open');
+      anchor?.focus({preventScroll:true});
+    }
     if (!anchor || anchor.target || anchor.download) return;
     const url = new URL(anchor.href);
     if (url.origin !== location.origin || url.pathname !== '/developer/memory' || !url.searchParams.has('ref')) return;

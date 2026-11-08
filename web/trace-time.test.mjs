@@ -5,6 +5,9 @@ import {runInNewContext} from 'node:vm';
 const source=buildSync({entryPoints:[new URL('src/trace-time.ts',import.meta.url).pathname],bundle:true,format:'cjs',write:false}).outputFiles[0].text;
 const module={exports:{}};runInNewContext(source,{module,exports:module.exports});
 const {boundedWindow,zoomWindow,bucketSelection}=module.exports;
+test('all timeline durations use two decimals and milliseconds below one second',()=>{
+ for(const [micros,label] of [[0,'0.00ms'],[500,'0.50ms'],[12500,'12.50ms'],[999990,'999.99ms'],[1000000,'1.00s'],[8321000,'8.32s'],[61000000,'61.00s']])assert.equal(module.exports.elapsedLabel(micros),label);
+});
 test('timeline zoom keeps the pointer anchor fixed and stays inside the whole trace',()=>{
  const domain={start:100,end:1100};const zoom=zoomWindow(domain,domain,.5,.25);
  assert.equal(zoom.start,225);assert.equal(zoom.end,725);

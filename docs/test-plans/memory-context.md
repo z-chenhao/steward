@@ -208,3 +208,5 @@ make test-prompts 包含统一可见性回归；make test-memory 包含新增 Me
 
 
 混合 CodeMode 摘要必须保留同帧非记忆回执；原始动作是否发生不能被通用记忆提示替代。该场景由 TestMemoryCompactionPreservesMixedCodeBusinessReceipt 进入 test-prompts 和 test-memory。原始 Worker 反馈、旧笔记回查、覆盖重放及 Forget／跨 Agent 拒绝由 Memory 所属回归验证。
+
+维护诊断回归：`TestMemoryDreamFailureDiagnosticsAndSuccessfulRetry` 验证真实维护派发、拒绝原因、受限重试反馈、成功清错、历史调用及隐私 epoch 撤销；`TestMemoryInspectionMaintenanceIsScopedAndContainsNoPayload` 保持跨所有者隔离和无原始 payload。Web 的维护浏览器回归验证整行预览、费用精度与逐次调用详情。

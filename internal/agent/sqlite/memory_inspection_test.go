@@ -187,6 +187,9 @@ func TestMemoryInspectionMaintenanceIsScopedAndContainsNoPayload(t *testing.T) {
 	if err != nil || len(next.Maintenance) != 1 || next.Maintenance[0].Status != "pending" {
 		t.Fatal(next, err)
 	}
+	if page.Maintenance[1].Error != "" {
+		t.Fatal("legacy applied receipt still reports a current error")
+	}
 	for _, item := range append(page.Maintenance, next.Maintenance...) {
 		if strings.Contains(fmt.Sprintf("%+v", item), "PRIVATE_") {
 			t.Fatal("maintenance leaked payload", item)

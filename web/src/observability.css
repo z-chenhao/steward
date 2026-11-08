@@ -23,10 +23,10 @@
 
 .obs-trace-list .empty-state{white-space:normal;text-align:left;padding:24px 12px;max-width:400px}
 .obs-task-link{font-size:var(--text-ui);margin:0 0 18px;color:var(--muted-foreground)}.obs-task-link a{color:var(--foreground)}
-.obs-trace-header{border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;padding:24px 24px 12px;background:var(--background)}
-.obs-trace-header .page-heading{margin-bottom:22px}.obs-trace-header .page-heading p{font-size:var(--text-ui)}
+
+
 .obs-metrics{display:flex;gap:28px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--border)}.obs-metrics>div{flex:1;min-width:100px}.obs-metrics small{display:block;font-size:var(--text-meta);color:var(--muted-foreground);margin-bottom:5px}.obs-metrics strong{font-size:var(--text-ui);font-weight:550}
-.obs-trace-header>.technical-details{margin:0;font-size:var(--text-meta)}.obs-trace-header>.technical-details[open]{margin-top:12px}.obs-trace-identity{overflow-wrap:anywhere}.root-boundary{font-size:var(--text-ui)}.task-timeline{padding-left:18px}.task-timeline li{margin:7px 0}
+.obs-trace-identity{overflow-wrap:anywhere}.root-boundary{font-size:var(--text-ui)}.task-timeline{padding-left:18px}.task-timeline li{margin:7px 0}
 .obs-workbench{display:grid;grid-template-columns:minmax(310px,1fr) minmax(380px,1.45fr);border:1px solid var(--border);border-top:0;border-radius:0 0 var(--radius) var(--radius);overflow:hidden;min-height:560px;background:var(--background)}
 .obs-tree-pane,.obs-detail-pane{min-width:0;max-height:820px;overflow:auto;padding:20px}.obs-tree-pane{border-right:1px solid var(--border);padding:18px 12px}.obs-detail-pane{padding:22px}
 .obs-pane-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.obs-pane-heading h2{font-size:var(--text-section);margin:0}.obs-pane-heading>span{font-size:var(--text-meta);color:var(--muted-foreground)}
@@ -65,7 +65,7 @@
 .obs-type-icon{display:flex;margin-top:2px}.obs-type-icon svg{width:14px;height:14px}
 .obs-selected-heading{display:flex;align-items:center;gap:8px;margin-bottom:10px}.obs-selected-name{font-size:15px;margin:0;line-height:22px;flex:1;min-width:0}.obs-kind{font-size:10px!important;padding:2px 4px}.obs-selected-heading .status-pill{font-size:11px;padding:1px 5px}
 .obs-detail-facts{font-size:11px;margin:0 0 12px}.obs-detail-tabs{gap:16px;margin:12px -16px 16px;padding:0 16px}.obs-detail-tabs a{font-size:12px;padding-bottom:8px}.obs-detail-pane h3{font-size:12px;margin:16px 0 8px}.obs-json,.frozen-content{padding:10px;font-size:11px;line-height:1.6;border-radius:6px}.obs-detail-note,.obs-message-text,.obs-empty,.obs-input-preview-block{font-size:12px}
-.obs-trace-header{padding:12px 0 0;margin-top:20px;border:0;border-top:1px solid var(--border);border-radius:0}.obs-trace-header .technical-details{margin:0;font-size:11px}.obs-metrics{padding:10px 0;gap:12px}.obs-metrics>div{min-width:90px}.obs-metrics small{font-size:11px}.obs-metrics strong{font-size:12px}.obs-trace-header h1{font-size:15px}
+.obs-metrics{padding:10px 0;gap:12px}.obs-metrics>div{min-width:90px}.obs-metrics small{font-size:11px}.obs-metrics strong{font-size:12px}
 .control-sheet .obs-workbench{height:100%;min-height:0;grid-template-columns:minmax(205px,.38fr) minmax(0,.62fr)}.control-sheet #observability-workbench{height:100%}.control-sheet .obs-tree-pane,.control-sheet .obs-detail-pane{height:100%;min-height:0}
 .observability>#observability-workbench{height:calc(100dvh - 128px);min-height:480px}.observability>#observability-workbench>.obs-workbench{height:100%;min-height:0}.observability .obs-tree-pane,.observability .obs-detail-pane{height:100%}
 @container inspection-layout (max-width:700px){.obs-results-layout{grid-template-columns:minmax(0,1fr)}.obs-filter-rail{border-right:0;border-bottom:1px solid var(--border)}.obs-filter-rail-content{display:grid;grid-template-columns:1fr 1fr;gap:12px}.obs-filter-actions{grid-column:1/-1}.observability>#observability-workbench{height:auto;min-height:0}.observability .obs-workbench{display:block}.observability .obs-tree-pane,.observability .obs-detail-pane{height:auto}.observability .obs-tree-pane{max-height:260px;border-right:0;border-bottom:1px solid var(--border)}}

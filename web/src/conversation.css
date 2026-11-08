@@ -7,7 +7,9 @@
 .setup-callout{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);margin:8px 0 20px}.setup-callout h1{font-size:var(--text-section);font-weight:600;margin:0}.setup-callout p{font-size:13px;color:var(--muted-foreground);margin:4px 0 0}
 .message,.reply-draft{padding:18px 0;font-size:16px;line-height:1.75;min-width:0;scroll-margin-top:88px}.message:target{background:var(--muted);outline:8px solid var(--muted);border-radius:8px}
 .message.user{margin:18px 0 20px auto;padding:13px 19px;background:var(--muted);border-radius:22px;width:fit-content;max-width:85%}
-.message.assistant .semantic,.reply-draft .semantic,.task-delivery .semantic{font-family:var(--font-display);font-size:16px;line-height:1.75;font-optical-sizing:auto}
+.message.assistant .semantic,.reply-draft .semantic{font-family:var(--font-display);font-size:16px;line-height:1.75;font-optical-sizing:auto}
+.task-delivery .semantic{font-family:var(--font-ui);font-size:14px;line-height:1.6}
+.task-delivery .markdown table{font:inherit}
 .reply-draft-label{color:var(--muted-foreground);font-size:12px;margin-bottom:4px}
 .semantic{white-space:pre-wrap;overflow-wrap:anywhere}.artifact-card{margin:16px 0}.artifact-card>div{padding:16px}.artifact{display:block;font-family:var(--font-ui);font-size:14px;text-decoration:none}.artifact:hover{text-decoration:underline}
 .panel.approval,.approval{background:var(--card);border-color:var(--border);margin:18px 0;line-height:1.65}.approval h2{font-size:17px}.approval-action{font-size:13px;margin:12px 0 20px;color:var(--foreground)!important;font-weight:500}

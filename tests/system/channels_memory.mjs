@@ -14,6 +14,8 @@ export async function memoryInspection({page,context,browser,url,evidence}) {
   await layerSheet.waitFor();
   if(!await layerSheet.locator('[data-memory-content]').count())throw Error('Missing memory layer detail '+layer);
   await page.setViewportSize({width:1440,height:1000});
+  const body=await layerSheet.locator('.control-sheet-body').boundingBox(),pane=await layerSheet.locator('.memory-workbench').boundingBox();
+  if(Math.abs(body.height-pane.height)>2)throw Error('Memory split panes do not fill the sheet height');
   await page.screenshot({path:evidence+'/memory-layer-'+layer+'-light.png',fullPage:true});
   await page.evaluate(()=>document.documentElement.classList.add('dark'));
   await page.screenshot({path:evidence+'/memory-layer-'+layer+'-dark.png',fullPage:true});
@@ -133,26 +135,40 @@ export async function maintenanceInspection({page,url,evidence,priced=false}){
  await page.locator('#memory-page[data-memory-ready]').waitFor();
  const list=page.locator('.memory-maintenance');
  if(!await list.locator('tbody tr a.memory-open').count())throw Error('Maintenance rows have no detail links');
- if(priced&&(!(await list.innerText()).includes('USD 0.125000')||!(await list.innerText()).includes('Not priced')))throw Error('Priced/unknown maintenance values missing');
+ if(priced&&(!(await list.innerText()).includes('USD 0.12')||!(await list.innerText()).includes('Not priced')))throw Error('Priced/unknown maintenance values missing');
  await page.setViewportSize({width:1440,height:1000});await assertDataList(page);
  await page.screenshot({path:evidence+'/memory-maintenance-list-light.png',fullPage:true});
  await list.locator('.obs-table-scroll').evaluate(n=>n.scrollLeft=n.scrollWidth);
  await page.screenshot({path:evidence+'/memory-maintenance-list-costs.png',fullPage:true});
- await list.locator('a.memory-open').first().click();
+ await list.locator('tbody tr').first().locator('td').nth(2).click();
  const sheet=page.getByRole('dialog',{name:'Memory details',exact:true});await sheet.waitFor();
  await sheet.getByText('Documents written',{exact:true}).waitFor();
  const pane=await sheet.locator('.obs-detail-pane').boundingBox(),frame=await sheet.boundingBox();
  if(pane.width<frame.width-36)throw Error('Single-pane maintenance detail does not fill the sheet');
- if(priced&&!(await sheet.innerText()).includes('0.125000'))throw Error('Detail cost missing');
+ if(priced&&!(await sheet.innerText()).includes('0.12'))throw Error('Detail cost missing');
+ if(priced){
+  const attempts=sheet.locator('.memory-generation-history details');
+  if(await attempts.count()!==2)throw Error('Maintenance omitted model attempt history');
+  await attempts.last().locator('summary').click();
+  await sheet.getByText('Supporting quote is empty or is not an exact substring of its observation.',{exact:true}).waitFor();
+ }
  await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
- await writeFile(evidence+'/memory-maintenance-geometry.json',JSON.stringify(await sheet.locator('[data-copy-value]').evaluate(n=>({text:n.innerText,color:getComputedStyle(n).color,visibility:getComputedStyle(n).visibility,rect:n.getBoundingClientRect().toJSON(),value:n.querySelector('.control-identifier-value')?.getBoundingClientRect().toJSON()})),null,2));
+ await writeFile(evidence+'/memory-maintenance-geometry.json',JSON.stringify(await sheet.locator('[data-copy-value]').last().evaluate(n=>({text:n.innerText,color:getComputedStyle(n).color,visibility:getComputedStyle(n).visibility,rect:n.getBoundingClientRect().toJSON(),value:n.querySelector('.control-identifier-value')?.getBoundingClientRect().toJSON()})),null,2));
  await page.screenshot({path:evidence+'/memory-maintenance-detail-light.png'});
  await page.evaluate(()=>document.documentElement.classList.add('dark'));
  await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
  await page.screenshot({path:evidence+'/memory-maintenance-detail-dark.png'});
  await page.setViewportSize({width:390,height:844});
  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Maintenance viewport overflow');
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ if(await page.getByRole('dialog',{name:'Memory details',exact:true}).count()!==1)throw Error('Maintenance opened duplicate sheets');
  await page.screenshot({path:evidence+'/memory-maintenance-detail-mobile.png'});
+ if(priced){
+  await sheet.getByRole('button',{name:'Next memory',exact:true}).click();
+  await sheet.getByText('MEMORY_INVALID_PROPOSAL',{exact:true}).waitFor();
+  await sheet.locator('.memory-generation-history details summary').click();
+  await sheet.getByText('Failure details were not recorded for this older attempt.',{exact:true}).waitFor();
+ }
  await sheet.getByRole('button',{name:'Close details',exact:true}).click();await sheet.waitFor({state:'detached'});
  await page.waitForURL(u=>u.searchParams.get('view')==='maintenance'&&!u.searchParams.has('ref'));
  await page.evaluate(()=>document.documentElement.classList.remove('dark'));

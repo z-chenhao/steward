@@ -47,13 +47,13 @@ func (s *Server) startLogin(r *http.Request) error {
 		})
 		var selectionErr error
 		if e == nil {
-			selectionErr = s.selectFirstAccountModel(ctx, a.ConnectionID)
+			selectionErr = s.selectAccountModelAfterLogin(ctx, a.ConnectionID)
 		}
 		s.mu.Lock()
 		defer s.mu.Unlock()
 		s.auth.Status = "connected"
 		if selectionErr != nil {
-			s.authError = "Signed in, but the first model could not be selected. Choose a model in Chat."
+			s.authError = "Signed in, but model activation failed. Choose a model in Chat."
 		}
 		if e != nil {
 			s.auth.Status = "reauth_required"

@@ -26,6 +26,8 @@ flowchart TD
 
 ## 代码与依赖
 
+Web 显式登录完成后，若已有当前模型且属于刚连接的账户，复用 Control 的认证目录激活与运行时等待路径恢复它；无当前模型时才沿用首项选择。账户重授权仍先使旧模型就绪状态失效，不能仅凭登录成功将全部关联模型标为 ready。激活携带读取时的模型、账户和配置版本，遇到并发编辑或切换失败且不以新版本重试。其他账户或 API 连接的当前选择保持不变。此协调逻辑为 Web 私有流程，不扩展 Manager、HTTP 或冻结 Run 协议；页面读取与启动不触发恢复。
+
 - [cmd/steward/models.go](../../cmd/steward/models.go)
 - [internal/llm/control.go](../../internal/llm/control.go)
 - [internal/llm/account/manager.go](../../internal/llm/account/manager.go)

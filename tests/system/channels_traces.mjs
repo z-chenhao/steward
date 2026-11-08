@@ -156,6 +156,7 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
  await page.getByRole('link',{name:'Input / Output',exact:true}).click();
  if(await page.locator('.obs-detail-tabs a').count()!==2)throw Error('observation repeated overlapping primary tabs');
+ if(await sheet.getByText('Trace metrics',{exact:true}).count())throw Error('trace repeats a second metrics footer');
  await traceTimeline(page,evidence);
  if(await page.locator('.obs-tree .obs-node-name').filter({hasText:'Prepare context'}).count())throw Error('routine context preparation clutters the primary trace tree');
  for(const node of await page.locator('.observation-node[data-observation-kind=http]').all())if(!['failed','http_error'].includes(await node.locator('.obs-node-status').getAttribute('data-status')))throw Error('normal HTTP node clutters the primary trace tree');

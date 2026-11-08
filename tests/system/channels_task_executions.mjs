@@ -52,6 +52,10 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
   const heading=await sheet.locator('.execution-heading').boundingBox();
   if(width===1400&&heading.height>170)throw Error('execution heading crowded out its delivery');
   if(await sheet.locator('.execution-heading h1').evaluate(node=>parseFloat(getComputedStyle(node).fontSize))>18)throw Error('execution title left the compact type scale');
+  for(const body of await sheet.locator('.task-delivery .semantic').all()){
+   const type=await body.evaluate(node=>({size:getComputedStyle(node).fontSize,family:getComputedStyle(node).fontFamily}));
+   if(type.size!=='14px'||type.family.includes('Source Serif'))throw Error('task delivery does not use the shared UI type scale');
+  }
   const result=await sheet.locator('.execution-result').boundingBox(),details=await sheet.locator('.execution-side').boundingBox();
   if(width===390&&result.y>=details.y)throw Error('mobile execution metadata precedes the result');
   await page.screenshot({path:`${evidence}/execution-drawer-${theme}-${width}.png`,fullPage:width>760,animations:'disabled'});
