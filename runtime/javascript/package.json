@@ -16,6 +16,6 @@
     "linkedom": "0.16.11",
     "quickjs-wasi": "3.6.3",
     "turndown": "7.2.4",
-    "unpdf": "1.8.1"
+    "unpdf": "2.1.0"
   }
 }
