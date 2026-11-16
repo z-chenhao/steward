@@ -8,6 +8,10 @@
 
 日常/扩展/发布的检查调度以下方 Testing 和 CI 入口为准。协议验收矩阵描述必须保护的行为，不表示每次文档或局部改动都重新执行完整发布检查。
 
+普通 Go 套件包含真实隔离插件编译、独立版本与历史兼容场景，`make test-go` 将 WebPlugin 业务系列与其余完整 Go 套件分开，所有根用例恰好执行一次；CI 回归核对分区互斥与完整覆盖。每个 package 仍采用原 15 分钟累计 alarm，与既有 race runner 的整组上限一致，不放宽用例、Provider／RPC、执行租约或 CI job 的期限。package 按单任务调度，避免并行编译／启动突发挤占原生 Driver 原有两秒发现窗口；不改变 Driver 的期限或语义。
+
+SQLite race 先串行运行原生与受管 Delegation 的五秒审批／Drain 契约，再将自动发现的其余测试按既有测量分区、每个进程最多 32 个根用例分批执行。SQLite 同时最多三个单核进程，保留编译余量；各批仍使用原有 race/count/累计 alarm，Memory 的十分钟上限也维持原值。验收必须核对全局发现清单，每个根用例恰好完成一次，后续批次缺失或重复同样失败；复用 evidence 目录前清除全部旧 SQLite 批日志。
+
 
 ## 详细测试入口与证明边界
 
@@ -205,3 +209,7 @@ logic in its owning module. Add a helper only for a real repeated operation;
 extend an existing test for a product regression. Do not recreate the retired
 Multica task hierarchy, per-clause source-hash ledgers, CI sharding/join framework
 or a parallel benchmark platform inside the product repository.
+
+冷启动 Host 就绪与运行中工具期限分别验收。`ChannelHarness.wait_runtime_ready` 对实际标准组合的独立初次验证使用有限60秒等待，仅轮询原 `/api/status`；不补 select／update／reload，不改变单例沙箱、工具十秒预算或 Run 租约。原推进／效果边界仍使用自己的等待限制；未就绪不能接纳输入的负例继续保留。
+
+服务重启插件迁移：`TestServiceWatchdogActualProducerUpgradeRollbackDeactivationAndCold` 使用真实隔离插件与 App 选择路径验证独立配方、精确回退和停用后的首次冷读；`internal/operations/service` 的 `TestRestartRecipe*` 验证真实关闭／重开后的首个 Inspect、冻结部署次数／退避、旧会话围栏及不可用时无原生重启。最终交付仍须统一 test/lint 与适用系统门禁，不以编译或 manifest 数量代替实际调度证据。

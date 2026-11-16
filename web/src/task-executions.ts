@@ -1,13 +1,14 @@
 import {createSideSheet} from './components/ui/sheet';
 import {enhanceProjections,releaseProjections} from './projections';
 import {watchExecutionDetail} from './live-updates';
-import {t} from './i18n';
+import {workbenchText as t,workbenchClient,workbenchHeaders,workbenchResponse} from './workbench-client';
 
 // Execution inspection uses the same non-modal shell as Developer Trace.
 // Configuration, approvals and feedback keep their native controlled pages.
 export function enhanceTaskExecutions(){
  const list=document.querySelector<HTMLElement>('[data-execution-list]');
  if(!list)return;
+ const recipe=workbenchClient();if(recipe===false||recipe&&!recipe.policy.execution_sheet)return;
  let sheet:ReturnType<typeof createSideSheet>|null=null;
  let pending:AbortController|null=null;
  let stopUpdates=()=>{};
@@ -15,7 +16,8 @@ export function enhanceTaskExecutions(){
  async function select(url:URL,push:boolean){
   pending?.abort();const controller=new AbortController();pending=controller;
   try{
-   const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:{Accept:'text/html'}});
+   const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:{...workbenchHeaders(),Accept:'text/html'}});
+   workbenchResponse(response);
    if(!response.ok)throw new Error('execution read unavailable');
    const parsed=new DOMParser().parseFromString(await response.text(),'text/html');
    const next=parsed.querySelector<HTMLElement>('#execution-detail');
@@ -26,7 +28,7 @@ export function enhanceTaskExecutions(){
     sheet=createSideSheet(t('Execution details'),()=>{
      const depth=history.state?.executionSheetDepth;
      if(typeof depth==='number'&&depth>0)history.go(-depth);else dismiss();
-    },{modal:false,storageKey:'steward.execution.peek-width.v1',previousLabel:'Previous execution',nextLabel:'Next execution'});
+    },{modal:false,storageKey:'steward.execution.peek-width.v1',previousLabel:t('Previous execution'),nextLabel:t('Next execution')});
    }
    releaseProjections(sheet.body);sheet.body.replaceChildren(next);sheet.body.scrollTop=0;
    sheet.title.textContent=t('Execution details');sheet.full.href=url.href;
@@ -45,7 +47,7 @@ export function enhanceTaskExecutions(){
   if(!(event instanceof MouseEvent)||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
   const target=event.target as Element|null;
   let anchor=target?.closest<HTMLAnchorElement>('[data-execution-open],.control-sheet .execution-history a,.control-sheet .execution-heading a,[data-execution-refresh]');
-  if(!anchor&&!target?.closest('a,button,input,select,textarea,label,summary,[role=button],[contenteditable]')){
+  if(!anchor&&(!recipe||recipe.policy.row_open)&&!target?.closest('a,button,input,select,textarea,label,summary,[role=button],[contenteditable]')){
    if(window.getSelection()?.toString())return;
    anchor=target?.closest('tr[data-execution-row]')?.querySelector<HTMLAnchorElement>('[data-execution-open]');
    anchor?.focus({preventScroll:true});

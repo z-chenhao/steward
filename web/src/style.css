@@ -6,14 +6,11 @@
 @import "./foundation.css";
 @import "./shell.css";
 @import "./workspace.css";
-@import "./task-planning.css";
 @import "./capability-forms.css";
 @import "./settings.css";
-@import "./apps.css";
-@import "./conversation.css";
+@import "./presentation-primitives.css";
 @import "./intelligent-ui.css";
 @import "./observability.css";
-@import "./memory.css";
 @import "./components/ui/controls.css";
 @source "./";
 

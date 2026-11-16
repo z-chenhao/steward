@@ -1,0 +1,13 @@
+{
+  "capture": "native ui.Answer and ui.Restore; captured before form producer implementation",
+  "cases": 31,
+  "files": {
+    "internal/delivery/ui/forms.go": "130a68e2ce19219fba6991bc019cd132a8f47bee1a4fa62c5e19d3bbcb8d4c83",
+    "internal/delivery/ui/native.go": "968839377456f65e58358ec143ed52002262ce2ae6b834969e40ec2251e4f894",
+    "internal/delivery/ui/extensions.go": "6345352b0b0386b5e47a9bbe5ad5a1641908dff0447fd38180ee3aae9b16e006",
+    "internal/delivery/ui/spec.go": "8839f27dda017ab90537d02d35a375a1b14c50fa2d107fbf6f8b64101035a14b",
+    "internal/plugin/intelligentui/testdata/original-form.json": "26b7e3843568acd6d80a9ebb24f7c1282ed6623a565b89a65ac536a80cbf58a1"
+  },
+  "candidate_test": "TestFormMatchesCapturedNativeBehavior",
+  "scope": "pure producer only; submission and restore application dispatch remain native; not a completed migration"
+}

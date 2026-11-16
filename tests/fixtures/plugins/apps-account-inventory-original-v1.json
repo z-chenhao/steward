@@ -1,0 +1,549 @@
+{
+  "source": "apps62 accepted original native independent account workflow; captured before replacement",
+  "cases": [
+    {
+      "name": "case-0-false",
+      "connected": false,
+      "rows": [],
+      "indices": null,
+      "states": []
+    },
+    {
+      "name": "case-0-true",
+      "connected": true,
+      "rows": [],
+      "indices": null,
+      "states": []
+    },
+    {
+      "name": "case-1-false",
+      "connected": false,
+      "rows": [
+        {
+          "public": true,
+          "id": "",
+          "toolkit": "gmail",
+          "name": "Gmail",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        0
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": true,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-1-true",
+      "connected": true,
+      "rows": [
+        {
+          "public": true,
+          "id": "",
+          "toolkit": "gmail",
+          "name": "Gmail",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        0
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": true,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-2-false",
+      "connected": false,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "gmail",
+          "name": "first",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "",
+          "toolkit": "gmail",
+          "name": "second",
+          "alias": "",
+          "account_id": "",
+          "status": "pending",
+          "revocation_confirmed": false
+        },
+        {
+          "public": true,
+          "id": "",
+          "toolkit": "gmail",
+          "name": "third",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "gmail",
+          "name": "fourth",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        1
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": false,
+          "Pending": true
+        }
+      ]
+    },
+    {
+      "name": "case-2-true",
+      "connected": true,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "gmail",
+          "name": "first",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "",
+          "toolkit": "gmail",
+          "name": "second",
+          "alias": "",
+          "account_id": "",
+          "status": "pending",
+          "revocation_confirmed": false
+        },
+        {
+          "public": true,
+          "id": "",
+          "toolkit": "gmail",
+          "name": "third",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "gmail",
+          "name": "fourth",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        1
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": false,
+          "Pending": true
+        }
+      ]
+    },
+    {
+      "name": "case-3-false",
+      "connected": false,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "gone",
+          "name": "Gone",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "",
+          "toolkit": "keep",
+          "name": "Keep",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "other",
+          "name": "Other",
+          "alias": "",
+          "account_id": "",
+          "status": "unknown",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        1,
+        2
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-3-true",
+      "connected": true,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "gone",
+          "name": "Gone",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "",
+          "toolkit": "keep",
+          "name": "Keep",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "other",
+          "name": "Other",
+          "alias": "",
+          "account_id": "",
+          "status": "unknown",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        1,
+        2
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-4-false",
+      "connected": false,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "z",
+          "name": "Same",
+          "alias": "",
+          "account_id": "",
+          "status": "pending",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "a",
+          "name": "same",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "c",
+          "name": "ALPHA",
+          "alias": "",
+          "account_id": "",
+          "status": "failed",
+          "revocation_confirmed": false
+        },
+        {
+          "public": true,
+          "id": "",
+          "toolkit": "d",
+          "name": "中文",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        2,
+        0,
+        1,
+        3
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": true
+        },
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": true,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-4-true",
+      "connected": true,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "z",
+          "name": "Same",
+          "alias": "",
+          "account_id": "",
+          "status": "pending",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "a",
+          "name": "same",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "c",
+          "name": "ALPHA",
+          "alias": "",
+          "account_id": "",
+          "status": "failed",
+          "revocation_confirmed": false
+        },
+        {
+          "public": true,
+          "id": "",
+          "toolkit": "d",
+          "name": "中文",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        2,
+        1,
+        0,
+        3
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": true
+        },
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": true,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-5-false",
+      "connected": false,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "blank",
+          "name": "",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "nul",
+          "name": "private\u0000label",
+          "alias": "",
+          "account_id": "",
+          "status": "pending",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "unicode",
+          "name": "ÄÖ",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        0,
+        1,
+        2
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": true
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        }
+      ]
+    },
+    {
+      "name": "case-5-true",
+      "connected": true,
+      "rows": [
+        {
+          "id": "",
+          "toolkit": "blank",
+          "name": "",
+          "alias": "",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "nul",
+          "name": "private\u0000label",
+          "alias": "",
+          "account_id": "",
+          "status": "pending",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "",
+          "toolkit": "unicode",
+          "name": "ÄÖ",
+          "alias": "",
+          "account_id": "",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        }
+      ],
+      "indices": [
+        0,
+        1,
+        2
+      ],
+      "states": [
+        {
+          "Managed": true,
+          "Connected": true,
+          "PublicActive": false,
+          "Pending": false
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": true
+        },
+        {
+          "Managed": true,
+          "Connected": false,
+          "PublicActive": false,
+          "Pending": false
+        }
+      ]
+    }
+  ]
+}

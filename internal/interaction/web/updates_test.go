@@ -62,12 +62,14 @@ func TestLiveProjectionUsesCommittedPagesStableETagsAndSafeHTML(t *testing.T) {
 	c := &updatesCore{status: "busy", allowed: true, messages: []conversation.Message{{MessageID: "private-message-id", Sequence: 1, Role: "assistant", Content: conversation.Text(`<img src=x onerror="unsafe()">`)}}}
 	c.approvals = []interaction.Approval{{ID: "approval:one", Status: "pending", Hash: strings.Repeat("a", 64), Tool: "builtin__write", Arguments: `{"path":"result.txt","content":"confirmed"}`}}
 	s := &Server{Config: Config{TokenRef: "credential:test"}, Core: c, Secrets: fakeSecrets{}}
+	s.WebWorkbench = workbenchTestReader(t)
 	request := func(path, etag, token string) *httptest.ResponseRecorder {
 		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+path, nil)
 		if token != "" {
 			r.Header.Set("Authorization", "Bearer "+token)
 		}
 		r.Header.Set("If-None-Match", etag)
+		r.Header.Set("X-Steward-Workbench-Reader", "sha256:"+strings.Repeat("a", 64))
 		w := httptest.NewRecorder()
 		s.ServeHTTP(w, r)
 		return w

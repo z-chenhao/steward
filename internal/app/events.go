@@ -62,6 +62,23 @@ func (a *App) WithEvents(ctx context.Context, cfg config.Config, run func(contex
 	workCtx, cancelWork := context.WithCancel(ctx)
 	a.runtimeDone = workCtx.Done()
 	defer cancelWork()
+	pluginDone := make(chan struct{})
+	go func() {
+		defer close(pluginDone)
+		ticker := time.NewTicker(500 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-workCtx.Done():
+				return
+			case <-ticker.C:
+				if _, err := a.WorkPlugins(workCtx); err != nil && workCtx.Err() == nil {
+					a.telemetry.Logger.Warn("plugin events deferred", "code", "PLUGIN_EVENTS_UNAVAILABLE")
+				}
+			}
+		}
+	}()
+	defer func() { cancelWork(); <-pluginDone }()
 	watchDone := make(chan struct{})
 	go func() {
 		defer close(watchDone)

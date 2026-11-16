@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -16,11 +17,12 @@ import (
 )
 
 // The shell is a regular sandboxed response: srcdoc would inherit the Host's
-// style-src 'self' and block the shared inline theme. GET reads only memory.
+// style-src 'self' and block the shared inline theme. GET reads private session memory and its original sealed style resource.
 func (s *Server) previewWidget(w http.ResponseWriter, r *http.Request) {
 	p := &s.uiPreviews
 	p.mu.Lock()
 	revision := p.frame.Revision
+	runID := p.runID
 	var props json.RawMessage
 	title := ""
 	if p.frame.State == "draft" && p.frame.Key == r.URL.Query().Get("key") {
@@ -74,7 +76,25 @@ func (s *Server) previewWidget(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(map[string]any{"channel": "steward-preview", "key": key, "revision": revision, "html": markup, "css": visual.CSS, "theme": theme})
 		return
 	}
-	styles, _ := assets.ReadFile("assets/widget.css")
+	var styles []byte
+	managed := false
+	var styleErr error
+	if reader, ok := s.Core.(interface {
+		UIPreviewStyles(context.Context, string) ([]byte, bool, error)
+	}); ok {
+		styles, managed, styleErr = reader.UIPreviewStyles(r.Context(), runID)
+	}
+	if styleErr != nil || managed && len(styles) == 0 {
+		fail(w, 503)
+		return
+	}
+	if !managed {
+		styles, styleErr = legacyUI.ReadFile("legacy-ui/v1/widget.css")
+	}
+	if styleErr != nil {
+		fail(w, 503)
+		return
+	}
 	runtime, _ := assets.ReadFile("assets/preview-runtime.js")
 	css := strings.ReplaceAll(visual.CSS, "<", `\3c `)
 	config, _ := json.Marshal(map[string]string{"key": key})
@@ -88,7 +108,7 @@ func previewMarkup(source string) string {
 	if err != nil {
 		return ""
 	}
-	allowed := " div span p h1 h2 h3 h4 h5 h6 strong em b i small code pre br hr ul ol li table caption colgroup col thead tbody tfoot tr th td dl dt dd blockquote form label input button select option optgroup textarea output progress meter fieldset legend section article header footer main figure figcaption canvas svg g path rect circle ellipse line polyline polygon text tspan defs marker clippath mask lineargradient radialgradient stop use symbol title desc pattern filter feblend fecolormatrix fecomponenttransfer fecomposite feconvolvematrix fediffuselighting fedisplacementmap fedistantlight fedropshadow feflood fefunca fefuncb fefuncg fefuncr fegaussianblur feimage femerge femergenode femorphology feoffset fepointlight fespecularlighting fespotlight fetile feturbulence "
+	allowed := " details summary div span p h1 h2 h3 h4 h5 h6 strong em b i small code pre br hr ul ol li table caption colgroup col thead tbody tfoot tr th td dl dt dd blockquote form label input button select option optgroup textarea output progress meter fieldset legend section article header footer main figure figcaption canvas svg g path rect circle ellipse line polyline polygon text tspan defs marker clippath mask lineargradient radialgradient stop use symbol title desc pattern filter feblend fecolormatrix fecomponenttransfer fecomposite feconvolvematrix fediffuselighting fedisplacementmap fedistantlight fedropshadow feflood fefunca fefuncb fefuncg fefuncr fegaussianblur feimage femerge femergenode femorphology feoffset fepointlight fespecularlighting fespotlight fetile feturbulence "
 	root := &htmlnode.Node{Type: htmlnode.ElementNode, Data: "div", DataAtom: atom.Div}
 	for _, node := range nodes {
 		root.AppendChild(node)

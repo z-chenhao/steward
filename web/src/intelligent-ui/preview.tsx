@@ -1,3 +1,7 @@
+import {PreviewMeetingView,meetingViewSchema} from './meeting-view';
+import {PreviewFormView} from './extensions';
+import {formViewSchema} from './form-schema';
+import {PreviewChartView} from './chart-view';
 import {useEffect,useState,useRef,useMemo,Component,type ReactNode} from 'react';
 import {createRoot,type Root} from 'react-dom/client';
 import {flushSync} from 'react-dom';
@@ -5,10 +9,11 @@ import {z} from 'zod';
 import {OpenIntelligentAnswer} from '../components/open-intelligent-ui/catalog';
 import {t} from '../i18n';
 import {Markdown} from '../markdown';
+import {PreviewPlanView,PreviewCardsView,PreviewTableView} from './plan-view';
 
 const component=z.object({name:z.enum(['Table','barChart','pieChart','plan_visualization','scheduleTime','generateSandboxedUi','steward.lineChart','steward.scatterChart','steward.form','steward.cards']),props:z.unknown()});
 const characters=(limit:number)=>z.string().refine(value=>Array.from(value).length<=limit);
-export const uiPreviewFrame=z.object({revision:z.number().int().nonnegative(),key:z.string().regex(/^[a-f0-9]{32}$/),state:z.enum(['draft','discarded','committed']),reply_key:z.string().regex(/^[a-f0-9]{32}$/).optional(),items:z.array(z.object({key:z.string().regex(/^[a-f0-9]{32}$/),title:characters(200),text:characters(8192).optional(),components:z.array(component).max(16).nullable()})).max(16).optional()});
+export const uiPreviewFrame=z.object({revision:z.number().int().nonnegative(),key:z.string().regex(/^[a-f0-9]{32}$/),state:z.enum(['draft','discarded','committed']),reply_key:z.string().regex(/^[a-f0-9]{32}$/).optional(),items:z.array(z.object({key:z.string().regex(/^[a-f0-9]{32}$/),title:characters(200),plan_view:z.boolean().optional(),cards_view:z.boolean().optional(),table_view:z.boolean().optional(),chart_view:z.boolean().optional(),meeting_view:z.boolean().optional(),meeting_views:z.record(z.string().regex(/^(?:[0-9]|1[0-5])$/),meetingViewSchema).optional(),form_view:z.boolean().optional(),form_views:z.record(z.string().regex(/^(?:[0-9]|1[0-5])$/),formViewSchema).optional(),text:characters(8192).optional(),components:z.array(component).max(16).nullable()})).max(16).optional()});
 type Item=NonNullable<z.infer<typeof uiPreviewFrame>['items']>[number];
 
 // The opaque frame runs only Steward's nonce-authorized display updater.
@@ -44,7 +49,7 @@ function PreviewAnswer({item,session,revision}:{item:Item;session:string;revisio
   <div className="message-bubble">
   <p className="field-help" role="status">{t('Generating interactive answer…')}</p>
   {!item.components?.length&&item.title&&<strong>{item.title}</strong>}
-  <div inert>{item.components?.map((c,index)=><PreviewBoundary key={index}>{c.name==='generateSandboxedUi'?<PreviewSandbox props={c.props} title={item.title} session={session} item={item.key} index={index} revision={revision}/>:<OpenIntelligentAnswer value={{...c,disabled:true}} fallback=""/>}</PreviewBoundary>)}</div>
+  <div inert>{item.components?.map((c,index)=><PreviewBoundary key={index}>{c.name==='scheduleTime'&&item.meeting_view?(item.meeting_views?.[String(index)]?<PreviewMeetingView view={item.meeting_views[String(index)]}/>:null):c.name==='steward.form'&&item.form_view?(item.form_views?.[String(index)]?<PreviewFormView view={item.form_views[String(index)]} id={'preview-form-'+item.key+'-'+index}/>:null):c.name==='plan_visualization'&&item.plan_view?<PreviewPlanView session={session} item={item.key} index={index} revision={revision} fallback={item.title}/>:c.name==='steward.cards'&&item.cards_view?<PreviewCardsView session={session} item={item.key} index={index} revision={revision} fallback={item.title}/>:c.name==='Table'&&item.table_view?<PreviewTableView session={session} item={item.key} index={index} revision={revision} fallback={item.title}/>:['barChart','pieChart','steward.lineChart','steward.scatterChart'].includes(c.name)&&item.chart_view?<PreviewChartView name={c.name} props={c.props} session={session} item={item.key} index={index} revision={revision} fallback={item.title}/>:c.name==='generateSandboxedUi'?<PreviewSandbox props={c.props} title={item.title} session={session} item={item.key} index={index} revision={revision}/>:<OpenIntelligentAnswer value={{...c,disabled:true}} fallback=""/>}</PreviewBoundary>)}</div>
  </div></article>;
 }
 

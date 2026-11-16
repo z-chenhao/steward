@@ -106,19 +106,19 @@ func TestReadExactPRPaginatedUpdatesAndOwnOutput(t *testing.T) {
 			http.NotFound(w, r)
 		}
 	})
-	batch, err := client.read(context.Background(), testConfig())
+	batch, err := client.readLegacyV1(context.Background(), testConfig())
 	if err != nil || len(batch.Events) != 102 || pages.Load() != 2 || batch.RepositoryID != 99 {
 		t.Fatalf("batch: %d %+v %v", len(batch.Events), batch, err)
 	}
 	if batch.Events[0].SourceID != 2 || batch.Events[100].Kind != "review" || batch.Events[101].State != "success" {
 		t.Fatal("wrong filtering or event kinds")
 	}
-	repeated, err := client.read(context.Background(), testConfig())
+	repeated, err := client.readLegacyV1(context.Background(), testConfig())
 	if err != nil || repeated.Events[0].Key != batch.Events[0].Key {
 		t.Fatal("unstable identity", err)
 	}
 	revision.Store(1)
-	changed, err := client.read(context.Background(), testConfig())
+	changed, err := client.readLegacyV1(context.Background(), testConfig())
 	if err != nil || changed.Events[0].Key == batch.Events[0].Key {
 		t.Fatal("source edit lost", err)
 	}
@@ -146,7 +146,7 @@ func TestReadRejectsPartialHistoryRedirectAndInvalidSource(t *testing.T) {
 				w.WriteHeader(test.status)
 				fmt.Fprint(w, test.payload)
 			})
-			batch, err := client.read(context.Background(), testConfig())
+			batch, err := client.readLegacyV1(context.Background(), testConfig())
 			var failure *Failure
 			if !errors.As(err, &failure) || failure.Code != test.code || len(batch.Events) != 0 || strings.Contains(err.Error(), "sensitive") || strings.Contains(err.Error(), "synthetic-test-token") {
 				t.Fatalf("unsafe result: %+v %v", batch, err)
@@ -170,16 +170,16 @@ func TestReadReviewIdentityIncludesBodyBeyondDisplayLimit(t *testing.T) {
 			fmt.Fprint(w, `{"check_runs":[]}`)
 		}
 	})
-	first, err := client.read(context.Background(), testConfig())
+	first, err := client.readLegacyV1(context.Background(), testConfig())
 	if err != nil || len(first.Events) != 1 {
 		t.Fatal(first, err)
 	}
-	repeated, err := client.read(context.Background(), testConfig())
+	repeated, err := client.readLegacyV1(context.Background(), testConfig())
 	if err != nil || repeated.Events[0].Key != first.Events[0].Key {
 		t.Fatal("identical long source changed identity", err)
 	}
 	revision.Store(1)
-	changed, err := client.read(context.Background(), testConfig())
+	changed, err := client.readLegacyV1(context.Background(), testConfig())
 	if err != nil || len(changed.Events) != 1 {
 		t.Fatal(changed, err)
 	}

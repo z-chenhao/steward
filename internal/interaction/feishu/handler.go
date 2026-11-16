@@ -21,11 +21,13 @@ type Core interface {
 	CheckChannel(context.Context, string, string, string) error
 	DecideInbound(context.Context, interaction.InboundEvent, string, string, string) error
 	ImportChannelArtifact(context.Context, interaction.InboundEvent, string, artifact.Input, io.Reader) (string, error)
+	DescribeArtifact(context.Context, string) (artifact.Descriptor, error)
 }
 type Handler struct {
-	Client Client
-	Core   Core
-	Wake   func()
+	ProjectCard CardProjector
+	Client      Client
+	Core        Core
+	Wake        func()
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +142,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(409)
 			return
 		}
-		inbound.Content = []conversation.ContentPart{{Type: artifact.ContentType(media), ArtifactRef: ref}}
+		descriptor, err := h.Core.DescribeArtifact(r.Context(), ref)
+		if err != nil {
+			w.WriteHeader(409)
+			return
+		}
+		inbound.Content = []conversation.ContentPart{{Type: descriptor.ContentType(), ArtifactRef: ref}}
 	}
 	if _, e = h.Core.AcceptInbound(r.Context(), inbound); e != nil {
 		w.WriteHeader(409)

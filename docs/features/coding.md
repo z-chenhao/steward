@@ -16,7 +16,7 @@ Worker 默认能够在专属隔离环境里读取、新建、精确修改文件�
 
 **当前实现**：Worker 的默认 `builtin__read/bash/edit/write` 支持新建文件、连续修改脏文件、精确内容哈希校验、通用命令、限量输出和文件 Artifact。新 Main 不获得这四个工具；Worker 继续使用统一审批与重放，配置 Computer 时与桌面浏览器共用 Guest。
 
-**本地代码任务**：安装所有者设置 `execution.repository_source` 指向适合交给 Agent 的实际本地仓库，配合原有私有 `execution.root` 使用原生离线执行。Task 首次准备时保存独立工作副本和冻结导入基线，包含源目录的未提交和未跟踪文件。准备不会打开 Git 元数据，源目录保留原样。Root 和 Child 使用该 Task 的工作副本；Main 通过 Task 与 Artifact 查看结果，不直接进入工作区。显式更改源或执行配置不会重绑旧 Run。
+**本地代码任务**：安装所有者设置 `execution.repository_source` 指向适合交给 Agent 的实际本地仓库，配合原有私有 `execution.root` 使用原生离线执行。Task 首次准备时保存独立工作副本和冻结导入基线，包含源目录的未提交和未跟踪文件。准备不会打开 Git 元数据，源目录保留原样。Root 和 Child 使用该 Task 的工作副本；每个 Worker 首轮会收到实际 cwd 与可读项目文档入口，Main 通过 Task 与 Artifact 查看结果，不直接进入工作区。显式更改源或执行配置不会重绑旧 Run。
 
 使用 `steward coding inspect TASK_REF` 查看状态和历史命令回执，`steward coding diff TASK_REF` 查看相对导入基线的文件变化与文本补丁，`steward coding report TASK_REF` 将快照保存为关联原 Task 的 Artifact。报告中的命令时间、尝试次数和结果来自实际已接受调用。检查命令退出码和超时字段，命令历史不代表验证了当前文件快照。若 diff 输出含无效 UTF-8，报告会标明补丁不可用，并保留文件变化和原字节摘要。
 
@@ -43,3 +43,17 @@ execution:
 ## 升级
 
 删除旧 workspace 配置，按需设置 execution；旧 audit/edit/protected 不再是配置项。升级前先用旧版本排空旧 Workspace Run 和待决副作用，新版本不为旧工具提供别名。详见 [迁移边界](../designs/coding.md#默认设置与迁移)。
+
+## 文件方法的独立版本
+
+标准分发包含 `file-tools` Go 包：授权文件的分页／原字节摘录和唯一编辑定位可独立升级、回退和停用。旧 native Run 保留原实现，已冻结 Run 保留组合，旧 Tool／Artifact 回执保留原字节；停用后不恢复 native 文件方法。新写入仍须批准确切内容及原哈希，不因方法版本变化获得新权限。边界见[文件方法设计](../designs/coding.md#独立文件方法与固定提交机制f-026私有实验接口)。
+
+
+## 命令资源方法的独立版本
+
+标准分发包含 `shell-tools` Go 包：命令超时与输出预算可独立缩小、升级、回退和停用。插件只看到数值上限；命令正文、工作区、具体审批、进程组、原输出／退出状态及未知结果仍归 Host。已冻结 Run 保留版本，历史 native 调用保持原实现，停用不恢复受管 bash 的 native 方法。设计与恢复边界见[命令方法设计](../designs/coding.md)。
+
+
+## Task 导入与报告方法
+
+标准分发包含 `coding-workspace` Go 包：首次完整导入的资源限额与所有者报告的历史窗口／补丁预算可独立换版。首次导入方法固定到 Task，后续 Root／Child 复用原发布回执；新报告可选择当前已验收方法，原 Artifact 字节保留。完整复制、路径安全、原命令／文件事实、Task／PR／Forget 校验仍由 Host 强制。接口范围与强制验收见[设计](../designs/coding.md)和[测试方案](../test-plans/coding.md)。

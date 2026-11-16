@@ -1,0 +1,24 @@
+[
+  {
+    "Name": "large-private-names",
+    "Count": 10003,
+    "PadRepeats": 1000,
+    "GiantIndex": 5001,
+    "GiantRepeats": 3145728,
+    "ProjectedNameBytes": 13191939,
+    "ProjectedNamesSHA256": "f1b91333e40385dee3acd5a26f3887bdfd940d2a97bfb5567e0b3a600ba27006",
+    "SidebarOrderSHA256": "8b8534087d98497be22b5ac11033f1b78798ac268a7c7b7d621c95fbc47c5d0b",
+    "ConnectedOrderSHA256": "ab476f072f1ae65c8742ee5647f66721bab6de396432828d93768ec964e0e964"
+  },
+  {
+    "Name": "unicode-and-unstable-ties",
+    "Count": 137,
+    "PadRepeats": 0,
+    "GiantIndex": -1,
+    "GiantRepeats": 0,
+    "ProjectedNameBytes": 656,
+    "ProjectedNamesSHA256": "47b5ad541c4713ba2efe900b61b8153abd14811afe39e8e4f79f21b633a9a7e4",
+    "SidebarOrderSHA256": "555a19d81f892e3e29f263369f57e0cb0a380920bc04e33d997f8c226e834db0",
+    "ConnectedOrderSHA256": "57e00f73a12ec69a86114b5469430ecec01f8418e63b450bdd2086e70e41582a"
+  }
+]

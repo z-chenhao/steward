@@ -1,0 +1,43 @@
+{
+  "id": "experience-system-policy",
+  "allowed_contracts": [
+    "steward.experience-policy/1"
+  ],
+  "allowed_requests": [],
+  "allowed_hooks": [],
+  "cases": [
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.experience-policy/1",
+      "input": {
+        "reason": "success"
+      },
+      "expected": {
+        "required_runs": 2,
+        "introduction": ""
+      }
+    },
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.experience-policy/1",
+      "input": {
+        "reason": "correction"
+      },
+      "expected": {
+        "required_runs": 1,
+        "introduction": ""
+      }
+    },
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.experience-policy/1",
+      "input": {
+        "reason": "recovered_failure"
+      },
+      "expected": {
+        "required_runs": 1,
+        "introduction": ""
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@ package feishu
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"github.com/z-chenhao/assistant/internal/delivery"
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
 	"github.com/z-chenhao/assistant/internal/interaction"
+	"github.com/z-chenhao/assistant/internal/plugin/feishuchat"
+	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
 )
 
 func TestReplyUsesOnlyEscapedFrozenSourceAndNeverFallsBack(t *testing.T) {
@@ -103,6 +106,9 @@ func TestWorkspaceOriginRejectsCredentialAndNavigationInjection(t *testing.T) {
 type projectionStore struct {
 	raw             json.RawMessage
 	source, receipt string
+	hash            string
+	saves           int
+	saveErr         error
 }
 
 func (s *projectionStore) DeliveryBinding(context.Context, delivery.Request) (interaction.Binding, error) {
@@ -114,9 +120,26 @@ func (s *projectionStore) DeliveryReplySource(context.Context, delivery.Request)
 func (s *projectionStore) FeishuTaskFeedbackCard(context.Context, string) (string, string, bool, error) {
 	return "", "", false, nil
 }
-func (s *projectionStore) SaveProjection(_ context.Context, _ string, _ string, _ int, spec any) (json.RawMessage, error) {
+func (s *projectionStore) LoadProjection(_ context.Context, _ string, hash string) (json.RawMessage, bool, error) {
+	if s.raw == nil {
+		return nil, false, nil
+	}
+	if s.hash != hash {
+		return nil, true, delivery.ErrConflict
+	}
+	return s.raw, true, nil
+}
+func (s *projectionStore) SaveProjection(_ context.Context, _ string, hash string, _ int, spec any) (json.RawMessage, error) {
+	s.saves++
+	if s.saveErr != nil {
+		return nil, s.saveErr
+	}
 	if s.raw == nil {
 		s.raw, _ = json.Marshal(spec)
+		s.hash = hash
+	}
+	if s.hash != hash {
+		return nil, delivery.ErrConflict
 	}
 	return s.raw, nil
 }
@@ -137,6 +160,7 @@ func TestDeliveryProjectionFreezesLinkAndPreservesLegacyCard(t *testing.T) {
 			if legacy {
 				store.source = ""
 				store.raw = mustJSON(t, ui.Compose(e))
+				store.hash = ui.Hash(e.Message)
 			}
 			calls := 0
 			peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -165,16 +189,38 @@ func TestDeliveryProjectionFreezesLinkAndPreservesLegacyCard(t *testing.T) {
 			c := fixtureClient()
 			c.Config.APIBase = peer.URL
 			c.Config.WorkspaceURL = "https://original.example.test"
-			a := Adapter{Client: c, Store: store}
+			projections := 0
+			a := Adapter{Client: c, Store: store, ProjectCard: func(_ context.Context, f contract.CardFacts) (contract.CardProjection, error) {
+				projections++
+				if projections > 1 || legacy {
+					return contract.CardProjection{}, errors.New("current plugin unavailable")
+				}
+				return feishuchat.ProjectCard(f), nil
+			}}
 			if observed := a.Send(context.Background(), e); observed.Outcome != delivery.Retry {
 				t.Fatal(observed)
 			}
+			store.saveErr = errors.New("current projection writer unavailable")
 			a.Client.Config.WorkspaceURL = "https://changed.example.test"
 			if observed := a.Send(context.Background(), e); observed.Outcome != delivery.Delivered || calls != 2 {
 				t.Fatal(observed, calls)
 			}
 			if observed := a.Query(context.Background(), e); observed.Outcome != delivery.Delivered || calls != 2 {
 				t.Fatal("stored receipt caused a send", observed, calls)
+			}
+			expectedSaves := 1
+			if legacy {
+				expectedSaves = 0
+			}
+			expectedProjections := 1
+			if legacy {
+				expectedProjections = 0
+			}
+			if projections != expectedProjections {
+				t.Fatal("frozen recovery depended on current plugin", projections)
+			}
+			if store.saves != expectedSaves {
+				t.Fatal("accepted projection was re-prepared", store.saves, expectedSaves)
 			}
 		})
 	}
@@ -184,4 +230,80 @@ func fmtBool(v bool) string {
 		return "legacy"
 	}
 	return "linked"
+}
+
+func TestUnknownDeliveryQueryDoesNotAcceptOrSendNewProjection(t *testing.T) {
+	store := &projectionStore{source: "om_source"}
+	request := delivery.Request{DeliveryID: "delivery:unknown", IdempotencyKey: "delivery:unknown", MessageID: "unknown", ConversationID: "owner", Channel: "feishu", DestinationRef: "chat", Intent: "completion", CreatedAt: time.Now().UnixMicro()}
+	envelope := delivery.Envelope{Request: request, Message: conversation.Message{MessageID: request.MessageID, ConversationID: request.ConversationID, Role: "assistant", Sequence: 7, Content: conversation.Text("Original result")}}
+	calls := 0
+	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		t.Error("query attempted a remote effect")
+		w.WriteHeader(500)
+	}))
+	defer peer.Close()
+	client := fixtureClient()
+	client.Config.APIBase = peer.URL
+	adapter := Adapter{Client: client, Store: store}
+	if observed := adapter.Query(context.Background(), envelope); observed.Outcome != delivery.Unknown || store.raw != nil || store.saves != 0 || calls != 0 {
+		t.Fatal("query acquired a fresh presentation or send", observed, store.saves, calls)
+	}
+}
+
+// A frozen presentation belongs to the exact accepted message. Neither a retry
+// nor recovery may reuse it for changed content under the same delivery key.
+func TestFrozenDeliveryRejectsEnvelopeDriftBeforeTransport(t *testing.T) {
+	store := &projectionStore{source: "om_source"}
+	request := delivery.Request{DeliveryID: "delivery:frozen", IdempotencyKey: "delivery:frozen", MessageID: "frozen", ConversationID: "owner", Channel: "feishu", DestinationRef: "chat", Intent: "completion", CreatedAt: time.Now().UnixMicro()}
+	envelope := delivery.Envelope{Request: request, Message: conversation.Message{MessageID: request.MessageID, ConversationID: request.ConversationID, Role: "assistant", Sequence: 8, Content: conversation.Text("Accepted result")}}
+	store.raw = mustJSON(t, composeProjection(envelope, "https://original.example.test", store.source))
+	store.hash = ui.Hash(envelope.Message)
+	original := string(store.raw)
+	envelope.Message.Content = conversation.Text("Different result")
+	calls := 0
+	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		t.Error("changed envelope reached transport")
+		w.WriteHeader(500)
+	}))
+	defer peer.Close()
+	client := fixtureClient()
+	client.Config.APIBase = peer.URL
+	adapter := Adapter{Client: client, Store: store}
+	for _, observed := range []delivery.Observation{adapter.Send(context.Background(), envelope), adapter.Query(context.Background(), envelope)} {
+		if observed.Outcome != delivery.Unknown {
+			t.Fatal("drift was accepted", observed)
+		}
+	}
+	if calls != 0 || store.saves != 0 || string(store.raw) != original || store.receipt != "" {
+		t.Fatal("drift changed accepted projection or produced effects", calls, store.saves)
+	}
+}
+
+func TestManagedCardFailureCannotFallBackOrSend(t *testing.T) {
+	store := &projectionStore{source: "om_source"}
+	request := delivery.Request{DeliveryID: "delivery:stopped", IdempotencyKey: "delivery:stopped", MessageID: "stopped", ConversationID: "owner", Channel: "feishu", DestinationRef: "chat", Intent: "completion", CreatedAt: time.Now().UnixMicro()}
+	envelope := delivery.Envelope{Request: request, Message: conversation.Message{MessageID: request.MessageID, ConversationID: request.ConversationID, Role: "assistant", Sequence: 9, Content: conversation.Text("New result")}}
+	calls := 0
+	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; t.Error("stopped plugin reached transport") }))
+	defer peer.Close()
+	client := fixtureClient()
+	client.Config.APIBase = peer.URL
+	adapter := Adapter{Client: client, Store: store, ProjectCard: func(context.Context, contract.CardFacts) (contract.CardProjection, error) {
+		return contract.CardProjection{}, errors.New("stopped")
+	}}
+	if observed := adapter.Send(context.Background(), envelope); observed.Outcome != delivery.Unknown || calls != 0 || store.saves != 0 || store.raw != nil {
+		t.Fatal("managed failure fell back", observed, calls, store.saves)
+	}
+}
+func TestCardPresentationCannotAcquireLinksOrFeedback(t *testing.T) {
+	for _, mode := range []string{"linked", "feedback", "unknown"} {
+		if _, err := bindCard(ui.Spec{}, contract.CardProjection{Mode: mode}, contract.CardFacts{}, "", 0, "", "", ""); err == nil {
+			t.Fatal("unauthorized card mode", mode)
+		}
+	}
+	if _, err := bindCard(ui.Spec{}, contract.CardProjection{Mode: "plain"}, contract.CardFacts{Feedback: true}, "", 0, "", "feedback:one", ""); err == nil {
+		t.Fatal("feedback callback dropped")
+	}
 }

@@ -5,16 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"maps"
 	"net/http"
-	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/z-chenhao/assistant/internal/connectedapps"
 	"github.com/z-chenhao/assistant/internal/connector/composio"
+	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/contract"
 )
 
 type AppConnections interface {
+	AccountInventory(context.Context) (connectedapps.AccountInventoryPolicy, error)
+	Settings(context.Context) (connectedapps.SettingsSelection, error)
+	Directory(context.Context, contract.Query) (connectedapps.DirectorySelection, error)
 	State(context.Context) (connectedapps.State, error)
 	Detail(context.Context, string) (composio.Toolkit, error)
 	View(context.Context, string, string, string) (connectedapps.View, error)
@@ -38,11 +41,11 @@ type appGroup struct {
 	URL   string
 	Items []appCard
 }
-type appAuthConfigRow struct {
-	App, Config string
-}
+type appAuthConfigRow = connectedapps.SettingsRow
 
 type appsView struct {
+	Interface *AppInterfacePolicy
+	settings  connectedapps.SettingsSelection
 	connectedapps.View
 	Items                    []appCard
 	ConnectedOnly            bool
@@ -64,123 +67,127 @@ func (v *appsView) Inventory() page {
 	return page{Apps: &all}
 }
 
-func (s *Server) cardFor(item composio.Toolkit, state connectedapps.State) appCard {
+func (s *Server) cardFor(item composio.Toolkit, selection connectedapps.DirectorySelection) appCard {
 	card := appCard{Toolkit: item, URL: "/settings/apps?app=" + item.Slug}
-	if card.Name == "" {
-		card.Name = card.Slug
+	// A failed directory contributes no label policy. Independent account views
+	// retain original facts without restoring the old display default.
+	if label, err := selection.Label(item.Name, item.Slug); err == nil {
+		card.Name = label.Name
+		card.Initial = label.Initial
 	}
-	initial := []rune(card.Name)
-	if len(initial) > 0 {
-		card.Initial = strings.ToUpper(string(initial[0]))
-	}
-	s.appLogos.register(item.Slug, item.Meta.Logo)
 	card.Icon = "/apps/logo/" + item.Slug
-	card.Description = connectedapps.Description(item.Slug)
-	if card.Description == "" {
-		card.Description = item.Meta.Description
-	}
-	if card.Description == "" {
-		card.Description = "Bring this app into your everyday work"
-	}
-	caption := []rune(card.Description)
-	if len(caption) > 150 {
-		card.Description = string(caption[:147]) + "…"
-	}
-	for _, c := range state.Connections {
-		if c.Toolkit != item.Slug {
-			continue
-		}
-		if c.Status != "disconnected" || !c.RevocationConfirmed {
-			card.Managed = true
-		}
-		if c.Status == "active" {
-			card.Connected = true
-			card.PublicActive = c.Public
-		}
-		if c.Status == "pending" {
-			card.Pending = true
-		}
-	}
 	return card
-}
-func (s *Server) managedApps(state connectedapps.State) []appCard {
-	var result []appCard
-	seen := map[string]bool{}
-	for _, c := range state.Connections {
-		if seen[c.Toolkit] || c.Status == "disconnected" && c.RevocationConfirmed {
-			continue
-		}
-		seen[c.Toolkit] = true
-		result = append(result, s.cardFor(composio.Toolkit{Slug: c.Toolkit, Name: c.Name}, state))
-	}
-	sort.Slice(result, func(i, j int) bool { return strings.ToLower(result[i].Name) < strings.ToLower(result[j].Name) })
-	return result
 }
 func groupApps(items []appCard, title string) []appGroup {
 	if len(items) == 0 {
 		return nil
 	}
-	sortApps(items)
 	return []appGroup{{Title: title, Items: items}}
 }
 
-func (s *Server) loadAppService(ctx context.Context, p *page) error {
+func (s *Server) loadAppService(ctx context.Context, r *http.Request, p *page) error {
 	if s.Apps == nil {
 		return connectedapps.ErrUnavailable
 	}
+	ui := s.appInterface(ctx, "", requestLanguage(r))
+	if !ui.available() || ui.pagesManaged && ui.pagesMarkup == nil || ui.settingsManaged && ui.settingsMarkup == nil {
+		return connectedapps.ErrUnavailable
+	}
+	selection, err := s.Apps.Settings(ctx)
+	if err != nil {
+		return err
+	}
+	state := selection.State
+	var original []appAuthConfigRow
+	for app, config := range state.AuthConfigs {
+		original = append(original, appAuthConfigRow{App: app, Config: config})
+	}
+	rows, err := selection.Rows(ctx, "saved", original, -1)
+	if err != nil {
+		return err
+	}
+
+	p.Settings = &settingsView{Section: "apps"}
+	p.Apps = &appsView{View: connectedapps.View{State: state}, AuthConfigRows: rows, settings: selection, Interface: &ui}
+	return nil
+}
+func (s *Server) loadApps(ctx context.Context, r *http.Request, p *page) (err error) {
+	if s.Apps == nil {
+		return connectedapps.ErrUnavailable
+	}
+	logoPolicy := s.appLogoPolicy(ctx)
+	ui := s.appInterface(ctx, r.URL.Query().Get("interface_revision"), requestLanguage(r))
+	if !ui.available() || ui.pagesManaged && ui.pagesMarkup == nil || ui.directoryManaged && ui.directoryMarkup == nil {
+		return connectedapps.ErrUnavailable
+	}
+	inventory, inventoryErr := s.Apps.AccountInventory(ctx)
 	state, err := s.Apps.State(ctx)
 	if err != nil {
 		return err
 	}
-	var rows []appAuthConfigRow
-	for app, config := range state.AuthConfigs {
-		rows = append(rows, appAuthConfigRow{app, config})
-	}
-	sort.Slice(rows, func(i, j int) bool { return rows[i].App < rows[j].App })
-	if len(rows) == 0 {
-		rows = []appAuthConfigRow{{}}
-	}
-	p.Settings = &settingsView{Section: "apps"}
-	p.Apps = &appsView{View: connectedapps.View{State: state}, AuthConfigRows: rows}
-	return nil
-}
-func (s *Server) loadApps(ctx context.Context, r *http.Request, p *page) error {
-	if s.Apps == nil {
-		return connectedapps.ErrUnavailable
-	}
+	query := contract.Query{Search: r.URL.Query().Get("search"), Category: r.URL.Query().Get("category"), LiveConfigured: state.KeyRef != "", HasCursor: r.URL.Query().Get("cursor") != ""}
+	selection, editorialErr := s.Apps.Directory(ctx, query)
+	ctx = connectedapps.WithEditorial(ctx, query, selection, editorialErr)
+	defer func() {
+		defer func() {
+			if err == nil && p.Apps != nil {
+				p.Apps.Interface = &ui
+				if !appCardsAvailable(p.Apps) || p.View == "apps" && !appSidebarAvailable(p.Apps) || p.Apps.Selected != nil && !appGraphicsAvailable(p.Apps) {
+					err = connectedapps.ErrUnavailable
+					return
+				}
+				s.projectAppLogos(p.Apps, logoPolicy)
+			}
+		}()
+		if err == nil && p.Apps != nil {
+			if editorialErr != nil {
+				if inventoryErr != nil {
+					err = inventoryErr
+					return
+				}
+				err = s.projectAccountInventory(ctx, inventory, selection, p.Apps)
+				return
+			}
+			err = s.projectAppInventory(ctx, selection, p.Apps)
+			if err == nil {
+				err = projectAppCaptions(ctx, selection, p.Apps)
+			}
+		}
+	}()
 	p.Settings = &settingsView{Section: "apps"}
 	if slug := r.URL.Query().Get("app"); slug != "" {
-		state, err := s.Apps.State(ctx)
-		if err != nil {
-			return err
-		}
 		item, err := s.Apps.Detail(ctx, slug)
 		if err != nil {
 			return err
 		}
-		card := s.cardFor(item, state)
-		p.Apps = &appsView{View: connectedapps.View{State: state, Suggested: state.KeyRef == ""}, Selected: &card, Managed: s.managedApps(state)}
+		card := s.cardFor(item, selection)
+		p.Apps = &appsView{View: connectedapps.View{State: state, Suggested: state.KeyRef == ""}, Selected: &card}
 		return nil
 	}
 	if r.URL.Query().Get("view") == "connected" {
-		state, err := s.Apps.State(ctx)
-		p.Apps = &appsView{View: connectedapps.View{State: state, Suggested: state.KeyRef == ""}, ConnectedOnly: true, Managed: s.managedApps(state)}
-		p.Apps.Items = p.Apps.Managed
-		p.Apps.Groups = groupApps(p.Apps.Items, "Your apps")
-		return err
+		p.Apps = &appsView{View: connectedapps.View{State: state, Suggested: state.KeyRef == ""}, ConnectedOnly: true}
+		return nil
 	}
 	if r.URL.Query().Get("search") == "" && r.URL.Query().Get("category") == "" && r.URL.Query().Get("cursor") == "" && r.URL.Query().Get("view") != "all" {
-		state, err := s.Apps.State(ctx)
-		if err != nil {
-			return err
+		if editorialErr != nil {
+			return editorialErr
 		}
-		p.Apps, err = s.loadAppDiscovery(state, r.URL.Query().Get("collection"))
+		p.Apps, err = s.loadAppDiscovery(state, r.URL.Query().Get("collection"), selection)
 		return err
 	}
 	v, err := s.Apps.View(ctx, r.URL.Query().Get("search"), r.URL.Query().Get("category"), r.URL.Query().Get("cursor"))
-	p.Apps = &appsView{View: v, Directory: true, Managed: s.managedApps(v.State)}
-	for _, item := range v.Catalog.Items {
-		card := s.cardFor(item, v.State)
+	p.Apps = &appsView{View: v, Directory: true}
+
+	if err != nil {
+		return err
+	}
+	order, err := selection.Order(ctx, v.Catalog.Items)
+	if err != nil {
+		return err
+	}
+	for _, index := range order {
+		item := v.Catalog.Items[index]
+		card := s.cardFor(item, selection)
 		p.Apps.Items = append(p.Apps.Items, card)
 	}
 	p.Apps.Groups = groupApps(p.Apps.Items, "All apps")
@@ -200,26 +207,10 @@ func (s *Server) appDetail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = requestLayout(r).ExecuteTemplate(w, "app-detail", p)
 }
-func appError(err error) string {
-	if errors.Is(err, connectedapps.ErrAuthConfigRequired) {
-		return "This app requires your own OAuth app. Ask the installation owner to configure it in Composio, then reconnect."
-	}
-	switch {
-	case errors.Is(err, connectedapps.ErrConflict):
-		return "App connections changed. Refresh and try again."
-	case errors.Is(err, connectedapps.ErrInvalid):
-		return "Check the app, account alias and credential reference."
-	case errors.Is(err, connectedapps.ErrDenied):
-		return "This account cannot be used. Reconnect it to continue."
-	case errors.Is(err, connectedapps.ErrAliasRequired):
-		return "Choose a label for the additional account."
-	case errors.Is(err, connectedapps.ErrLinkExpired):
-		return "This authorization link has expired. Reconnect the account to continue."
-	default:
-		return "App service unavailable. Ask the installation owner to check the connection service."
-	}
-}
+
 func (s *Server) appServiceAction(w http.ResponseWriter, r *http.Request) error {
+	ui := s.appInterface(r.Context(), r.FormValue("interface_revision"), requestLanguage(r))
+	r = r.WithContext(context.WithValue(r.Context(), appInterfaceKey{}, ui))
 	if s.Apps == nil {
 		return connectedapps.ErrUnavailable
 	}
@@ -232,7 +223,7 @@ func (s *Server) appServiceAction(w http.ResponseWriter, r *http.Request) error 
 			err = connectedapps.ErrInvalid
 		} else {
 			for i, app := range apps {
-				rows = append(rows, appAuthConfigRow{app, ids[i]})
+				rows = append(rows, appAuthConfigRow{App: app, Config: ids[i]})
 				if app == "" && ids[i] == "" {
 					continue
 				}
@@ -250,43 +241,57 @@ func (s *Server) appServiceAction(w http.ResponseWriter, r *http.Request) error 
 		}
 	}
 	p := page{Tab: "/settings", View: "app-service", Title: "App connection service", Path: "/settings/apps/service"}
-	if e := s.loadAppService(r.Context(), &p); e != nil {
+	if e := s.loadAppService(r.Context(), r, &p); e != nil {
 		return e
 	}
 	if len(rows) > 0 {
 		p.Apps.AuthConfigRows = rows
 		p.Apps.State.KeyRef = r.FormValue("key_ref")
 		p.Apps.State.Revision = revision
-		if r.FormValue("action") == "add-override" && len(rows) < 128 {
-			p.Apps.AuthConfigRows = append(rows, appAuthConfigRow{})
-			p.Notice = "Unsaved changes."
-			s.render(w, r, p)
-			return nil
-		}
-		if index, e := strconv.Atoi(strings.TrimPrefix(r.FormValue("action"), "remove-override-")); e == nil && index >= 0 && index < len(rows) {
-			p.Apps.AuthConfigRows = append(rows[:index], rows[index+1:]...)
-			if len(p.Apps.AuthConfigRows) == 0 {
-				p.Apps.AuthConfigRows = []appAuthConfigRow{{}}
-			}
-			p.Notice = "Unsaved changes."
-			s.render(w, r, p)
-			return nil
-		}
-	}
-	if err == nil {
-		err = s.Apps.ConfigureProject(r.Context(), r.FormValue("key_ref"), revision, configs)
-	}
-	if err == nil {
-		if e := s.loadAppService(r.Context(), &p); e != nil {
+		mode, remove, draft := appSettingsCommand(r.FormValue("action"), len(rows))
+		projected, e := p.Apps.settings.Rows(r.Context(), mode, rows, remove)
+		if e != nil {
 			return e
 		}
+		p.Apps.AuthConfigRows = projected
+		if draft {
+			p.Notice = p.Apps.Interface.notices().Unsaved
+			s.render(w, r, p)
+			return nil
+		}
+
 	}
+	var acceptedRows []appAuthConfigRow
+	if err == nil {
+		var original []appAuthConfigRow
+		for app, id := range configs {
+			original = append(original, appAuthConfigRow{App: app, Config: id})
+		}
+		acceptedRows, err = p.Apps.settings.Rows(r.Context(), "saved", original, -1)
+	}
+	if err == nil {
+		err = s.Apps.ConfigureProject(p.Apps.settings.ConfigureContext(r.Context()), r.FormValue("key_ref"), revision, configs)
+	}
+	if err == nil {
+		accepted, e := s.Apps.State(r.Context())
+		if e != nil {
+			return e
+		}
+		if !maps.Equal(accepted.AuthConfigs, configs) || accepted.KeyRef != r.FormValue("key_ref") {
+			return connectedapps.ErrConflict
+		}
+		// Projection was accepted before the write. A later graph switch must not
+		// reinterpret or hide this already accepted configuration and its revision.
+		p.Apps.State = accepted
+		p.Apps.AuthConfigRows = acceptedRows
+	}
+
 	if err != nil {
-		p.Error = appError(err)
+		p.Error = p.Apps.Interface.errorLabel(err)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	} else {
-		p.Notice = "App connection service saved."
+		p.Notice = p.Apps.Interface.notices().ServiceSaved
 	}
 	s.render(w, r, p)
 	return nil
@@ -295,6 +300,17 @@ func (s *Server) appAction(w http.ResponseWriter, r *http.Request) error {
 	if s.Apps == nil {
 		return connectedapps.ErrUnavailable
 	}
+	inventory, inventoryErr := s.Apps.AccountInventory(r.Context())
+	logoPolicy := s.appLogoPolicy(r.Context())
+	ui := s.appInterface(r.Context(), r.FormValue("interface_revision"), requestLanguage(r))
+	r = r.WithContext(context.WithValue(r.Context(), appInterfaceKey{}, ui))
+	if r.FormValue("automatic") == "1" && !ui.available() {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		jsonResult(w, map[string]string{"code": "presentation_unavailable", "error": "App presentation is unavailable. Reload after the owner restores the plugin."})
+		return nil
+	}
+	r = r.WithContext(context.WithValue(r.Context(), appLogoPolicyKey{}, logoPolicy))
 	var err error
 	var link composio.Link
 	switch r.FormValue("action") {
@@ -312,6 +328,9 @@ func (s *Server) appAction(w http.ResponseWriter, r *http.Request) error {
 		err = connectedapps.ErrInvalid
 	}
 	w.Header().Set("Referrer-Policy", "no-referrer")
+	if err == nil && !ui.available() {
+		return s.acceptedAppReceipt(w, r, link)
+	}
 	if r.Header.Get("Accept") == "application/json" {
 		if err != nil {
 			code := "unavailable"
@@ -323,17 +342,39 @@ func (s *Server) appAction(w http.ResponseWriter, r *http.Request) error {
 			}
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnprocessableEntity)
-			jsonResult(w, map[string]string{"error": translate(requestLanguage(r), appError(err)), "code": code})
+			jsonResult(w, map[string]string{"error": ui.profileText(requestLanguage(r), ui.errorLabel(err)), "code": code})
 			return nil
 		}
 		state, e := s.Apps.State(r.Context())
 		if e != nil {
 			return e
 		}
-		view := page{Apps: &appsView{View: connectedapps.View{State: state}, ConnectURL: link.URL, ConnectionID: link.ConnectionID, ExpiresAt: link.ExpiresAt.UnixMilli(), Managed: s.managedApps(state)}}
+		selection, captionErr := s.Apps.Directory(r.Context(), contract.Query{})
+		view := page{Apps: &appsView{View: connectedapps.View{State: state}, ConnectURL: link.URL, ConnectionID: link.ConnectionID, ExpiresAt: link.ExpiresAt.UnixMilli()}}
+		// Optional presentation must not turn an already accepted account action
+		// into a failed/retried effect. Missing captions remain unavailable.
+		if captionErr == nil {
+			if e := s.projectAppInventory(r.Context(), selection, view.Apps); e == nil {
+				_ = projectAppCaptions(r.Context(), selection, view.Apps)
+			}
+		} else {
+			if inventoryErr != nil {
+				return s.acceptedAppReceipt(w, r, link)
+			}
+			if e := s.projectAccountInventory(r.Context(), inventory, selection, view.Apps); e != nil {
+				return s.acceptedAppReceipt(w, r, link)
+			}
+		}
+		view.Apps.Interface = &ui
+		s.projectAppLogos(view.Apps, logoPolicy)
 		var html bytes.Buffer
 		if e = requestLayout(r).ExecuteTemplate(&html, "app-accounts", view); e != nil {
-			return e
+			// Account markup is optional presentation after the original effect
+			// succeeded. Preserve its receipt/link instead of inviting a replay.
+			return s.acceptedAppReceipt(w, r, link)
+		}
+		if !appSidebarAvailable(view.Apps) {
+			return s.acceptedAppReceipt(w, r, link)
 		}
 		var sidebar bytes.Buffer
 		if e = requestLayout(r).ExecuteTemplate(&sidebar, "app-sidebar", view); e != nil {
@@ -362,16 +403,19 @@ func (s *Server) appAction(w http.ResponseWriter, r *http.Request) error {
 	u.RawQuery = q.Encode()
 	next.URL = &u
 	if e := s.loadApps(r.Context(), next, &p); e != nil {
+		if err == nil {
+			return s.acceptedAppReceipt(w, r, link)
+		}
 		return e
 	}
 	p.Apps.ConnectURL, p.Apps.ConnectionID = link.URL, link.ConnectionID
 	p.Apps.ExpiresAt = link.ExpiresAt.UnixMilli()
 	if err != nil {
-		p.Error = appError(err)
+		p.Error = ui.errorLabel(err)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusUnprocessableEntity)
 	} else {
-		p.Notice = "App settings updated."
+		p.Notice = ui.notices().AccountSaved
 	}
 	s.render(w, r, p)
 	return nil

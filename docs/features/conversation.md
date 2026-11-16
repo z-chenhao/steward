@@ -20,7 +20,7 @@
 
 **当前实现**：Actor 管理输入与执行权，共享 Loop 保存模型交换、工具调用和回复。新 Main 的工具有 200 ms 同步窗口；窗口后仍未完成且有新输入时，Host 保存待交付关系、返回 pending 回执，并在同一个 Main 中处理新要求。实际结果持久化后以 runtime 消息回到原 Main。后台 Task 仍独立并行，Task 查询和控制不占用数据工具的执行槽。
 
-新 Main、Root Worker 与 Child Worker 的系统提示统一按角色、安全、执行规则、能力指导排序，并在 Agent 入口拼成一条 system message。Root 的身份与进度分别归入角色和执行规则；Child 使用共享 Worker 规则。
+新 Main 使用简短角色、`<tools>` 和 `<rules>`，优先通过 UI 表达对比、选项、计划、解释和结果，简短回答与确认仍用文字；授权边界并入规则。Root Worker 与 Subagent Worker 也使用 tools/rules，共享执行与授权规则；Root 对整个 Task 的执行、汇总和阶段进度负责，Subagent 只向直接父级返回显式子任务的结果。三者在 Agent 入口各拼成一条 system message。Worker 首次执行前收到自己的实际 cwd 与工作区内可读的 AGENTS.md/README.md 入口，不复制父级运行时上下文。文案只对新建 Run 生效，已有冻结上下文不重写。
 
 **边界与剩余工作**：pending 只表示最终结果尚未交付，不代表完成或批准，也不创建 Task。多步、耗时、批量、编码和浏览器/桌面工作由 Main 显式委派；Task 暂停/取消使用原控制面，operation_ref 使用普通 ID，只关联结果，不是通用后台作业或取消 API。已派发调用不承诺即时撤回，副作用不明仍保持 unknown。旧 Main 保留其冻结交付协议，新协议只对新 Main 启用；后台结果不改写已接受的模型请求。200 ms 窗口与 50 ms 扫描是宿主默认值，不是实际模型响应 SLA；真实模型的延迟与理解质量需独立验证。Web 实时更新和语义压缩分别见 F-019、F-011。
 
@@ -120,3 +120,7 @@ input creates a new Run after the old one ends.
 ### 连续请求
 
 新 Main 按输入顺序处理并分别提交回复。需要后台工作时，Main 可先创建 Task 并告知用户，然后处理下一条输入，Worker 独立执行；后到消息不会撤销较早请求尚未提交的回复。旧冻结 Main 沿其原接纳政策恢复。
+
+Main 沟通／工作方法已接入独立版本化 `conversation` 包并进入标准分发。Host 保留身份、安全 Section、输入与冻结上下文、Task／交付事实；Root／Child 不消费 Main 方法服务。独立换版、已排队版本保留、方法回执后 ContextReady 失败恢复与工具续轮前缀见[Main 插件边界](../designs/plugins-evolution.md#已提取的-main-对话边界)及[插件验收](../test-plans/plugins-evolution.md)。`make test-prompts` 包含相应上下文回归。
+
+Main 的沟通／工作方法由冻结的 `conversation` 包提供；实际关闭并重开 Store／Catalog 后，排队 Main 仍使用原退役版本，停用不复活原生方法。身份、安全、原消息与单次交付仍归 Host；历史 prompt 消费者与删除条件见[插件设计](../designs/plugins-evolution.md#maintask-的历史消费者与冷恢复边界)。

@@ -1,0 +1,41 @@
+package appsinterface
+
+import (
+	"context"
+	"fmt"
+	"github.com/z-chenhao/assistant/internal/plugin/appsinterface/contract"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
+	"io"
+	"os"
+	"path/filepath"
+)
+
+// Only its own sealed resource is readable here. The isolated process receives
+// no actual card, private State, caller path, resource authority or effects.
+func compileCardView(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
+	var input struct{}
+	if err := rsiplugin.Decode(call.Input, &input); err != nil {
+		return rsiplugin.Result{}, err
+	}
+	executable, err := os.Executable()
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	file, err := os.Open(filepath.Join(filepath.Dir(executable), contract.CardViewFile))
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	defer file.Close()
+	raw, err := io.ReadAll(io.LimitReader(file, 4097))
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	if len(raw) > 4096 {
+		return rsiplugin.Result{}, fmt.Errorf("card resource exceeds limit")
+	}
+	var source contract.CardSource
+	if err = rsiplugin.Decode(raw, &source); err != nil {
+		return rsiplugin.Result{}, err
+	}
+	return rsiplugin.JSONResult(ctx, contract.CardView{Resource: contract.CardViewResource, Digest: rsiplugin.FileDigest(raw), Program: source.Program})
+}

@@ -1,4 +1,4 @@
-.PHONY: help setup install run build test test-prompts test-memory test-web-access test-connected-apps test-go test-node test-browser test-infra test-e2e test-full test-race lint lint-actions audit
+.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-connected-apps test-github-plugins test-artifact-plugins test-go test-node test-browser test-infra test-e2e test-full test-race lint lint-actions audit
 
 .DEFAULT_GOAL := setup
 
@@ -21,8 +21,13 @@ setup:
 install:
 	sh install.sh
 
-build:
+build: build-host build-plugins
+
+build-host:
 	go build -o bin/steward ./cmd/steward
+
+build-plugins: build-host
+	sh scripts/build-plugins.sh "$(CURDIR)/bin/steward" "$(CURDIR)/bin/plugins"
 
 run: build
 	./bin/steward start
@@ -31,25 +36,59 @@ run: build
 # Keep that explicit rather than relabeling the entire package suite as UT.
 test: test-go test-node test-browser test-infra
 
+# Preserve all prompt/inheritance regressions; split real plugin lifecycle suites
+# so their cumulative compilation time does not consume one package alarm.
 test-prompts:
-	go test ./internal/agent ./internal/agent/sqlite -run '^Test(MemoryCompactionPreservesMixedCodeBusinessReceipt|RecallCompleteSearchStillAllowsReadingCASMetadata|RecallRepeatedReadReusesVisibleEvidenceWithoutDuplicatingBody|RecallUnifiedVisibilityIncludesSealedReadsAndAutomaticEvidence|LayeredMemoryNavigationSelectsScopedLinksWithoutRewritingSources|RecallVisibleResultsRequireOwnedReceiptAndCompleteVisibleFrame|LayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch|RecallEmptyEvidenceOmittedFromAgentMessagesAndFrozen|LayeredMemoryCodeReadProjectionIsStableScopedAndDoesNotRewriteReceipt|LayeredMemoryTranscriptReadIsScopedPagedSealedAndRevoked|ContextPromptBytes|ProviderToolUsesFrozenModelDeclarationAndKeepsLegacySchema|ContextRolesAndFrozenResources|AgentStartsWithOneFrozenSystemMessage|ChildInheritsOnlyFrozenSystemSections|SkillsUseSearchWithoutPromptCatalog|SplitSystemMessagesAreRejected|RootLoopPublishesStageUpdatesWithoutMainWork|Progress.*|ContextInspectionRealMainRootChildAndReplayPreservesSnapshots|RecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory|RecallFrozenPerTurnAndFenced|RecallInputKeepsChronologyAndEscapesHistoricalMessages|ConversationalRecallQueryBoundsAndEvidenceIsolation|ContextPlainObjectIDs.*|TaskInstructionUsesPlainObjectIDs|ContextDeferredOperationIDsKeepBatchAndLegacyCorrelation)$$' -count=1
+	go test ./internal/agent ./internal/agent/sqlite -run '^Test(MemoryCompactionPreservesMixedCodeBusinessReceipt|RecallCompleteSearchStillAllowsReadingCASMetadata|RecallRepeatedReadReusesVisibleEvidenceWithoutDuplicatingBody|RecallUnifiedVisibilityIncludesSealedReadsAndAutomaticEvidence|LayeredMemoryNavigationSelectsScopedLinksWithoutRewritingSources|RecallVisibleResultsRequireOwnedReceiptAndCompleteVisibleFrame|LayeredMemoryInjectedSnapshotFrozenSealedAndLoadedWithoutSearch|RecallEmptyEvidenceOmittedFromAgentMessagesAndFrozen|LayeredMemoryCodeReadProjectionIsStableScopedAndDoesNotRewriteReceipt|LayeredMemoryTranscriptReadIsScopedPagedSealedAndRevoked|ContextPromptBytes|ProviderToolUsesFrozenModelDeclarationAndKeepsLegacySchema|ContextRolesAndFrozenResources|AgentStartsWithOneFrozenSystemMessage|ChildInheritsOnlyFrozenSystemSections|SkillsUseSearchWithoutPromptCatalog|SplitSystemMessagesAreRejected|RootLoopPublishesStageUpdatesWithoutMainWork|ContextInspectionRealMainRootChildAndReplayPreservesSnapshots|RecallFollowUpUsesRecentTopicWithoutDuplicatingVisibleHistory|RecallFrozenPerTurnAndFenced|RecallInputKeepsChronologyAndEscapesHistoricalMessages|ConversationalRecallQueryBoundsAndEvidenceIsolation|ContextPlainObjectIDs.*|TaskInstructionUsesPlainObjectIDs|ContextDeferredOperationIDsKeepBatchAndLegacyCorrelation|Conversation.*|RecallPlugin.*|ContextPlugin.*|ContextPureSelection.*|V52FeatureSnapshot.*|SemanticCompactionPlugin.*)$$' -count=1
+	go test ./internal/agent ./internal/agent/sqlite -run '^Test(V64ComputerActionPlan.*|V62NativePluginBinding.*|PluginSnapshotWithoutCatalog.*|ComputerPlugin.*)$$' -count=1
+	go test ./internal/agent ./internal/agent/sqlite -run '^Test(CodingPlugin.*|V61CodingMethods.*|ShellPlugin.*|V60ShellMethod.*|FilePlugin.*|V59FileMethod.*|CodeModePlugin.*|V58CodeDescription.*)$$' -count=1
+	go test ./internal/agent ./internal/agent/sqlite -run '^Test(Progress.*|V63TaskLabel.*|DelegationPlugin.*|DelegationMethods.*|FeedbackPlugin.*|TaskPlugin.*|SkillPlugin.*|ScheduleGuidance.*|ScheduleThreshold.*)$$' -count=1
 
+# Real isolated version suites need separate cumulative package alarms. Keep
+# every root exactly once, and avoid parallel package compiler/startup bursts
+# consuming the native driver's unchanged two-second discovery deadline.
+# UI lifecycle tests have their own cumulative package alarm. The all-package
+# UI partition preserves every TestUI root; neither partition runs it twice.
+# Schedule lifecycle tests run separately after reaching the cumulative SQLite
+# alarm; preserve every root exactly once and keep the original 15-minute limit.
+# Memory Inspector isolated-version cases share the managed Web partition;
+# every root stays exactly once under the original per-package alarm.
 test-go:
-	go test ./...
+	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
+	go test -p 1 -timeout=15m ./... -run '^Test(WebPlugin|MemoryInspector)' -count=1
+	go test -p 1 -timeout=15m ./... -run '^TestUI' -count=1
+	go test -p 1 -timeout=15m ./... -run '^Test(Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
+
+# Both real discovery entry points keep their own frozen authority and replay.
+test-tool-discovery:
+	go test -race -p 1 -timeout=15m ./internal/plugin/tooldiscovery/... ./internal/plugin/skilllibrary/... ./internal/skill ./internal/tool ./internal/agent/sqlite -run '^Test(ToolDiscovery.*|ChildStorage.*|ToolSearch.*|LegacyMainLoadsOneOf500.*|LoadedToolSurvivesApproval.*|MigrationCatalogContainsEveryForwardSource|Skill.*)$$' -count=1
 
 # Deterministic connector contracts; live network checks are explicitly opt-in.
 test-web-access:
-	go test -race ./internal/plugin/webaccess ./internal/connector/... ./internal/webcontent ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run '(WebAccess|WebSearch|HostedSearch|SearchCompletion|SearchPolicy|DefinitionsFreeze|ExaMCP|FetchAddresses)' -count=1
+	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run '(WebAccess|WebPlugin(Search|Read|Research|Fetch|SourceFormatting|RawSource|HTML|Image)|WebSearch|HostedSearch|SearchCompletion|SearchPolicy|DefinitionsFreeze|ExaMCP|FetchAddresses)' -count=1
+	go test -race ./internal/plugin/webextract/... ./internal/agent/sqlite -run 'WebPlugin(Extract|Route)' -count=1
+	go test -race ./internal/rsi ./internal/app -run 'WebBootstrap|WebDefault|ShippedPlugin|ToolDiscoveryBootstrap|AppsBootstrap|Verification' -count=1
 
 # Privacy, provenance and lifecycle regressions run in the required CI lane.
 test-memory:
-	go test -race ./internal/memory/... ./internal/recall/... ./internal/conversation/... ./internal/tool ./internal/context ./internal/llm -count=1
+	go test -race ./internal/memory/... ./internal/plugin/memoryinspector/... ./internal/recall/... ./internal/conversation/... ./internal/tool ./internal/context ./internal/llm -count=1
 	python3 tests/system/race.py --part memory
 	go test -race ./internal/llm/bridge -run 'LayeredMemory|NativeFragmented' -count=1
-	go test -race ./internal/app -run 'MemoryExternalSecrets' -count=1
+	go test -race ./internal/app ./internal/rsi ./internal/interaction/web -run 'MemoryExternalSecrets|MemoryInspector|MemoryView|MemoryStyles|MemoryLocalization|MemoryClientConfiguration|MemoryProgram|AppsStyles' -count=1
 
 test-connected-apps:
-	go test -race ./internal/connector/composio ./internal/connectedapps ./internal/plugin/connectedapps ./internal/interaction/web ./internal/tool ./internal/app ./internal/agent/sqlite -run '^Test(ConnectedApps|Apps|AppLogo|ToolDescriptor|RegistryGroup|Client)' -count=1
+	go test -race -p 1 -timeout=15m ./internal/connector/composio ./internal/connectedapps ./internal/plugin/appsmethods/... ./internal/plugin/appsdirectory/... ./internal/plugin/appsaccounts/... ./internal/plugin/appslogos/... ./internal/plugin/appsinterface/... ./pkg/rsiplugin ./internal/plugin/connectedapps ./internal/rsi ./internal/interaction/web ./internal/tool ./internal/tool/codemode ./internal/agent/sqlite -run '^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)' -count=1
+	python3 tests/system/race.py --part apps
+
+# Build the exact distribution before the mandatory real App lifecycle test.
+# Plugin/source oracles, SQL migration/recovery and CLI remain in the same race gate.
+test-github-plugins: build
+	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" go test -race -p 1 -timeout=15m ./internal/plugin/githubfollowup/... ./internal/observer/github ./internal/rsi ./internal/agent/sqlite ./internal/app ./cmd/steward -run '^Test(GitHub.*|StartupReconcilesRemovedOrChangedGitHubScopeBeforeActor|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$$' -count=1
+
+# Keep owner, Run, historical reference and pure-method regressions in CI.
+test-artifact-plugins: build
+	go test -race ./internal/artifact/... ./internal/plugin/artifactworkbench/... -count=1
+	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" go test -race -p 1 -timeout=15m ./internal/rsi ./internal/agent/sqlite ./internal/app ./cmd/steward -run '^Test(Artifact.*|V68Artifact.*|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$$' -count=1
 
 test-node:
 	npm run check --prefix web
@@ -58,7 +97,14 @@ test-node:
 	npm test --prefix runtime/javascript
 
 test-browser:
-	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_BROWSER_EVIDENCE="$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}" go test ./internal/interaction/web -run '^Test(AppsBrowserConnectionLifecycle|ComposerModelsBrowserLoadingAndRefresh|MemoryMaintenanceBrowser)$$' -count=1
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_BROWSER_EVIDENCE="$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}" go test ./internal/interaction/web -run '^Test(MemoryProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures|TraceProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures|AppsBrowserActualOpaqueWorkerTransport|AppsBrowserConnectionLifecycle|ComposerModelsBrowserLoadingAndRefresh|MemoryMaintenanceBrowser|TracePageBrowserKeepsOneFrozenAssetVersion|WorkbenchBrowserOriginalStylesAndPinnedUpdates|TraceWorkbenchBrowserReadOnlyControls|TraceWorkbenchBrowserManagedTreeAndColumnPolicies|TraceTimelineMalformedProjectionKeepsOriginalSSR|TraceBrushActualDelayedRepliesCoalesceAndCancel|TraceActivityActualDelayedRepliesCoalesceAndCancel|ApprovalParametersBrowser|UIPlanViewBrowserIsolationAndDetails|UICardsViewBrowserIsolationAndOriginalStyles|UICardsWorkerBrowserIsolationAndBoundedProjection|UICardsControllerBrowserProjectionCASGroupAndRecovery|UICardsImagesBrowserOriginalBlobAndBoundRequests|UICardsPreviewBrowserReadOnlyAndRevision|UITableWorkerBrowserIsolationAndBoundedProjection|UITableControllerBrowserProjectionCASGroupAndExport|UITablePreviewBrowserReadOnlyAndRevision|UIChartWorkerBridgeBrowser|UIChartControllerBrowserProjectionCASAndRange|UIChartPreviewBrowserReadOnlyAndRevision|UIFormViewControllerBrowserOriginalControlsDraftAndBoundSubmit|UIFormViewPreviewBrowserReadOnlyAndRevision|UIMeetingViewBrowserOriginalControlsChoiceAndPreview|UIActionViewBrowserFeedbackRecoveryAndOriginalSource)$$' -count=1
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-browser}" STEWARD_APP_SETTINGS_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-browser}" STEWARD_APP_LOGO_BROWSER_EVIDENCE="$${STEWARD_APP_LOGO_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-logos-browser}" STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE="$${STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-localization-browser}" STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE="$${STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-composition-browser}" STEWARD_APP_INTERFACE_BROWSER_EVIDENCE="$${STEWARD_APP_INTERFACE_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-interface-browser}" STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-card-view-browser}" STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-sidebar-view-browser}" STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE="$${STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-graphics-browser}" STEWARD_APP_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-markup-browser}" STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-account-markup-browser}" go test ./internal/app -run '^TestApps(EditorialActualOwnerHTTPVersionsSnapshotRollbackAndDisable|SettingsActualOriginalHTTPRowsDraftAndSave|LogoActualOwnerHTTPOriginal65FrozenReferencesColdAndDisable|InterfaceActualManagedBrowserLifecycle|CompositionActualVersionsColdOriginalProfileOnlyAndUnavailable|LocalizationActualBrowserOwnedFeedbackAndNative|CardViewActualManagedResourceBrowser|SidebarViewActualBrowserAndAcceptedLink|MarkupActualBrowserAndRecoveryLink|GraphicsActualBrowserAndRecoveryLink|AccountMarkupActualBrowserAndRecoveryLink)$$' -count=1 -timeout=5m
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_CONNECT_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CONNECT_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-connect-view-browser}" go test ./internal/app -run '^TestAppsConnectViewActualBrowserAndRecoveryLink$$' -count=1 -timeout=4m
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_SETTINGS_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-view-browser}" go test ./internal/app -run '^TestAppsSettingsViewActualBrowserDraftSave$$' -count=1 -timeout=4m
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_DIRECTORY_CONTROLS_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_CONTROLS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-controls-browser}" go test ./internal/app -run '^TestAppsDirectoryControlsActualBrowserNavigationFilterAndPagination$$' -count=1 -timeout=4m
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_PAGES_BROWSER_EVIDENCE="$${STEWARD_APP_PAGES_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-pages-browser}" go test ./internal/app -run '^TestAppsPagesActualBrowserOriginalControlsAndViews$$' -count=1 -timeout=4m
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_CLIENT_BROWSER_EVIDENCE="$${STEWARD_APP_CLIENT_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-client-browser}" go test ./internal/app -run '^TestAppsClientActualBrowserOriginalControlsAndStyles$$' -count=1 -timeout=4m
+	STEWARD_TEST_APP_BROWSER=1 STEWARD_MEMORY_MANAGED_BROWSER_EVIDENCE="$${STEWARD_MEMORY_MANAGED_BROWSER_EVIDENCE:-$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}/memory-managed}" go test ./internal/app -run '^TestMemoryInspectorActualOwnerPageGraphPinDisableAndFirstColdReference$$' -count=1
 	npm test --prefix guest-browser
 	node web/artwork/icons.mjs --check
 
@@ -80,8 +126,8 @@ test-race:
 
 lint: lint-actions
 	python3 scripts/check_docs.py
-	sh -n install.sh scripts/package.sh
-	@files="$$(gofmt -l cmd internal)"; if [ -n "$$files" ]; then echo "$$files"; exit 1; fi
+	sh -n install.sh scripts/package.sh scripts/build-plugins.sh
+	@files="$$(gofmt -l cmd internal pkg examples/plugins)"; if [ -n "$$files" ]; then echo "$$files"; exit 1; fi
 	go vet ./...
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
 	go mod verify
@@ -89,7 +135,29 @@ lint: lint-actions
 	npm run lint --prefix runtime/javascript
 	npm run lint --prefix guest-browser
 	npm run lint --prefix web
+	node --check internal/plugin/webextract/extract.mjs
+	node --check tests/system/ui_cards_legacy_browser.mjs
+	node --check internal/interaction/web/view/cards-gestures.js
+	node --check tests/system/ui_cards_plugins_browser.mjs
+	node --check tests/system/ui_cards_runtime_legacy_browser.mjs
+	node --check tests/system/ui_chart_legacy_browser.mjs
+	node --check tests/system/ui_form_plugins_browser.mjs
+	node --check tests/system/ui_form_legacy_browser.mjs
+	node --check tests/system/ui_meeting_plugins_browser.mjs
+	node --check tests/system/ui_meeting_legacy_browser.mjs
+	node --check tests/system/ui_action_plugins_browser.mjs
+	node --check tests/system/ui_action_legacy_browser.mjs
+	node --check guest-browser/meeting-controller-browser.mjs
+	node --check guest-browser/action-controller-browser.mjs
+	node --check tests/system/ui_chart_plugins_browser.mjs
+	node --check tests/system/ui_table_plugins_browser.mjs
+	node --check tests/system/ui_table_legacy_browser.mjs
+	node --check tests/system/apps_account_markup_browser.mjs
 	node --check tests/system/apps_connections_browser.mjs
+	node --check tests/system/apps_localization_browser.mjs
+	node --check tests/system/apps_directory_plugins_browser.mjs
+	node --check tests/system/apps_settings_plugins_browser.mjs
+	node --check tests/system/apps_logos_plugins_browser.mjs
 	node --check tests/system/channels_help.mjs
 	node --check tests/system/channels_task_executions.mjs
 	node --check tests/system/channels_trace_time.mjs

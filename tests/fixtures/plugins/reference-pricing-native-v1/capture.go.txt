@@ -1,0 +1,11 @@
+package pricing
+import("testing";"os";"encoding/json";"crypto/sha256";"fmt";"github.com/z-chenhao/assistant/internal/llm";"github.com/z-chenhao/assistant/internal/agent")
+func TestCaptureOriginalReferencePricing(t *testing.T){
+ type example struct{Snapshot llm.Snapshot `json:"snapshot"`;Usage llm.TokenUsage `json:"usage"`;Quote agent.ReferencePrice `json:"quote"`;Known bool `json:"known"`}
+ c:=New();hash,_:=llm.EndpointHash("https://api.openai.com/v1");out:=[]example{}
+ for _,kind:=range []string{"openai_compatible","openai_account"}{for _,model:=range []string{"gpt-6-luna","unknown-model"}{for _,usage:=range []llm.TokenUsage{{},{InputTokens:272000},{InputTokens:272001},{InputTokens:100000,CacheReadTokens:172000,CacheWriteTokens:1},{InputTokens:-1}}{
+ s:=llm.Snapshot{ProviderKind:kind,EndpointHash:hash,WireAPI:"openai_completions",ModelID:model};q,ok:=c.Quote(s,usage);out=append(out,example{s,usage,q,ok})
+ }}}
+ data,_:=json.MarshalIndent(out,"","  ");root:="../../../tests/fixtures/plugins/reference-pricing-native-v1";if err:=os.MkdirAll(root,0755);err!=nil{t.Fatal(err)};if err:=os.WriteFile(root+"/quotes.json",append(data,'\n'),0644);err!=nil{t.Fatal(err)}
+ source,err:=os.ReadFile("catalog.go");if err!=nil{t.Fatal(err)};if err=os.WriteFile(root+"/catalog.go.txt",source,0644);err!=nil{t.Fatal(err)};sum:=sha256.Sum256(source);provenance:=map[string]string{"source":"internal/llm/pricing/catalog.go","sha256":fmt.Sprintf("%x",sum),"capture":"executed original Catalog.Quote before candidate implementation"};data,_=json.MarshalIndent(provenance,"","  ");if err=os.WriteFile(root+"/provenance.json",append(data,'\n'),0644);err!=nil{t.Fatal(err)}
+}

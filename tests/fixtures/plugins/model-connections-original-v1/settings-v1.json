@@ -1,0 +1,2754 @@
+[
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "account",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "account",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "api",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "api",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "missing",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        }
+      ],
+      "requested": "missing",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "account",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "account",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "api",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "api",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "missing",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        }
+      ],
+      "requested": "missing",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "reauth_required"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "account",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "account"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": true
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "api",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": true,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": false,
+    "target": "api"
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  },
+  {
+    "facts": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "missing",
+      "notice": "other"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    },
+    "not_found": true,
+    "target": ""
+  }
+]

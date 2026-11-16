@@ -20,6 +20,24 @@ from verify_channels import ChannelHarness, require
 
 
 def run(binary, evidence):
+    from verify_ui_cards_plugins import run as run_managed_cards
+    managed_cards = run_managed_cards(binary, evidence.parent / 'managed-cards')
+    from verify_ui_plan_plugins import run as run_managed_plan
+    managed_plan = run_managed_plan(binary, evidence.parent / 'managed-plan' / 'report.json')
+    from verify_ui_table_plugins import run as run_managed_table
+    managed_table = run_managed_table(binary, evidence.parent / 'managed-table' / 'report.json')
+    from verify_ui_charts_plugins import run as run_managed_charts
+    managed_charts = run_managed_charts(binary, evidence.parent / 'managed-charts' / 'report.json')
+    from verify_ui_forms_plugins import run as run_managed_forms
+    managed_forms = run_managed_forms(binary, evidence.parent / 'managed-forms' / 'report.json')
+    from verify_ui_meetings_plugins import run as run_managed_meetings
+    managed_meetings = run_managed_meetings(binary, evidence.parent / 'managed-meetings' / 'report.json')
+    from verify_ui_actions_plugins import run as run_managed_actions
+    managed_actions = run_managed_actions(binary, evidence.parent / 'managed-actions' / 'report.json')
+    return dict(managed_cards=managed_cards, managed_plan=managed_plan, managed_table=managed_table, managed_charts=managed_charts, managed_forms=managed_forms, managed_meetings=managed_meetings, managed_actions=managed_actions, **_run_visual_flow(binary, evidence))
+
+
+def _run_visual_flow(binary, evidence):
     with tempfile.TemporaryDirectory(prefix='steward-intelligent-ui-') as temp, Sandbox() as platform, Broker(Path(temp)) as broker:
         server = ThreadingHTTPServer(('127.0.0.1', 0), Endpoint)
         server.requests, server.mode = [], 'success'
@@ -50,7 +68,7 @@ def run(binary, evidence):
             server.widgets[1] = dict(text='Next, explore a value with the calculator.', **server.widgets[1])
             server.mode = 'intelligent-ui'
             h.start()
-            h.wait_state(lambda status: status['readiness']=='ready', 'UI runtime ready', lambda _: h.http('/api/status'))
+            h.wait_runtime_ready('UI runtime ready')
             h.http('/api/message', dict(source_id='intelligent-ui-request', content=[dict(type='text', text='SHOW_INTELLIGENT_UI: compare the values and show a small calculator.')]))
             first = h.wait(lambda s: len(s['deliveries']) == 1 and s['deliveries'][0]['status'] == 'sent', 'UI tool and reply delivered')
             history = h.http('/api/conversation')

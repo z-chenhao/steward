@@ -1,0 +1,1775 @@
+[
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:old",
+          "label": "旧模型",
+          "sort_key": "旧模型"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Old profile",
+          "sort_key": "old profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:old",
+        "label": "旧模型"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "Zulu"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "Zulu"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "Zulu"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "Zulu"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "Zulu"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "Zulu"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "Zulu",
+          "sort_key": "zulu"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "alpha",
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:old:1",
+          "label": "Stale profile",
+          "sort_key": "stale profile"
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "account:owned:two",
+        "label": "alpha"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": []
+    },
+    "expected": []
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ΟΣ"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ΟΣ"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": []
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ΟΣ"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ΟΣ"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ΟΣ"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "profile:current:2",
+          "label": "Current profile",
+          "sort_key": "current profile"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ΟΣ"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      },
+      {
+        "key": "profile:current:2",
+        "label": "Current profile"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "refresh",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": false,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  },
+  {
+    "facts": {
+      "reason": "ack",
+      "unavailable": true,
+      "previous": [
+        {
+          "key": "account:owned:one",
+          "label": "ΟΣ",
+          "sort_key": "ος"
+        },
+        {
+          "key": "account:owned:two",
+          "label": "İ",
+          "sort_key": "i̇"
+        },
+        {
+          "key": "account:owned:three",
+          "label": "😀",
+          "sort_key": "😀"
+        },
+        {
+          "key": "account:owned:four",
+          "label": "",
+          "sort_key": ""
+        }
+      ],
+      "received": [
+        {
+          "key": "account:owned:one",
+          "label": "ALPHA",
+          "disabled": true,
+          "sort_key": "alpha"
+        },
+        {
+          "key": "profile:current:2",
+          "label": "alpha",
+          "sort_key": "alpha"
+        }
+      ]
+    },
+    "expected": [
+      {
+        "key": "account:owned:four",
+        "label": ""
+      },
+      {
+        "key": "account:owned:three",
+        "label": "😀"
+      },
+      {
+        "key": "account:owned:two",
+        "label": "İ"
+      },
+      {
+        "key": "account:owned:one",
+        "label": "ALPHA",
+        "disabled": true
+      },
+      {
+        "key": "profile:current:2",
+        "label": "alpha"
+      }
+    ]
+  }
+]

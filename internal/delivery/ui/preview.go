@@ -3,18 +3,32 @@ package ui
 import (
 	"context"
 	"encoding/json"
+	"github.com/z-chenhao/assistant/internal/plugin/intelligentui/contract"
 	"io"
 	"strings"
 	"unicode/utf8"
 )
 
 // Preview is an ephemeral display, never a delivered artifact or an authority to
-// submit an answer. Executable fields and artifact/action references are absent.
+// submit an answer. Executable fields and artifact/action references are absent
+// from the wire. Private Table Workers run only in the read-only opaque driver.
 type Preview struct {
-	Order      string      `json:"-"`
-	Title      string      `json:"title"`
-	Text       string      `json:"text,omitempty"`
-	Components []Component `json:"components"`
+	MeetingViews   map[int]contract.MeetingView `json:"meeting_views,omitempty"`
+	MeetingManaged bool                         `json:"meeting_view,omitempty"`
+	FormViews      map[int]FormView             `json:"form_views,omitempty"`
+	FormManaged    bool                         `json:"form_view,omitempty"`
+	ChartViews     map[int]ChartView            `json:"-"`
+	ChartManaged   bool                         `json:"chart_view,omitempty"`
+	TableViews     map[int]TableView            `json:"-"`
+	TableManaged   bool                         `json:"table_view,omitempty"`
+	CardsViews     map[int]CardsView            `json:"-"`
+	CardsManaged   bool                         `json:"cards_view,omitempty"`
+	PlanViews      map[int]PlanView             `json:"-"`
+	PlanManaged    bool                         `json:"plan_view,omitempty"`
+	Order          string                       `json:"-"`
+	Title          string                       `json:"title"`
+	Text           string                       `json:"text,omitempty"`
+	Components     []Component                  `json:"components"`
 }
 
 // StagedPreview carries private recovery metadata, never a model tool call.

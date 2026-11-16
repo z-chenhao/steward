@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/z-chenhao/assistant/internal/connector/searchfacts"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/webcontent"
 )
@@ -19,7 +19,7 @@ const exaEndpoint = "https://mcp.exa.ai/mcp"
 
 // Exa's public, keyless hosted MCP is an explicit policy choice. It never
 // receives Steward account headers, conversation history, or a user endpoint.
-func Search(ctx context.Context, query string, limit int, client *http.Client) (string, []llm.WebSource, error) {
+func SearchFacts(ctx context.Context, query string, limit int, client *http.Client) (searchfacts.Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, 25*time.Second)
 	defer cancel()
 	if client == nil {
@@ -95,20 +95,20 @@ func Search(ctx context.Context, query string, limit int, client *http.Client) (
 	}
 	init, e := call("initialize", map[string]any{"protocolVersion": "2025-03-26", "capabilities": map[string]any{}, "clientInfo": map[string]string{"name": "steward-web-access", "version": "1"}}, false)
 	if e != nil {
-		return "", nil, e
+		return searchfacts.Result{}, e
 	}
 	var handshake struct {
 		ProtocolVersion string `json:"protocolVersion"`
 	}
 	if json.Unmarshal(init, &handshake) != nil || handshake.ProtocolVersion != "2025-03-26" {
-		return "", nil, llm.ModelIncompatible
+		return searchfacts.Result{}, llm.ModelIncompatible
 	}
 	if _, e = call("notifications/initialized", map[string]any{}, true); e != nil {
-		return "", nil, e
+		return searchfacts.Result{}, e
 	}
 	listed, e := call("tools/list", map[string]any{}, false)
 	if e != nil {
-		return "", nil, e
+		return searchfacts.Result{}, e
 	}
 	var catalog struct {
 		Tools []struct {
@@ -119,7 +119,7 @@ func Search(ctx context.Context, query string, limit int, client *http.Client) (
 		} `json:"tools"`
 	}
 	if json.Unmarshal(listed, &catalog) != nil {
-		return "", nil, llm.InvalidProviderResponse
+		return searchfacts.Result{}, llm.InvalidProviderResponse
 	}
 	found := false
 	for _, t := range catalog.Tools {
@@ -128,11 +128,11 @@ func Search(ctx context.Context, query string, limit int, client *http.Client) (
 		}
 	}
 	if !found {
-		return "", nil, llm.ModelIncompatible
+		return searchfacts.Result{}, llm.ModelIncompatible
 	}
 	raw, e := call("tools/call", map[string]any{"name": "web_search_exa", "arguments": map[string]any{"query": query, "numResults": limit}}, false)
 	if e != nil {
-		return "", nil, e
+		return searchfacts.Result{}, e
 	}
 	var result struct {
 		IsError bool `json:"isError"`
@@ -142,7 +142,7 @@ func Search(ctx context.Context, query string, limit int, client *http.Client) (
 		} `json:"content"`
 	}
 	if json.Unmarshal(raw, &result) != nil || result.IsError {
-		return "", nil, llm.ProviderUnavailable
+		return searchfacts.Result{}, llm.ProviderUnavailable
 	}
 	texts := []string{}
 	for _, c := range result.Content {
@@ -151,27 +151,21 @@ func Search(ctx context.Context, query string, limit int, client *http.Client) (
 		}
 	}
 	text := strings.Join(texts, "\n")
-	if len(text) > 20000 {
-		return "", nil, errors.New("OUTPUT_LIMIT")
-	}
-	sources := []llm.WebSource{}
+	rows := []searchfacts.Row{}
 	title := ""
 	for _, line := range strings.Split(text, "\n") {
 		if strings.HasPrefix(line, "Title:") {
 			title = strings.TrimSpace(strings.TrimPrefix(line, "Title:"))
-			if len(title) > 1024 {
-				title = webcontent.Preview(title, 1024)
-			}
 		}
 		if strings.HasPrefix(line, "URL:") {
 			u := strings.TrimSpace(strings.TrimPrefix(line, "URL:"))
-			if webcontent.ValidURL(u) == nil && len(sources) < 20 {
-				sources = append(sources, llm.WebSource{URL: u, Title: title})
+			if webcontent.ValidURL(u) == nil {
+				rows = append(rows, searchfacts.Row{URL: u, Title: title})
 			}
 		}
 	}
 	if strings.TrimSpace(text) == "" {
-		return "", nil, llm.InvalidProviderResponse
+		return searchfacts.Result{}, llm.InvalidProviderResponse
 	}
-	return text, sources, nil
+	return searchfacts.Result{Format: "exa", Text: text, Rows: rows}, nil
 }

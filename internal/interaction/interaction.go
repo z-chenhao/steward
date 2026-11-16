@@ -9,6 +9,10 @@ import (
 	"github.com/z-chenhao/assistant/internal/conversation"
 )
 
+// The local Web channel identity is shared by admission and its adapter.
+const WebSubject = "browser"
+const WebDestination = "local"
+
 var ErrUnauthorized = errors.New("channel identity is not bound")
 
 type Binding struct {
@@ -54,12 +58,13 @@ func (e InboundEvent) Validate() error {
 // Approval is an authenticated control projection. The hash and final arguments
 // are required to make a decision; raw invocation traces and Run IDs stay private.
 type Approval struct {
-	ID        string `json:"approval_id"`
-	Tool      string `json:"tool"`
-	Arguments string `json:"arguments"`
-	Hash      string `json:"frozen_arguments_hash"`
-	Status    string `json:"status"`
-	ExpiresAt int64  `json:"expires_at"`
+	ID         string `json:"approval_id"`
+	Tool       string `json:"tool"`
+	Arguments  string `json:"arguments"`
+	Parameters string `json:"action_parameters,omitempty"`
+	Hash       string `json:"frozen_arguments_hash"`
+	Status     string `json:"status"`
+	ExpiresAt  int64  `json:"expires_at"`
 }
 
 type Preference struct {

@@ -1,0 +1,338 @@
+[
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "G",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "1d805d6cf8e0d30094ed495018579b599b266c868200a08ad845417fed228806",
+      "Bytes": 63
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "G",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "6c71322503afd6387e97adb9553b734841c7307a40269c4f1a8c6488ce04b69d",
+      "Bytes": 182
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "G",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "59961c29e2fe16473b97ce9860e641c02611ef60407c5bd481c8c4aaa2fbb986",
+      "Bytes": 146
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "\u003c \u0026 \" 中文",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "9b522b3e771e07f15dfc293319c66428b6c3146870ff6bed4645529bc252263a",
+      "Bytes": 85
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "\u003c \u0026 \" 中文",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "122bc2397413dd8d0b8734d740d827c4a788cbcb6424b0f58a53696c87a86b77",
+      "Bytes": 204
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "\u003c \u0026 \" 中文",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "4b948700eaf9d4cb89f6db6c7b70680ca4940d155c0d2254cfd7886f135759bb",
+      "Bytes": 168
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "7f75887252ff694ef1fa5e4f5623f582669c21007d0e798824e697216d4b0aa3",
+      "Bytes": 62
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "65f2e5d8c275ea345c2c2c5ccda1a7cf1ab3137903e9b3eb77081478c8aa1167",
+      "Bytes": 181
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "a7c61414433082afcd96ea3e449015c661a0bdbd2a7cee2ed9e47f8301364657",
+      "Bytes": 145
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "Ω",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "0213aed3f2fcb71ce58a99ece98261fa5965a89aec05dfc8fb1d18065f9756b6",
+      "Bytes": 64
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "Ω",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "d4c0b301e22ba7adfd9129352f1245943d70789578e73563dd52099cf9057191",
+      "Bytes": 183
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-icon",
+      "Initial": "Ω",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "3ea88966362b7e089e461291a8aab7e75e571374c6ba425cbccbc0db0d84b514",
+      "Bytes": 147
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-more",
+      "Initial": "",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "dca09f053c6b9b8096831d9024c9ab3f33c4efba0c63bb08291852bfad73cfdc",
+      "Bytes": 191
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Name": "app-plus",
+      "Initial": "",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "96bd2a80425296375fbb732e74a0483277af0fe23033f5bfa47007bebcb627d7",
+      "Bytes": 154
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "G",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "1d805d6cf8e0d30094ed495018579b599b266c868200a08ad845417fed228806",
+      "Bytes": 63
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "G",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "6c71322503afd6387e97adb9553b734841c7307a40269c4f1a8c6488ce04b69d",
+      "Bytes": 182
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "G",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "59961c29e2fe16473b97ce9860e641c02611ef60407c5bd481c8c4aaa2fbb986",
+      "Bytes": 146
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "\u003c \u0026 \" 中文",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "9b522b3e771e07f15dfc293319c66428b6c3146870ff6bed4645529bc252263a",
+      "Bytes": 85
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "\u003c \u0026 \" 中文",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "122bc2397413dd8d0b8734d740d827c4a788cbcb6424b0f58a53696c87a86b77",
+      "Bytes": 204
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "\u003c \u0026 \" 中文",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "4b948700eaf9d4cb89f6db6c7b70680ca4940d155c0d2254cfd7886f135759bb",
+      "Bytes": 168
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "7f75887252ff694ef1fa5e4f5623f582669c21007d0e798824e697216d4b0aa3",
+      "Bytes": 62
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "65f2e5d8c275ea345c2c2c5ccda1a7cf1ab3137903e9b3eb77081478c8aa1167",
+      "Bytes": 181
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "a7c61414433082afcd96ea3e449015c661a0bdbd2a7cee2ed9e47f8301364657",
+      "Bytes": 145
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "Ω",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "0213aed3f2fcb71ce58a99ece98261fa5965a89aec05dfc8fb1d18065f9756b6",
+      "Bytes": 64
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "Ω",
+      "Icon": "/apps/logo/gmail?revision=original\u0026icon=1"
+    },
+    "Expected": {
+      "SHA256": "d4c0b301e22ba7adfd9129352f1245943d70789578e73563dd52099cf9057191",
+      "Bytes": 183
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-icon",
+      "Initial": "Ω",
+      "Icon": "javascript:alert(1)"
+    },
+    "Expected": {
+      "SHA256": "3ea88966362b7e089e461291a8aab7e75e571374c6ba425cbccbc0db0d84b514",
+      "Bytes": 147
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-more",
+      "Initial": "",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "dca09f053c6b9b8096831d9024c9ab3f33c4efba0c63bb08291852bfad73cfdc",
+      "Bytes": 191
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Name": "app-plus",
+      "Initial": "",
+      "Icon": ""
+    },
+    "Expected": {
+      "SHA256": "96bd2a80425296375fbb732e74a0483277af0fe23033f5bfa47007bebcb627d7",
+      "Bytes": 154
+    }
+  }
+]

@@ -1,0 +1,105 @@
+{
+  "title": "Compare options",
+  "fallback": "Option A: 10. Option B: 20. Values are illustrative.",
+  "components": [
+    {
+      "name": "Table",
+      "props": {
+        "title": "Options",
+        "columns": [
+          "Option",
+          "Value"
+        ],
+        "rows": [
+          [
+            "A",
+            "10"
+          ],
+          [
+            "B",
+            "20"
+          ]
+        ],
+        "source": "Illustrative values"
+      }
+    },
+    {
+      "name": "steward.lineChart",
+      "props": {
+        "title": "Values",
+        "description": "Illustrative values; no measured units",
+        "data": [
+          {
+            "label": "A",
+            "value": 10
+          },
+          {
+            "label": "B",
+            "value": 20
+          }
+        ]
+      }
+    },
+    {
+      "name": "steward.form",
+      "props": {
+        "title": "Preferences",
+        "fields": [
+          {
+            "name": "option",
+            "label": "Option",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "A",
+                "label": "A"
+              },
+              {
+                "value": "B",
+                "label": "B"
+              }
+            ]
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date"
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          }
+        ]
+      }
+    },
+    {
+      "name": "steward.cards",
+      "props": {
+        "items": [
+          {
+            "title": "A",
+            "text": "Illustrative option"
+          },
+          {
+            "title": "B",
+            "text": "Illustrative option"
+          }
+        ]
+      }
+    },
+    {
+      "name": "steward.action",
+      "props": {
+        "id": "refresh",
+        "label": "Refresh tasks",
+        "tool": "builtin__task_search",
+        "arguments": {
+          "scope": "active",
+          "limit": 10
+        }
+      }
+    }
+  ]
+}

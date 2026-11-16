@@ -222,3 +222,17 @@ Memory 自动配置的 32 字节密钥使用 Steward 数据根下的 `secrets/` 
 混合工具结果压缩保留非记忆业务回执。Dream 从授权语料检索相关旧笔记并固定读取当前 L4，可核对真实 Worker 工具反馈；已覆盖的历史来源仍可按需回读。新工具规格在原 memory_manage 内声明写入字段与 Run 原文精读，旧声明不变。
 
 维护记录可整行打开右侧详情，查看实际模型调用、耗时、用量和宿主校验失败原因。失败提案不会写成记忆，成功重试不再显示旧错误；旧记录没有保存具体原因时如实提示。
+
+工作集／图片选择及摘要方法已接入独立版本化 `context-compact` 策略；冻结、归档、摘要模型授权与隐私仍由 Host 强制，该迁移已接入标准分发。 详见[插件边界](../designs/plugins-evolution.md#已提取的上下文边界)与[插件验收](../test-plans/plugins-evolution.md)。
+
+Recall 的独立查询／排序／摘录策略保留原工具、输入冻结和证据顺序；授权候选先冻结，记忆候选加密，Forget 清理快照正文。边界与恢复验收见[召回插件设计](../designs/plugins-evolution.md#已提取的召回边界)和[插件测试](../test-plans/plugins-evolution.md)。
+
+自动记忆形成／Dreaming 的方法与触发配方已接入独立包，完整验收中；私有 intent 固定组合，加密请求记录方法来源，Host 保留引用／候选验证、保留政策、费用及 Forget 裁定。直接用户数据控制不依赖方法插件可用性。详见[自动记忆插件边界](../designs/plugins-evolution.md#已提取的自动记忆边界)与[插件验收](../test-plans/plugins-evolution.md)。
+
+关联证据的独立分页策略、旧页版本与 Host 原文／权限边界见[插件设计](../designs/plugins-evolution.md#已提取的证据分页边界)。相关验证覆盖 `TestEvidencePlugin*` 和 `artifacts` 的实际分发包场景；Main 不接受所有者的 `page_revision` 选版参数。
+
+
+Context 接纳的插件边界始终由持久激活事实固定。缺少可执行载体时，新执行仍采用已激活服务并明确失败，不恢复 native；schema63 只为历史无载体缺行执行补空图边界，原冻结上下文、请求与回执不重写。具体约束见[设计](../designs/memory-context.md#context-接纳与插件载体缺失)。
+
+
+上下文选择在原 Run 的冻结插件图上执行纯计算，由既有上下文接纳事务固定消息及来源；接纳前中断可恢复求值，已接纳请求与续接前缀保持不变。历史持久选择回执继续复用，历史 unknown 不自动重放；这不授权重新发送未知工具或模型效果。

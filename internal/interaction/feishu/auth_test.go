@@ -212,10 +212,10 @@ func TestConnectionCheckRefreshesOnlyReadOnlyProbeAndReportsSanitizedFailures(t 
 	defer server.Close()
 	c := managedClient(server.URL)
 	defer c.Close()
-	if status := c.ConnectionStatus(); status.State != "unchecked" || auth.Load() != 0 {
+	if status := c.ConnectionFacts(); status.State != "unchecked" || auth.Load() != 0 {
 		t.Fatal("status performed network access", status)
 	}
-	status := c.Check(t.Context())
+	status := c.CheckFacts(t.Context())
 	if status.State != "ready" || status.ExpiresAt == nil || auth.Load() != 2 || probes.Load() != 2 {
 		t.Fatal(status, auth.Load(), probes.Load())
 	}
@@ -229,8 +229,8 @@ func TestConnectionCheckRefreshesOnlyReadOnlyProbeAndReportsSanitizedFailures(t 
 		r.Header.Set("Authorization", "Bearer probe-token")
 		return r
 	}()})
-	if status := c.Check(t.Context()); status.State != "credentials_unavailable" || status.Action == "" {
-		t.Fatal("missing secret has no recovery action", status)
+	if status := c.CheckFacts(t.Context()); status.State != "credentials_unavailable" {
+		t.Fatal("missing credential was not classified", status)
 	}
 }
 

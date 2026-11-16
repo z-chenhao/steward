@@ -16,11 +16,11 @@ import (
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
-const removeLayeredMemoryFixtureSchema = `DROP TRIGGER IF EXISTS conversation_memory_time; DROP TRIGGER IF EXISTS conversation_memory_time_immutable; DROP INDEX IF EXISTS conversation_memory_page; ALTER TABLE conversation_intent DROP COLUMN memory_created_at; DROP TABLE IF EXISTS memory_access; DROP TABLE IF EXISTS memory_injection_access; DROP TABLE IF EXISTS memory_dream_change; DROP TABLE IF EXISTS runtime_owner; DROP TABLE IF EXISTS run_injected_memory; DROP TABLE IF EXISTS memory_dream_step; DROP TABLE IF EXISTS memory_dream_coverage; `
+const removeLayeredMemoryFixtureSchema = removeRSIFixtureSchema + `DROP TRIGGER IF EXISTS conversation_memory_time; DROP TRIGGER IF EXISTS conversation_memory_time_immutable; DROP INDEX IF EXISTS conversation_memory_page; ALTER TABLE conversation_intent DROP COLUMN memory_created_at; DROP TABLE IF EXISTS memory_access; DROP TABLE IF EXISTS memory_injection_access; DROP TABLE IF EXISTS memory_dream_change; DROP TABLE IF EXISTS runtime_owner; DROP TABLE IF EXISTS run_injected_memory; DROP TABLE IF EXISTS memory_dream_step; DROP TABLE IF EXISTS memory_dream_coverage; `
 
 const removeUIInteractionFixtureSchema = removeLayeredMemoryFixtureSchema + `DROP TABLE IF EXISTS generation_cost_estimate; DROP TABLE IF EXISTS memory_cost_reservation; DROP TABLE IF EXISTS memory_generation; DROP TABLE IF EXISTS memory_semantic_receipt; DROP TABLE IF EXISTS connected_apps; DROP TABLE IF EXISTS ui_action_request; DROP TABLE IF EXISTS main_ui_context; DROP TABLE IF EXISTS ui_view_state; `
 
-func uiInteractionFixture(t *testing.T) (*Store, *Runs, agent.Actor, *loopProvider, string, *atomic.Int32) {
+func uiInteractionFixture(t *testing.T, managed ...bool) (*Store, *Runs, agent.Actor, *loopProvider, string, *atomic.Int32) {
 	t.Helper()
 	counter := &atomic.Int32{}
 	definition := tool.Definition{Spec: tool.Spec{Name: "mcp__ui__refresh", Version: 1, Permission: "read_only", ReplayPolicy: "safe", InputSchema: `{"type":"object","properties":{"filter":{"type":"string"}},"required":["filter"],"additionalProperties":false}`}, Execute: func(context.Context, string) tool.Result {
@@ -28,6 +28,9 @@ func uiInteractionFixture(t *testing.T) (*Store, *Runs, agent.Actor, *loopProvid
 		return tool.Result{Text: `{"rows":[{"value":42}]}`}
 	}}
 	s, r, a, p := childFixture(t, ui.ShowDefinition(), definition)
+	if len(managed) > 0 && managed[0] {
+		installUIRuntimePlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if req.Messages[len(req.Messages)-1].Role == "tool" {
 			return llm.GenerationResult{Text: "Done."}, nil
@@ -166,6 +169,12 @@ func TestUIStateConcurrentWritersAndInvalidPayloads(t *testing.T) {
 }
 
 func TestUIActionCannotApproveAnExternalEffect(t *testing.T) {
+	assertUIActionRequiresApproval(t, false)
+}
+func TestUIActionViewCannotApproveAnExternalEffect(t *testing.T) {
+	assertUIActionRequiresApproval(t, true)
+}
+func assertUIActionRequiresApproval(t *testing.T, managed bool) {
 	ctx := context.Background()
 	var invoked atomic.Int32
 	definition := tool.Definition{Spec: tool.Spec{Name: "mcp__ui__publish", Version: 1, Permission: "external_effect", Risk: "high", ReplayPolicy: "never", TimeoutMS: 1000, OutputBytes: 4096, Provider: "fixture", ConflictPolicy: "none", InputSchema: `{"type":"object","properties":{},"additionalProperties":false}`}, Invoke: func(context.Context, tool.Request) tool.Outcome {
@@ -173,6 +182,9 @@ func TestUIActionCannotApproveAnExternalEffect(t *testing.T) {
 		return tool.Outcome{Result: tool.Result{Text: "Published"}}
 	}}
 	s, r, a, p := childFixture(t, ui.ShowDefinition(), definition)
+	if managed {
+		installUIRuntimePlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if req.Messages[len(req.Messages)-1].Role == "tool" {
 			return llm.GenerationResult{Text: "Ready."}, nil

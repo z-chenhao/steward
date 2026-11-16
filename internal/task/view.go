@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/z-chenhao/assistant/internal/automation"
 	"github.com/z-chenhao/assistant/internal/conversation"
 )
 
@@ -91,6 +92,7 @@ type Entry struct {
 // Schedule is owner-facing Automation configuration. It is not a promised
 // execution time or a frozen Run snapshot.
 type Schedule struct {
+	Presentation                                   *automation.SchedulePresentation `json:"-"`
 	Ref, Instruction, Type, Spec, Timezone, NextAt string
 	CreatedAt, UpdatedAt                           string
 	Version                                        int64
@@ -101,7 +103,9 @@ type Schedule struct {
 // ScheduledWork may exist before a Task has been dispatched. TaskRef is present
 // only when the scheduler has actually linked one; Ref remains Automation identity.
 type ScheduledWork struct {
-	TaskRef string
+	OwnerLocal     *automation.OwnerLocal     `json:"-"`
+	OwnerFrequency *automation.OwnerFrequency `json:"-"`
+	TaskRef        string
 	Schedule
 }
 type Instruction struct {

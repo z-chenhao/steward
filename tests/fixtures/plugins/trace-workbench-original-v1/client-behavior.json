@@ -1,0 +1,8466 @@
+{
+  "source_sha256": {
+    "client": "0b517a583baba8b52bb5bff9135b1d63e3c1ba66ef1f3b4bd7171f625702d92c",
+    "time": "56d06acd2ceae7a119ec94bb5b4c56d4b08129a99adfba34b16c8337308ba582"
+  },
+  "runtime": {
+    "node": "v24.21.0",
+    "locale": "en-US"
+  },
+  "tree": [
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "Top",
+            "type": "root"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Search people",
+            "type": "tool"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Provider event",
+            "type": "model"
+          },
+          {
+            "id": "d",
+            "parent": "a",
+            "name": "Sibling",
+            "type": "event"
+          },
+          {
+            "id": "e",
+            "parent": "missing",
+            "name": "Orphan",
+            "type": "worker"
+          },
+          {
+            "id": "f",
+            "name": "Other",
+            "type": "event"
+          },
+          {
+            "id": "g",
+            "parent": "a",
+            "name": "杭州筛选",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Top"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Search people"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "d",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "e",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "f",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "g",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": false,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": false,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "search",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "provider",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "杭州",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "not found",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": true,
+          "expanded": "false",
+          "label": "Expand node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "MODEL",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": " a ",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "parent": "b",
+            "name": "Alpha",
+            "type": "tool"
+          },
+          {
+            "id": "b",
+            "parent": "a",
+            "name": "Beta",
+            "type": "model"
+          },
+          {
+            "id": "c",
+            "parent": "b",
+            "name": "Search leaf",
+            "type": "event"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Alpha"
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": true,
+          "expanded": "true",
+          "label": "Collapse node: Beta"
+        },
+        {
+          "id": "c",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "search",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "provider",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "杭州",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "not found",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": "MODEL",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": []
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "a"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "a",
+          "b"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "nodes": [
+          {
+            "id": "a",
+            "name": "One",
+            "type": "event"
+          },
+          {
+            "id": "b",
+            "name": "Two",
+            "type": "tool"
+          }
+        ],
+        "query": " a ",
+        "closed": [
+          "missing"
+        ]
+      },
+      "expected": [
+        {
+          "id": "a",
+          "hidden": false,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        },
+        {
+          "id": "b",
+          "hidden": true,
+          "disabled": null,
+          "expanded": null,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "columns": [
+    {
+      "storage": {},
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "null"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "[true,false,true,false,true,false,true,false,true,false]"
+      },
+      "expected": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "[false,false,false,false,false,false,false,false,false,false]"
+      },
+      "expected": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "invalid",
+        "steward.trace.columns.v4": "[true,false,true,false,true,false,true,false,true,false]"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "[true,false,true,false,true,false,true,false,true]"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "[\"true\",\"true\",\"true\",\"true\",\"true\",\"true\",\"true\",\"true\",\"true\",\"true\"]"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v4": "[true,false,true,false,true,false,true,false,true,false]"
+      },
+      "expected": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v4": "[true,false,true,false,true,false,true,false,true]",
+        "steward.trace.columns.v3": "[true,false,true,false,true,false,true,false,true,false,true]"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v3": "[true,false,true,false,true,false,true,false,true,false,true]"
+      },
+      "expected": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v2": "[true,false,true,false,true,false,true,false,true,false]"
+      },
+      "expected": [
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v2": "invalid"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v2": "[true,false,true,false,true,false,true,false,true]"
+      },
+      "expected": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "storage": {
+        "steward.trace.columns.v5": "[true,false,true,false,true,false,true,false,true,false]",
+        "steward.trace.columns.v4": "[false,false,false,false,false,false,false,false,false,false]"
+      },
+      "expected": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    }
+  ],
+  "bounded_window": [
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": -50,
+        "end": 20
+      },
+      "expected": {
+        "start": 0,
+        "end": 70
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": 90,
+        "end": 150
+      },
+      "expected": {
+        "start": 40,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": 150,
+        "end": 300
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": 190,
+        "end": 195
+      },
+      "expected": {
+        "start": 95,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": 100,
+        "end": 100
+      },
+      "expected": {
+        "start": 99,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": 150,
+        "end": 120
+      },
+      "expected": {
+        "start": 99,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "start": 0,
+        "end": 4000
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": -50,
+        "end": 20
+      },
+      "expected": {
+        "start": 100,
+        "end": 170
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": 90,
+        "end": 150
+      },
+      "expected": {
+        "start": 100,
+        "end": 160
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": 150,
+        "end": 300
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": 190,
+        "end": 195
+      },
+      "expected": {
+        "start": 190,
+        "end": 195
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": 100,
+        "end": 100
+      },
+      "expected": {
+        "start": 100,
+        "end": 101
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": 150,
+        "end": 120
+      },
+      "expected": {
+        "start": 150,
+        "end": 151
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "start": 0,
+        "end": 4000
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": -50,
+        "end": 20
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": 90,
+        "end": 150
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": 150,
+        "end": 300
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": 190,
+        "end": 195
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": 100,
+        "end": 100
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": 150,
+        "end": 120
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "start": 0,
+        "end": 4000
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    }
+  ],
+  "zoom_window": [
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 0.0001,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 0,
+        "end": 1
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 0.0001,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 49.995,
+        "end": 50.995
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 0.0001,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 99,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 0.5,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 0,
+        "end": 50
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 0.5,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 25,
+        "end": 75
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 0.5,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 50,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 2,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 2,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 2,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 100,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 100,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 0,
+          "end": 100
+        },
+        "current": {
+          "start": 0,
+          "end": 100
+        },
+        "factor": 100,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 0,
+        "end": 100
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 0.0001,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 100,
+        "end": 101
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 0.0001,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 149.995,
+        "end": 150.995
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 0.0001,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 199,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 0.5,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 100,
+        "end": 150
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 0.5,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 125,
+        "end": 175
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 0.5,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 150,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 2,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 2,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 2,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 100,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 100,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 100,
+          "end": 200
+        },
+        "current": {
+          "start": 100,
+          "end": 200
+        },
+        "factor": 100,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 100,
+        "end": 200
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 0.0001,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 0.0001,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 0.0001,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 0.5,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 0.5,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 0.5,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 2,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 2,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 2,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 100,
+        "anchor": 0
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 100,
+        "anchor": 0.5
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "domain": {
+          "start": 10,
+          "end": 10
+        },
+        "current": {
+          "start": 10,
+          "end": 10
+        },
+        "factor": 100,
+        "anchor": 1
+      },
+      "expected": {
+        "start": 10,
+        "end": 10
+      }
+    }
+  ],
+  "bucket_selection": [
+    {
+      "input": {
+        "count": 0,
+        "first": 0,
+        "last": 0
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "first": 0,
+        "last": 9
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "first": 9,
+        "last": 1
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "first": -4,
+        "last": 3
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 0,
+        "first": 100,
+        "last": 200
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "first": 0,
+        "last": 0
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "first": 0,
+        "last": 9
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "first": 9,
+        "last": 1
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "first": -4,
+        "last": 3
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 1,
+        "first": 100,
+        "last": 200
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 2,
+        "first": 0,
+        "last": 0
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 2,
+        "first": 0,
+        "last": 9
+      },
+      "expected": {
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "input": {
+        "count": 2,
+        "first": 9,
+        "last": 1
+      },
+      "expected": {
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "input": {
+        "count": 2,
+        "first": -4,
+        "last": 3
+      },
+      "expected": {
+        "first": 0,
+        "last": 1
+      }
+    },
+    {
+      "input": {
+        "count": 2,
+        "first": 100,
+        "last": 200
+      },
+      "expected": {
+        "first": 1,
+        "last": 1
+      }
+    },
+    {
+      "input": {
+        "count": 10,
+        "first": 0,
+        "last": 0
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 10,
+        "first": 0,
+        "last": 9
+      },
+      "expected": {
+        "first": 0,
+        "last": 9
+      }
+    },
+    {
+      "input": {
+        "count": 10,
+        "first": 9,
+        "last": 1
+      },
+      "expected": {
+        "first": 1,
+        "last": 9
+      }
+    },
+    {
+      "input": {
+        "count": 10,
+        "first": -4,
+        "last": 3
+      },
+      "expected": {
+        "first": 0,
+        "last": 3
+      }
+    },
+    {
+      "input": {
+        "count": 10,
+        "first": 100,
+        "last": 200
+      },
+      "expected": {
+        "first": 9,
+        "last": 9
+      }
+    },
+    {
+      "input": {
+        "count": 50,
+        "first": 0,
+        "last": 0
+      },
+      "expected": {
+        "first": 0,
+        "last": 0
+      }
+    },
+    {
+      "input": {
+        "count": 50,
+        "first": 0,
+        "last": 9
+      },
+      "expected": {
+        "first": 0,
+        "last": 9
+      }
+    },
+    {
+      "input": {
+        "count": 50,
+        "first": 9,
+        "last": 1
+      },
+      "expected": {
+        "first": 1,
+        "last": 9
+      }
+    },
+    {
+      "input": {
+        "count": 50,
+        "first": -4,
+        "last": 3
+      },
+      "expected": {
+        "first": 0,
+        "last": 3
+      }
+    },
+    {
+      "input": {
+        "count": 50,
+        "first": 100,
+        "last": 200
+      },
+      "expected": {
+        "first": 49,
+        "last": 49
+      }
+    }
+  ],
+  "elapsed_label": [
+    {
+      "input": -1000,
+      "expected": "0.00ms"
+    },
+    {
+      "input": 0,
+      "expected": "0.00ms"
+    },
+    {
+      "input": 1,
+      "expected": "0.00ms"
+    },
+    {
+      "input": 999,
+      "expected": "1.00ms"
+    },
+    {
+      "input": 1000,
+      "expected": "1.00ms"
+    },
+    {
+      "input": 100000,
+      "expected": "100.00ms"
+    },
+    {
+      "input": 999999,
+      "expected": "1000.00ms"
+    },
+    {
+      "input": 1000000,
+      "expected": "1.00s"
+    },
+    {
+      "input": 1000001,
+      "expected": "1.00s"
+    },
+    {
+      "input": 1234567,
+      "expected": "1.23s"
+    }
+  ],
+  "time_micros": [
+    {
+      "input": "2026-11-15T12:34:56Z",
+      "expected": 1794746096000000
+    },
+    {
+      "input": "2026-11-15T12:34:56.000001Z",
+      "expected": 1794746096000001
+    },
+    {
+      "input": "2026-11-15T12:34:56.123456Z",
+      "expected": 1794746096123456
+    },
+    {
+      "input": "2026-11-15T12:34:56.123456789Z",
+      "expected": 1794746096123456
+    },
+    {
+      "input": "2026-11-15T12:34:56.1Z",
+      "expected": 1794746096100000
+    },
+    {
+      "input": "2026-11-15T12:34:56.123456+08:00",
+      "expected": 1794717296123456
+    },
+    {
+      "input": "2026-11-15T12:34:56.999999-04:00",
+      "expected": 1794760496999999
+    },
+    {
+      "input": "1969-12-31T23:59:59.999999Z",
+      "expected": -1
+    }
+  ],
+  "activity_geometry": [
+    {
+      "input": [
+        {
+          "at": "2026-11-15T12:00:00.000001Z",
+          "until": "2026-11-15T12:00:00.000101Z"
+        },
+        {
+          "at": "2026-11-15T12:00:00.000101Z",
+          "until": "2026-11-15T12:00:00.000501Z"
+        }
+      ],
+      "expected": [
+        {
+          "left": 0,
+          "right": 0.2
+        },
+        {
+          "left": 0.2,
+          "right": 1
+        }
+      ]
+    },
+    {
+      "input": [
+        {
+          "at": "2026-11-15T12:00:00Z",
+          "until": "2026-11-15T12:00:01Z"
+        }
+      ],
+      "expected": [
+        {
+          "left": 0,
+          "right": 1
+        }
+      ]
+    },
+    {
+      "input": [
+        {
+          "at": "2026-11-15T12:00:00Z",
+          "until": "2026-11-15T12:00:00Z"
+        }
+      ],
+      "expected": [
+        {
+          "left": 0,
+          "right": 0
+        }
+      ]
+    }
+  ],
+  "activity_index": [
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": -0.1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": 0
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": 0.199999
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": 0.2
+      },
+      "expected": 1
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": 0.999
+      },
+      "expected": 1
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": 1
+      },
+      "expected": 1
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0.2
+          },
+          {
+            "left": 0.2,
+            "right": 1
+          }
+        ],
+        "fraction": 1.1
+      },
+      "expected": 1
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": -0.1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": 0
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": 0.199999
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": 0.2
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": 0.999
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": 1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 1
+          }
+        ],
+        "fraction": 1.1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": -0.1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": 0
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": 0.199999
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": 0.2
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": 0.999
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": 1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [
+          {
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "fraction": 1.1
+      },
+      "expected": 0
+    },
+    {
+      "input": {
+        "geometry": [],
+        "fraction": 0
+      },
+      "expected": -1
+    },
+    {
+      "input": {
+        "geometry": [],
+        "fraction": 0.5
+      },
+      "expected": -1
+    },
+    {
+      "input": {
+        "geometry": [],
+        "fraction": 1
+      },
+      "expected": -1
+    }
+  ]
+}

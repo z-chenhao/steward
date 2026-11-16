@@ -12,8 +12,6 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
-
-	"golang.org/x/net/html"
 )
 
 var errBlocked = errors.New("WEB_ADDRESS_BLOCKED")
@@ -147,58 +145,14 @@ func fetch(ctx context.Context, raw string, client *http.Client) (Page, error) {
 	if e != nil || len(body) > 2<<20 {
 		return p, errors.New("WEB_BODY_LIMIT")
 	}
-	if !utf8.Valid(body) {
-		return p, errors.New("WEB_UNSUPPORTED_ENCODING")
-	}
 	p.URL = res.Request.URL.String()
-	p.Text = string(body)
-	if media == "text/html" {
-		p.Title, p.Text = extractHTML(p.Text)
+	decoded, e := DecodePage(ctx, Config{}, Page{URL: p.URL, MediaType: media}, "fetch", "", body)
+	if e != nil {
+		return p, e
 	}
-	if strings.TrimSpace(p.Text) == "" {
-		return p, errors.New("WEB_EMPTY_OR_DYNAMIC_PAGE")
-	}
+	p.Title, p.Text = decoded.Title, decoded.Text
 	p.RetrievedAt = time.Now().UTC().Format(time.RFC3339)
 	return p, nil
-}
-func extractHTML(raw string) (string, string) {
-	doc, e := html.Parse(strings.NewReader(raw))
-	if e != nil {
-		return "", ""
-	}
-	var title, body strings.Builder
-	var visit func(*html.Node, bool)
-	visit = func(n *html.Node, inTitle bool) {
-		if n.Type == html.ElementNode {
-			switch n.Data {
-			case "script", "style", "noscript", "svg", "nav", "footer", "form", "iframe", "template", "head":
-				if n.Data == "head" {
-					for c := n.FirstChild; c != nil; c = c.NextSibling {
-						if c.Data == "title" {
-							visit(c, true)
-						}
-					}
-				}
-				return
-			}
-			if n.Data == "title" {
-				inTitle = true
-			}
-		}
-		if n.Type == html.TextNode {
-			if inTitle {
-				title.WriteString(n.Data)
-			} else {
-				body.WriteString(n.Data)
-				body.WriteByte(' ')
-			}
-		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			visit(c, inTitle)
-		}
-	}
-	visit(doc, false)
-	return Preview(strings.Join(strings.Fields(title.String()), " "), 1024), strings.Join(strings.Fields(body.String()), " ")
 }
 
 func Preview(s string, n int) string {

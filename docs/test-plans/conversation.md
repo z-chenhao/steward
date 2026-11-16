@@ -20,7 +20,7 @@
 
 覆盖同源输入去重、模型生成中追加、工具提交后中断、已提交回复复用与并发 Main fencing。原始历史与模型工作上下文分别断言。
 
-- Prompt：[TestContextPromptBytes](../../internal/agent/context_test.go) 固定三种角色的完整消息投影。`TestAgentStartsWithOneFrozenSystemMessage` 检查 Main/Root/Child 均按 role、safety、execution、capabilities 排序且 Agent 内已是一条 system；Root 身份与进度位于各自段内，Host 继承文本与进度标记不进入模型。冻结资源回归经 JSON 往返后验证 Child 继承冻结共享规则，排除 Root 身份、进度和私有聊天；Bridge 拒绝拆分的系统消息。
+- Prompt：[TestContextPromptBytes](../../internal/agent/context_test.go) 固定三种角色的完整消息投影；角色文案或组装顺序变化时显式更新对应基线；其他角色保持原字节。`TestAgentStartsWithOneFrozenSystemMessage` 检查 Main 的 tools/rules、UI 优先与授权规则，以及三段冻结元数据；Root/Child 检查 role、capabilities、safety、execution 排序和 tools/rules 结构。各角色均为一条 system；Root 身份与进度位于各自段内，Host 继承文本与进度标记不进入模型。冻结资源回归经 JSON 往返后验证 Child 继承冻结共享规则，排除 Root 身份、进度和私有聊天；Bridge 拒绝拆分的系统消息。
 - 单元/组件：规则、实际 SQLite 和协议边界在所属模块验证。
 - 系统：用真实 CLI/Web/Actor/Bridge 链路证明目标行为；允许受控外部 peer，不能伪造产品内部接受结果。
 - Live/质量：涉及真实账户、Guest 平台或语义质量时单独记录环境与证据；不适用项说明理由，不用软件回归代替。
@@ -87,3 +87,7 @@ L2 requirement, and Device Authorization remains deferred by ADR 001.
 使用隔离配置与可丢弃数据，保留产品版本、实际命令、环境、结果和清理情况。区分通过、失败、跳过、未执行以及未知外部结果。
 
 需求完成需要对应入口可用、正常与相关失败/恢复场景有证据、使用说明与技术方案一致。报告沿用现有 evidence/流程；不为本方案建立另一套测试平台或复制历史评测资产。
+
+Main 沟通／工作方法已接入独立版本化 `conversation` 包并进入标准分发。Host 保留身份、安全 Section、输入与冻结上下文、Task／交付事实；Root／Child 不消费 Main 方法服务。独立换版、已排队版本保留、方法回执后 ContextReady 失败恢复与工具续轮前缀见[Main 插件边界](../designs/plugins-evolution.md#已提取的-main-对话边界)及[插件验收](../test-plans/plugins-evolution.md)。`make test-prompts` 包含相应上下文回归。
+
+独立 Main 换版回归还在回退／退役后关闭 Store、新建 Store／Catalog，直接 drain 原排队的新方法 Main，检查实际 provider 请求中的原方法、固定身份和安全文本；停用后再次重开，验证没有模型请求或 native 方法复活。不通过额外 select／update 修复恢复夹具。

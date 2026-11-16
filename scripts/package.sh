@@ -28,7 +28,9 @@ Documentation: https://github.com/z-chenhao/steward/blob/main/docs/README.md
 EOF
 platform=$(go env GOOS)
 arch=$(go env GOARCH)
-tar -czf "$output/steward-$platform-$arch.tar.gz" -C "$stage" steward
+# AppleDouble metadata is neither executable code nor a declared plugin file.
+# Keep it out of the archive rather than weakening package inventory checks.
+COPYFILE_DISABLE=1 tar -czf "$output/steward-$platform-$arch.tar.gz" -C "$stage" steward
 (
   cd "$output"
   if command -v sha256sum >/dev/null; then

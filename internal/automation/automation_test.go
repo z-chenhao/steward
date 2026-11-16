@@ -23,7 +23,7 @@ func TestCalendarBoundaries(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			after, _ := time.Parse(time.RFC3339, c.after)
 			want, _ := time.Parse(time.RFC3339, c.want)
-			got, e := Next("cron", c.spec, c.zone, after)
+			got, e := HistoricalNext("cron", c.spec, c.zone, after)
 			if e != nil || !got.Equal(want) {
 				t.Fatalf("got %s %v want %s", got, e, want)
 			}
@@ -31,14 +31,20 @@ func TestCalendarBoundaries(t *testing.T) {
 	}
 }
 func TestRejectMalformedContracts(t *testing.T) {
-	for _, raw := range []string{`{"operation":"create"}`, `{"operation":"list","below":10}`, `{"operation":"cancel","automationRef":"a","version":1,"instruction":"bad"}`, `{"operation":"create","instruction":"x","triggerType":"cron","triggerSpec":"* * * * *","timezone":"Local"}`, `{"operation":"list","call_key":"x"}`} {
-		if _, e := Parse(raw); e == nil {
+	for _, raw := range []string{`{"operation":"create"}`, `{"operation":"list","below":10}`, `{"operation":"cancel","automationRef":"a","version":1,"instruction":"bad"}`, `{"operation":"list","call_key":"x"}`} {
+		if _, e := DecodeRequest(raw); e == nil {
 			t.Fatalf("accepted %s", raw)
 		}
 	}
 	for _, spec := range []string{"* * * *", "60 * * * *", "*/0 * * * *", "* * * * 7", "* * * * 9L", "0 0 31 2 *"} {
-		if _, e := Next("cron", spec, "UTC", time.Now()); e == nil {
+		if _, e := HistoricalNext("cron", spec, "UTC", time.Now()); e == nil {
 			t.Fatalf("accepted %s", spec)
 		}
+	}
+}
+
+func TestHistoricalCalendarRejectsLocalZone(t *testing.T) {
+	if _, err := HistoricalNext("cron", "* * * * *", "Local", time.Now()); err == nil {
+		t.Fatal("legacy local zone accepted")
 	}
 }

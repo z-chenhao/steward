@@ -1,0 +1,463 @@
+[
+  {
+    "query": {},
+    "filter": {
+      "slugs": [
+        "gmail",
+        "outlook",
+        "slack",
+        "microsoft_teams",
+        "discord",
+        "telegram",
+        "whatsapp",
+        "zoom",
+        "googlecalendar",
+        "googletasks",
+        "notion",
+        "todoist",
+        "ticktick",
+        "asana",
+        "trello",
+        "clickup",
+        "monday",
+        "airtable",
+        "calendly",
+        "googledrive",
+        "googledocs",
+        "googlesheets",
+        "googleslides",
+        "one_drive",
+        "share_point",
+        "dropbox",
+        "box",
+        "confluence",
+        "github",
+        "gitlab",
+        "bitbucket",
+        "linear",
+        "jira",
+        "sentry",
+        "vercel",
+        "netlify",
+        "supabase",
+        "figma",
+        "canva",
+        "miro",
+        "webflow",
+        "wordpress",
+        "hubspot",
+        "salesforce",
+        "pipedrive",
+        "zendesk",
+        "intercom",
+        "mailchimp",
+        "typeform",
+        "shopify",
+        "stripe",
+        "quickbooks",
+        "xero",
+        "youtube",
+        "spotify",
+        "reddit",
+        "twitter",
+        "linkedin",
+        "instagram",
+        "pinterest",
+        "raindrop",
+        "strava",
+        "fitbit",
+        "google_maps",
+        "weathermap"
+      ],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": "gmail"
+    },
+    "filter": {
+      "slugs": [
+        "gmail"
+      ],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": " GmAiL "
+    },
+    "filter": {
+      "slugs": [
+        "gmail"
+      ],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": "absent app"
+    },
+    "filter": {
+      "slugs": [],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "category": "communication"
+    },
+    "filter": {
+      "slugs": [
+        "gmail",
+        "outlook",
+        "slack",
+        "microsoft_teams",
+        "discord",
+        "telegram",
+        "whatsapp",
+        "zoom"
+      ],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": "gmail",
+      "category": "storage"
+    },
+    "filter": {
+      "slugs": [],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": "notion",
+      "category": "productivity"
+    },
+    "filter": {
+      "slugs": [
+        "notion"
+      ],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "category": "unknown"
+    },
+    "filter": {
+      "slugs": [],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": "mailbox"
+    },
+    "filter": {
+      "slugs": [],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  },
+  {
+    "query": {
+      "search": "uniquehint"
+    },
+    "filter": {
+      "slugs": [],
+      "categories": [
+        {
+          "id": "communication",
+          "name": "Communication"
+        },
+        {
+          "id": "productivity",
+          "name": "Productivity"
+        },
+        {
+          "id": "storage",
+          "name": "Documents and storage"
+        },
+        {
+          "id": "development",
+          "name": "Development"
+        },
+        {
+          "id": "design",
+          "name": "Design"
+        },
+        {
+          "id": "business",
+          "name": "Business"
+        },
+        {
+          "id": "personal",
+          "name": "Personal life"
+        }
+      ]
+    }
+  }
+]

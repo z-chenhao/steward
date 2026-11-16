@@ -1,0 +1,8 @@
+{
+  "native_function": "Server.loadResourceModels",
+  "case_count": 64,
+  "capture_scope": "Executed unchanged native Settings reader with synthetic profile/account/auth facts and notices; excludes templates and live credential operations.",
+  "source_sha256": "50e94abe5fd354f5b5d22ae9ae1589d551e425cfd0d69feed811e325de311650",
+  "overlay_sha256": "91b9228351cee838fc86123e97ba5a287f80ddd542b2ab29d8f4e559b65f44ea",
+  "fixture_sha256": "c18f4dfa2926e6e7c00e17244a476496fec5526142a9f9373631b140bf88597c"
+}

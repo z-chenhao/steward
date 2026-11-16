@@ -70,7 +70,11 @@ func (s *Server) acceptFormMessage(w http.ResponseWriter, r *http.Request) error
 		if err != nil {
 			return err
 		}
-		e.Content = append(e.Content, conversation.ContentPart{Type: artifact.ContentType(input.MediaType), ArtifactRef: ref})
+		descriptor, err := s.Core.DescribeArtifact(r.Context(), ref)
+		if err != nil {
+			return err
+		}
+		e.Content = append(e.Content, conversation.ContentPart{Type: descriptor.ContentType(), ArtifactRef: ref})
 	} else if err != http.ErrMissingFile {
 		return err
 	}

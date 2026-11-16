@@ -10,21 +10,26 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
-	"mime"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/z-chenhao/assistant/internal/artifact"
 )
 
 type Store struct {
-	db       *sql.DB
-	root     *os.Root
-	Policy   artifact.Policy // Configure once before accepting work.
-	Boundary func(string)    // Explicit deterministic fault injection only.
+	db     *sql.DB
+	root   *os.Root
+	Policy artifact.Policy // Configure once before accepting work.
+	// Optional operator choices, configured once before accepting work. Nil
+	// delegates to the managed recipe; these are never inferred from Policy.
+	RetentionDays *int
+	CleanupBatch  *int
+	// Required by the product App. Bare native constructors are explicit SDK
+	// fixtures/embedders; once a recipe activated, both paths remain managed.
+	RequireManaged bool
+	Boundary       func(string) // Explicit deterministic fault injection only.
 }
 
 func New(db *sql.DB, dataRoot string) (*Store, error) {
@@ -72,10 +77,7 @@ func storedRef(id string) string {
 	}
 	return id
 }
-func validInput(in artifact.Input) bool {
-	_, _, err := mime.ParseMediaType(in.MediaType)
-	return err == nil && len(in.MediaType) <= 128 && in.Name != "" && in.Name != "." && in.Name != ".." && len(in.Name) <= 255 && !strings.ContainsAny(in.Name, "/\\") && !strings.ContainsFunc(in.Name, unicode.IsControl)
-}
+
 func (s *Store) transaction(ctx context.Context, fn func(*sql.Tx) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -130,7 +132,7 @@ func (s *Store) DescribeTx(ctx context.Context, tx *sql.Tx, a artifact.Scope, re
 	var user, agentID, taskID, runID, visibility string
 	var created, expires int64
 	var deleted sql.NullInt64
-	err := tx.QueryRowContext(ctx, `SELECT artifact_ref,name,media_type,byte_size,content_hash,created_at,expires_at,deleted_at,version,owner_user_id,owner_agent_id,coalesce(task_id,''),coalesce(run_id,''),visibility FROM artifact WHERE artifact_ref=?`, ref).Scan(&d.Ref, &d.Name, &d.MediaType, &d.ByteSize, &d.ContentHash, &created, &expires, &deleted, &d.Version, &user, &agentID, &taskID, &runID, &visibility)
+	err := tx.QueryRowContext(ctx, `SELECT artifact_ref,name,media_type,byte_size,content_hash,created_at,expires_at,deleted_at,version,owner_user_id,owner_agent_id,coalesce(task_id,''),coalesce(run_id,''),visibility,coalesce(method_graph,''),coalesce(semantic_kind,'') FROM artifact WHERE artifact_ref=?`, ref).Scan(&d.Ref, &d.Name, &d.MediaType, &d.ByteSize, &d.ContentHash, &created, &expires, &deleted, &d.Version, &user, &agentID, &taskID, &runID, &visibility, &d.MethodGraph, &d.SemanticKind)
 	if err == sql.ErrNoRows {
 		return d, artifact.ErrNotFound
 	}
@@ -371,60 +373,6 @@ func (s *Store) PublishTx(ctx context.Context, tx *sql.Tx, a artifact.Scope, pub
 		}
 	}
 	return nil
-}
-func (s *Store) ListTx(ctx context.Context, tx *sql.Tx, a artifact.Scope) ([]artifact.Descriptor, error) {
-	return s.SearchTx(ctx, tx, a, "", 50)
-}
-
-// SearchTx uses the same Unicode lowercasing for query and metadata.
-// Matching and visibility checks both precede the accessible-result bound.
-func (s *Store) SearchTx(ctx context.Context, tx *sql.Tx, a artifact.Scope, query string, limit int) ([]artifact.Descriptor, error) {
-	if limit == 0 {
-		limit = 50
-	}
-	if limit < 1 || limit > 50 || len(query) > 4096 {
-		return nil, artifact.ErrInvalid
-	}
-	query = strings.ToLower(strings.TrimSpace(query))
-	if err := s.scope(ctx, tx, a); err != nil {
-		return nil, err
-	}
-	rows, err := tx.QueryContext(ctx, `SELECT artifact_ref,name,media_type FROM artifact WHERE owner_user_id=? AND owner_agent_id=? AND deleted_at IS NULL ORDER BY created_at DESC,artifact_ref`, a.UserID, a.AgentID)
-	if err != nil {
-		return nil, err
-	}
-	refs := []string{}
-	for rows.Next() {
-		var ref, name, mediaType string
-		if err = rows.Scan(&ref, &name, &mediaType); err != nil {
-			rows.Close()
-			return nil, err
-		}
-		// SQLite lower() only handles ASCII; use Go for both operands.
-		if query == "" || strings.Contains(strings.ToLower(name), query) || strings.Contains(strings.ToLower(mediaType), query) {
-			refs = append(refs, ref)
-		}
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return nil, err
-	}
-	out := []artifact.Descriptor{}
-	for _, ref := range refs {
-		d, e := s.DescribeTx(ctx, tx, a, ref, true)
-		if errors.Is(e, artifact.ErrNotFound) {
-			continue
-		}
-		if e != nil {
-			return nil, e
-		}
-		out = append(out, d)
-		if len(out) == limit {
-			break
-		}
-	}
-	return out, nil
 }
 func (s *Store) Delete(ctx context.Context, a artifact.Scope, ref string, version int64) error {
 	ref = storedRef(ref)

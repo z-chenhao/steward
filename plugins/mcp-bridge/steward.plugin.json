@@ -1,0 +1,128 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.mcp-bridge",
+  "version": "1.0.1",
+  "feature_ids": [
+    "F-024"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 10000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.mcp-method/1",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                },
+                "start": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1048576
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1048576
+                }
+              },
+              "required": [
+                "index",
+                "start",
+                "end"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 65536
+          },
+          "separator": {
+            "type": "string",
+            "enum": [
+              "",
+              "\n",
+              "\n\n"
+            ]
+          }
+        },
+        "required": [
+          "parts",
+          "separator"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.mcp-namespace/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "enum": [
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "input_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1048576
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1048576
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "truncated"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "resource.call",
+    "input.read"
+  ]
+}

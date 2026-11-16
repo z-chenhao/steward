@@ -166,3 +166,20 @@ func (e *Engine) verify(ctx context.Context) error {
 	}
 	return nil
 }
+
+// Check verifies the frozen native resources without running recognition.
+func (e *Engine) Check(ctx context.Context) error {
+	if err := e.verify(ctx); err != nil {
+		return err
+	}
+	for _, lang := range e.languages {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		hash, err := fileHash(lang.Path)
+		if err != nil || hash != lang.Hash {
+			return ErrChanged
+		}
+	}
+	return nil
+}

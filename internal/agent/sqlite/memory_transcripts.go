@@ -14,7 +14,7 @@ import (
 
 // Owner projection of original Conversation evidence, not a database browser.
 // The original remains in its owning store and detail reads reuse authorization.
-func (r *Runs) inspectMemoryTranscripts(ctx context.Context, q memory.InspectionQuery, a evidenceAccess) (memory.InspectionPage, error) {
+func (r *Runs) inspectMemoryTranscripts(ctx context.Context, q memory.InspectionQuery, a evidenceAccess, project memoryInspectionProjector) (memory.InspectionPage, error) {
 	out := memory.InspectionPage{Items: []memory.InspectionRecord{}}
 	position, err := q.Position(a.scope.AgentID, a.floor)
 	if err != nil {
@@ -141,6 +141,11 @@ func (r *Runs) inspectMemoryTranscripts(ctx context.Context, q memory.Inspection
 		}
 		out.Items[0].Sources[0].Text = page.Text
 		out.Items[0].Sources[0].NextOffset = page.NextOffset
+	}
+	if project != nil {
+		if err = project(ctx, a, out); err != nil {
+			return memory.InspectionPage{}, err
+		}
 	}
 	if err = r.recheckMemoryOwner(ctx, a); err != nil {
 		return memory.InspectionPage{}, err

@@ -33,13 +33,16 @@ func Form(raw json.RawMessage, messageID, formID string) (Component, error) {
 		return Component{}, conversation.ErrInvalid
 	}
 	for _, c := range spec.Components {
-		if Respondable(c) && c.MessageID == messageID && c.FormID == formID && valid(c) {
+		if Respondable(c) && c.MessageID == messageID && c.FormID == formID && ValidComponent(c) {
 			return c, nil
 		}
 	}
 	return Component{}, conversation.ErrConflict
 }
 
+// Answer retains the native form-v2 protocol and Runs whose frozen graph
+// predates steward.ui-form/1. Managed form answers use Runs.AcceptWebForm.
+// Remove the named native catalog branches after those retained Runs expire.
 func Answer(c Component, values map[string]string) ([]conversation.ContentPart, error) {
 	if c.Type == "openintelligentui" && c.Name == "steward.form" {
 		return extensionFormAnswer(c, values)
@@ -47,7 +50,7 @@ func Answer(c Component, values map[string]string) ([]conversation.ContentPart, 
 	if c.Type == "openintelligentui" && c.Name == "scheduleTime" {
 		return meetingAnswer(c, values)
 	}
-	if c.Type != "form" || !valid(c) || len(values) != len(c.Fields) {
+	if c.Type != "form" || !ValidComponent(c) || len(values) != len(c.Fields) {
 		return nil, conversation.ErrInvalid
 	}
 	// Separate semantic parts preserve field boundaries without exposing a
@@ -74,6 +77,8 @@ func Answer(c Component, values map[string]string) ([]conversation.ContentPart, 
 }
 
 // Restore displays only answers already accepted through the ordinary ingress.
+// Native catalog branches serve only the same historical boundary as Answer;
+// current managed forms restore their atomically accepted Host result.
 func Restore(c *Component, content []conversation.ContentPart) error {
 	if c.Type == "openintelligentui" && c.Name == "steward.form" {
 		return restoreExtensionForm(c, content)

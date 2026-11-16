@@ -27,7 +27,7 @@ func TestSemanticUpgradeAdoptsPopulatedPreRelease47(t *testing.T) {
 	}
 	var nextRequest, nextResult string
 	s.db.QueryRow(`SELECT request_sealed,result_sealed FROM memory_generation`).Scan(&nextRequest, &nextResult)
-	if scalar(t, s, `PRAGMA user_version`) != 51 || request != nextRequest || result != nextResult || scalar(t, s, `SELECT count(*) FROM memory_semantic_receipt`) != 1 || scalar(t, s, `SELECT count(*) FROM provider_usage`) != 1 || scalar(t, s, `SELECT count(*) FROM generation_cost_estimate`) != 0 {
+	if scalar(t, s, `PRAGMA user_version`) != SchemaVersion() || request != nextRequest || result != nextResult || scalar(t, s, `SELECT count(*) FROM memory_semantic_receipt`) != 1 || scalar(t, s, `SELECT count(*) FROM provider_usage`) != 1 || scalar(t, s, `SELECT count(*) FROM generation_cost_estimate`) != 0 {
 		t.Fatal("adoption changed private accepted work")
 	}
 	if e := r.CurateMemory(ctx); e != nil || p.calls != 1 {
@@ -54,7 +54,7 @@ func TestSemanticUpgradePublic47AndMalformedPrivate47(t *testing.T) {
 					t.Fatal("unknown schema accepted or partly migrated", err)
 				}
 			} else {
-				if err != nil || scalar(t, s, `PRAGMA user_version`) != 51 || scalar(t, s, `SELECT count(*) FROM memory_generation`) != 0 {
+				if err != nil || scalar(t, s, `PRAGMA user_version`) != SchemaVersion() || scalar(t, s, `SELECT count(*) FROM memory_generation`) != 0 {
 					t.Fatal(err)
 				}
 			}

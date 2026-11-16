@@ -45,5 +45,20 @@ func approvalFor(a interaction.Approval) approvalView {
 		}
 		v.Fields = append(v.Fields, approvalField{Name: strings.ReplaceAll(k, "_", " "), Value: value})
 	}
+	if a.Parameters != "" {
+		var parameters map[string]json.RawMessage
+		if json.Unmarshal([]byte(a.Parameters), &parameters) == nil {
+			for _, field := range []struct{ key, label string }{{"button", "Mouse button"}, {"count", "Click count"}, {"direction", "Scroll direction"}, {"amount", "Scroll amount"}, {"timeout_ms", "Timeout (ms)"}, {"name", "Name"}, {"media_type", "Media type"}, {"failure", "Validation result"}} {
+				if raw, ok := parameters[field.key]; ok {
+					value := string(raw)
+					var text string
+					if json.Unmarshal(raw, &text) == nil {
+						value = text
+					}
+					v.Fields = append(v.Fields, approvalField{Name: field.label, Value: value})
+				}
+			}
+		}
+	}
 	return v
 }

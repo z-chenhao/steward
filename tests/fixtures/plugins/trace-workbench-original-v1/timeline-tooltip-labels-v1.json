@@ -1,0 +1,8 @@
+{
+  "Start": "开始",
+  "Duration": "耗时",
+  "Ongoing; end time not recorded": "仍在执行，尚无结束时间",
+  "End time not recorded": "未记录结束时间",
+  "First model output": "首个模型输出",
+  "Time since trace start": "距 Trace 开始的时间"
+}

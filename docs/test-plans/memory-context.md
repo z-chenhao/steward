@@ -210,3 +210,28 @@ make test-prompts 包含统一可见性回归；make test-memory 包含新增 Me
 混合 CodeMode 摘要必须保留同帧非记忆回执；原始动作是否发生不能被通用记忆提示替代。该场景由 TestMemoryCompactionPreservesMixedCodeBusinessReceipt 进入 test-prompts 和 test-memory。原始 Worker 反馈、旧笔记回查、覆盖重放及 Forget／跨 Agent 拒绝由 Memory 所属回归验证。
 
 维护诊断回归：`TestMemoryDreamFailureDiagnosticsAndSuccessfulRetry` 验证真实维护派发、拒绝原因、受限重试反馈、成功清错、历史调用及隐私 epoch 撤销；`TestMemoryInspectionMaintenanceIsScopedAndContainsNoPayload` 保持跨所有者隔离和无原始 payload。Web 的维护浏览器回归验证整行预览、费用精度与逐次调用详情。
+
+上下文插件回归包含真实摘要中断恢复、无重复工具、Child 版本继承、原私有归档，以及 v52 服务快照前向迁移。`make test-prompts` 包含这些新增回归，`make test-memory` 覆盖语义摘要路径；独立插件二进制与升级回退见插件测试方案。 详见[插件边界](../designs/plugins-evolution.md#已提取的上下文边界)与[插件验收](../test-plans/plugins-evolution.md)。
+
+Recall 的独立查询／排序／摘录策略保留原工具、输入冻结和证据顺序；授权候选先冻结，记忆候选加密，Forget 清理快照正文。边界与恢复验收见[召回插件设计](../designs/plugins-evolution.md#已提取的召回边界)和[插件测试](../test-plans/plugins-evolution.md)。
+
+自动记忆形成／Dreaming 的方法与触发配方已接入独立包，完整验收中；私有 intent 固定组合，加密请求记录方法来源，Host 保留引用／候选验证、保留政策、费用及 Forget 裁定。直接用户数据控制不依赖方法插件可用性。详见[自动记忆插件边界](../designs/plugins-evolution.md#已提取的自动记忆边界)与[插件验收](../test-plans/plugins-evolution.md)。
+
+关联证据的独立分页策略、旧页版本与 Host 原文／权限边界见[插件设计](../designs/plugins-evolution.md#已提取的证据分页边界)。相关验证覆盖 `TestEvidencePlugin*` 和 `artifacts` 的实际分发包场景；Main 不接受所有者的 `page_revision` 选版参数。
+
+
+无载体接纳：`TestPluginSnapshotWithoutCatalog*` 覆盖显式空图 native 记录、持久 managed 标记以及 Context DOCX 标记不因 catalog 缺失回退；`TestV62NativePluginBindingMigrationPreservesOriginalRequestsAndReceipts` 覆盖历史缺行前向补齐及已有绑定不变。新回归进入 test-prompts，仍须运行原顺序、继续前缀、recall 冻结／刷新／重放、owning store／observability、test-memory 和 memory-maintenance／recall 系统门禁；不能用元数据断言替代这些既有行为检查。
+
+
+### 纯上下文选择中断恢复
+
+- `TestContextPureSelectionInterruptedBeforeAcceptanceRecoversOnOriginalGraph` 在真实纯读返回／上下文事务提交后中断，恢复后立即检查原 Run 完成、绑定不变、消息字节稳定与模型未重复派发；中间不重选图或修补数据。
+- `TestContextPureSelectionKeepsLegacyCompletedAndUnknownCalls` 保留真实旧 Call，分别验证完成结果复用、同键异参拒绝和未完成 unknown 不执行、不删除。
+- `TestContextPureSelectionLateAuthorityChangesRejectBeforeAcceptance` 在纯读结果返回时触发 release／停机／隔离／Forget，要求接纳前拒绝，无上下文接纳或 opaque pending 副产物。
+- 既有上下文算法／成本隐私、Child／孙级继承、语义摘要模型及工具不重复、原图换版／回退／停用和完整续接前缀回归必须保持。真实 Meetings SIGKILL 门禁须以原流程直接恢复原视图、答案与依赖 Main Run，不能增加 select／update／reload 修复。
+
+验证入口包括 owning agent store／RSI 回归、`make test-prompts` 以及最终固定源码全量检查；该纯选择修复不放宽通用 Call 的 unknown 裁定。
+
+`TestSemanticCuratorScheduleMissingRunnerCannotRestoreNative` 验证同一真实 Store 中先保留从未托管的调度配方，再安装并激活实际 Curator 插件；移除运行器后首次调度读取必须返回不可用且不启用原生频率，停用后再次读取也不得复活。该回归由必需 memory-context lane 的 Semantic race 清单自动收录。
+
+`TestContextPluginUsesFrozenRunVersionAndDurableSelection` 使用独立二进制实际改变压缩方法，并由独立 Owner 预期接纳；同时读取原图与新图，精确回退恢复原方法。关闭原 Store、新建 Store／Catalog 后首次 Drain 执行退役版本的排队 Run，核对原绑定与选择回执；停用后再次重开，首次 Drain 不发送模型请求且不恢复 native。该证据覆盖现有压缩插件生命周期，不代表新的摘要质量评测。

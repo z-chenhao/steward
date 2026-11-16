@@ -1,0 +1,8 @@
+{
+  "method": "Executed original Server.post /model/add and observed real Control selection/probe effects before migration",
+  "source": "internal/interaction/web/routes.go",
+  "source_sha256": "07c10bfc012f238b4372031b689dfd5af3eff345c255532c944b0b25dc14552b",
+  "capture_sha256": "5983dab626c0deb954b78ce98944b914e110c8b111dab76a73a8805d66c83a84",
+  "fixture_sha256": "fd78385896b717e8065b71cae814e0ae8029465acd8f399e58e134a74818e917",
+  "cases": 4
+}

@@ -13,7 +13,19 @@ import (
 )
 
 func TestMemoryDreamFailureDiagnosticsAndSuccessfulRetry(t *testing.T) {
+	testMemoryDreamFailureDiagnosticsAndSuccessfulRetry(t, false)
+}
+
+func TestSemanticCuratorPluginFailureDiagnosticsAndSuccessfulRetry(t *testing.T) {
+	testMemoryDreamFailureDiagnosticsAndSuccessfulRetry(t, true)
+}
+
+func testMemoryDreamFailureDiagnosticsAndSuccessfulRetry(t *testing.T, managed bool) {
+	t.Helper()
 	s, r, _, a, p := semanticRuntime(t)
+	if managed {
+		installCuratorPlugin(t, s, r)
+	}
 	ctx := context.Background()
 	mustSubmit(t, a, "diagnostic-source", "请你研究 PRIVATE_DIAGNOSTIC_CANARY 的方法")
 	if err := r.Flush(ctx); err != nil {
@@ -27,6 +39,9 @@ func TestMemoryDreamFailureDiagnosticsAndSuccessfulRetry(t *testing.T) {
 		return llm.GenerationResult{Text: string(raw)}
 	}
 	p.beforeReply = func(_ context.Context, req llm.GenerationRequest) {
+		if managed && !strings.HasPrefix(req.Messages[0].Text, memoryPolicySafety+"\n\n") {
+			t.Fatal("retry lost the accepted plugin method or Host safety instructions")
+		}
 		if p.calls > 1 && !strings.Contains(req.Messages[0].Text, "Supporting quote is empty or is not an exact substring") {
 			t.Fatal("retry lost host validation feedback")
 		}

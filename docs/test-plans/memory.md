@@ -50,3 +50,28 @@ Worker 来源分页回归通过真实接纳的 63／64／65 条回执，验证�
 形成方式回归 `TestMemoryInspectionFormationUsesDocumentMetadata` 经既有 `test-memory` 全包 race 检查运行：覆盖 L2／L3／L4 的 written／dream、有来源但不误分为 automatic／explicit／unknown、退役后形成方式保留且内容隐藏，以及元数据密钥不可用不能伪装为零结果。
 
 `test-memory` 的 SQLite 名称模式由已有 race 清单执行器维护；测试动态发现后最多分入三个进程，执行回执必须覆盖所选 root 恰好一次。仍保留 race、count=1 与每进程 10 分钟 Go 时限，缺失、重复、取消或失败都不能让必需 CI 通过；其余包与维护／召回系统 gate 继续执行。
+
+## Memory Inspector 插件迁移验收
+
+迁移必须覆盖实际调用、原行为、独立换版、精确回退、停用、新旧保留引用冷读取及同批清理；manifest 或文件移动不构成完成。以下检查使用真实 Host／隔离进程，除明确的传输故障和候选攻击注入外，不伪造业务返回。
+
+| 范围 | 必须验证 |
+| --- | --- |
+| 原行为 | 迁移前执行捕获的17个导航、23个标签、130组中英文 copy 与106个客户端决策；未知诊断保留原文 |
+| 资源派发 | 实际页面／CSS／程序来自同一冻结图和四项封存资源；资源路由不读取 Memory 正文 |
+| 页面接纳 | 原记录／正文／来源／链接一致，拒绝越权模板、递归、主动内容、跨记录替换和隐藏正文 |
+| 样式／copy | 原样式字节和计算值，独立中英文标签／布局变更生效，按钮可见性由 Worker 决策；不使用全局旧 CSS／copy 兜底；惰性配置不含正文或效果能力 |
+| Worker 通道 | 匿名拒绝、opaque origin、程序标记不进入 relay；网络计数为零、存储／DOM 拒绝；非法序号、死循环、超大回复和 dispose 终止 iframe |
+| 并发与恢复 | 保持第一个真实授权响应，第二次选择提交后释放旧响应，新 DOM 标记／身份／历史深度不被覆盖；pagehide 销毁后 persisted pageshow 首次恢复原图原选择 |
+| 失败语义 | 程序503后不初始化历史客户端；原版本链接完整导航到授权正文，无脚本仍可读 |
+| 独立迭代 | 实际独立1.1变更文案、间距和 compact 阈值；780宽度行为与原版不同；精确回退保留新旧引用 |
+| 冷读取 | 新旧图各自独立重启后的首次页面读取，不先读另一图、不重选／补写；原事实和各自资源不变，默认仍停用 |
+| 权威围栏 | 原页面／快照已读取、实际 producer 进程已启动后，执行原记录 Forget、替换、隐私 epoch 撤销或 Guardian 停止，旧页面与展示资源均不得释放；无变更对照正常返回 |
+| 初始分发 | 独立 Owner 原始期望验收实际33包；保留32／30／29／28／24／23／22组合；已有选择／停用／停止在首次重启动作中保持，无静默补包 |
+| 清理 | 当前路径无旧默认，具名历史资源有实际消费者、保留理由和删除条件 |
+
+关键入口包括 `TestMemoryInspectorActualOwnerPageGraphPinDisableAndFirstColdReference`、`TestMemoryInspectorBootstrapIndependentOwnerCasesAndRetainedSelection`、`TestMemoryInspectorActualProcessLateForgetReplacementPrivacyAndGuardian`、`TestMemoryProgramRouteFrozenIsolationAndNoFactReads` 和 `TestMemoryProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures`。原决策、通道及 copy 的前端回归分别位于 `web/memory-worker.test.mjs`、`web/memory-browser.test.mjs`、`web/memory-presentation.test.mjs`。
+
+必须执行 `make test-memory`、`memory-maintenance`／`recall` 系统门禁和跨模块 `make test lint`。Memory 实际进程围栏测试必须留在必需 Memory race 清单；真实浏览器入口必须留在 test-browser recipe，CI 检查可达性。测试存在或被发现，不代替终态通过证据。 `test-go` 的四个分区保留原15分钟包级时限和 `-p 1`；Memory Inspector 与 Web 托管版本用例同组，每个测试根必须恰好归属一个分区。
+
+视觉复核使用非空原正文，检查桌面／移动端×浅色／深色四个详情场景、中文和无脚本页面；验证实际字体、字号、间距、来源布局、控件、身份及无横向溢出。保存原版对照、真实计算值和截图。生命周期事件测试不作为真实 BFCache 接纳证明。完整执行记录、失败尝试和固定源码哈希保留在 PR／CI 或验收证据，不在设计文档累积阶段日志。

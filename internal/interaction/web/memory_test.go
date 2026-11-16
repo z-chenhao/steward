@@ -131,7 +131,7 @@ func TestMemoryMaintenanceRoutesShowPricedUnknownAndNativeDetail(t *testing.T) {
 			t.Fatal("priced maintenance missing", w.Body.String())
 		}
 	}
-	if link := memoryURL(memory.InspectionQuery{View: "maintenance"}, "ref", "memory-event:priced"); !strings.Contains(link, "view=maintenance") || !strings.Contains(link, "ref=memory%3Amaintenance-priced") {
+	if link := legacyMemoryURLV1(memory.InspectionQuery{View: "maintenance"}, "ref", "memory-event:priced"); !strings.Contains(link, "view=maintenance") || !strings.Contains(link, "ref=memory%3Amaintenance-priced") {
 		t.Fatal(link)
 	}
 	if e := (memory.InspectionQuery{View: "maintenance", Ref: "memory:some-document"}).Validate(); !errors.Is(e, memory.ErrInspectionInvalid) {

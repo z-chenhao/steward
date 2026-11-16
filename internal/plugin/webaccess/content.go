@@ -7,7 +7,6 @@ import (
 	"errors"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/webcontent"
 )
@@ -43,76 +42,31 @@ func Hash(text string) string {
 	sum := sha256.Sum256([]byte(text))
 	return "sha256:" + hex.EncodeToString(sum[:])
 }
-func (d *Document) Assess() {
-	d.Status = "missing-evidence"
-	for _, page := range d.Pages {
-		if page.Text == "" {
-			continue
-		}
-		end := len(webcontent.Preview(page.Text, 1600))
-		d.Passages = append(d.Passages, Passage{URL: page.URL, Text: page.Text[:end], Start: 0, End: end, ContentHash: Hash(page.Text[:end]), SourceHash: Hash(page.Text)})
-		d.Status = "unclear"
-	}
-	if len(d.Queries) > 0 {
-		for _, q := range d.Queries {
-			if len(q.Sources) > 0 {
-				d.Status = "unclear"
-			}
-		}
-	}
-}
-func ReadContent(d Document, pageIndex, queryIndex, offset, limit int, find, mode string) (Slice, error) {
+
+// EvidenceText interprets the published V1 page/query selector. It is part of
+// reference identity, not the candidate's window-size or context policy.
+func EvidenceText(d Document, pageIndex, queryIndex int) (string, error) {
 	var text string
 	if d.Version != 1 || len(d.Pages) > 40 || len(d.Queries) > 8 {
-		return Slice{}, errors.New("INVALID_ARGUMENT")
+		return "", errors.New("INVALID_ARGUMENT")
 	}
 	if len(d.Pages) > 0 {
 		if pageIndex < 0 || pageIndex >= len(d.Pages) {
-			return Slice{}, errors.New("NOT_FOUND")
+			return "", errors.New("NOT_FOUND")
 		}
 		text = d.Pages[pageIndex].Text
 	} else {
 		if queryIndex < 0 || queryIndex >= len(d.Queries) {
-			return Slice{}, errors.New("NOT_FOUND")
+			return "", errors.New("NOT_FOUND")
 		}
 		raw, _ := json.Marshal(d.Queries[queryIndex])
 		text = string(raw)
 	}
-	if limit == 0 {
-		limit = 8000
-	}
-	if offset < 0 || limit < 1 || limit > 32000 || offset > len(text) {
-		return Slice{}, errors.New("INVALID_ARGUMENT")
-	}
-	var found *bool
-	if find != "" {
-		if len(find) > 500 {
-			return Slice{}, errors.New("INVALID_ARGUMENT")
-		}
-		start, end, e := findSpan(text, find, mode)
-		if e != nil {
-			return Slice{}, e
-		}
-		yes := start >= 0
-		found = &yes
-		if !yes {
-			return Slice{TotalBytes: len(text), Found: found}, nil
-		}
-		offset = max(0, start-400)
-		if end-offset > limit {
-			limit = min(32000, end-offset+400)
-		}
-	}
-	for offset > 0 && offset < len(text) && !utf8.RuneStart(text[offset]) {
-		offset--
-	}
-	end := min(len(text), offset+limit)
-	for end < len(text) && end > offset && !utf8.RuneStart(text[end]) {
-		end--
-	}
-	return Slice{Text: text[offset:end], Offset: offset, NextOffset: end, TotalBytes: len(text), More: end < len(text), Found: found}, nil
+	return text, nil
 }
-func findSpan(text, pattern, mode string) (int, int, error) {
+
+// FindSpanV1 preserves the published matching modes and original byte spans.
+func FindSpanV1(text, pattern, mode string) (int, int, error) {
 	if mode == "exact" {
 		i := strings.Index(text, pattern)
 		if i < 0 {

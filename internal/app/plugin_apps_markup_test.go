@@ -1,0 +1,305 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"github.com/z-chenhao/assistant/internal/config"
+	"github.com/z-chenhao/assistant/internal/connectedapps"
+	"github.com/z-chenhao/assistant/internal/interaction/web"
+	"github.com/z-chenhao/assistant/internal/llm/memory"
+	"github.com/z-chenhao/assistant/internal/rsi"
+	"net/http/httptest"
+	"net/url"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func TestAppsMarkupActualResourceVersionsRefsColdFrozenEffectsAndReceipts(t *testing.T) {
+	ctx := context.Background()
+	root := t.TempDir()
+	cfg, err := config.Load("", func(k string) (string, bool) { return root, k == "STEWARD_DATA_ROOT" })
+	if err != nil {
+		t.Fatal(err)
+	}
+	secrets := memory.New()
+	const token = "synthetic-markup-owner-atleast24"
+	if err := secrets.Put(ctx, "credential:markup-owner", []byte(token)); err != nil {
+		t.Fatal(err)
+	}
+	a, err := OpenRuntimeWithSecrets(ctx, cfg, secrets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = a.Close() }()
+	a.eventsRequired.Store(false)
+	if _, err := a.BindChannel(ctx, "web", "browser", "local", true, 0); err != nil {
+		t.Fatal(err)
+	}
+	carrier := filepath.Join(t.TempDir(), "steward")
+	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
+		t.Fatal(string(out), err)
+	}
+	var host rsi.Host
+	var server *web.Server
+	reads := 0
+	bind := func() {
+		host = a.Plugins()
+		host.Catalog.Launcher = carrier
+		a.connectedApps.Changed = nil
+		server = &web.Server{Config: web.Config{TokenRef: "credential:markup-owner"}, Core: a, Secrets: secrets, Apps: a.connectedApps, Interface: func(c context.Context, ref, locale string) (web.AppInterfacePolicy, error) {
+			reads++
+			return a.appsInterfaceWithHost(c, host, ref, locale)
+		}}
+	}
+	bind()
+	seed := func() {
+		t.Helper()
+		state, err := a.store.LoadApps(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		state.UserID = "owner"
+		state.Connections = []connectedapps.Connection{{ID: "keeper", Toolkit: "gmail", Name: "Gmail", Alias: "work", AccountID: "ca_keeper", Status: "active"}, {ID: "closing", Toolkit: "gmail", Name: "Gmail", Alias: "public", Public: true, Status: "active"}}
+		if err := a.store.SaveApps(ctx, state, state.Revision); err != nil {
+			t.Fatal(err)
+		}
+	}
+	seed()
+	get := func(path, ref string) *httptest.ResponseRecorder {
+		if ref != "" {
+			path += "?interface_revision=" + url.QueryEscape(ref)
+		}
+		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+path, nil)
+		r.Header.Set("Authorization", "Bearer "+token)
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, r)
+		return w
+	}
+	post := func(ref string, jsonReply bool) *httptest.ResponseRecorder {
+		form := url.Values{"action": {"disconnect"}, "connection": {"closing"}, "interface_revision": {ref}}
+		r := httptest.NewRequest("POST", "http://127.0.0.1:8080/apps/configure", strings.NewReader(form.Encode()))
+		r.Header.Set("Authorization", "Bearer "+token)
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if jsonReply {
+			r.Header.Set("Accept", "application/json")
+		}
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, r)
+		return w
+	}
+	orderHTML := func(body string, variant bool) {
+		t.Helper()
+		if !strings.Contains(body, `class="section-navigation apps-connections"`) {
+			t.Fatal("original sidebar absent", body)
+		}
+		if strings.Contains(body, `data-plugin-sidebar="v1.6"`) != variant {
+			t.Fatal("actual markup resource not consumed", variant, body)
+		}
+		if !strings.Contains(body, `href="/settings/apps?app=gmail" data-app-open="gmail"`) {
+			t.Fatal("original target binding changed", body)
+		}
+	}
+	order := func(ref string, variant bool) {
+		t.Helper()
+		before := reads
+		w := get("/settings/apps", ref)
+		if w.Code != 200 || reads != before+1 {
+			t.Fatal("sidebar unavailable/reselected", w.Code, reads, before, w.Body.String())
+		}
+		if strings.Contains(w.Body.String(), `data-plugin-copy="v1.6"`) != variant {
+			t.Fatal("card markup resource not consumed", variant, w.Body.String())
+		}
+		orderHTML(w.Body.String(), variant)
+	}
+	order("", false)
+	old, oldPolicy := prepareInterface(t, ctx, host, "0.5.0")
+	activateInterface(t, ctx, host, "", old, oldPolicy, "markup-original-three-services")
+	order("", false)
+	_, profile, composition, card, sidebar, markup, err := a.store.AppsInterfaceSelection(ctx)
+	if err != nil || !profile || !composition || !card || !sidebar || markup != 0 {
+		t.Fatal("pre-sidebar fixture boundary", profile, composition, card, sidebar, err)
+	}
+	captured, err := a.appsInterfaceWithHost(ctx, host, "", "en")
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, firstPolicy := prepareInterface(t, ctx, host, "1.0.0")
+	activateInterface(t, ctx, host, old, first, firstPolicy, "markup-first")
+	order("", false)
+	second, secondPolicy := prepareInterface(t, ctx, host, "1.6.0")
+	activateInterface(t, ctx, host, first, second, secondPolicy, "markup-actual-resource-variant")
+	order("", true)
+	order(first, false)
+	order(old, false)
+	reader := server.Interface
+	server.Interface = func(context.Context, string, string) (web.AppInterfacePolicy, error) { reads++; return captured, nil }
+	order("", false)
+	server.Interface = reader
+	for i, jsonReply := range []bool{true, false} {
+		if i > 0 {
+			activateInterface(t, ctx, host, first, second, secondPolicy, "markup-before-native-effect")
+		}
+		seed()
+		spy := &accountCloseStore{Store: a.store, afterSave: func(n int) {
+			if n == 1 {
+				activateInterface(t, ctx, host, second, first, firstPolicy, "markup-mid-effect-"+map[bool]string{true: "json", false: "native"}[jsonReply])
+			}
+		}}
+		a.connectedApps.Store = spy
+		before := reads
+		w := post(second, jsonReply)
+		after, err := a.store.LoadApps(ctx)
+		if w.Code != 200 || reads != before+1 || spy.saves != 2 || err != nil || after.Connections[1].Status != "disconnected" || !after.Connections[1].RevocationConfirmed {
+			t.Fatal("accepted original close lost/reselected/repeated", w.Code, reads, before, spy.saves, after, err, w.Body.String())
+		}
+		body := w.Body.String()
+		if jsonReply {
+			var reply map[string]string
+			if err := json.Unmarshal(w.Body.Bytes(), &reply); err != nil {
+				t.Fatal(err)
+			}
+			if reply["presentation_unavailable"] != "" || !strings.Contains(reply["accounts_html"], second) {
+				t.Fatal("accepted account fragment lost original profile", reply)
+			}
+			body = reply["sidebar_html"]
+		}
+		orderHTML(body, true)
+		a.connectedApps.Store = a.store
+		order("", false)
+	}
+	activateInterface(t, ctx, host, first, second, secondPolicy, "markup-cold-baseline")
+	if err := a.Close(); err != nil {
+		t.Fatal(err)
+	}
+	a, err = OpenRuntimeWithSecrets(ctx, cfg, secrets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.eventsRequired.Store(false)
+	bind()
+	order("", true)
+	order(old, false)
+	activateInterface(t, ctx, host, second, first, firstPolicy, "markup-rollback")
+	order("", false)
+	current := first
+	for _, version := range []string{"3.2.0", "3.3.0", "3.5.0"} {
+		bad, policy := prepareInterface(t, ctx, host, version)
+		activateInterface(t, ctx, host, current, bad, policy, "markup-invalid-"+version)
+		current = bad
+		seed()
+		if w := get("/settings/apps", ""); w.Code != 503 {
+			t.Fatal("bad sidebar silently restored native", version, w.Code)
+		}
+		if w := get("/api/apps/detail?app=gmail", ""); w.Code != 200 {
+			t.Fatal("sidebar vetoed nonconsumer account detail", version, w.Code, w.Body.String())
+		}
+		if w := get("/settings/apps/service", ""); w.Code != 200 {
+			t.Fatal("sidebar vetoed nonconsumer service", version, w.Code)
+		}
+		for _, jsonReply := range []bool{true, false} {
+			seed()
+			spy := &accountCloseStore{Store: a.store}
+			a.connectedApps.Store = spy
+			before := reads
+			w := post("", jsonReply)
+			a.connectedApps.Store = a.store
+			after, err := a.store.LoadApps(ctx)
+			if w.Code != 200 || reads != before+1 || spy.saves != 2 || err != nil || after.Connections[1].Status != "disconnected" || !after.Connections[1].RevocationConfirmed {
+				t.Fatal("optional sidebar hid/replayed accepted close", version, jsonReply, w.Code, reads, before, spy.saves, after, err)
+			}
+			if jsonReply {
+				var reply map[string]string
+				if err := json.Unmarshal(w.Body.Bytes(), &reply); err != nil || reply["presentation_unavailable"] != "true" || reply["sidebar_html"] != "" || reply["accounts_html"] != "" {
+					t.Fatal("invented partial native reply", reply, err)
+				}
+			} else if !strings.Contains(w.Body.String(), "The account action was accepted.") || strings.Contains(w.Body.String(), "data-apps ") {
+				t.Fatal("native known receipt lost", w.Body.String())
+			}
+		}
+		order(first, false)
+		order(old, false)
+	}
+	activateInterface(t, ctx, host, current, old, oldPolicy, "markup-current-missing")
+	if w := get("/settings/apps", ""); w.Code != 503 {
+		t.Fatal("current pre-sidebar graph silently restored native", w.Code)
+	}
+	order(old, false)
+	activateInterface(t, ctx, host, old, second, secondPolicy, "markup-before-quarantine")
+	if err := host.Store.Quarantine(ctx, second); err != nil {
+		t.Fatal(err)
+	}
+	if w := get("/settings/apps", second); w.Code != 503 {
+		t.Fatal("retained sidebar bypassed quarantine", w.Code)
+	}
+	order(first, false)
+	if _, err := host.Store.Deactivate(ctx, "markup-stop", second); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Close(); err != nil {
+		t.Fatal(err)
+	}
+	a, err = OpenRuntimeWithSecrets(ctx, cfg, secrets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.eventsRequired.Store(false)
+	bind()
+	if w := get("/settings/apps", ""); w.Code != 503 {
+		t.Fatal("cold stop restored native", w.Code)
+	}
+	order(first, false)
+	order(old, false)
+	_, profile, composition, card, sidebar, markup, err = a.store.AppsInterfaceSelection(ctx)
+	if err != nil || !profile || !composition || !card || !sidebar || markup == 0 {
+		t.Fatal("four durable boundaries lost", profile, composition, card, sidebar, err)
+	}
+}
+func TestAppsMarkupOnlyNeverRestoresWholeNative(t *testing.T) {
+	ctx := context.Background()
+	root := t.TempDir()
+	cfg, err := config.Load("", func(k string) (string, bool) { return root, k == "STEWARD_DATA_ROOT" })
+	if err != nil {
+		t.Fatal(err)
+	}
+	secrets := memory.New()
+	a, err := OpenRuntimeWithSecrets(ctx, cfg, secrets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer a.Close()
+	a.eventsRequired.Store(false)
+	if _, err := a.BindChannel(ctx, "web", "browser", "local", true, 0); err != nil {
+		t.Fatal(err)
+	}
+	carrier := filepath.Join(t.TempDir(), "steward")
+	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
+		t.Fatal(string(out), err)
+	}
+	host := a.Plugins()
+	host.Catalog.Launcher = carrier
+	revision, policy := prepareInterface(t, ctx, host, "3.4.0")
+	activateInterface(t, ctx, host, "", revision, policy, "markup-only")
+	_, p, c, v, b, markup, err := a.store.AppsInterfaceSelection(ctx)
+	if err != nil || p || c || v || b || markup == 0 {
+		t.Fatal("markup-only boundary", p, c, v, b, err)
+	}
+	if _, err := a.appsInterfaceWithHost(ctx, host, "", "en"); err == nil {
+		t.Fatal("markup-only restored whole native")
+	}
+	const token = "synthetic-markup-only-atleast24"
+	if err := secrets.Put(ctx, "credential:markup-only", []byte(token)); err != nil {
+		t.Fatal(err)
+	}
+	server := &web.Server{Config: web.Config{TokenRef: "credential:markup-only"}, Core: a, Secrets: secrets, Apps: a.connectedApps, Interface: func(c context.Context, ref, locale string) (web.AppInterfacePolicy, error) {
+		return a.appsInterfaceWithHost(c, host, ref, locale)
+	}}
+	r := httptest.NewRequest("GET", "http://127.0.0.1:8080/settings/apps/service", nil)
+	r.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	server.ServeHTTP(w, r)
+	if w.Code != 503 {
+		t.Fatal("markup-only HTTP restored native", w.Code)
+	}
+}

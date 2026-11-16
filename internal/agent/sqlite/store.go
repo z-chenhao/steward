@@ -21,6 +21,8 @@ import (
 	eventsqlite "github.com/z-chenhao/assistant/internal/event/sqlite"
 	llmsqlite "github.com/z-chenhao/assistant/internal/llm/sqlite"
 	inspectionsqlite "github.com/z-chenhao/assistant/internal/observability/sqlite"
+	"github.com/z-chenhao/assistant/internal/rsi"
+	rsistore "github.com/z-chenhao/assistant/internal/rsi/sqlite"
 	tasksqlite "github.com/z-chenhao/assistant/internal/task/sqlite"
 	sqlitedriver "modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
@@ -179,22 +181,113 @@ var memoryRuntimeSQL string
 //go:embed migrations/051_memory_evidence.sql
 var memoryEvidenceSQL string
 
-var migrations = []string{bootstrapSQL, eventsSQL, modelsSQL, providerSQL, localProviderSQL, accountAuthSQL, mainLoopSQL, tasksSQL, taskControlSQL, toolPolicySQL, artifactsSQL, deliverySQL, childrenSQL, schedulerSQL, spendSQL, codemodeSQL, codeRecoverySQL, recallSQL, memoryMaintenanceSQL, mainSuccessorSQL, computersSQL, computerUseSQL, automationSQL, automationPrivacySQL, channelsSQL, operationsSQL, contextSQL, toolNamesSQL, nativeExecutionSQL, inspectionSQL, dispatchObservationsSQL, responsiveMainSQL, githubObservationsSQL, taskFeedbackSQL, feishuReplySourcesSQL, githubTaskContinuationSQL, taskCodeEnvironmentsSQL, githubRuleObservationSQL, feishuTaskQuestionsSQL, feishuReviewLinksSQL, githubFailedCheckRuleSQL, providerTimingsSQL, uiWidgetsSQL, accountCatalogSelectionSQL, uiInteractionsSQL, connectedAppsSQL, costEstimatesSQL, semanticMemorySQL, layeredMemorySQL, memoryRuntimeSQL, memoryEvidenceSQL}
+//go:embed migrations/052_rsi_plugins.sql
+var rsiPluginsSQL string
+
+//go:embed migrations/053_rsi_feature_snapshots.sql
+var rsiFeatureSnapshotsSQL string
+
+//go:embed migrations/054_recall_selection.sql
+var recallSelectionSQL string
+
+//go:embed migrations/055_memory_policy_binding.sql
+var memoryPolicyBindingSQL string
+
+//go:embed migrations/056_experience_policy_binding.sql
+var experiencePolicyBindingSQL string
+
+//go:embed migrations/057_task_feedback_policy.sql
+var taskFeedbackPolicySQL string
+
+//go:embed migrations/058_delegation_policy.sql
+var delegationPolicySQL string
+
+//go:embed migrations/059_code_description_reply.sql
+var codeDescriptionReplySQL string
+
+//go:embed migrations/060_file_method_plan.sql
+var fileMethodPlanSQL string
+
+//go:embed migrations/061_shell_method_plan.sql
+var shellMethodPlanSQL string
+
+//go:embed migrations/062_coding_methods.sql
+var codingMethodsSQL string
+
+//go:embed migrations/063_native_plugin_bindings.sql
+var nativePluginBindingsSQL string
+
+//go:embed migrations/064_task_label_plan.sql
+var taskLabelPlanSQL string
+
+//go:embed migrations/065_computer_action_plan.sql
+var computerActionPlanSQL string
+
+//go:embed migrations/066_code_search_reply.sql
+var codeSearchReplySQL string
+
+//go:embed migrations/067_child_membership.sql
+var childMembershipSQL string
+
+//go:embed migrations/068_github_source_method.sql
+var githubSourceMethodSQL string
+
+//go:embed migrations/069_artifact_recipe.sql
+var artifactRecipeSQL string
+
+//go:embed migrations/070_ui_form_answer.sql
+var uiFormAnswerSQL string
+
+//go:embed migrations/071_ui_plan_view.sql
+var uiPlanViewSQL string
+
+//go:embed migrations/072_ui_cards_view.sql
+var uiCardsViewSQL string
+
+//go:embed migrations/073_ui_table_view.sql
+var uiTableViewSQL string
+
+//go:embed migrations/074_schedule_method.sql
+var scheduleMethodSQL string
+
+//go:embed migrations/075_schedule_owner_frequency.sql
+var scheduleOwnerFrequencySQL string
+
+//go:embed migrations/076_schedule_owner_local.sql
+var scheduleOwnerLocalSQL string
+
+//go:embed migrations/077_schedule_presentation.sql
+var schedulePresentationSQL string
+
+//go:embed migrations/078_automation_task_label.sql
+var automationTaskLabelSQL string
+
+//go:embed migrations/079_ui_chart_view.sql
+var uiChartViewSQL string
+
+//go:embed migrations/080_ui_form_view.sql
+var uiFormViewSQL string
+
+//go:embed migrations/081_reference_price_rates.sql
+var referencePriceRatesSQL string
+
+var migrations = []string{bootstrapSQL, eventsSQL, modelsSQL, providerSQL, localProviderSQL, accountAuthSQL, mainLoopSQL, tasksSQL, taskControlSQL, toolPolicySQL, artifactsSQL, deliverySQL, childrenSQL, schedulerSQL, spendSQL, codemodeSQL, codeRecoverySQL, recallSQL, memoryMaintenanceSQL, mainSuccessorSQL, computersSQL, computerUseSQL, automationSQL, automationPrivacySQL, channelsSQL, operationsSQL, contextSQL, toolNamesSQL, nativeExecutionSQL, inspectionSQL, dispatchObservationsSQL, responsiveMainSQL, githubObservationsSQL, taskFeedbackSQL, feishuReplySourcesSQL, githubTaskContinuationSQL, taskCodeEnvironmentsSQL, githubRuleObservationSQL, feishuTaskQuestionsSQL, feishuReviewLinksSQL, githubFailedCheckRuleSQL, providerTimingsSQL, uiWidgetsSQL, accountCatalogSelectionSQL, uiInteractionsSQL, connectedAppsSQL, costEstimatesSQL, semanticMemorySQL, layeredMemorySQL, memoryRuntimeSQL, memoryEvidenceSQL, rsiPluginsSQL, rsiFeatureSnapshotsSQL, recallSelectionSQL, memoryPolicyBindingSQL, experiencePolicyBindingSQL, taskFeedbackPolicySQL, delegationPolicySQL, codeDescriptionReplySQL, fileMethodPlanSQL, shellMethodPlanSQL, codingMethodsSQL, nativePluginBindingsSQL, taskLabelPlanSQL, computerActionPlanSQL, codeSearchReplySQL, childMembershipSQL, githubSourceMethodSQL, artifactRecipeSQL, uiFormAnswerSQL, uiPlanViewSQL, uiCardsViewSQL, uiTableViewSQL, scheduleMethodSQL, scheduleOwnerFrequencySQL, scheduleOwnerLocalSQL, schedulePresentationSQL, automationTaskLabelSQL, uiChartViewSQL, uiFormViewSQL, referencePriceRatesSQL}
 
 type Store struct {
-	runtimeOwner  atomic.Pointer[string]
-	costEstimator agent.CostEstimator
-	inspector     *inspectionsqlite.Inspector
-	taskReader    *tasksqlite.Reader
-	dispatches    *inspectionsqlite.Recorder
-	scheduler     atomic.Pointer[agent.SchedulerLimits]
-	githubScope   atomic.Pointer[string]
-	nextRun       *sql.Stmt
-	activeRun     *sql.Stmt
-	db            *sql.DB
-	path          string
-	codeRoot      string
-	artifacts     *artifactsqlite.Store
+	pluginCatalog       atomic.Pointer[rsi.Catalog]
+	runtimeOwner        atomic.Pointer[string]
+	legacyCostEstimator agent.LegacyReferenceEstimator
+	inspector           *inspectionsqlite.Inspector
+	taskReader          *tasksqlite.Reader
+	dispatches          *inspectionsqlite.Recorder
+	scheduler           atomic.Pointer[agent.SchedulerLimits]
+	githubScope         atomic.Pointer[string]
+	nextRun             *sql.Stmt
+	activeRun           *sql.Stmt
+	db                  *sql.DB
+	path                string
+	codeRoot            string
+	artifacts           *artifactsqlite.Store
 	// MainBoundary is explicit fault injection; production composition leaves it nil.
 	MainBoundary func(string)
 }
@@ -446,3 +539,9 @@ func (s *Store) Transaction(ctx context.Context, write func(*sql.Tx) error) erro
 	}
 	return tx.Commit()
 }
+
+// Plugins shares the authoritative Host connection; it never opens a second state writer.
+func (s *Store) Plugins() *rsistore.Store { return &rsistore.Store{DB: s.db} }
+
+// DataRoot is the canonical Host-owned data directory, not a plugin path input.
+func (s *Store) DataRoot() string { return filepath.Dir(s.path) }

@@ -1,0 +1,728 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.web-access",
+  "version": "1.0.1",
+  "feature_ids": [
+    "F-069"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.web-search/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "auto",
+                  "native",
+                  "exa",
+                  "searxng",
+                  "tavily"
+                ]
+              },
+              "numResults": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 20
+              },
+              "domainFilter": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 253
+                },
+                "maxItems": 20
+              },
+              "recencyFilter": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ]
+              }
+            },
+            "required": [
+              "query"
+            ],
+            "additionalProperties": false
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "native",
+                "exa",
+                "searxng",
+                "tavily"
+              ]
+            },
+            "maxItems": 4,
+            "minItems": 1
+          },
+          "order_explicit": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "query",
+          "sources"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "",
+              "native",
+              "exa",
+              "searxng",
+              "tavily"
+            ]
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                "title_bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 33554432
+                }
+              },
+              "required": [
+                "index",
+                "title_bytes"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 20
+          },
+          "text_mode": {
+            "type": "string",
+            "enum": [
+              "source",
+              "sources"
+            ]
+          },
+          "error_code": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "provider",
+          "sources",
+          "text_mode",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-content-read/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "urlIndex": {
+            "type": "integer"
+          },
+          "queryIndex": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "findText": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "findMode": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "urlIndex",
+          "queryIndex",
+          "offset",
+          "limit",
+          "findText",
+          "findMode"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "match_start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "match_end": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "found": {
+            "type": "boolean"
+          },
+          "error_code": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "offset",
+          "next_offset",
+          "match_start",
+          "match_end",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-research/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "builtin__web_search",
+              "builtin__fetch_content",
+              "builtin__source_check"
+            ]
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "auto",
+                  "native",
+                  "exa",
+                  "searxng",
+                  "tavily"
+                ]
+              },
+              "numResults": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 20
+              },
+              "domainFilter": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 253
+                },
+                "maxItems": 20
+              },
+              "recencyFilter": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ]
+              },
+              "url": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "mode": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "prompt": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "workflow": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "claim": {
+                "type": "string",
+                "maxLength": 4096
+              },
+              "queries": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "maxItems": 8
+              },
+              "urls": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "maxItems": 8
+              },
+              "includeContent": {
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          },
+          "context_window": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "operation",
+          "input",
+          "context_window"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "pages": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 7
+            },
+            "maxItems": 8
+          },
+          "passages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 7
+                },
+                "start": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 25165824
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 25165824
+                }
+              },
+              "required": [
+                "page",
+                "start",
+                "end"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 40
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "",
+              "unclear",
+              "missing-evidence"
+            ]
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 7
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 25165824
+                }
+              },
+              "required": [
+                "index",
+                "bytes"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 8
+          },
+          "summary_join": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "summary_trailing": {
+            "type": "boolean"
+          },
+          "preview": {
+            "type": "object",
+            "properties": {
+              "query_bytes": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 25165824
+                },
+                "maxItems": 8
+              },
+              "page_bytes": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 25165824
+                },
+                "maxItems": 8
+              },
+              "summary_bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 33554432
+              },
+              "omit_document": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "query_bytes",
+              "page_bytes",
+              "summary_bytes",
+              "omit_document"
+            ],
+            "additionalProperties": false
+          },
+          "error_code": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "pages",
+          "passages",
+          "status",
+          "summary",
+          "summary_join",
+          "summary_trailing",
+          "preview",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-fetch/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "text_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 33554432
+          },
+          "error_code": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "text_bytes",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-source-format/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "enum": [
+              "facts"
+            ]
+          }
+        },
+        "required": [
+          "input_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 33554432
+                },
+                "title_bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 33554432
+                },
+                "content_bytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 33554432
+                }
+              },
+              "required": [
+                "index",
+                "title_bytes",
+                "content_bytes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "text_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 33554432
+          },
+          "limit_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 33554432
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "OUTPUT_LIMIT"
+            ]
+          }
+        },
+        "required": [
+          "rows",
+          "text_bytes",
+          "limit_bytes",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-html/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "digest": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "title_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16777216
+          },
+          "text_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16777216
+          }
+        },
+        "required": [
+          "digest",
+          "title_bytes",
+          "text_bytes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-image/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "media_type": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "media_type"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "digest": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_IMAGE"
+            ]
+          }
+        },
+        "required": [
+          "digest",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.web-content-route/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "fetch",
+              "content"
+            ]
+          },
+          "media_type": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "",
+              "raw",
+              "readable",
+              "answer"
+            ]
+          },
+          "document_available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "media_type",
+          "mode",
+          "document_available"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "decoder": {
+            "type": "string",
+            "enum": [
+              "",
+              "text",
+              "html",
+              "document",
+              "image"
+            ]
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "WEB_UNSUPPORTED_CONTENT",
+              "WEB_EXTRACTOR_UNAVAILABLE"
+            ]
+          }
+        },
+        "required": [
+          "decoder",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "requests": [
+    "resource.call",
+    "input.read"
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  }
+}

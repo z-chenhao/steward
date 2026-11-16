@@ -5,18 +5,19 @@ import {selectValue} from './channels_controls.mjs';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {chromium} from '../../guest-browser/node_modules/playwright-core/index.mjs';
 
-const [url,broker,evidence]=process.argv.slice(2);
+const [url,broker,evidence,rawOptions]=process.argv.slice(2);
+const options=rawOptions?JSON.parse(rawOptions):{};
 await mkdir(evidence,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});
 try{
  const context=await browser.newContext({viewport:{width:1400,height:980}});
  await context.route('https://app.composio.dev/link/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Owned OAuth test peer</h1><button>Approve account</button>'}));
- await context.request.post(url+'/session',{form:{token:'private-token-at-least-24-bytes',next:'/settings/apps'}});
+ await context.request.post(url+'/session',{form:{token:options.token??'private-token-at-least-24-bytes',next:'/settings/apps'}});
  const page=await context.newPage();
  await page.goto(url+'/settings/apps');
  await page.locator('[data-apps-ready]').waitFor();
- await settingsLayout(page,context,browser,url,evidence);
- await contextHelp(page,context,browser,url,evidence);
+ if(!options.appsOnly){await settingsLayout(page,context,browser,url,evidence);await contextHelp(page,context,browser,url,evidence)}
+ if(options.interfaceRevision){assert.equal(await page.locator('[data-apps]').getAttribute('data-app-interface-mode'),'managed');assert.equal(await page.locator('[data-apps]').getAttribute('data-app-interface-revision'),options.interfaceRevision)}
  await page.goto(url+'/settings/apps');await page.locator('[data-apps-ready]').waitFor();
  assert.equal(await page.locator('#composio-key-ref').count(),0);
  assert.equal(await page.locator('[name=auth_config]').count(),0);
@@ -200,6 +201,20 @@ try{
  await nativePage.getByRole('heading',{name:'Gmail',exact:true}).waitFor();await nativePage.getByRole('button',{name:'Connect',exact:true}).waitFor();
  await nativePage.screenshot({path:`${evidence}/native-detail-390.png`,fullPage:true});await native.close();
 
+
+ if(options.stopCheck){
+  const fourthPopup=page.waitForEvent('popup');await page.locator('[data-app-tile=gmail]').getByRole('button',{name:'Connect Gmail',exact:true}).click();await(await fourthPopup).close();
+  await page.locator('[data-app-dialog] [data-app-state=pending]').waitFor();
+  const fourthID=await page.locator('[data-app-dialog] [data-app-state=pending]').getAttribute('data-app-account');
+  assert.equal(await count(),4);
+  assert.equal((await context.request.post(broker+'/test/quarantine-interface')).status(),204);
+  await page.getByText('App presentation is unavailable. Reload after the owner restores the plugin.',{exact:true}).first().waitFor({timeout:20000});
+  assert.equal(await page.locator('[data-app-account]').count(),0);
+  const response=await context.request.post(url+'/apps/configure',{form:{action:'connect',toolkit:'gmail'},headers:{Accept:'application/json'}});
+  assert.equal(response.status(),200);const receipt=await response.json();assert.equal(receipt.presentation_unavailable,'true');assert.equal(receipt.connection_id,fourthID);assert.equal(receipt.authorization_url,'https://app.composio.dev/link/ca_4');
+  const nativeReceipt=await context.request.post(url+'/apps/configure',{form:{action:'connect',toolkit:'gmail'}});assert.equal(nativeReceipt.status(),200);const body=await nativeReceipt.text();assert(body.includes('The account action was accepted.'));assert(body.includes('https://app.composio.dev/link/ca_4'));assert(!body.includes('data-apps '));
+  assert.equal(await count(),4);
+ }
  await writeFile(evidence+'/design-review.json',JSON.stringify(designReview,null,2));
- await writeFile(evidence+'/checks.json',JSON.stringify({nativeFallback:true,sharedControls:true,disconnectConfirmation:true,officialLogos:65,groupedDirectory:true,featuredOrder:true,boundedPreviews:true,allApps:true,collectionNavigation:true,detailsDialog:true,connectedSidebar:true,projectSeparated:true,connect:true,popupFallback:true,reopenReusesLink:true,automaticStatus:true,multiAccount:true,reconnect:true,latePollFenced:true,created:await count(),noBrowserStorage:true,languages:['en','zh-CN'],widths:[1400,390,320]},null,2));
+ await writeFile(evidence+'/checks.json',JSON.stringify({nativeFallback:true,managedInterface:options.interfaceRevision??null,stoppedInterface:Boolean(options.stopCheck),sharedControls:true,disconnectConfirmation:true,officialLogos:65,groupedDirectory:true,featuredOrder:true,boundedPreviews:true,allApps:true,collectionNavigation:true,detailsDialog:true,connectedSidebar:true,projectSeparated:true,connect:true,popupFallback:true,reopenReusesLink:true,automaticStatus:true,multiAccount:true,reconnect:true,latePollFenced:true,created:await count(),noBrowserStorage:true,languages:['en','zh-CN'],widths:[1400,390,320]},null,2));
 }finally{await browser.close()}

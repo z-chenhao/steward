@@ -10,16 +10,13 @@ import (
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
-type toolOutputView struct {
-	Texts     []string
-	Artifacts []string
-	Images    []string
-	Error     *tool.Error
-}
+type toolOutputView = observability.ToolPresentation
 
 // Only decode the Host receipt and the known CodeMode content-block frame.
 // Business JSON strings remain evidence; do not recursively guess their schema.
-func previewToolOutput(name string, body observability.Body, offset int) *toolOutputView {
+// legacyTraceToolOutputV1 serves only historical readers without the managed
+// Workbench. Remove with the retained 1.0.1 view and its published references.
+func legacyTraceToolOutputV1(name string, body observability.Body, offset int) *toolOutputView {
 	if !body.Available || body.Next != nil || offset != 0 {
 		return nil
 	}

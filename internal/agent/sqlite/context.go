@@ -144,7 +144,7 @@ func (r *Runs) prepareWorkingContext(ctx context.Context, c agent.RunClaim, run 
 	if e != sql.ErrNoRows {
 		return workingPreparation{}, agent.ErrStorage
 	}
-	selection, e := contextbuilder.Prepare(in, budget, p, run.Checkpoint.ContextRetries > 0)
+	selection, e := r.prepareContext(ctx, c, run, in, budget, p, run.Checkpoint.ContextRetries > 0)
 	if e != nil {
 		return workingPreparation{}, e
 	}
@@ -164,7 +164,14 @@ func (r *Runs) prepareWorkingContext(ctx context.Context, c agent.RunClaim, run 
 		if p.InputRecall {
 			sources, anchors = summaryObjectIDs(sources), summaryObjectIDs(anchors)
 		}
-		messages, count, err := contextbuilder.SummaryRequest(sources, anchors, summaryBudget, p.SummaryBytes)
+		var messages []llm.Message
+		var count int
+		var err error
+		if selection.SummaryInstructions != "" {
+			messages, count, err = contextbuilder.SummaryRequestWithInstructions(sources, anchors, summaryBudget, selection.SummaryInstructions)
+		} else {
+			messages, count, err = contextbuilder.SummaryRequest(sources, anchors, summaryBudget, p.SummaryBytes)
+		}
 		if err != nil {
 			return workingPreparation{}, err
 		}
@@ -200,6 +207,9 @@ func (r *Runs) prepareWorkingContext(ctx context.Context, c agent.RunClaim, run 
 			archived = append(archived, originals[m.Source.Ref])
 		}
 		archive, _ := encoded(archived)
+		if err := r.prepareArtifactRecipe(ctx, c); err != nil {
+			return workingPreparation{}, err
+		}
 		staged, err := r.host.Artifacts().Stage(ctx, artifact.Input{Name: "context-history.json", MediaType: "application/json", RunOnly: true}, strings.NewReader(archive))
 		if err != nil {
 			return workingPreparation{}, err

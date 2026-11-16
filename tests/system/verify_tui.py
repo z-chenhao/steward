@@ -45,6 +45,31 @@ class TUIHarness(MainHarness):
         return Terminal(self.args(*flags), self.env, self.root)
 
 
+def completed_runs(h, description):
+    # Run tables use one read transaction; the conversation is another store.
+    # Join the original message identities before accepting a cross-store view.
+    # Read only; never drive work, select a profile or repair the fixture.
+    def consistent(state):
+        if not state['runs'] or any(run['status']!='completed' for run in state['runs']):
+            return False
+        replies={message['message_id'] for message in state['conversation'] if message['role']=='assistant'}
+        users={message['message_id'] for message in state['conversation'] if message['role']=='user'}
+        return replies=={delivery['message_id'] for delivery in state['deliveries']} and users=={json.loads(item['message_json'])['message_id'] for item in state['inputs']}
+    try:
+        state = h.wait_state(consistent, description)
+        if any(tool['status']!='succeeded' for tool in state['tools']):
+            summary=[]
+            for tool in state['tools']:
+                error=json.loads(tool.get('error_json') or '{}')
+                summary.append(dict(name=tool['tool_name'],status=tool['status'],code=error.get('code') if isinstance(error,dict) else None))
+            raise RuntimeError('terminal Tool result unavailable: '+json.dumps(summary))
+        return state
+    except RuntimeError as error:
+        state = h.state()
+        runs = [{key: run.get(key) for key in ('kind','status','desired_state','wait_reason','error_code')} for run in state['runs']]
+        raise RuntimeError(description + ': ' + json.dumps(runs)) from error
+
+
 def local_setup(t, endpoint, model="fixture-model", manual=False, invalid_limits=False):
     t.expect("Connection [1/2]"); t.send("1")
     t.expect("Endpoint URL"); t.expect("> "); t.send(endpoint)
@@ -61,7 +86,7 @@ def local_setup(t, endpoint, model="fixture-model", manual=False, invalid_limits
     t.send("262144" if invalid_limits else "")
     t.expect("Max output tokens"); t.expect("> ")
     if invalid_limits:
-        t.send("65537"); t.expect("Enter a whole number from 1 to 65536.")
+        t.send("262145"); t.expect("Enter a whole number from 1 to 262144.")
         t.expect("Max output tokens"); t.expect("> ")
     t.send("32768" if invalid_limits else "")
     for stage in ("text and streaming", "Tool calls", "Tool result continuation", "cancellation", "output clipping"):
@@ -93,7 +118,7 @@ def verify(binary, bridge):
                     local_setup(t, f"http://127.0.0.1:{server.server_port}/v1", manual=manual)
                     t.send("terminal Main conversation")
                     t.expect("assistant: PROBE_RESULT_OK"); t.expect("You> ")
-                    state = h.state()
+                    state = completed_runs(h, 'terminal reply Run completed')
                     assert_final(state, 1)
                     require(len(state["tools"]) == 1, "terminal bypassed Direct Tool")
                     require(t.stop(signal.SIGKILL) == -signal.SIGKILL, "kill evidence missing")
@@ -188,12 +213,20 @@ def verify(binary, bridge):
             require(t.stop(signal.SIGKILL) == -signal.SIGKILL, "held terminal kill missing")
         with Terminal(h.args("tui"), h.env, h.root) as t:
             t.expect("assistant: "); t.expect("You> ")
-            after = h.state()
-            assert_final(after, 3)
+            after = completed_runs(h, 'recovered terminal Run completed')
+            try:
+                # Match the existing serial-input contract and verify_main:
+                # every queued input retains its own committed reply.
+                assert_final(after, 3, 3)
+            except RuntimeError as error:
+                summary=dict(roles=[message['role'] for message in after['conversation']],input_count=len(after['inputs']),runs=[dict(kind=run['kind'],status=run['status']) for run in after['runs']])
+                raise RuntimeError('recovered terminal semantic state: '+json.dumps(summary)) from error
+            replies=[''.join(part.get('text','') for part in message['content']) for message in after['conversation'] if message['role']=='assistant']
+            require(replies==['Processed: original terminal work','Processed: terminal steering one','Processed: terminal steering two'], 'queued terminal inputs lost separate ordered replies')
             require(all(s["profile_id"] == old for s in after["snapshots"]), "held Main hot-switched model")
             t.send("new terminal run"); t.expect("assistant: "); t.expect("You> ")
-            final = h.state()
-            assert_final(final, 4, 2)
+            final = completed_runs(h, 'new terminal Run completed')
+            assert_final(final, 4, 4)
             require(final["snapshots"][-1]["profile_id"] == new, "new Main ignored selected profile")
             require(t.stop() == 0, "recovered terminal quit failed")
             report["steering"] = {"before": before, "after": after, "final": final, "transcript": t.transcript()}
@@ -240,10 +273,15 @@ def verify(binary, bridge):
                     t.expect("Model: fixture-account-model")
                     t.expect("Model ID"); t.expect("> "); t.send("hidden-model")
                     t.expect("Choose a listed model by number or ID."); t.expect("> "); t.send("1")
-                    t.expect("Probe passed:"); t.expect("Type yes"); t.expect("> "); t.send("yes")
+                    # Account profiles are admitted through authenticated catalog
+                    # metadata; they must not fabricate a local-model Probe.
+                    t.expect("Type yes"); t.expect("> "); t.send("yes")
                     t.expect("Model selected."); t.expect("You> ")
+                    with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
+                        db.execute('BEGIN')
+                        require(db.execute('SELECT count(*) FROM model_probe').fetchone()[0]==0 and db.execute('SELECT count(*) FROM model_generation').fetchone()[0]==0, 'account setup generated inference or fabricated a Probe')
                     t.send("ChatGPT terminal conversation"); t.expect("assistant: PROBE_RESULT_OK"); t.expect("You> ")
-                    state = h.state()
+                    state = completed_runs(h, 'terminal reply Run completed')
                     assert_final(state, 1)
                     require(state["snapshots"][0]["model_id"] == "fixture-account-model", "wrong account model")
                     require(t.stop(signal.SIGKILL) == -signal.SIGKILL, "account kill missing")
@@ -267,7 +305,7 @@ def verify(binary, bridge):
                 for path in (folder / "data").rglob("*"):
                     if path.is_file():
                         require(not any(value in path.read_bytes() for value in sensitive), "credential persisted outside SecretStore")
-                report["checks"].append("ChatGPT PTY login cancellation; actual browser/PKCE/identity/catalog/Pi Probe/Main/Tool/reply; SIGKILL reopen; logout closes ingress; credentials and private URLs excluded from evidence")
+                report["checks"].append("ChatGPT PTY login cancellation; actual browser/PKCE/identity/catalog admission without Probe/Main/Tool/reply; SIGKILL reopen; logout closes ingress; credentials and private URLs excluded from evidence")
             finally:
                 secrets.shutdown(); secrets.server_close(); worker.join(timeout=5)
         finally:

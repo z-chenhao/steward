@@ -26,7 +26,7 @@ func runAutomation(ctx context.Context, application *app.App, flags *flag.FlagSe
 		if e != nil || len(raw) > 16384 {
 			return automation.ErrInvalid
 		}
-		q, e = automation.Parse(string(raw))
+		q, e = automation.DecodeRequest(string(raw))
 		if e != nil {
 			return e
 		}

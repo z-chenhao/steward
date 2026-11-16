@@ -1,0 +1,1094 @@
+{
+  "id": "computer-system-owner",
+  "allowed_contracts": [
+    "steward.computer-observation/1",
+    "steward.computer-wait-recipe/1",
+    "steward.computer-documentation/1",
+    "steward.computer-text-selection/1",
+    "steward.computer-inventory-order/1",
+    "steward.computer-target-match/1",
+    "steward.computer-action-parameters/1",
+    "steward.computer-playwright-parameters/1",
+    "steward.computer-transfer-presentation/1",
+    "steward.computer-browser-upload/1",
+    "steward.computer-browser-projection/1"
+  ],
+  "allowed_requests": [
+    "input.read"
+  ],
+  "cases": [
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-observation/1",
+      "input": {
+        "diff_allowed": true,
+        "full": false
+      },
+      "inputs": [
+        {
+          "id": "observations",
+          "data": "eyJiZWZvcmUiOiJiZWZvcmUiLCJhZnRlciI6ImFmdGVyIn0="
+        }
+      ],
+      "expected": {
+        "mode": "diff",
+        "start": 0,
+        "removed": 1,
+        "added": 1
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-observation/1",
+      "input": {
+        "diff_allowed": false,
+        "full": false
+      },
+      "inputs": [
+        {
+          "id": "observations",
+          "data": "eyJiZWZvcmUiOiIiLCJhZnRlciI6ImZpcnN0In0="
+        }
+      ],
+      "expected": {
+        "mode": "full",
+        "start": 0,
+        "removed": 0,
+        "added": 0
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-observation/1",
+      "input": {
+        "diff_allowed": true,
+        "full": false
+      },
+      "inputs": [
+        {
+          "id": "observations",
+          "data": "eyJiZWZvcmUiOiJzYW1lIiwiYWZ0ZXIiOiJzYW1lIn0="
+        }
+      ],
+      "expected": {
+        "mode": "diff",
+        "start": 0,
+        "removed": 0,
+        "added": 0
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-wait-recipe/1",
+      "input": {
+        "ceilings": {
+          "timeout_ms": 10000,
+          "min_poll_ms": 100,
+          "max_poll_ms": 1000
+        }
+      },
+      "expected": {
+        "timeout_ms": 1000,
+        "poll_ms": 100
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-wait-recipe/1",
+      "input": {
+        "ceilings": {
+          "timeout_ms": 7,
+          "min_poll_ms": 100,
+          "max_poll_ms": 1000
+        }
+      },
+      "expected": {
+        "timeout_ms": 7,
+        "poll_ms": 100
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-documentation/1",
+      "input": {
+        "kind": "core"
+      },
+      "expected": {
+        "text": "type ElementRef = { observationRevision: string; index: number };\ntype Point = [number, number];\ninterface Surface {\n getAXState(options?: {full?: boolean}): Promise<AXObservation>;\n getScreenshot(): Promise<ScreenshotObservation>;\n getAXStateAndScreenshot(options?: {full?: boolean}): Promise<{ax: AXObservation; screenshot: ScreenshotObservation}>;\n click(target: number | ElementRef | Point, options?: {button?: \"left\" | \"right\"; count?: 1 | 2}): Promise<unknown>;\n drag(from: Point, to: Point): Promise<unknown>;\n scroll(target: number | ElementRef | Point, direction: \"up\" | \"down\" | \"left\" | \"right\", amount?: number): Promise<unknown>;\n setValue(target: number | ElementRef, value: string): Promise<unknown>;\n selectText(target: number | ElementRef, text: string): Promise<unknown>;\n performSecondaryAction(target: number | ElementRef, action: string): Promise<unknown>;\n waitForChange(options?: {sinceRevision?: string; timeoutMs?: number; full?: boolean}): Promise<AXObservation>;\n documentation(): Promise<string>;\n}\ninterface AXObservation {surfaceId: string; revision: string; baseRevision?: string; kind: \"full\" | \"diff\"; state: string}\ninterface ScreenshotObservation {surfaceId: string; revision: string; width: number; height: number; image: {artifactRef: string}}\ninterface App extends Surface {paste(text: string): Promise<unknown>; typeText(text: string): Promise<unknown>; pressKey(key: string): Promise<unknown>}\ninterface Tab extends Surface {paste(target: number | ElementRef | null, text: string): Promise<unknown>; typeText(target: number | ElementRef | null, text: string): Promise<unknown>; pressKey(target: number | ElementRef | null, key: string): Promise<unknown>; goto(url: string): Promise<unknown>; back(): Promise<unknown>; forward(): Promise<unknown>; reload(): Promise<unknown>; close(): Promise<unknown>}\nEvery input invalidates old element and screenshot refs. Observe after actions. Diff state is empty when unchanged, otherwise @@ zeroBasedLine,removedLines,addedLines @@ followed by - removed and + added lines. Screenshots have independent revisions; image(screenshot.image) selects its Artifact for model output. No binary enters JavaScript. Coordinates require the latest screenshot and unchanged geometry. WAIT_TIMEOUT.details.observation contains the last bounded summary. Handles are invocation and lease scoped; store only stable refs. All input, navigation, launch/create and transfers require exact action approval in this conservative policy. Approval never transfers to upload, overwrite or export. Secondary actions must appear in the latest AX tree. Native methods depend on Driver support and fail closed when unavailable."
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-documentation/1",
+      "input": {
+        "kind": "browser"
+      },
+      "expected": {
+        "text": "interface Playwright {\n documentation(): Promise<string>;\n locator(selector: string): {\n  count(): Promise<number>;\n  textContent(): Promise<string | null>;\n  click(): Promise<unknown>;\n  fill(value: string): Promise<unknown>;\n  waitFor(options?: {timeoutMs?: number}): Promise<unknown>;\n  download(): Promise<{computerId: string; path: string}>;\n  upload(file: {computerId: string; path: string}): Promise<unknown>;\n };\n waitForURL(url: string, options?: {timeoutMs?: number}): Promise<unknown>;\n}\nCall capabilities.list() before get(\"playwright\"). Navigation invalidates the capability, including same-URL reload. Every method invokes ToolExecutor. CSS selectors only; no evaluate, arbitrary JavaScript, filesystem, credentials or network API. Downloads use the controlled downloads directory. Upload waits for the chooser and requires separate frozen upload approval; a file import is not upload consent. Import files only using cua.files.importArtifact and export registered downloads with cua.files.exportArtifact. DOM operations may send data and require approval. Waits are bounded to 10 seconds."
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-text-selection/1",
+      "input": {
+        "prefix": "one target end",
+        "length": 14,
+        "wanted": "target"
+      },
+      "expected": {
+        "anchor": "start",
+        "move": 4,
+        "extend": 6
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-text-selection/1",
+      "input": {
+        "prefix": "head",
+        "length": 4,
+        "wanted": "head"
+      },
+      "expected": {
+        "anchor": "start",
+        "move": 0,
+        "extend": 4
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-text-selection/1",
+      "input": {
+        "prefix": "abc xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "length": 1000000,
+        "wanted": "abc"
+      },
+      "expected": {
+        "anchor": "start",
+        "move": 0,
+        "extend": 3
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-inventory-order/1",
+      "input": {
+        "kind": "apps"
+      },
+      "inputs": [
+        {
+          "id": "targets",
+          "data": "eyJsYWJlbHMiOlt7Im5hbWUiOiJadWx1IiwidXJsIjoiIn0seyJuYW1lIjoiQWxwaGEiLCJ1cmwiOiIifV19"
+        }
+      ],
+      "expected": {
+        "indices": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-inventory-order/1",
+      "input": {
+        "kind": "tabs"
+      },
+      "inputs": [
+        {
+          "id": "targets",
+          "data": "eyJsYWJlbHMiOltdfQ=="
+        }
+      ],
+      "expected": {
+        "indices": []
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-target-match/1",
+      "input": {
+        "kind": "apps"
+      },
+      "inputs": [
+        {
+          "id": "targets",
+          "data": "eyJsYWJlbHMiOlt7Im5hbWUiOnsidGV4dCI6Ik5vdGVzIiwiY29tcGxldGUiOnRydWV9LCJ1cmwiOnsidGV4dCI6IiIsImNvbXBsZXRlIjp0cnVlfSwiaWRfbWF0Y2giOmZhbHNlfSx7Im5hbWUiOnsidGV4dCI6Im5vdGVzIiwiY29tcGxldGUiOnRydWV9LCJ1cmwiOnsidGV4dCI6IiIsImNvbXBsZXRlIjp0cnVlfSwiaWRfbWF0Y2giOmZhbHNlfV0sInNlbGVjdG9yIjoiTm90ZXMifQ=="
+        }
+      ],
+      "expected": {
+        "indices": [
+          0
+        ]
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-target-match/1",
+      "input": {
+        "kind": "tabs"
+      },
+      "inputs": [
+        {
+          "id": "targets",
+          "data": "eyJsYWJlbHMiOlt7Im5hbWUiOnsidGV4dCI6ImxhYmVsIiwiY29tcGxldGUiOnRydWV9LCJ1cmwiOnsidGV4dCI6Imh0dHBzOi8vYSIsImNvbXBsZXRlIjp0cnVlfSwiaWRfbWF0Y2giOnRydWV9LHsibmFtZSI6eyJ0ZXh0Ijoic2VjcmV0LWlkIiwiY29tcGxldGUiOmZhbHNlfSwidXJsIjp7InRleHQiOiIiLCJjb21wbGV0ZSI6dHJ1ZX0sImlkX21hdGNoIjpmYWxzZX1dLCJzZWxlY3RvciI6InNlY3JldC1pZCJ9"
+        }
+      ],
+      "expected": {
+        "indices": [
+          0
+        ]
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-target-match/1",
+      "input": {
+        "kind": "browsers"
+      },
+      "inputs": [
+        {
+          "id": "targets",
+          "data": "eyJsYWJlbHMiOlt7Im5hbWUiOnsidGV4dCI6IkJyb3dzZXIiLCJjb21wbGV0ZSI6dHJ1ZX0sInVybCI6eyJ0ZXh0IjoiIiwiY29tcGxldGUiOnRydWV9LCJpZF9tYXRjaCI6ZmFsc2V9XSwic2VsZWN0b3IiOiIifQ=="
+        }
+      ],
+      "expected": {
+        "indices": [
+          0
+        ]
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "launchApp",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJhcHAiOiJjb20uYXBwbGUuVGV4dEVkaXQifV19"
+        }
+      ],
+      "expected": {
+        "app": "com.apple.TextEdit"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "launchApp",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJhcHAiOiJpbnZhbGlkIGFwcCJ9XX0="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "createBrowserTab",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbImIiLCJodHRwczovL2V4YW1wbGUudGVzdCJdfQ=="
+        }
+      ],
+      "expected": {
+        "browser": "b",
+        "url": "https://example.test"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "createBrowserTab",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbImIiXX0="
+        }
+      ],
+      "expected": {
+        "browser": "b"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "click",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbMCx7ImJ1dHRvbiI6InJpZ2h0IiwiY291bnQiOjJ9XX0="
+        }
+      ],
+      "expected": {
+        "button": "right",
+        "count": 2
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "click",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbMF19"
+        }
+      ],
+      "expected": {}
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "click",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbMCx7InVuZXhwZWN0ZWQiOnRydWV9XX0="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "scroll",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbMCwiZG93biIsMS41XX0="
+        }
+      ],
+      "expected": {
+        "direction": "down",
+        "amount": 1.5
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "scroll",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbMCwidXAiXX0="
+        }
+      ],
+      "expected": {
+        "direction": "up"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "typeText",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbIuWOn+Wni+aWh+WtlyJdfQ=="
+        }
+      ],
+      "expected": {
+        "text": "原始文字"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "paste",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbbnVsbCwidGV4dCIseyJmb3JtYXQiOiJ0ZXh0In1dfQ=="
+        }
+      ],
+      "expected": {
+        "text": "text"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "pressKey",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbImNtZCthIl19"
+        }
+      ],
+      "expected": {
+        "text": "cmd+a",
+        "key_input": {
+          "keys": [
+            "cmd",
+            "a"
+          ]
+        }
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "setValue",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbMCwidmFsdWUiXX0="
+        }
+      ],
+      "expected": {
+        "value": "value"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "drag",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbWzAsMF0sWzEwLDEwXV19"
+        }
+      ],
+      "expected": {}
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "goto",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbImh0dHBzOi8vZXhhbXBsZS50ZXN0Il19"
+        }
+      ],
+      "expected": {
+        "url": "https://example.test"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-action-parameters/1",
+      "input": {
+        "method": "goto",
+        "surface": "native"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbImh0dHBzOi8vZXhhbXBsZS50ZXN0Il19"
+        }
+      ],
+      "expected": {
+        "failure": "NOT_FOUND"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.count",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNmaWVsZCJ9XX0="
+        }
+      ],
+      "expected": {
+        "selector": "#field",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.textContent",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6ImJvZHkifV19"
+        }
+      ],
+      "expected": {
+        "selector": "body",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.click",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNidXR0b24ifV19"
+        }
+      ],
+      "expected": {
+        "selector": "#button",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.fill",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6ImlucHV0IiwidmFsdWUiOiJvcmlnaW5hbCJ9XX0="
+        }
+      ],
+      "expected": {
+        "selector": "input",
+        "value": "original",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.fill",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6ImlucHV0IiwidmFsdWUiOiIifV19"
+        }
+      ],
+      "expected": {
+        "selector": "input",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.waitForSelector",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNsYXRlciIsInRpbWVvdXRNcyI6N31dfQ=="
+        }
+      ],
+      "expected": {
+        "selector": "#later",
+        "timeout_ms": 7
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.waitForURL",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJ1cmwiOiJodHRwczovL2V4YW1wbGUudGVzdC8iLCJ0aW1lb3V0TXMiOjExfV19"
+        }
+      ],
+      "expected": {
+        "url": "https://example.test/",
+        "timeout_ms": 11
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.download",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNkb3dubG9hZCJ9XX0="
+        }
+      ],
+      "expected": {
+        "selector": "#download",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiN1cGxvYWQifV19"
+        }
+      ],
+      "expected": {
+        "selector": "#upload",
+        "timeout_ms": 3000
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.count",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6ImEgPj4gaW50ZXJuYWw6Y29udHJvbCJ9XX0="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.click",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiJ9XX0="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.fill",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6ImlucHV0IiwidmFsdWUiOjN9XX0="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.waitForSelector",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNsYXRlciIsInRpbWVvdXRNcyI6MH1dfQ=="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-playwright-parameters/1",
+      "input": {
+        "method": "playwright.waitForSelector",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNsYXRlciIsInRpbWVvdXRNcyI6MS41fV19"
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-transfer-presentation/1",
+      "input": {
+        "method": "exportArtifact",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbe31dfQ=="
+        }
+      ],
+      "expected": {
+        "name_from_source": true,
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-transfer-presentation/1",
+      "input": {
+        "method": "exportArtifact",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJuYW1lIjoiXHU1MzlmXHU1OWNiLnR4dCIsIm1lZGlhVHlwZSI6InRleHQvcGxhaW4ifV19"
+        }
+      ],
+      "expected": {
+        "name": "原始.txt",
+        "media_type": "text/plain"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-transfer-presentation/1",
+      "input": {
+        "method": "exportArtifact",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJuYW1lIjoib3JpZ2luYWwuYmluIn1dfQ=="
+        }
+      ],
+      "expected": {
+        "name": "original.bin",
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-transfer-presentation/1",
+      "input": {
+        "method": "exportArtifact",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi9qc29uIn1dfQ=="
+        }
+      ],
+      "expected": {
+        "name_from_source": true,
+        "media_type": "application/json"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-transfer-presentation/1",
+      "input": {
+        "method": "exportArtifact",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJuYW1lIjo3LCJtZWRpYVR5cGUiOmZhbHNlfV19"
+        }
+      ],
+      "expected": {
+        "name_from_source": true,
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-transfer-presentation/1",
+      "input": {
+        "method": "exportArtifact",
+        "surface": ""
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJuYW1lIjoiIHNwYWNlZCAiLCJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi94LW9yaWdpbmFsIn1dfQ=="
+        }
+      ],
+      "expected": {
+        "name": " spaced ",
+        "media_type": "application/x-original"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-upload/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiN1cGxvYWQifV19"
+        }
+      ],
+      "expected": {
+        "selector": "#upload",
+        "timeout_ms": 3000,
+        "name_from_source": true,
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-upload/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiN1cGxvYWQiLCJ0aW1lb3V0TXMiOjEyMDB9XX0="
+        }
+      ],
+      "expected": {
+        "selector": "#upload",
+        "timeout_ms": 1200,
+        "name_from_source": true,
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-upload/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiPkuIrkvKAifV19"
+        }
+      ],
+      "expected": {
+        "selector": "#上传",
+        "timeout_ms": 3000,
+        "name_from_source": true,
+        "media_type": "application/octet-stream"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-upload/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiJ9XX0="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-upload/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiNhID4+IHgifV19"
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-upload/1",
+      "input": {
+        "method": "playwright.upload",
+        "surface": "tab"
+      },
+      "inputs": [
+        {
+          "id": "arguments",
+          "data": "eyJhcmdzIjpbeyJzZWxlY3RvciI6IiN1cGxvYWQiLCJ0aW1lb3V0TXMiOjIuNX1dfQ=="
+        }
+      ],
+      "expected": {
+        "failure": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-projection/1",
+      "input": {
+        "body_units": 4,
+        "rows": []
+      },
+      "expected": {
+        "body_units": 4,
+        "rows": []
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-projection/1",
+      "input": {
+        "body_units": 8,
+        "rows": [
+          {
+            "role_units": 5,
+            "aria_units": 3,
+            "inner_units": 5,
+            "placeholder_units": 4,
+            "value_units": 6
+          },
+          {
+            "role_units": 1,
+            "aria_units": 0,
+            "inner_units": 0,
+            "placeholder_units": 0
+          }
+        ]
+      },
+      "expected": {
+        "body_units": 8,
+        "rows": [
+          {
+            "index": 0,
+            "label": "aria",
+            "label_units": 3,
+            "value_units": 6
+          },
+          {
+            "index": 1,
+            "label": "role",
+            "label_units": 1
+          }
+        ]
+      }
+    },
+    {
+      "instance_id": "computer-use",
+      "contract": "steward.computer-browser-projection/1",
+      "input": {
+        "body_units": 0,
+        "rows": [
+          {
+            "role_units": 5,
+            "aria_units": 0,
+            "inner_units": 3,
+            "placeholder_units": 4
+          },
+          {
+            "role_units": 5,
+            "aria_units": 0,
+            "inner_units": 0,
+            "placeholder_units": 4,
+            "value_units": 0
+          }
+        ]
+      },
+      "expected": {
+        "body_units": 0,
+        "rows": [
+          {
+            "index": 0,
+            "label": "inner",
+            "label_units": 3
+          },
+          {
+            "index": 1,
+            "label": "placeholder",
+            "label_units": 4,
+            "value_units": 0
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -25,6 +25,15 @@ from verify_main import require
 
 
 class ComputerHarness(CapabilityHarness):
+    def setup(self, model='fixture-model', metadata=None):
+        if metadata is None:
+            metadata = dict(name='Computer workload', provider_kind='openai_compatible',
+                            endpoint='http://127.0.0.1:1/v1', wire_api='openai_completions',
+                            model_id=model, context_window=65536, max_output_tokens=4096,
+                            compatibility={'tool_result_format':'openai'},
+                            capabilities={'text_input':True,'image_input':True,'tool_calls':True,'streaming':True})
+        return super().setup(model, metadata)
+
     def args(self, *args):
         return [str(self.binary), '-config', str(self.root / 'config.yaml'),
                 '-test-bridge', 'computer', *args]
@@ -121,7 +130,7 @@ def run(binary):
             computer['manifest']['applications'] = [{'bundle_id': 'com.apple.TextEdit', 'documents': ['/Users/lume/work.txt']}]
             config_path.write_text(json.dumps(config))
             plan = json.dumps([{'name': 'builtin__codemode_execute', 'arguments': {'source': 'return await cua.getState();'}}])
-            h.send('first', 'Capabilities: ' + plan)
+            h.send('first', 'Delegate capabilities: ' + plan)
             child = h.hold('computer_ready')
             before = h.command('computer', 'status')
             contents = {'Disk': 'synthetic user file content', 'NVRAM': 'changed-NVRAM', 'Config': 'changed-config'}
@@ -166,7 +175,7 @@ def run(binary):
                                       'before': before, 'after': after})
             for index, boundary in enumerate(('computer_before_checkpoint_publish', 'computer_after_checkpoint_publish',
                                                'computer_after_destroy'), 2):
-                h.send(str(index), 'Capabilities: ' + plan)
+                h.send(str(index), 'Delegate capabilities: ' + plan)
                 child = h.hold(boundary)
                 held = h.command('computer', 'status')
                 if boundary == 'computer_after_destroy':
@@ -185,7 +194,7 @@ def run(binary):
                                           'before': held, 'after': recovered})
             # Prove a new cell can use the recovered Computer, rather than only
             # observing a terminal phase left by the interrupted cell.
-            h.send('fresh-after-disposal', 'Capabilities: ' + plan)
+            h.send('fresh-after-disposal', 'Delegate capabilities: ' + plan)
             h.command('chat', 'work')
             fresh = h.command('computer', 'status')
             require(fresh['computer_id'] == recovered['computer_id'] and fresh['instance_epoch'] == recovered['instance_epoch'] + 1,
@@ -207,7 +216,7 @@ def run(binary):
                             'cancel boundary lacks committed checkpoint')
                     require(not list((vm_root / 'vms').glob('steward-*')), 'cancelled source instance retained')
                     cancelled['committed_unit'] = evidence(held)
-                h.send('fresh-after-cancel-' + boundary, 'Capabilities: ' + plan)
+                h.send('fresh-after-cancel-' + boundary, 'Delegate capabilities: ' + plan)
                 h.command('chat', 'work')
                 restored = h.command('computer', 'status')
                 require(restored['computer_id'] == held['computer_id'] and restored['instance_epoch'] == held['instance_epoch'] + 1,
@@ -309,7 +318,7 @@ def run_live(binary, live_root, config_path):
         release = root / 'release'
         release.unlink(missing_ok=True)
         started = time.monotonic()
-        h.send(f'live-{attempt}-fresh', 'Capabilities: ' + plan)
+        h.send(f'live-{attempt}-fresh', 'Delegate capabilities: ' + plan)
         child = h.hold('computer_ready', extra_flags=('-test-main-release', str(release)), timeout=295)
         first = h.command('computer', 'status')
         identity = hardware_identity()
@@ -327,7 +336,7 @@ def run_live(binary, live_root, config_path):
                                  'elapsed_seconds': round(time.monotonic() - started, 3)})
 
         release.unlink()
-        h.send(f'live-{attempt}-restore-and-crash', 'Capabilities: ' + plan)
+        h.send(f'live-{attempt}-restore-and-crash', 'Delegate capabilities: ' + plan)
         child = h.hold('computer_ready', timeout=295)
         second = h.command('computer', 'status')
         require(hardware_identity() == identity, 'restore changed logical Computer hardware identity')
@@ -365,7 +374,7 @@ def run_live(binary, live_root, config_path):
                                  'checkpoint_files': hashes, 'artifact_ref': artifact['artifact_ref'], 'artifact_sha256': expected})
 
         release.unlink()
-        h.send(f'live-{attempt}-post-disposal', 'Capabilities: ' + plan)
+        h.send(f'live-{attempt}-post-disposal', 'Delegate capabilities: ' + plan)
         child = h.hold('computer_after_destroy', timeout=295)
         disposed = h.command('computer', 'status')
         require(disposed['phase'] == 'checkpointing' and disposed['checkpoint'] is not None and
@@ -387,7 +396,7 @@ def run_live(binary, live_root, config_path):
                                  'before': disposed, 'after': resumed})
 
         release.unlink()
-        h.send(f'live-{attempt}-fresh-after-disposal', 'Capabilities: ' + plan)
+        h.send(f'live-{attempt}-fresh-after-disposal', 'Delegate capabilities: ' + plan)
         child = h.hold('computer_ready', extra_flags=('-test-main-release', str(release)), timeout=295)
         fresh = h.command('computer', 'status')
         require(hardware_identity() == identity and fresh['computer_id'] == first['computer_id'] and

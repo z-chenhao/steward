@@ -1,69 +1,37 @@
-import {randomUUID} from '../lib/random-id';
+import {type FormProps,type FormView} from './form-schema';
 import {t} from '../i18n';
-import {useEffect,useRef,useState} from 'react';
+import {useState} from 'react';
 import {z} from 'zod';
-import {AnswerButton as Button,Field,FieldLabel,Input,Textarea,ResultCard} from '../components/ui/answer-controls';
+import {AnswerButton as Button,Field,FieldLabel,Input,Textarea} from '../components/ui/answer-controls';
 import {NativeSelect} from '../components/ui/native-select';
 import {AnswerSurface} from './surface';
 import {Icon} from './icons';
 import {useUIState,flushUIStates} from './state';
-import {useInteractionGroup} from './group';
-import {startAction,actionResult,watchAction,completeAction,type ActionReceipt} from './actions';
-export const fieldSchema=z.object({name:z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,63}$/),label:z.string().min(1).max(256),type:z.enum(['text','textarea','number','date','email','select','multiselect','boolean']),required:z.boolean().optional(),options:z.array(z.object({value:z.string().min(1).max(200),label:z.string().min(1).max(200)}).strict()).max(32).optional(),min:z.number().optional(),max:z.number().optional()}).strict();
-export const formSchema=z.object({title:z.string().min(1).max(300),fields:z.array(fieldSchema).min(1).max(16),submitLabel:z.string().max(100).optional()}).strict();
 export const cardsSchema=z.object({title:z.string().max(300).optional(),items:z.array(z.object({title:z.string().min(1).max(300),text:z.string().max(2000).optional(),image_ref:z.string().regex(/^artifact:[A-Za-z0-9_-]+$/).optional(),url:z.string().url().refine(v=>{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password}).optional(),label:z.string().max(100).optional()}).strict()).min(1).max(16)}).strict();
 export const actionSchema=z.object({id:z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,63}$/),label:z.string().min(1).max(100),tool:z.string().max(200),arguments:z.record(z.string(),z.unknown()),bindings:z.array(z.object({argument:z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,63}$/),component:z.number().int().min(0).max(15),path:z.string().startsWith('/').max(512)}).strict()).max(16).optional()}).strict();
-export function InputForm({props,reference,disabled,submitted,response,respond}:{props:z.infer<typeof formSchema>;reference:string;disabled?:boolean;submitted?:boolean;response?:string;respond:(values:Record<string,string>)=>Promise<void>}){
- const defaults=Object.fromEntries(props.fields.map(f=>[f.name,f.type==='multiselect'?'[]':f.type==='boolean'?'false':'']));const [state,update,saved]=useUIState(reference,{values:defaults},s=>({title:props.title,fields:s.values}));const[busy,setBusy]=useState(false),[sent,setSent]=useState(false),[error,setError]=useState('');
+export type FormControlProps={props:FormProps;defaults:Record<string,string>;reference:string;disabled?:boolean;submitted?:boolean;response?:string;respond:(values:Record<string,string>)=>Promise<void>};
+// Fixed shared input/CAS/submit driver; defaults and display come from its owner.
+export function NativeFormControls({props,defaults,reference,disabled,submitted,response,respond}:FormControlProps){
+ const [state,update,saved]=useUIState(reference,{values:defaults},s=>({title:props.title,fields:s.values}));const[busy,setBusy]=useState(false),[sent,setSent]=useState(false),[error,setError]=useState('');
  let values=state.values;if(submitted&&response){try{values=JSON.parse(response)}catch{}}
  const set=(name:string,value:string)=>update({values:{...state.values,[name]:value}});
  async function send(event:React.SubmitEvent<HTMLFormElement>){event.preventDefault();if(busy||submitted||sent)return;setBusy(true);setError('');try{await flushUIStates().catch(()=>{});await respond(Object.fromEntries(props.fields.map(f=>[f.name,values[f.name]??defaults[f.name]])));setSent(true)}catch{setError('Response not confirmed. Retry.')}finally{setBusy(false)}}
- return <AnswerSurface title={props.title}><form className="native-input-form" onSubmit={send}><h3 className="native-answer-title">{props.title}</h3><fieldset disabled={disabled||submitted||sent||busy||!saved.ready}>{props.fields.map(f=>{
-  const value=values[f.name]??defaults[f.name],id=reference+'-'+f.name;const common={id,name:f.name,required:f.required,'aria-label':f.label};
-  return <Field key={f.name} data-type={f.type}>{f.type==='boolean'?<label className="native-form-choice"><input type="checkbox" checked={value==='true'} required={f.required} onChange={e=>set(f.name,String(e.target.checked))}/>{f.label}</label>
-   :f.type==='multiselect'?<fieldset className="native-form-options"><legend>{f.label}</legend>{f.options?.map(o=>{let selected:string[]=[];try{selected=JSON.parse(value)}catch{};return <label className="native-form-choice" key={o.value}><input type="checkbox" name={f.name} checked={selected.includes(o.value)} onChange={event=>set(f.name,JSON.stringify(event.target.checked?[...selected,o.value]:selected.filter(v=>v!==o.value)))}/>{o.label}</label>})}</fieldset>
-   :<><FieldLabel htmlFor={id}>{f.label}</FieldLabel>{f.type==='select'?<NativeSelect {...common} value={value} onChange={e=>set(f.name,e.target.value)}><option value=""></option>{f.options?.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</NativeSelect>
-    :f.type==='textarea'?<Textarea {...common} rows={3} maxLength={4096} value={value} onChange={e=>set(f.name,e.target.value)}/>
-    :<Input {...common} type={f.type} step={f.type==='number'?'any':undefined} min={f.min} max={f.max} maxLength={4096} value={value} onChange={e=>set(f.name,e.target.value)}/>}</>}
-   </Field>})}<Button type="submit">{busy?<span className="typing-dots" aria-label={t('Sending')}><i/><i/><i/></span>:submitted||sent?<><Icon name="check"/>{t('Sent')}</>:props.submitLabel||t('Send')}</Button></fieldset></form>{(error||saved.error)&&<p className="field-help" role="alert">{t(error||saved.error)}</p>}</AnswerSurface>
+ return <FormDrawing props={props} values={{...defaults,...values}} reference={reference} disabled={Boolean(disabled||submitted||sent||busy||!saved.ready)} busy={busy} sent={Boolean(submitted||sent)} change={set} submit={send} error={error||saved.error}/>;
 }
-export function CardCarousel({props,reference}:{props:z.infer<typeof cardsSchema>;reference:string}){
- const group=useInteractionGroup(),list=useRef<HTMLDivElement>(null);const[state,update,saved]=useUIState(reference,{index:0},s=>({title:props.title,visible_item:props.items[s.index]?.title}));
- useEffect(()=>{const child=list.current?.children[state.index] as HTMLElement|undefined;if(child&&list.current)list.current.scrollTo({left:child.offsetLeft-list.current.offsetLeft,behavior:'instant'})},[saved.ready]);
- function move(delta:number){const index=Math.max(0,Math.min(props.items.length-1,state.index+delta));update({index});const child=list.current?.children[index] as HTMLElement|undefined;if(child&&list.current)list.current.scrollTo({left:child.offsetLeft-list.current.offsetLeft,behavior:'smooth'})}
- return <AnswerSurface title={props.title||props.items[0].title}><section className="native-carousel"><div className="native-carousel-heading">{props.title&&<h3 className="native-answer-title">{props.title}</h3>}<div className="native-carousel-controls"><button className="answer-icon-button" type="button" aria-label={t('Previous card')} disabled={state.index===0} onClick={()=>move(-1)}><Icon name="left"/></button><span>{state.index+1} / {props.items.length}</span><button className="answer-icon-button" type="button" aria-label={t('Next card')} disabled={state.index===props.items.length-1} onClick={()=>move(1)}><Icon name="right"/></button></div></div><div ref={list} className="native-carousel-list" onScroll={()=>{const children=[...list.current!.children] as HTMLElement[];const index=children.reduce((best,node,i)=>Math.abs(node.offsetLeft-list.current!.offsetLeft-list.current!.scrollLeft)<Math.abs(children[best].offsetLeft-list.current!.offsetLeft-list.current!.scrollLeft)?i:best,0);if(index!==state.index)update({index})}}>{props.items.map((item,i)=><ResultCard key={i} data-selected={group.selected===item.title}>{item.image_ref&&<img loading="lazy" src={'/ui/image?ref='+encodeURIComponent(item.image_ref)} alt=""/>}<button type="button" className="native-card-title" aria-pressed={group.selected===item.title} onClick={()=>group.select(item.title)}>{item.title}</button>{item.text&&<p>{item.text}</p>}{item.url&&<a href={item.url} target="_blank" rel="noopener noreferrer">{item.label||t('Open')}</a>}</ResultCard>)}</div></section>{saved.error&&<p role="alert" className="field-help">{t(saved.error)}</p>}</AnswerSurface>
+
+// Static preview has no saved-state hook, ingress identity or submit authority.
+export function PreviewFormView({view,id}:{view:FormView;id:string}){
+ return <FormDrawing props={view.props} values={view.defaults} reference={id} disabled busy={false} sent={false} change={()=>{}} submit={event=>event.preventDefault()} error=""/>;
 }
-export function ToolActionButton({props,reference}:{props:z.infer<typeof actionSchema>;reference:string}){
- const[state,update,saved]=useUIState(reference,{source:''});const[status,setStatus]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[attempt,setAttempt]=useState(0),[proposed,setProposed]=useState(false);const active=useRef(false),button=useRef<HTMLButtonElement>(null);
- const observed=useRef<{source:string;receipt:ActionReceipt}|null>(null);
- useEffect(()=>watchAction(reference,()=>{setProposed(true);button.current?.focus()}),[reference]);
- useEffect(()=>{
-  if(!saved.ready||!state.source)return;
-  let alive=true,timer=0;
-  const poll=async()=>{
-   try{
-    const receipt=await actionResult(reference,state.source);if(!alive)return;
-    // A durable receipt wins over the original HTTP acknowledgement, even
-    // when that older request rejects after polling has already succeeded.
-    observed.current={source:state.source,receipt};setError('');setStatus(receipt.status);completeAction(reference,receipt);
-    if(['pending','waiting'].includes(receipt.status)){setBusy(true);timer=window.setTimeout(poll,700)}
-    else{setBusy(false);if(receipt.result?.error)setError(receipt.status==='unknown'?'Result unknown. Check the conversation.':receipt.status==='cancelled'?'Action cancelled.':receipt.result.error.code==='ACTION_NOT_EXECUTED'?'Action was not completed.':'Action failed. Retry.')}
-   }catch{
-    if(!alive)return;
-    const known=observed.current;
-    if(known?.source===state.source&&!['pending','waiting'].includes(known.receipt.status))return;
-    if(active.current){timer=window.setTimeout(poll,700)}else{setBusy(false);setError('Action not confirmed. Retry.')}
-   }
-  };
-  void poll();return()=>{alive=false;clearTimeout(timer)};
- },[reference,state.source,saved.ready,attempt]);
- async function run(){
-  if(active.current||busy)return;
-  active.current=true;setProposed(false);setBusy(true);setError('');
-  const source=state.source&&status!=='succeeded'&&status!=='failed'?state.source:randomUUID();update({source});
-  try{await startAction(reference,source);if(observed.current?.source!==source)setStatus('pending')}
-  catch{if(observed.current?.source!==source){setBusy(false);setError('Action not confirmed. Retry.')}}
-  finally{active.current=false;setAttempt(n=>n+1)}
- }
- return <section className="native-tool-action"><Button ref={button} type="button" variant="secondary" data-proposed={proposed} disabled={busy||!saved.ready} onClick={event=>{if(event.nativeEvent.isTrusted)void run()}}>{busy?<span className="typing-dots" aria-label={t('Working')}><i/><i/><i/></span>:status==='succeeded'&&!proposed?<Icon name="check"/>:null}{props.label}</Button>{(error||saved.error)&&<p role="alert" className="field-help">{t(error||saved.error)}</p>}</section>
+
+type FormDrawingProps={props:FormProps;values:Record<string,string>;reference:string;disabled:boolean;busy:boolean;sent:boolean;change:(name:string,value:string)=>void;submit:(event:React.SubmitEvent<HTMLFormElement>)=>void;error:string};
+function FormDrawing({props,values,reference,disabled,busy,sent,change,submit,error}:FormDrawingProps){
+ return <AnswerSurface title={props.title}><form className="native-input-form" onSubmit={submit}><h3 className="native-answer-title">{props.title}</h3><fieldset disabled={disabled}>{props.fields.map(f=>{
+  const value=values[f.name]??'',id=reference+'-'+f.name;const common={id,name:f.name,required:f.required,'aria-label':f.label};
+  return <Field key={f.name} data-type={f.type}>{f.type==='boolean'?<label className="native-form-choice"><input type="checkbox" checked={value==='true'} required={f.required} onChange={e=>change(f.name,String(e.target.checked))}/>{f.label}</label>
+   :f.type==='multiselect'?<fieldset className="native-form-options"><legend>{f.label}</legend>{f.options?.map(o=>{let selected:string[]=[];try{selected=JSON.parse(value)}catch{};return <label className="native-form-choice" key={o.value}><input type="checkbox" name={f.name} checked={selected.includes(o.value)} onChange={event=>change(f.name,JSON.stringify(event.target.checked?[...selected,o.value]:selected.filter(v=>v!==o.value)))}/>{o.label}</label>})}</fieldset>
+   :<><FieldLabel htmlFor={id}>{f.label}</FieldLabel>{f.type==='select'?<NativeSelect {...common} value={value} onChange={e=>change(f.name,e.target.value)}><option value=""></option>{f.options?.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</NativeSelect>
+    :f.type==='textarea'?<Textarea {...common} rows={3} maxLength={4096} value={value} onChange={e=>change(f.name,e.target.value)}/>
+    :<Input {...common} type={f.type} step={f.type==='number'?'any':undefined} min={f.min} max={f.max} maxLength={4096} value={value} onChange={e=>change(f.name,e.target.value)}/>}</>}
+   </Field>})}<Button type="submit">{busy?<span className="typing-dots" aria-label={t('Sending')}><i/><i/><i/></span>:sent?<><Icon name="check"/>{t('Sent')}</>:props.submitLabel||t('Send')}</Button></fieldset></form>{error&&<p className="field-help" role="alert">{t(error)}</p>}</AnswerSurface>
 }

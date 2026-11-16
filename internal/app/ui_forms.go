@@ -5,8 +5,6 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/conversation"
-	"github.com/z-chenhao/assistant/internal/delivery/ui"
-	"github.com/z-chenhao/assistant/internal/interaction"
 	"github.com/z-chenhao/assistant/internal/interaction/web"
 )
 
@@ -27,20 +25,10 @@ func (a *App) RespondWebForm(ctx context.Context, messageID, formID string, valu
 	if m.Role != "assistant" {
 		return agent.Receipt{}, conversation.ErrConflict
 	}
-	// Use the accepted projection, including old projections that intentionally
-	// remain text-only. Never reinterpret a client-provided component definition.
-	raw, err := a.store.WebProjection(ctx, m)
-	if err != nil {
-		return agent.Receipt{}, err
+	core := a.core.Load()
+	status, err := a.Diagnostics(ctx)
+	if err != nil || !status.AgentIngressEnabled || core.registry == nil || a.core.Load() != core {
+		return agent.Receipt{}, agent.ErrSetup
 	}
-	c, err := ui.Form(raw, messageID, formID)
-	if err != nil {
-		return agent.Receipt{}, err
-	}
-	content, err := ui.Answer(c, values)
-	if err != nil {
-		return agent.Receipt{}, err
-	}
-	source := "ui-form:" + formID
-	return a.acceptInbound(ctx, interaction.InboundEvent{Channel: "web", Subject: web.Subject, Destination: web.Destination, EventID: source, SourceID: source, Content: content})
+	return core.runs.AcceptWebForm(ctx, m, formID, values)
 }

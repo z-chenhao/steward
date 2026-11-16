@@ -44,13 +44,12 @@ type manifestFile struct {
 	Mode uint32 `json:"mode"`
 }
 
-// Tree validates every entry and optionally copies regular files through an
-// anchored os.Root. No symlink/hardlink/device is accepted, including after work.
-func Tree(ctx context.Context, source, destination string) (string, error) {
-	return scanTree(ctx, source, destination, nil)
-}
-
-func scanTree(ctx context.Context, source, destination string, inventory func([]manifestFile)) (string, error) {
+// scanTree validates every entry through an anchored os.Root. No
+// symlink/hardlink/device is accepted, including after work.
+func scanTree(ctx context.Context, source, destination string, inventory func([]manifestFile), limits ImportLimits) (string, error) {
+	if !limits.Valid() {
+		return "", ErrInvalid
+	}
 	root, err := openDirectory(source)
 	if err != nil {
 		return "", ErrInvalid
@@ -64,8 +63,8 @@ func scanTree(ctx context.Context, source, destination string, inventory func([]
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		children, err := directory.ReadDir(maxFiles + 2)
-		if err != nil && err != io.EOF || len(children) > maxFiles+1 {
+		children, err := directory.ReadDir(limits.Entries + 2)
+		if err != nil && err != io.EOF || len(children) > limits.Entries+1 {
 			return ErrInvalid
 		}
 		sort.Slice(children, func(i, j int) bool { return children[i].Name() < children[j].Name() })
@@ -84,7 +83,7 @@ func scanTree(ctx context.Context, source, destination string, inventory func([]
 			}
 			visited++
 			relative := filepath.Join(dir, name)
-			if visited > maxFiles || len(relative) > 1024 {
+			if visited > limits.Entries || len(relative) > 1024 {
 				return ErrInvalid
 			}
 			parent := int(directory.Fd())
@@ -96,7 +95,7 @@ func scanTree(ctx context.Context, source, destination string, inventory func([]
 			isDir := expected.Mode&unix.S_IFMT == unix.S_IFDIR
 			if isDir {
 				flags |= unix.O_DIRECTORY
-			} else if expected.Mode&unix.S_IFMT != unix.S_IFREG || expected.Nlink != 1 || expected.Size > 8<<20 {
+			} else if expected.Mode&unix.S_IFMT != unix.S_IFREG || expected.Nlink != 1 || expected.Size > int64(limits.FileBytes) {
 				return ErrInvalid
 			}
 			fd, err := unix.Openat(parent, name, flags, 0)
@@ -123,13 +122,13 @@ func scanTree(ctx context.Context, source, destination string, inventory func([]
 				}
 				continue
 			}
-			data, err := io.ReadAll(io.LimitReader(file, (8<<20)+1))
+			data, err := io.ReadAll(io.LimitReader(file, int64(limits.FileBytes)+1))
 			file.Close()
-			if err != nil || len(data) > 8<<20 {
+			if err != nil || len(data) > limits.FileBytes {
 				return ErrInvalid
 			}
 			total += int64(len(data))
-			if total > maxBytes {
+			if total > int64(limits.TreeBytes) {
 				return ErrInvalid
 			}
 			mode := uint32(0600)
@@ -240,10 +239,14 @@ func lock(ctx context.Context, path string) (*os.File, error) {
 	}
 }
 
-// Prepare publishes both baseline and working copy together in an immutable
-// Task location. A crash before rename leaves no admitted workspace; after it,
-// the receipt is sufficient to recover the same directory without reading source.
-func Prepare(ctx context.Context, root, source, taskID, scope string, boundary func(string)) (Workspace, error) {
+// PrepareWithLimits accepts only a narrower complete-import budget. It never
+// filters files or silently publishes a partial source tree.
+// It publishes baseline and working copy together in an immutable Task location;
+// the receipt recovers a published directory without reading source again.
+func PrepareWithLimits(ctx context.Context, root, source, taskID, scope string, boundary func(string), limits ImportLimits) (Workspace, error) {
+	if !limits.Valid() {
+		return Workspace{}, ErrInvalid
+	}
 	out := Location(root, taskID)
 	base := filepath.Dir(out.Directory)
 	name := filepath.Base(base)
@@ -279,7 +282,7 @@ func Prepare(ctx context.Context, root, source, taskID, scope string, boundary f
 			return ErrInvalid
 		}
 		out.BaselineHash = r.BaselineHash
-		actual, err := Tree(ctx, out.Baseline, "")
+		actual, err := scanTree(ctx, out.Baseline, "", nil, limits)
 		if err != nil || actual != r.BaselineHash {
 			return ErrInvalid
 		}
@@ -322,14 +325,14 @@ func Prepare(ctx context.Context, root, source, taskID, scope string, boundary f
 			return Workspace{}, ErrInvalid
 		}
 	}
-	baseline, err := Tree(ctx, source, filepath.Join(temp, "baseline"))
+	baseline, err := scanTree(ctx, source, filepath.Join(temp, "baseline"), nil, limits)
 	if err != nil {
 		return Workspace{}, err
 	}
-	if current, err := Tree(ctx, source, ""); err != nil || current != baseline {
+	if current, err := scanTree(ctx, source, "", nil, limits); err != nil || current != baseline {
 		return Workspace{}, ErrInvalid
 	}
-	copyHash, err := Tree(ctx, filepath.Join(temp, "baseline"), filepath.Join(temp, "work"))
+	copyHash, err := scanTree(ctx, filepath.Join(temp, "baseline"), filepath.Join(temp, "work"), nil, limits)
 	if err != nil || copyHash != baseline {
 		return Workspace{}, ErrInvalid
 	}
@@ -390,16 +393,19 @@ func Validate(ctx context.Context, w Workspace) error {
 	if err := private(w.Directory); err != nil {
 		return err
 	}
-	actual, err := Tree(ctx, w.Baseline, "")
+	actual, err := scanTree(ctx, w.Baseline, "", nil, NativeImportLimits())
 	if err != nil || actual != w.BaselineHash {
 		return ErrInvalid
 	}
 	return nil
 }
 
-// Review rejects unsafe work-tree entries before a fixed read-only recursive
+// ReviewWithPatchLimit rejects unsafe work-tree entries before a fixed read-only recursive
 // diff in the existing kernel sandbox. It never executes repository commands.
-func Review(ctx context.Context, w Workspace) (Diff, error) {
+func ReviewWithPatchLimit(ctx context.Context, w Workspace, patchBytes int) (Diff, error) {
+	if patchBytes < 1 || patchBytes > 8<<20 {
+		return Diff{}, ErrInvalid
+	}
 	guard, err := openDirectory(w.Directory)
 	if err != nil {
 		return Diff{}, ErrInvalid
@@ -422,10 +428,10 @@ func Review(ctx context.Context, w Workspace) (Diff, error) {
 		return Diff{}, ErrInvalid
 	}
 	var before, after []manifestFile
-	if actual, err := scanTree(ctx, w.Baseline, left, func(entries []manifestFile) { before = entries }); err != nil || actual != w.BaselineHash {
+	if actual, err := scanTree(ctx, w.Baseline, left, func(entries []manifestFile) { before = entries }, NativeImportLimits()); err != nil || actual != w.BaselineHash {
 		return Diff{}, ErrInvalid
 	}
-	if _, err := scanTree(ctx, w.Directory, right, func(entries []manifestFile) { after = entries }); err != nil {
+	if _, err := scanTree(ctx, w.Directory, right, func(entries []manifestFile) { after = entries }, NativeImportLimits()); err != nil {
 		return Diff{}, ErrInvalid
 	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
@@ -436,7 +442,7 @@ func Review(ctx context.Context, w Workspace) (Diff, error) {
 	}
 	cmd.Dir = temp
 	cmd.Env = []string{"PATH=/usr/bin:/bin", "HOME=" + temp, "LANG=C.UTF-8"}
-	output := sandbox.NewOutput(8 << 20)
+	output := sandbox.NewOutput(patchBytes)
 	cmd.Stdout, cmd.Stderr = output, io.Discard
 	started, err := sandbox.Run(cmd, unix.SIGTERM)
 	if !started || output.Overflow() || ctx.Err() != nil || err != nil && cmd.ProcessState.ExitCode() != 1 {

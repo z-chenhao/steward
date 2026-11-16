@@ -12,7 +12,7 @@ import (
 )
 
 type widgetReader interface {
-	WebWidget(context.Context, string) (ui.Widget, error)
+	WebWidgetView(context.Context, string) (ui.WidgetView, error)
 }
 
 func (s *Server) widget(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +21,8 @@ func (s *Server) widget(w http.ResponseWriter, r *http.Request) {
 		fail(w, 503)
 		return
 	}
-	doc, err := reader.WebWidget(r.Context(), r.URL.Query().Get("ref"))
+	view, err := reader.WebWidgetView(r.Context(), r.URL.Query().Get("ref"))
+	doc := view.Document
 	visual, valid := ui.Sandbox(doc)
 	if err != nil || !valid {
 		fail(w, 404)
@@ -46,9 +47,15 @@ func (s *Server) widget(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("theme") == "dark" {
 		theme = "dark"
 	}
-	styles, _ := assets.ReadFile("assets/widget.css")
-	runtime, err := assets.ReadFile("assets/widget-runtime.js")
-	if err != nil {
+	styles, runtime := view.Styles, view.Runtime
+	if !view.Managed {
+		// Only a historical native source selects these embedded resources.
+		styles, err = legacyUI.ReadFile("legacy-ui/v1/widget.css")
+		if err == nil {
+			runtime, err = legacyUI.ReadFile("legacy-ui/v1/widget-runtime.js")
+		}
+	}
+	if err != nil || len(styles) == 0 || len(runtime) == 0 {
 		fail(w, 503)
 		return
 	}

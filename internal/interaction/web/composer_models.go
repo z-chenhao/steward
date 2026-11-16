@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/llm"
+	menu "github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 )
 
 // These are private Web choices, not persisted profiles or provider contracts.
@@ -21,10 +22,12 @@ type composerModel struct {
 	Disabled bool   `json:"disabled,omitempty"`
 }
 type composerModels struct {
-	Choices       []composerModel `json:"choices"`
-	Current       string          `json:"current"`
-	ConfigVersion int64           `json:"config_version"`
-	Unavailable   bool            `json:"unavailable,omitempty"`
+	Picker         *menu.PickerPresentation `json:"picker"`
+	ReaderRevision string                   `json:"reader_revision,omitempty"`
+	Choices        []composerModel          `json:"choices"`
+	Current        string                   `json:"current"`
+	ConfigVersion  int64                    `json:"config_version"`
+	Unavailable    bool                     `json:"unavailable,omitempty"`
 }
 
 func profileKey(p llm.Profile) string {
@@ -39,6 +42,8 @@ func (s *Server) modelChoices(ctx context.Context, catalog bool) (composerModels
 	}
 	v.ConfigVersion = status.ConfigVersion
 	if s.Models == nil {
+		p := legacyv1.Picker()
+		v.Picker = &p
 		return v, nil
 	}
 	profiles, err := s.Models.ListProfiles(ctx)
@@ -57,36 +62,28 @@ func (s *Server) modelChoices(ctx context.Context, catalog bool) (composerModels
 			}
 		}
 	}
-	seen := map[string]bool{}
+	facts := menu.Facts{Candidates: []menu.Candidate{}, Catalogues: []menu.Catalogue{}}
 	for _, p := range profiles {
-		if p.ProviderKind != "openai_account" && p.AuthConnectionID != "" {
+		connectedProfile := true
+		if p.ProviderKind == "openai_account" {
+			_, connectedProfile = connected[p.AuthConnectionID]
+		} else if p.AuthConnectionID != "" {
 			auth, e := s.Control.Store.Auth(ctx, p.AuthConnectionID)
-			if e != nil || auth.Status != "connected" {
-				continue
-			}
+			connectedProfile = e == nil && auth.Status == "connected"
 		}
 		key := profileKey(p)
-		label := p.Name
+		name := p.Name
 		if p.ProviderKind == "openai_account" {
-			_, ok := connected[p.AuthConnectionID]
-			if !ok {
-				continue
-			}
 			key = accountKey(p.AuthConnectionID, p.ModelID)
-			label = p.ModelID
-		} else if !s.profileVerified(ctx, p) && p.ProfileID != activeProfile(status) {
-			continue
+			name = ""
 		}
-		if p.ProfileID == activeProfile(status) {
-			v.Current = key
+		verified := false
+		if connectedProfile && p.ProviderKind != "openai_account" {
+			verified = s.profileVerified(ctx, p)
 		}
-		if !seen[key] {
-			v.Choices = append(v.Choices, composerModel{Key: key, Label: label})
-			seen[key] = true
-		}
+		facts.Candidates = append(facts.Candidates, menu.Candidate{Key: key, Name: name, Model: p.ModelID, Account: p.AuthConnectionID, AccountBacked: p.ProviderKind == "openai_account", Connected: connectedProfile, Verified: verified, Current: p.ProfileID == activeProfile(status)})
 	}
 	if catalog && s.AccountCatalog != nil && s.Accounts != nil {
-		// Iterate persisted account order, rather than map order, for stable menus.
 		accounts, e := s.Accounts.Store.Accounts(ctx)
 		if e != nil {
 			return v, e
@@ -96,40 +93,50 @@ func (s *Server) modelChoices(ctx context.Context, catalog bool) (composerModels
 				continue
 			}
 			models, e := s.AccountCatalog(ctx, a.ConnectionID)
-			if e != nil {
-				v.Unavailable = true
-				continue
-			}
-			available := map[string]bool{}
-			for _, m := range models {
-				available[accountKey(a.ConnectionID, m.ModelID)] = true
-			}
-			kept := v.Choices[:0]
-			for _, choice := range v.Choices {
-				if strings.HasPrefix(choice.Key, "account:"+a.ConnectionID+":") && !available[choice.Key] {
-					if choice.Key != v.Current {
-						continue
-					}
-					choice.Disabled = true
-				}
-				kept = append(kept, choice)
-			}
-			v.Choices = kept
-			for _, m := range models {
-				key := accountKey(a.ConnectionID, m.ModelID)
-				if !seen[key] {
-					label := m.ModelID
-					v.Choices = append(v.Choices, composerModel{Key: key, Label: label})
-					seen[key] = true
+			c := menu.Catalogue{Account: a.ConnectionID, Available: e == nil, Models: []menu.Model{}}
+			if e == nil {
+				for _, m := range models {
+					c.Models = append(c.Models, menu.Model{Key: accountKey(a.ConnectionID, m.ModelID), Name: m.ModelID})
 				}
 			}
+			facts.Catalogues = append(facts.Catalogues, c)
 		}
 	}
-	// The same name order serves the native picker, catalog refresh and switch
-	// response. Stable ties retain distinct account keys without exposing labels.
-	sort.SliceStable(v.Choices, func(i, j int) bool {
-		return strings.ToLower(v.Choices[i].Label) > strings.ToLower(v.Choices[j].Label)
-	})
+	var projected menu.Projection
+	managed := false
+	if s.ModelMenu != nil {
+		projected, managed, err = s.ModelMenu(ctx, facts)
+		if err != nil {
+			return v, err
+		}
+	}
+	if !managed {
+		projected = legacyModelMenuV1(facts)
+	}
+	if err = validateModelMenu(facts, projected); err != nil {
+		return v, err
+	}
+	for _, c := range projected.Choices {
+		v.Choices = append(v.Choices, composerModel{Key: c.Key, Label: c.Label, Disabled: c.Disabled})
+	}
+	v.ReaderRevision = projected.ReaderRevision
+	var picker menu.PickerPresentation
+	if projected.ReaderRevision != "" {
+		if s.ModelPicker == nil {
+			return v, llm.ProviderUnavailable
+		}
+		picker, err = s.ModelPicker(ctx, projected.ReaderRevision)
+		if err != nil {
+			return v, err
+		}
+	} else {
+		picker = legacyv1.Picker()
+	} // Explicit never-managed/storeless embedding.
+	if !validModelPicker(picker) {
+		return v, llm.ProviderUnavailable
+	}
+	v.Picker = &picker
+	v.Current, v.Unavailable = projected.Current, projected.Unavailable
 	return v, nil
 }
 func (s *Server) composerModelsAPI(w http.ResponseWriter, r *http.Request) {
@@ -254,15 +261,43 @@ func (s *Server) selectAccountModelAfterLogin(ctx context.Context, account strin
 		if p.ProviderKind != "openai_account" || p.AuthConnectionID != account {
 			return nil
 		}
+		policy, e := s.connectionDefaults(ctx, menu.ConnectionFacts{AccountBacked: true, Login: &menu.LoginFacts{Models: []string{}, RestoreOwnedCurrent: true}})
+		if e != nil {
+			return e
+		}
+		if policy.RestoreOwnedCurrent == nil || policy.LoginModel != "" {
+			return llm.ErrConflict
+		}
+		if !*policy.RestoreOwnedCurrent {
+			return nil
+		}
 	} else {
 		models, e := s.AccountCatalog(ctx, account)
 		if e != nil {
 			return e
 		}
-		if len(models) == 0 {
+		facts := menu.ConnectionFacts{AccountBacked: true, Login: &menu.LoginFacts{Models: []string{}}}
+		for _, model := range models {
+			facts.Login.Models = append(facts.Login.Models, model.ModelID)
+		}
+		policy, e := s.connectionDefaults(ctx, facts)
+		if e != nil {
+			return e
+		}
+		if policy.LoginModel == "" {
 			return llm.ModelNotFound
 		}
-		p, err = s.accountModel(ctx, account, models[0].ModelID)
+		known := false
+		for _, model := range models {
+			if model.ModelID == policy.LoginModel {
+				known = true
+				break
+			}
+		}
+		if !known {
+			return llm.ErrConflict
+		}
+		p, err = s.accountModel(ctx, account, policy.LoginModel)
 		if err != nil {
 			return err
 		}

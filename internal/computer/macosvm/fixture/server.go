@@ -30,6 +30,9 @@ import (
 
 type Server struct {
 	previews                    int
+	selectionCaret              int
+	selectionAnchor             int
+	selectionActive             bool
 	use                         *computerfake.Driver
 	Config                      macosvm.Config
 	mu                          sync.Mutex

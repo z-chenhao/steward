@@ -1,0 +1,38 @@
+{
+  "card": "{{define \"app-card-atom-begin-card\"}}<article class=\"app-tile\" data-app-tile=\"{{.Slug}}\">{{end}}\n{{define \"app-card-atom-begin-summary\"}}<a class=\"app-summary\" href=\"{{.URL}}\" data-app-open=\"{{.Slug}}\">{{end}}\n{{define \"app-card-atom-icon\"}}{{.Icon}}{{end}}\n{{define \"app-card-atom-begin-copy\"}}<span class=\"app-copy\">{{end}}\n{{define \"app-card-atom-name\"}}<strong>{{.Name}}</strong>{{end}}\n{{define \"app-card-atom-description\"}}<span>{{.Description}}</span>{{end}}\n{{define \"app-card-atom-end-copy\"}}</span>{{end}}\n{{define \"app-card-atom-end-summary\"}}</a>{{end}}\n{{define \"app-card-atom-manage\"}}<a class=\"control-icon-button\" href=\"{{.URL}}\" data-app-open=\"{{.Slug}}\" data-app-manage {{if .ManageHidden}}hidden{{end}} aria-label=\"{{.ManageLabel}}: {{.Name}}\" title=\"{{.ManageLabel}}\">{{.More}}</a>{{end}}\n{{define \"app-card-atom-connect\"}}{{if .Unavailable}}<a class=\"control-icon-button\" href=\"{{.URL}}\" data-app-open=\"{{.Slug}}\" data-app-add {{if .AddHidden}}hidden{{end}} aria-label=\"{{.AboutLabel}}: {{.Name}}\">{{.Plus}}</a>{{else}}<form method=\"post\" action=\"/apps/configure\" data-app-action data-app-toolkit=\"{{.Slug}}\" data-app-quick {{if .AddHidden}}hidden{{end}}>{{.InterfaceReference}}<input type=\"hidden\" name=\"action\" value=\"connect\"><input type=\"hidden\" name=\"toolkit\" value=\"{{.Slug}}\"><button class=\"control-icon-button\" type=\"submit\" aria-label=\"{{.ConnectLabel}} {{.Name}}\" title=\"{{.ConnectLabel}}\">{{.Plus}}</button></form>{{end}}{{end}}\n{{define \"app-card-atom-end-card\"}}</article>{{end}}\n",
+  "sidebar": "{{define \"app-sidebar-atom-begin-entry\"}}<a href=\"{{.URL}}\" data-app-open=\"{{.Slug}}\">{{end}}\n{{define \"app-sidebar-atom-icon\"}}{{.Icon}}{{end}}\n{{define \"app-sidebar-atom-name\"}}<span>{{.Name}}</span>{{end}}\n{{define \"app-sidebar-atom-pending\"}}{{if .Pending}}<span class=\"app-pending-dot\" aria-label=\"{{.PendingLabel}}\"></span>{{end}}{{end}}\n{{define \"app-sidebar-atom-end-entry\"}}</a>{{end}}\n",
+  "graphics": "{{define \"app-icon\"}}<span class=\"app-logo\" aria-hidden=\"true\"><span>{{.Initial}}</span>{{if .HasIcon}}<img src=\"{{.IconURL}}\" alt=\"\" width=\"36\" height=\"36\" loading=\"lazy\" decoding=\"async\">{{end}}</span>{{end}}\n{{define \"app-plus\"}}<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M12 4v16M4 12h16\"/></svg>{{end}}\n{{define \"app-more\"}}<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><circle cx=\"5\" cy=\"12\" r=\"1.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.5\"/><circle cx=\"19\" cy=\"12\" r=\"1.5\"/></svg>{{end}}\n",
+  "account": "{{define \"app-account-view-copy\"}}<div class=\"setting-copy\"><strong>{{.Name}} · {{.Alias}}</strong><p data-connection-status=\"{{.Status}}\">{{.StatusLabel}}</p>{{.Warning}}\n{{.Authorization}}</div>\n{{end}}\n{{define \"app-account-view-actions\"}}<form method=\"post\" action=\"/apps/configure\" data-app-action class=\"app-account-actions\" data-settings-confirm=\"{{.Confirm}}\" data-confirm-description=\"{{.Description}}\">{{.Identity}}{{.Buttons}}</form>{{end}}\n{{define \"app-account-view-button\"}}<button class=\"secondary\" name=\"action\" value=\"{{.Action}}\">{{.Label}}</button>{{end}}\n",
+  "connect": {
+    "program": "{{define \"app-connect-view-unavailable\"}}<span class=\"app-unavailable-action\"><button type=\"button\" disabled>{{.ConnectLabel}}</button>{{.Help}}</span>\n{{end}}\n{{define \"app-connect-view-first\"}}<form method=\"post\" action=\"/apps/configure\" data-app-action data-app-toolkit=\"{{.Slug}}\" data-app-first {{if .FirstHidden}}hidden{{end}}>{{.Identity}}<button type=\"submit\">{{.FirstLabel}}</button></form>\n{{end}}\n{{define \"app-connect-view-additional\"}}<details class=\"app-add-account\" data-app-add-account {{if .AdditionalHidden}}hidden{{end}}><summary>{{.AddAccountLabel}}</summary><form method=\"post\" action=\"/apps/configure\" data-app-action data-app-toolkit=\"{{.Slug}}\" data-app-additional>{{.Identity}}<label>{{.AccountLabel}}<input name=\"alias\" placeholder=\"work\" pattern=\"[A-Za-z0-9][A-Za-z0-9_-]{0,63}\" maxlength=\"64\" required></label><button type=\"submit\">{{.ConnectAccountLabel}}</button></form></details>{{end}}\n",
+    "en": {
+      "connect_label": "Connect",
+      "account_label": "Account label",
+      "connect_account_label": "Connect account"
+    },
+    "zh-CN": {
+      "connect_label": "连接",
+      "account_label": "账户别名",
+      "connect_account_label": "连接账户"
+    }
+  },
+  "settings": {
+    "program": "{{define \"app-settings-view-project\"}} <section class=\"service-configuration\"><h2 class=\"settings-section-title\" aria-label=\"{{.ProjectTitle}}\">{{.ProjectTitle}}{{.ProjectHelp}}</h2>\n\n <form method=\"post\" action=\"/apps/service/configure\">{{.Identity}}<div class=\"setting-row\"><label for=\"composio-key-ref\"><span class=\"control-field-label\">{{.KeyRefLabel}}{{.KeyHelp}}</span></label><div class=\"setting-controls\"><input id=\"composio-key-ref\" name=\"key_ref\" value=\"{{.KeyRef}}\" placeholder=\"env:COMPOSIO_API_KEY\" required autocomplete=\"off\" aria-label=\"{{.KeyRefLabel}}\"></div></div><input type=\"hidden\" name=\"editor\" value=\"fields\"><details class=\"service-advanced\" {{if .AdvancedOpen}}open{{end}}><summary>{{.AuthenticationTitle}}</summary>\n {{.Rows}}\n <div class=\"settings-actions\"><button class=\"secondary setting-action\" name=\"action\" value=\"add-override\" formnovalidate>{{.AddLabel}}</button></div></details><div class=\"settings-actions\"><button type=\"submit\" class=\"secondary setting-action\">{{.SaveLabel}}</button></div></form>\n </section>\n{{end}}\n{{define \"app-settings-view-row\"}}<fieldset><legend class=\"sr-only\">{{.AuthenticationTitle}}</legend><label>{{.AppLabel}}<input name=\"app_slug\" value=\"{{.App}}\" maxlength=\"128\" spellcheck=\"false\" autocomplete=\"off\" placeholder=\"gmail\"></label><label>{{.ConfigLabel}}<input name=\"auth_config\" value=\"{{.Config}}\" maxlength=\"128\" spellcheck=\"false\" autocomplete=\"off\"></label><div class=\"settings-actions\"><button class=\"secondary setting-action\" name=\"action\" value=\"remove-override-{{.Index}}\" formnovalidate>{{.RemoveLabel}}</button></div></fieldset>{{end}}\n",
+    "en": {
+      "key_ref_label": "API key reference",
+      "app_label": "App identifier",
+      "config_label": "Configuration ID",
+      "remove_label": "Remove override",
+      "add_label": "Add override",
+      "save_label": "Verify and save"
+    },
+    "zh-CN": {
+      "key_ref_label": "API key 引用",
+      "app_label": "应用标识",
+      "config_label": "授权配置 ID",
+      "remove_label": "移除自定义配置",
+      "add_label": "添加自定义配置",
+      "save_label": "验证并保存"
+    }
+  }
+}

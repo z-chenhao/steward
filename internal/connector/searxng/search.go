@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/connector/internal/searchhttp"
+	"github.com/z-chenhao/assistant/internal/connector/searchfacts"
 	"github.com/z-chenhao/assistant/internal/llm"
 )
 
@@ -25,13 +26,13 @@ func (c Connection) Validate() error {
 	}
 	return nil
 }
-func Search(ctx context.Context, c Connection, query, recency string, secrets llm.SecretStore, client *http.Client) (string, []llm.WebSource, error) {
+func SearchFacts(ctx context.Context, c Connection, query, recency string, secrets llm.SecretStore, client *http.Client) (searchfacts.Result, error) {
 	if c.Validate() != nil {
-		return "", nil, llm.ModelIncompatible
+		return searchfacts.Result{}, llm.ModelIncompatible
 	}
 	u, e := url.Parse(strings.TrimRight(c.URL, "/") + "/search")
 	if e != nil {
-		return "", nil, llm.ModelIncompatible
+		return searchfacts.Result{}, llm.ModelIncompatible
 	}
 	values := u.Query()
 	values.Set("q", query)
@@ -42,7 +43,7 @@ func Search(ctx context.Context, c Connection, query, recency string, secrets ll
 	u.RawQuery = values.Encode()
 	request, e := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if e != nil {
-		return "", nil, llm.ModelIncompatible
+		return searchfacts.Result{}, llm.ModelIncompatible
 	}
-	return searchhttp.Do(ctx, request, c.SecretRef, secrets, client)
+	return searchhttp.Read(ctx, request, c.SecretRef, secrets, client)
 }

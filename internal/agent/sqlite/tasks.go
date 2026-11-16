@@ -11,6 +11,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/automation"
 	"github.com/z-chenhao/assistant/internal/conversation"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/skill"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
@@ -31,7 +32,11 @@ func (r *Runs) createMain(ctx context.Context, tx *sql.Tx, agentID, profile stri
 		return "", err
 	}
 	id, capID := newID(), newID()
-	mainSpecs := agent.MainTools(r.registry.Describe())
+	allSpecs, err := r.pluginSpecs(ctx, tx, r.registry.Describe())
+	if err != nil {
+		return "", err
+	}
+	mainSpecs := agent.MainTools(allSpecs)
 	specs, _ := encoded(mainSpecs)
 	now := time.Now().UnixMicro()
 	if _, err = tx.ExecContext(ctx, `INSERT INTO capability_snapshot(snapshot_id,agent_config_version,role,tool_specs_hash,skill_set_hash,data_scope,can_spawn_agents,tools_json,created_at,format_version) VALUES(?,?,'main',?,?,?,0,?,?,2)`, capID, configVersion, digest(specs), skill.SetHash(mainSpecs), agentID, specs, now); err != nil {
@@ -86,7 +91,11 @@ func (r *Runs) createRoot(ctx context.Context, tx *sql.Tx, taskID string) error 
 		return err
 	}
 	specs := []tool.Spec{}
-	for _, spec := range agent.WorkerTools(r.registry.Describe()) {
+	allSpecs, err := r.pluginSpecs(ctx, tx, r.registry.Describe())
+	if err != nil {
+		return err
+	}
+	for _, spec := range agent.WorkerTools(allSpecs) {
 		if spec.Name != automation.ObserveName || monitor {
 			specs = append(specs, spec)
 		}
@@ -170,7 +179,7 @@ func (r *Runs) createRoot(ctx context.Context, tx *sql.Tx, taskID string) error 
 		messages = append(messages, agent.RuntimeContext("task_progress", "", false, progress))
 	}
 
-	cp, _ := encoded(agent.Checkpoint{ContextVersion: 2, ContextReady: true, Phase: "model", Messages: messages})
+	cp, _ := encoded(agent.Checkpoint{ContextVersion: 2, Phase: "model", Messages: messages})
 	if _, err = tx.ExecContext(ctx, `INSERT INTO run(run_id,agent_id,conversation_id,task_id,root_run_id,kind,worker_position,status,task_epoch,capability_snapshot_id,model_snapshot_id,checkpoint_json,history_boundary,created_at,updated_at,version) VALUES(?,?,?,?,?,'worker','root','queued',?,?,?,?,0,?,?,1)`, id, agentID, conversationID, taskID, id, epoch, capID, snapshot.SnapshotID, cp, now, now); err != nil {
 		return err
 	}
@@ -211,7 +220,7 @@ func (t *tools) executeTaskAdmission(ctx context.Context, inv tool.Invocation) (
 	}
 }
 
-func (t *tools) executeTask(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
+func (t *tools) executeTaskWithLabel(ctx context.Context, inv tool.Invocation, label taskLabel, feedback feedbackPolicy) (tool.Result, error) {
 	result := tool.Failure("PERMISSION_DENIED")
 	completion := false
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
@@ -233,7 +242,7 @@ func (t *tools) executeTask(ctx context.Context, inv tool.Invocation) (tool.Resu
 				result = tool.Failure("INVALID_ARGUMENT")
 				return nil
 			}
-			result, err = t.runs.searchTasks(ctx, tx, t.claim.RunID(), request)
+			result, err = t.runs.legacySearchTasksV1(ctx, tx, t.claim.RunID(), request)
 			return err
 		}
 		if name != task.ManageName {
@@ -310,10 +319,26 @@ func (t *tools) executeTask(ctx context.Context, inv tool.Invocation) (tool.Resu
 			refs, _ := encoded(request.ArtifactRefs)
 			change := taskChange{source: source, request: request, scope: scope, agentID: agentID, conversationID: conv, reference: ref, id: taskID, receiptStatus: receiptStatus, epoch: epoch, at: now, artifactsJSON: refs}
 			if request.Operation == "create" {
+				if label.Managed {
+					if label.RequestHash != hash || !validTaskLabel(request, label.Title) {
+						return agent.ErrConflict
+					}
+					if err = t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID()); errors.Is(err, rsi.ErrRevoked) {
+						result = tool.Failure("PROVIDER_UNAVAILABLE")
+						return nil
+					} else if err != nil {
+						return err
+					}
+					change.title = label.Title
+				}
 				if err = t.createManagedTask(ctx, tx, &change); err != nil {
 					return err
 				}
 			} else {
+				change.feedbackPolicy = feedback
+				if feedback.managed && (request.Operation == "request_input" || request.Operation == "request_review") && feedback.requestHash != hash {
+					return agent.ErrConflict
+				}
 				result, err = t.changeManagedTask(ctx, tx, &change)
 				if err != nil || result.Error != nil {
 					return err

@@ -1,0 +1,84 @@
+[
+  {
+    "Name": "empty",
+    "Items": null,
+    "Expected": null
+  },
+  {
+    "Name": "empty-name-and-case-tie",
+    "Items": [
+      {
+        "Slug": "z",
+        "Name": "beta",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "fallback",
+        "Name": "",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "b",
+        "Name": "Alpha",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "a",
+        "Name": "alpha",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      }
+    ],
+    "Expected": [
+      3,
+      2,
+      0,
+      1
+    ]
+  },
+  {
+    "Name": "unicode-and-space",
+    "Items": [
+      {
+        "Slug": "han",
+        "Name": "汉字",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "emoji",
+        "Name": "🙂 app",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "space",
+        "Name": " app",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "sharp",
+        "Name": "ßeta",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      },
+      {
+        "Slug": "ascii",
+        "Name": "Zulu",
+        "ExpectedName": "",
+        "ExpectedInitial": ""
+      }
+    ],
+    "Expected": [
+      2,
+      4,
+      3,
+      0,
+      1
+    ]
+  }
+]

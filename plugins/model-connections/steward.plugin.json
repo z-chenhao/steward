@@ -1,0 +1,716 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.model-connections",
+  "version": "1.1.0",
+  "feature_ids": [
+    "F-001",
+    "F-002"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.model-menu/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "model": {
+                  "type": "string"
+                },
+                "account": {
+                  "type": "string"
+                },
+                "account_backed": {
+                  "type": "boolean"
+                },
+                "connected": {
+                  "type": "boolean"
+                },
+                "verified": {
+                  "type": "boolean"
+                },
+                "current": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "key",
+                "name",
+                "model",
+                "account",
+                "account_backed",
+                "connected",
+                "verified",
+                "current"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "catalogues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "account": {
+                  "type": "string"
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "account",
+                "available",
+                "models"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "browser": {
+            "type": "object",
+            "properties": {
+              "previous": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "sort_key": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "label",
+                    "sort_key"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "received": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "sort_key": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "label",
+                    "sort_key"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "refresh",
+                  "ack"
+                ]
+              },
+              "unavailable": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "previous",
+              "received",
+              "reason",
+              "unavailable"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "candidates",
+          "catalogues"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "disabled": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "key",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "current": {
+            "type": "string"
+          },
+          "unavailable": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "previous",
+                    "received"
+                  ]
+                },
+                "index": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "source",
+                "index"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "choices",
+          "current"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.model-settings/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "account": {
+                  "type": "string"
+                },
+                "known_account": {
+                  "type": "boolean"
+                },
+                "verified": {
+                  "type": "boolean"
+                },
+                "current": {
+                  "type": "boolean"
+                },
+                "auth_status": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ref",
+                "account",
+                "known_account",
+                "verified",
+                "current",
+                "auth_status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "requested": {
+            "type": "string"
+          },
+          "notice": {
+            "type": "string"
+          },
+          "draft": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string"
+              },
+              "has_source": {
+                "type": "boolean"
+              },
+              "openai_endpoint": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "method",
+              "has_source",
+              "openai_endpoint"
+            ],
+            "additionalProperties": false
+          },
+          "with_view": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rows",
+          "requested",
+          "notice"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "account": {
+                  "type": "string"
+                },
+                "open": {
+                  "type": "boolean"
+                },
+                "status": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ref",
+                "account",
+                "open",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "suppress_notice": {
+            "type": "boolean"
+          },
+          "draft": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string"
+              },
+              "endpoint": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              },
+              "wire_api": {
+                "type": "string"
+              },
+              "use_source": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "method",
+              "endpoint",
+              "service",
+              "wire_api",
+              "use_source"
+            ],
+            "additionalProperties": false
+          },
+          "view": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "copy": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "rows",
+          "suppress_notice"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.model-connection-policy/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "wire_api": {
+            "type": "string"
+          },
+          "account_backed": {
+            "type": "boolean"
+          },
+          "login": {
+            "type": "object",
+            "properties": {
+              "models": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "restore_owned_current": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "models"
+            ],
+            "additionalProperties": false
+          },
+          "preset": {
+            "type": "string",
+            "enum": [
+              "",
+              "cli-shorthand",
+              "terminal-setup"
+            ]
+          },
+          "reconnect": {
+            "type": "object",
+            "properties": {
+              "has_current": {
+                "type": "boolean"
+              },
+              "target_current": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "has_current",
+              "target_current"
+            ],
+            "additionalProperties": false
+          },
+          "added": {
+            "type": "object",
+            "properties": {
+              "has_current": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "has_current"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "service",
+          "wire_api",
+          "account_backed"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "endpoint_override": {
+            "type": "string"
+          },
+          "wire_api": {
+            "type": "string"
+          },
+          "context_window": {
+            "type": "integer"
+          },
+          "max_output_tokens": {
+            "type": "integer"
+          },
+          "image_input": {
+            "type": "boolean"
+          },
+          "login_model": {
+            "type": "string"
+          },
+          "reconnect_action": {
+            "type": "string",
+            "enum": [
+              "activate",
+              "probe"
+            ]
+          },
+          "added_action": {
+            "type": "string",
+            "enum": [
+              "activate",
+              "probe",
+              "save"
+            ]
+          },
+          "restore_owned_current": {
+            "type": "boolean"
+          },
+          "endpoint_default": {
+            "type": "string"
+          },
+          "token_limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "endpoint_override",
+          "wire_api",
+          "context_window",
+          "max_output_tokens",
+          "image_input"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.model-picker/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "placeholder_label": {
+                "type": "string"
+              },
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "busy": {
+                      "type": "boolean"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "placeholder": {
+                      "type": "boolean"
+                    },
+                    "pending_text": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "busy",
+                    "disabled",
+                    "placeholder",
+                    "pending_text",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "label",
+              "placeholder_label",
+              "states"
+            ],
+            "additionalProperties": false
+          },
+          "zh_cn": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "placeholder_label": {
+                "type": "string"
+              },
+              "states": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "busy": {
+                      "type": "boolean"
+                    },
+                    "disabled": {
+                      "type": "boolean"
+                    },
+                    "placeholder": {
+                      "type": "boolean"
+                    },
+                    "pending_text": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "busy",
+                    "disabled",
+                    "placeholder",
+                    "pending_text",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "label",
+              "placeholder_label",
+              "states"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "en",
+          "zh_cn"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [],
+  "resources": [
+    {
+      "name": "model-connections-page",
+      "kind": "view",
+      "path": "views/models.html"
+    },
+    {
+      "name": "model-connections-copy",
+      "kind": "view",
+      "path": "views/copy.json"
+    }
+  ]
+}

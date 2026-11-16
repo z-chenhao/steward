@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	modelsettings "github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	"html/template"
 	"net/http"
 	"net/url"
 	"strings"
@@ -41,6 +43,29 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Versioned clients pin the presentation before any private facts are loaded.
+	// Headerless requests retain the published pre-workbench updates protocol.
+	if r.Header.Get("X-Steward-Workbench-Reader") != "" {
+		switch {
+		case p.Tab == "/":
+			p.View = "conversation"
+		case p.Tab == "/tasks/attention":
+			p.View = "attention"
+		case p.Tab == "/tasks" || p.Tab == "/tasks/configurations":
+			p.View = "tasks"
+		case strings.HasPrefix(p.Tab, "/tasks/executions/"):
+			p.View = "execution"
+		case strings.HasPrefix(p.Tab, "/tasks/"):
+			p.View = "task"
+		case strings.HasPrefix(p.Tab, "/settings/"):
+			p.View = "settings"
+		}
+		if err := s.loadWorkbench(r.Context(), r, &p); err != nil || p.Workbench == nil {
+			fail(w, 503)
+			return
+		}
+	}
+
 	var err error
 	if p.Cursor, err = conversationCursor(r); err != nil || p.Cursor != 0 && p.Tab != "/" {
 		fail(w, 400)
@@ -71,16 +96,61 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 		err = s.loadTasks(r.Context(), copy, &p)
 	default:
 		s.loadSignIn(&p, p.Tab)
+		if p.Tab == "/settings/models" || strings.HasPrefix(p.Tab, "/settings/models/") {
+			var out modelsettings.SettingsProjection
+			out, err = s.projectModelSettings(r.Context(), modelsettings.SettingsFacts{Rows: []modelsettings.SettingsRow{}, WithView: true})
+			p.Settings = &settingsView{View: out.View, Copy: out.Copy}
+		}
 	}
 
 	if err != nil {
 		fail(w, 503)
 		return
 	}
+	layout := requestLayout(r)
+	if p.Workbench != nil {
+		layout, err = workbenchPageLayout(p, r)
+		if err != nil {
+			fail(w, 503)
+			return
+		}
+		w.Header().Set("X-Steward-Workbench-Reader", p.Workbench.ReaderRevision)
+		kind := p.View
+		if p.Tab == "/tasks/configurations" {
+			kind = "configurations"
+		}
+		selected := map[string]string{}
+		for _, entry := range p.Workbench.Presentation.Policy.Live {
+			if entry.Kind == kind {
+				for _, id := range entry.Slots {
+					if name, ok := fragments[id]; ok {
+						selected[id] = name
+					}
+				}
+			}
+		}
+		fragments = selected
+
+	}
 	regions := map[string]string{}
 	for id, name := range fragments {
+		// Other Settings categories do not own an authentication region. Avoid
+		// invoking the historical Models interpreter for their empty placeholder.
+		if name == "signin" && p.Tab != "/settings/models" && !strings.HasPrefix(p.Tab, "/settings/models/") {
+			regions[id] = ""
+			continue
+		}
 		var html bytes.Buffer
-		if err = requestLayout(r).ExecuteTemplate(&html, name, p); err != nil {
+		if name == "signin" && p.Settings != nil && p.Settings.View != nil {
+			var fragment template.HTML
+			fragment, err = renderModelView(p, r, name)
+			if err == nil {
+				html.WriteString(string(fragment))
+			}
+		} else {
+			err = layout.ExecuteTemplate(&html, name, p)
+		}
+		if err != nil {
 			fail(w, 500)
 			return
 		}
@@ -98,7 +168,7 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 	}
 	etag := fmt.Sprintf(`"%x"`, sha256.Sum256(body))
 	w.Header().Set("ETag", etag)
-	w.Header().Set("Vary", "Cookie, Authorization")
+	w.Header().Set("Vary", "Cookie, Authorization, X-Steward-Workbench-Reader")
 	if r.Header.Get("If-None-Match") == etag {
 		w.WriteHeader(http.StatusNotModified)
 		return

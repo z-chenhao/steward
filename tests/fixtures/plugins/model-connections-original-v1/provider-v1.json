@@ -1,0 +1,450 @@
+[
+  {
+    "facts": {
+      "service": "openai",
+      "value": "https://api.openai.com/v1",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "https://api.openai.com/v1",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "https://api.openai.com/v1",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "https://api.openai.com/v1",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://local.test/v1",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "http://local.test/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://local.test/v1",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://local.test/v1",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "http://local.test/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "http://local.test/v1",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": false
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": true,
+      "value": "",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "openai",
+      "value": "",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": true,
+      "value": "https://api.openai.com/v1",
+      "readOnly": true,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "https://api.openai.com/v1",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "https://api.openai.com/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "https://api.openai.com/v1",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "https://api.openai.com/v1",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "https://api.openai.com/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "https://api.openai.com/v1",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://127.0.0.1:8000/v1",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "http://127.0.0.1:8000/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://local.test/v1",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "http://local.test/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://local.test/v1",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "http://local.test/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://local.test/v1",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "http://local.test/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "http://local.test/v1",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "http://local.test/v1",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "",
+      "open": false,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "",
+      "open": false,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "",
+      "open": true,
+      "change": false
+    },
+    "expected": {
+      "required": false,
+      "value": "",
+      "readOnly": false,
+      "open": true
+    }
+  },
+  {
+    "facts": {
+      "service": "custom",
+      "value": "",
+      "open": true,
+      "change": true
+    },
+    "expected": {
+      "required": false,
+      "value": "",
+      "readOnly": false,
+      "open": true
+    }
+  }
+]

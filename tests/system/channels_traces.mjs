@@ -2,9 +2,10 @@ import {traceActivity,traceTimeline} from './channels_trace_time.mjs';
 import {assertDataList} from './channels_controls.mjs';
 import {writeFile} from 'node:fs/promises';
 // The trace list and peek panel use the actual Web query and read model.
-export async function traceList(page,context,browser,url,evidence,facts){
+export async function traceList(page,context,browser,url,evidence,facts,part='all'){
  const setViewport=async viewport=>{await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))};
  const list=url+'/developer/observability';
+ if(part!=='detail'){
  await page.waitForFunction(()=>[...document.querySelectorAll('.obs-trace-list time[data-local-time]')].every(node=>/\d{2}:\d{2}:\d{2}/.test(node.textContent)&&/^\d{4}-\d{2}-\d{2} /.test(node.title)&&!/GMT|UTC|Asia\//.test(node.title)));
  const assertRows=async(expected)=>{await page.waitForFunction(count=>document.querySelectorAll('[data-execution-id]').length===count,expected)};
  await page.getByRole('searchbox',{name:'Search traces',exact:true}).fill(facts.main);
@@ -81,6 +82,9 @@ export async function traceList(page,context,browser,url,evidence,facts){
  if(!bounds||bounds.x<0||bounds.x+bounds.width>391)throw Error('date range popover clipped on mobile');
  await page.screenshot({animations:'disabled',path:evidence+'/trace-time-mobile.png',fullPage:true});await page.keyboard.press('Escape');
  await setViewport({width:1400,height:980});
+ }
+ if(part==='list')return;
+ await setViewport({width:1400,height:980});
  const traceRow=page.locator('[data-execution-id="'+facts.main+'"]'),trace=traceRow.locator('a.trace-open');
  await traceRow.locator('td').nth(1).click();
  const sheet=page.getByRole('dialog',{name:'Trace details',exact:true});await sheet.waitFor();
@@ -118,11 +122,23 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await page.getByRole('link',{name:'Complete stored item (JSON)',exact:true}).click();
  await page.waitForURL(target=>target.searchParams.get('format')==='json');
  if(await sheet.count()!==1)throw Error('Context format switch escaped the detail sheet');
+ const rootTarget=new URL(await rootNode.locator('a.tree-heading').first().getAttribute('href'),url);
  await rootNode.locator('a.tree-heading').first().click();
+ await page.waitForURL(rootTarget.href);
+ if(await sheet.count()!==1)throw Error('Returning to trace root escaped the detail sheet');
+ // Wait for the requested URL commit: old attributes can match while a full
+ // navigation or sheet replacement is still pending. Then wait for the selected
+ // root and its Input / Output view before mutating/resizing the newly installed tree.
+ await rootNode.locator('a.tree-heading[aria-current="true"]').first().waitFor();
+ await page.getByRole('link',{name:'Input / Output',exact:true}).and(page.locator('[aria-current=page]')).waitFor();
+ await page.locator('.obs-tree-pane').waitFor();
 
  const nodeCount=await page.locator('.observation-node').count();await toggle.click();
+ // The frozen tree program acknowledges the actual click asynchronously.
+ await page.waitForFunction(button=>button?.isConnected&&button.getAttribute('aria-expanded')==='false',await toggle.elementHandle());
  if(await page.locator('.observation-node:visible').count()>=nodeCount||await toggle.getAttribute('aria-expanded')!=='false')throw Error('trace branch did not collapse');
  await toggle.click();
+ await page.waitForFunction(button=>button?.isConnected&&button.getAttribute('aria-expanded')==='true',await toggle.elementHandle());
  const treeResize=page.getByRole('separator',{name:'Resize trace tree',exact:true});
  const widthBefore=(await page.locator('.obs-tree-pane').boundingBox()).width;
  await treeResize.focus();await treeResize.press('ArrowRight');
@@ -143,8 +159,10 @@ export async function traceList(page,context,browser,url,evidence,facts){
  await page.getByRole('button',{name:'Formatted',exact:true}).click();
  const tones=await page.locator('.obs-type-icon').evaluateAll(nodes=>[...new Set(nodes.map(node=>getComputedStyle(node).color))]);if(tones.length<3)throw Error('trace types lost their semantic colors');
  await page.getByRole('searchbox',{name:'Search observations',exact:true}).fill('Model call');
+ await page.waitForFunction(()=>[...document.querySelectorAll('.observation-node')].some(node=>node.hidden));
  if(await page.locator('.observation-node:visible').count()>=await page.locator('.observation-node').count()||!await page.locator('.obs-tree .run-node').first().isVisible())throw Error('node search lost filtering or ancestry');
  await page.getByRole('searchbox',{name:'Search observations',exact:true}).fill('');
+ await page.waitForFunction(()=>[...document.querySelectorAll('.observation-node')].every(node=>!node.hidden));
  await page.getByRole('button',{name:'Expand details',exact:true}).click();
  if((await sheet.boundingBox()).width<1398)throw Error('trace preview did not expand');
  await page.getByRole('button',{name:'Expand details',exact:true}).click();
@@ -154,6 +172,9 @@ export async function traceList(page,context,browser,url,evidence,facts){
   await page.getByRole('button',{name:'Next trace',exact:true}).click();await page.waitForFunction(id=>document.querySelector('[data-trace-id]')?.dataset.traceId===id,facts.main);
  }
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
+ await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a[aria-current="true"]').first().waitFor();
+ await page.locator('.obs-selected-name').filter({hasText:'Model call'}).waitFor();
+ await page.locator('.obs-generation-metrics').waitFor();
  await page.getByRole('link',{name:'Input / Output',exact:true}).click();
  if(await page.locator('.obs-detail-tabs a').count()!==2)throw Error('observation repeated overlapping primary tabs');
  if(await sheet.getByText('Trace metrics',{exact:true}).count())throw Error('trace repeats a second metrics footer');

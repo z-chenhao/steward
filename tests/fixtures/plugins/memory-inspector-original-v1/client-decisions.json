@@ -1,0 +1,1440 @@
+{
+  "source_sha256": "sha256:70d8352c609c78a2ce25f4ef6d8bd98e20a8e7a2ee9a10e1127d069c32c1cd85",
+  "fit": [
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": false,
+        "compact": false,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": false,
+        "compact": false,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": false,
+        "compact": true,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": false,
+        "compact": true,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": true,
+        "compact": false,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": true,
+        "compact": false,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": true,
+        "compact": true,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": false,
+        "rail_open": true,
+        "compact": true,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": null,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": false,
+        "compact": false,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": false,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": false,
+        "compact": false,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": true,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": false,
+        "compact": true,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": false,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": false,
+        "compact": true,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": false,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": true,
+        "compact": false,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": false,
+        "wide_open": false
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": true,
+        "compact": false,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": true,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": true,
+        "compact": true,
+        "wide_open": false
+      },
+      "expected": {
+        "rail_open": false,
+        "wide_open": true
+      }
+    },
+    {
+      "input": {
+        "rail_present": true,
+        "rail_open": true,
+        "compact": true,
+        "wide_open": true
+      },
+      "expected": {
+        "rail_open": false,
+        "wide_open": true
+      }
+    }
+  ],
+  "navigation": [
+    {
+      "input": {
+        "index": -1,
+        "count": 0
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": -1,
+        "count": 0
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": -1,
+        "count": 1
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": 0,
+        "count": 1
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": 0,
+        "count": 1
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": -1,
+        "count": 3
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": 0,
+        "count": 3
+      },
+      "expected": {
+        "previous": null,
+        "next": 1,
+        "previous_disabled": true,
+        "next_disabled": false
+      }
+    },
+    {
+      "input": {
+        "index": 2,
+        "count": 3
+      },
+      "expected": {
+        "previous": 1,
+        "next": null,
+        "previous_disabled": false,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": -1,
+        "count": 50
+      },
+      "expected": {
+        "previous": null,
+        "next": null,
+        "previous_disabled": true,
+        "next_disabled": true
+      }
+    },
+    {
+      "input": {
+        "index": 0,
+        "count": 50
+      },
+      "expected": {
+        "previous": null,
+        "next": 1,
+        "previous_disabled": true,
+        "next_disabled": false
+      }
+    },
+    {
+      "input": {
+        "index": 49,
+        "count": 50
+      },
+      "expected": {
+        "previous": 48,
+        "next": null,
+        "previous_disabled": false,
+        "next_disabled": true
+      }
+    }
+  ],
+  "push": [
+    {
+      "input": {
+        "list_page": false,
+        "push": false,
+        "depth": null
+      },
+      "expected": {
+        "push": false,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "push": false,
+        "depth": 0
+      },
+      "expected": {
+        "push": false,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "push": false,
+        "depth": 3
+      },
+      "expected": {
+        "push": false,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "push": true,
+        "depth": null
+      },
+      "expected": {
+        "push": true,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "push": true,
+        "depth": 0
+      },
+      "expected": {
+        "push": true,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "push": true,
+        "depth": 3
+      },
+      "expected": {
+        "push": true,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "push": false,
+        "depth": null
+      },
+      "expected": {
+        "push": false,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "push": false,
+        "depth": 0
+      },
+      "expected": {
+        "push": false,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "push": false,
+        "depth": 3
+      },
+      "expected": {
+        "push": false,
+        "depth": null
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "push": true,
+        "depth": null
+      },
+      "expected": {
+        "push": true,
+        "depth": 1
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "push": true,
+        "depth": 0
+      },
+      "expected": {
+        "push": true,
+        "depth": 1
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "push": true,
+        "depth": 3
+      },
+      "expected": {
+        "push": true,
+        "depth": 4
+      }
+    }
+  ],
+  "click": [
+    {
+      "input": {
+        "list_page": false,
+        "primary": false,
+        "anchor_kind": "none",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": false,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": false,
+        "anchor_kind": "open",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": false,
+        "anchor_kind": "open",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": false,
+        "anchor_kind": "select",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": false,
+        "anchor_kind": "select",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": true,
+        "anchor_kind": "open",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": true,
+        "anchor_kind": "open",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": true,
+        "anchor_kind": "select",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": false,
+        "target": "direct"
+      }
+    },
+    {
+      "input": {
+        "list_page": false,
+        "primary": true,
+        "anchor_kind": "select",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": false,
+        "target": "direct"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": false,
+        "anchor_kind": "none",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": false,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": false,
+        "anchor_kind": "open",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": false,
+        "anchor_kind": "open",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": false,
+        "anchor_kind": "select",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": false,
+        "anchor_kind": "select",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": true,
+        "target": "row"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "open",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": false,
+        "target": "direct"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "open",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": false,
+        "target": "direct"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "select",
+        "row": false,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": false,
+        "target": "direct"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "select",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": true,
+        "focus_row": false,
+        "target": "direct"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": true,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": false,
+        "selection": true,
+        "direct_allowed": true,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "none",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": true,
+        "row_allowed": false
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": true,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "open",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": false,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    },
+    {
+      "input": {
+        "list_page": true,
+        "primary": true,
+        "anchor_kind": "select",
+        "row": true,
+        "blocked": false,
+        "selection": false,
+        "direct_allowed": false,
+        "row_allowed": true
+      },
+      "expected": {
+        "intercept": false,
+        "focus_row": false,
+        "target": "none"
+      }
+    }
+  ],
+  "restore_source": [
+    {
+      "same_record": false,
+      "expected": false
+    },
+    {
+      "same_record": true,
+      "expected": true
+    }
+  ],
+  "history": [
+    {
+      "input": {
+        "kind": "close",
+        "list_page": false,
+        "depth": null,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": false,
+        "depth": null,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": false,
+        "depth": 0,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": false,
+        "depth": 0,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": false,
+        "depth": 2,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "back",
+        "steps": 2
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": false,
+        "depth": 2,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "back",
+        "steps": 2
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": true,
+        "depth": null,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": true,
+        "depth": null,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": true,
+        "depth": 0,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": true,
+        "depth": 0,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": true,
+        "depth": 2,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "back",
+        "steps": 2
+      }
+    },
+    {
+      "input": {
+        "kind": "close",
+        "list_page": true,
+        "depth": 2,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "back",
+        "steps": 2
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": false,
+        "depth": null,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": false,
+        "depth": null,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "select",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": false,
+        "depth": 0,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": false,
+        "depth": 0,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "select",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": false,
+        "depth": 2,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": false,
+        "depth": 2,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "select",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": true,
+        "depth": null,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": true,
+        "depth": null,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": true,
+        "depth": 0,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": true,
+        "depth": 0,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "dismiss",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": true,
+        "depth": 2,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "popstate",
+        "list_page": true,
+        "depth": 2,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "select",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": false,
+        "depth": null,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": false,
+        "depth": null,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": false,
+        "depth": 0,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": false,
+        "depth": 0,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": false,
+        "depth": 2,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": false,
+        "depth": 2,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": true,
+        "depth": null,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": true,
+        "depth": null,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": true,
+        "depth": 0,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": true,
+        "depth": 0,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "none",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": true,
+        "depth": 2,
+        "has_ref": false,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "select",
+        "steps": 0
+      }
+    },
+    {
+      "input": {
+        "kind": "pageshow",
+        "list_page": true,
+        "depth": 2,
+        "has_ref": true,
+        "persisted": true
+      },
+      "expected": {
+        "mode": "select",
+        "steps": 0
+      }
+    }
+  ]
+}

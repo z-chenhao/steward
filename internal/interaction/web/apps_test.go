@@ -12,6 +12,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/agent/sqlite"
 	"github.com/z-chenhao/assistant/internal/connectedapps"
 	"github.com/z-chenhao/assistant/internal/connector/composio"
+	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/contract"
 )
 
 func TestAppsOfflineDirectoryAndOwnerConnectionFlow(t *testing.T) {
@@ -182,7 +183,7 @@ func TestAppWithoutManagedOAuthExplainsRequiredProjectConfiguration(t *testing.T
 				if err != connectedapps.ErrAuthConfigRequired || links != 0 || len(state.Connections) != 0 {
 					t.Fatal("unconfigured flow created authorization", err, links)
 				}
-				message := appError(err)
+				message := NativeAppInterface().errorLabel(err)
 				if !strings.Contains(message, "OAuth") || strings.Contains(message, "service unavailable") {
 					t.Fatal("missing actionable error", message)
 				}
@@ -198,6 +199,9 @@ type appSettingsFixture struct {
 	configs map[string]string
 }
 
+func (f *appSettingsFixture) Settings(context.Context) (connectedapps.SettingsSelection, error) {
+	return connectedapps.NativeSettingsSelection(f.state), nil
+}
 func (f *appSettingsFixture) State(context.Context) (connectedapps.State, error) { return f.state, nil }
 func (f *appSettingsFixture) ConfigureProject(_ context.Context, _ string, revision int64, configs map[string]string) error {
 	if revision != f.state.Revision {
@@ -246,7 +250,14 @@ func TestAppServiceUsesFieldsAndPreservesInvalidDraft(t *testing.T) {
 func TestAppsDiscoveryPreviewsAndCollectionsKeepEveryAppReachable(t *testing.T) {
 	s := languageServer()
 	state := connectedapps.State{KeyRef: "env:COMPOSIO_API_KEY", Connections: []connectedapps.Connection{{ID: "saved-gmail", Toolkit: "gmail", Name: "Gmail", Status: "active"}}}
-	home, err := s.loadAppDiscovery(state, "")
+	editorial, err := (&connectedapps.Service{}).Directory(context.Background(), contract.Query{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	home, err := s.loadAppDiscovery(state, "", editorial)
+	if err == nil {
+		err = s.projectAppInventory(context.Background(), editorial, home)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,7 +290,7 @@ func TestAppsDiscoveryPreviewsAndCollectionsKeepEveryAppReachable(t *testing.T) 
 		if err != nil {
 			t.Fatal(err)
 		}
-		collection, err := s.loadAppDiscovery(state, link.Query().Get("collection"))
+		collection, err := s.loadAppDiscovery(state, link.Query().Get("collection"), editorial)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -295,12 +306,16 @@ func TestAppsDiscoveryPreviewsAndCollectionsKeepEveryAppReachable(t *testing.T) 
 			t.Fatal("collection order", names)
 		}
 	}
-	for _, item := range connectedapps.Suggestions("", "") {
+	for _, item := range editorial.Items {
 		if !reachable[item.Slug] {
 			t.Fatal("app lost behind preview", item.Slug)
 		}
 	}
-	if _, err := s.loadAppDiscovery(state, "unknown"); err != connectedapps.ErrInvalid {
+	if _, err := s.loadAppDiscovery(state, "unknown", editorial); err != connectedapps.ErrInvalid {
 		t.Fatal("unknown collection", err)
 	}
+}
+
+func (f *appSettingsFixture) AccountInventory(context.Context) (connectedapps.AccountInventoryPolicy, error) {
+	return connectedapps.NativeAccountInventory(), nil
 }

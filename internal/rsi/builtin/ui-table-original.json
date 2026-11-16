@@ -1,0 +1,131 @@
+{
+  "facts": {
+    "tables": [
+      {
+        "component": 0,
+        "props": {
+          "title": "Original table evidence",
+          "columns": [
+            "Name",
+            "Amount",
+            "Note"
+          ],
+          "rows": [
+            [
+              "Beta",
+              "10",
+              "same"
+            ],
+            [
+              "Alpha",
+              "2",
+              "same"
+            ],
+            [
+              "Gamma",
+              "",
+              "=SUM(A1:A2)"
+            ],
+            [
+              "Delta",
+              "-3",
+              "中文, \"quoted\""
+            ],
+            [
+              "Alpha",
+              "20",
+              "@unsafe"
+            ]
+          ],
+          "source": "Independent pre-producer fixture"
+        }
+      }
+    ]
+  },
+  "expected": {
+    "views": [
+      {
+        "component": 0,
+        "html": "<section class=\"answer-table\" data-table-facts=\"eyJ0aXRsZSI6Ik9yaWdpbmFsIHRhYmxlIGV2aWRlbmNlIiwiY29sdW1ucyI6WyJOYW1lIiwiQW1vdW50IiwiTm90ZSJdLCJyb3dzIjpbWyJCZXRhIiwiMTAiLCJzYW1lIl0sWyJBbHBoYSIsIjIiLCJzYW1lIl0sWyJHYW1tYSIsIiIsIj1TVU0oQTE6QTIpIl0sWyJEZWx0YSIsIi0zIiwi5Lit5paHLCBcInF1b3RlZFwiIl0sWyJBbHBoYSIsIjIwIiwiQHVuc2FmZSJdXSwic291cmNlIjoiSW5kZXBlbmRlbnQgcHJlLXByb2R1Y2VyIGZpeHR1cmUifQ==\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td>10</td><td>same</td></tr><tr><td><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td>2</td><td>same</td></tr><tr><td><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td></td><td>=SUM(A1:A2)</td></tr><tr><td><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td>-3</td><td>中文, &#34;quoted&#34;</td></tr><tr><td><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td>20</td><td>@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p><template data-table-sort-icon><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></template></section>",
+        "worker": "// Owning Table business policy. Executed only in an opaque Worker, never DOM.\n'use strict';\n(()=>{\n  let facts,rows,numeric,locale,language='en',sort=-1,direction=1,query='',selected='',restored=false;\n  const visible=()=>{const filtered=rows.filter(row=>(!query||row.cells.some(cell=>cell.toLocaleLowerCase(locale).includes(query.toLocaleLowerCase(locale))))&&(!selected||row.cells.includes(selected)));return sort<0?filtered:[...filtered].sort((a,b)=>direction*a.cells[sort].localeCompare(b.cells[sort],locale,{numeric:true,sensitivity:'base'}))};\n  const projection=()=>({sort,direction,numeric,rows:visible().map(row=>row.index),selected:rows.map(row=>row.cells.includes(selected)),pressed:rows.map(row=>row.cells[0]===selected),selectionActive:!!selected,regionLabel:facts.title+(language==='zh-CN'?' 表格':' table'),emptyMessage:language==='zh-CN'?'没有可显示的数据行。':'No rows to display.'});\n  const reply=(type,seq)=>postMessage({type,seq,projection:projection()});\n  const group=value=>{query=typeof value.query==='string'?value.query:'';selected=typeof value.selected==='string'?value.selected:''};\n  onmessage=event=>{\n    const value=event.data,seq=value.seq;\n    if(value.type==='init'&&!facts){\n      facts=value.facts;locale=value.locale;language=value.language;\n      rows=facts.rows.map((cells,index)=>({cells,index}));\n      numeric=facts.columns.map((_,column)=>rows.some(row=>row.cells[column].trim()!=='')&&rows.every(row=>row.cells[column].trim()===''||Number.isFinite(Number(row.cells[column]))));\n      reply('ready',seq);return;\n    }\n    if(!facts)return;\n    if(value.type==='environment'){locale=value.locale;language=value.language;reply('paint',seq);return}\n    if(value.type==='restore'&&!restored){sort=Number.isInteger(value.state?.sort)&&value.state.sort>=-1&&value.state.sort<facts.columns.length?value.state.sort:-1;direction=value.state?.direction===-1?-1:1;restored=true;group(value);reply('restored',seq);return}\n    if(!restored)return;\n    if(value.type==='sort'){direction=sort===value.column?-direction:1;sort=value.column;reply('view-state',seq)}\n    if(value.type==='select')postMessage({type:'select',seq,row:value.row});\n    if(value.type==='group'){group(value);reply('paint',seq)}\n    if(value.type==='reset'){sort=-1;direction=1;query='';selected='';reply('reset',seq)}\n    if(value.type==='capture')reply('view-state',seq);\n    if(value.type==='export')postMessage({type:'export-rows',seq,rows:visible().map(row=>row.index)});\n  };\n})();\n",
+        "css": "/* Retained original Table rules; shared controls still use Host styles. */\n.ogui-theme .answer-table{border:0;border-radius:0;margin:0;overflow:hidden}\n.ogui-theme .answer-table-scroll{overflow:auto;border:1px solid var(--border);border-radius:8px;scrollbar-width:none;overscroll-behavior-x:contain}\n.ogui-theme .answer-table-scroll::-webkit-scrollbar{display:none}\n.ogui-theme .answer-table table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}\n.ogui-theme .answer-table caption{text-align:start;font:600 14px/1.5 var(--font-ui);padding:12px;border-bottom:1px solid var(--border);color:var(--foreground)}\n.ogui-theme .answer-table :is(th,td){padding:11px 12px;line-height:1.6;border-bottom:1px solid var(--border);text-align:left}\n.ogui-theme .answer-table th{background:var(--card);font-size:12px;font-weight:500;color:var(--muted-foreground)}\n.ogui-theme .answer-table tr:last-child td{border-bottom:0}\n.ogui-theme .answer-table tbody tr:hover{background:color-mix(in srgb,var(--card) 55%,transparent)}\n.ogui-theme .answer-table [data-numeric=true]{text-align:end;font-variant-numeric:tabular-nums}\n.ogui-theme .answer-table [data-numeric=true] .answer-column-sort{justify-content:flex-end}\n.ogui-theme .answer-table-source{font-size:12px;color:var(--muted-foreground);margin:0;padding:9px 1px 0}\n.ogui-theme .answer-column-sort,.ogui-theme .answer-cell-select{justify-content:flex-start;min-height:0}\n.ogui-theme .answer-column-sort:hover,.ogui-theme .answer-cell-select:hover{background:transparent;color:var(--foreground);text-decoration:none}\n.ogui-theme .answer-column-sort:focus-visible,.ogui-theme .answer-cell-select:focus-visible{outline-offset:3px;border-radius:2px}\nhtml.ogui-theme[data-host-compact] .answer-column-sort,html.ogui-theme[data-host-compact] .answer-cell-select{min-height:36px}\n\n/* Preserve the original shared-control computed styles inside the frame. */\n.ogui-theme button.answer-column-sort,.ogui-theme button.answer-cell-select{align-items:center;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;text-align:start;cursor:pointer;box-shadow:none;transform:none;transition:background .18s,color .18s}\n.ogui-theme button.answer-column-sort{display:flex;gap:6px;width:100%}\n.ogui-theme button.answer-cell-select{display:inline-flex;gap:8px}\n.ogui-theme .answer-column-sort svg{width:13px;height:13px;flex:none}\n.ogui-theme .answer-table tr[aria-selected=true]{background:var(--hover)}\n.ogui-theme button.answer-column-sort:hover,.ogui-theme button.answer-cell-select:hover{background:transparent;color:var(--foreground)}\n.ogui-theme button.answer-column-sort:focus-visible,.ogui-theme button.answer-cell-select:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:2px}\n",
+        "compact_max_width": 760,
+        "contexts": [
+          {
+            "sort": -1,
+            "direction": 1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1
+            }
+          },
+          {
+            "sort": -1,
+            "direction": -1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": -1
+            }
+          },
+          {
+            "sort": 0,
+            "direction": 1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": "Name",
+              "direction": 1
+            }
+          },
+          {
+            "sort": 0,
+            "direction": -1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": "Name",
+              "direction": -1
+            }
+          },
+          {
+            "sort": 1,
+            "direction": 1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": 1
+            }
+          },
+          {
+            "sort": 1,
+            "direction": -1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1
+            }
+          },
+          {
+            "sort": 2,
+            "direction": 1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": "Note",
+              "direction": 1
+            }
+          },
+          {
+            "sort": 2,
+            "direction": -1,
+            "description": {
+              "title": "Original table evidence",
+              "sort": "Note",
+              "direction": -1
+            }
+          }
+        ]
+      }
+    ],
+    "error_code": ""
+  }
+}

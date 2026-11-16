@@ -8,14 +8,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/z-chenhao/assistant/internal/agent"
+	"github.com/z-chenhao/assistant/internal/coding"
 	"github.com/z-chenhao/assistant/internal/computer/environment"
 	"github.com/z-chenhao/assistant/internal/computer/sandbox"
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"golang.org/x/sys/unix"
@@ -202,8 +205,23 @@ func TestTaskNativeDispatchUsesItsFrozenDirectory(t *testing.T) {
 }
 
 func TestTaskChildInheritsWorkScopeAndOwnerReportIsTaskBound(t *testing.T) {
-	s, r, a, p, _ := codeFixture(t)
+	testTaskChildCodeScope(t, false)
+}
+func TestCodingPluginChildInheritsWorkScopeAndOwnerReportIsTaskBound(t *testing.T) {
+	testTaskChildCodeScope(t, true)
+}
+func testTaskChildCodeScope(t *testing.T, managed bool) {
+	t.Helper()
+	s, r, a, p, cfg := codeFixture(t)
+	if managed {
+		installCodingPlugin(t, s, r)
+	}
 	ctx := context.Background()
+	for _, name := range []string{"AGENTS.md", "README.md"} {
+		if err := os.WriteFile(filepath.Join(cfg.RepositorySource, name), []byte("PRIVATE_PROJECT_DOC_CONTENT"), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	seen := map[string]string{}
 	var mu sync.Mutex
 	r.localExecute = func(_ context.Context, got environment.Config, name, raw string) tool.Result {
@@ -220,10 +238,46 @@ func TestTaskChildInheritsWorkScopeAndOwnerReportIsTaskBound(t *testing.T) {
 		mu.Lock()
 		seen[request.Path] = got.Root
 		mu.Unlock()
+		if request.Path == "root-probe" {
+			if err := os.Remove(filepath.Join(got.Root, "README.md")); err != nil {
+				t.Fatal(err)
+			}
+		}
 		return tool.Result{Text: request.Path}
 	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		last := req.Messages[len(req.Messages)-1]
+		contexts := 0
+		for _, message := range req.Messages {
+			if message.Source == nil || message.Source.Kind != "execution_environment" {
+				continue
+			}
+			contexts++
+			var payload struct {
+				Content struct {
+					CWD  string   `json:"cwd"`
+					Docs []string `json:"docs"`
+				} `json:"content"`
+			}
+			_, body, _ := strings.Cut(message.Text, "\n")
+			if err := json.Unmarshal([]byte(body), &payload); err != nil {
+				t.Fatal(err)
+			}
+			var directory string
+			if err := s.db.QueryRow(`SELECT directory FROM task_code_environment`).Scan(&directory); err != nil {
+				t.Fatal(err)
+			}
+			wantDocs := []string{"AGENTS.md", "README.md"}
+			if strings.Contains(req.Messages[0].Text, "You are a Subagent Worker") {
+				wantDocs = wantDocs[:1]
+			}
+			if message.Role != "user" || message.Origin != "runtime" || !message.Source.Protected || payload.Content.CWD != directory || payload.Content.CWD == cfg.Root || !slices.Equal(payload.Content.Docs, wantDocs) {
+				t.Fatal("environment is not scoped and frozen per Worker", payload, message)
+			}
+		}
+		if isRoot(req) && contexts != 1 || !isRoot(req) && contexts != 0 || strings.Contains(req.Messages[0].Text, "PRIVATE_PROJECT_DOC_CONTENT") {
+			t.Fatal("environment duplicated, leaked to Main, or imported document contents", contexts)
+		}
 		if isRoot(req) {
 			if last.Role == "tool" {
 				if strings.Contains(last.Text, "root-probe") {
@@ -292,10 +346,27 @@ func TestTaskCodeFrozenScopeMismatchFailsOnlyAcceptedWorker(t *testing.T) {
 }
 
 func TestCodePRHandoffFencesWatchRefreshAndForgetAtArtifactCommit(t *testing.T) {
-	for _, boundary := range []string{"refresh", "forget"} {
+	codePRHandoffFences(t, false)
+}
+func TestArtifactWorkbenchPRHandoffRetainsAssociationAndFencesJointCommit(t *testing.T) {
+	codePRHandoffFences(t, true)
+}
+
+func codePRHandoffFences(t *testing.T, managed bool) {
+	t.Helper()
+	boundaries := []string{"refresh", "forget"}
+	if managed {
+		boundaries = []string{"valid", "refresh", "forget", "stop", "quarantine"}
+	}
+	for _, boundary := range boundaries {
 		t.Run(boundary, func(t *testing.T) {
 			ctx := context.Background()
 			s, r, a, p, _ := codeFixture(t)
+			var host rsi.Host
+			var graph string
+			if managed {
+				host, graph, _ = artifactCodingComposition(t, s, r)
+			}
 			p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 				if isRoot(req) || isFollowup(req) || req.Messages[len(req.Messages)-1].Role == "tool" {
 					return llm.GenerationResult{Text: "prepared"}, nil
@@ -318,6 +389,21 @@ func TestCodePRHandoffFencesWatchRefreshAndForgetAtArtifactCommit(t *testing.T) 
 					return
 				}
 				checked = true
+				if boundary == "valid" {
+					return
+				}
+				if boundary == "stop" {
+					if err := host.Store.Stop(ctx, true); err != nil {
+						t.Fatal(err)
+					}
+					return
+				}
+				if boundary == "quarantine" {
+					if err := host.Store.Quarantine(ctx, graph); err != nil {
+						t.Fatal(err)
+					}
+					return
+				}
 				if boundary == "refresh" {
 					watchBatch(t, s, cfg, "") // same head, new durable version
 				} else if err := r.write(ctx, func(tx *sql.Tx) error { return r.revokeMemory(ctx, tx, agentID) }); err != nil {
@@ -325,12 +411,31 @@ func TestCodePRHandoffFencesWatchRefreshAndForgetAtArtifactCommit(t *testing.T) 
 				}
 			}
 			result, err := s.SaveCodePRReport(ctx, ref, cfg, githubBatch().HeadSHA)
+			if boundary == "valid" {
+				if err != nil || result.MethodGraph != graph || result.SemanticKind != "file" || result.MediaType != "application/json" || result.Name != "code-review.json" {
+					t.Fatal("actual PR handoff bypassed Artifact recipe", result, err)
+				}
+				var report coding.Report
+				if err := json.Unmarshal([]byte(readArtifact(t, s, artifactOwner(t, s), result.Ref)), &report); err != nil || report.PR == nil || report.PR.Kind != "owner_requested_association" || report.PR.HeadSHA != githubBatch().HeadSHA || report.PR.Repository != cfg.Repository {
+					t.Fatal("original observed association was changed", report.PR, err)
+				}
+				if scalar(t, s, `SELECT count(*) FROM code_report_method_binding WHERE artifact_ref=? AND graph_revision=?`, result.Ref, graph) != 1 {
+					t.Fatal("joint method receipt missing")
+				}
+				return
+			}
 			want := agent.ErrConflict
 			if boundary == "forget" {
 				want = agent.ErrNotFound
 			}
+			if boundary == "stop" || boundary == "quarantine" {
+				want = llm.ProviderUnavailable
+			}
 			if !checked || !errors.Is(err, want) || result.Ref != "" || scalar(t, s, `SELECT count(*) FROM artifact`) != 0 {
 				t.Fatal("report crossed an invalidated binding", checked, result, err)
+			}
+			if managed && scalar(t, s, `SELECT count(*) FROM code_report_method_binding`) != 0 {
+				t.Fatal("revoked handoff left an uncommitted method receipt")
 			}
 		})
 	}

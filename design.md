@@ -99,6 +99,7 @@ Chat 发送按钮是单色主操作的例外：明暗主题均使用 `#B84F2F` �
 
 - 基础控件采用 shadcn/ui 的可组合结构与 Base UI 行为，适配 Steward 自有主题。不直接引入组件库整套主题、字体或全局排版重置。
 - React 消费者使用 `web/src/components/ui/` 的封装；按钮归 [button.tsx](web/src/components/ui/button.tsx)，字段和结果卡片归 [answer-controls.tsx](web/src/components/ui/answer-controls.tsx)，图表基础归 [chart.tsx](web/src/components/ui/chart.tsx)。新增公共能力先补入所属共享组件，不在功能页复制实现。
+- 普通表单操作复用共享 `control-form-action` 尺寸变体：桌面至少 36px、窄屏至少 44px；原生审批与 React 默认 Button 使用同一规则，图标和品牌头像保持各自变体。
 - 宿主下拉统一使用 [select-view.tsx](web/src/components/ui/select-view.tsx)：少量选项采用 Base UI Select，超过 12 个非空选项才采用带搜索的 Combobox。数量是当前可调整的产品默认值；两项语言选择不得出现搜索框或为搜索预留空白。弹层按触发器与内容紧凑定宽，不给短列表强加大面板。遵循 [Base UI 的原生选用准则](https://base-ui.com/react/components/select#usage-guidelines)，不自建筛选或键盘状态机。菜单统一使用 [action-menu.tsx](web/src/components/ui/action-menu.tsx)。不得保留旧手写下拉状态机，也不得在页面直接拼装另一套浮层、选项导航和焦点管理。
 - 服务端原生 select 经 [select.ts](web/src/components/ui/select.ts) 适配，React 表单经 [native-select.tsx](web/src/components/ui/native-select.tsx) 接入同一选择器。原生值、字段名、校验和无脚本回退属于表单契约，不构成第二套增强控件。
 - 基础控件皮肤统一归 [controls.css](web/src/components/ui/controls.css)，颜色和字体使用 [foundation.css](web/src/foundation.css) 的语义变量。页面不得通过局部 CSS 重定义下拉或开关皮肤；其他控件变化也应落在共享的命名变体，不能用页面覆盖产生外观分叉。
@@ -130,7 +131,7 @@ Intelligent UI 生成中使用同一消息气泡与原生组件，显示一次�
 
 修改前先确认组件归属及本节约束；存在能力缺口时补充共享组件或具名扩展。任何明确获准的规则变化，应在同一变更中更新本文件及所属回归，不能只在对话、局部 CSS 或 `AGENTS.md` 中另立规范。
 
-现有控件归属门禁随 `npm run check --prefix web` 执行；行为使用真实浏览器场景验证，视觉结合深浅主题、桌面和窄屏截图评审。具体检查与证明范围见下文[自动回归与评审分工](#自动回归与评审分工)，不通过检查文案是否存在代替行为验证。
+现有控件归属门禁随 `npm run check --prefix web` 执行，同时覆盖 web/src、Host 模板及 internal/plugin 下的 owning 视图／浏览器实现，迁入插件不豁免共享控件规则；行为使用真实浏览器场景验证，视觉结合深浅主题、桌面和窄屏截图评审。具体检查与证明范围见下文[自动回归与评审分工](#自动回归与评审分工)，不通过检查文案是否存在代替行为验证。
 
 带金额、单位、估算／部分标记的列表字段，回归数据必须包含真实已计价值与未知值；不能仅凭空值或占位符页面判断布局可用。新增列或标记时同时验证列标题、显隐菜单、单行密度及内容不侵入相邻单元格，窄屏保持表格内部滚动。
 

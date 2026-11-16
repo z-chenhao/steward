@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -30,6 +31,9 @@ type shownProjection struct {
 	Spec, Fallback string
 }
 type page struct {
+	Workbench                                         *workbenchPresentation
+	WorkbenchUnavailable                              bool
+	CapabilityView                                    *capabilityViewAssets
 	ComposerModels                                    composerModels
 	Apps                                              *appsView
 	Capabilities                                      []Capability
@@ -77,20 +81,21 @@ func (s *Server) page(ctx context.Context, r *http.Request) (page, error) {
 	if view == "" {
 		return p, errPageNotFound
 	}
-	if view == "conversation" {
-		p.Live = "/"
-	}
-	if view == "tasks" || view == "task" || view == "attention" || view == "settings" {
-		p.Live = r.URL.Path
-	}
 	var err error
+	// Read the public owner recipe before any authorized page facts. No slow
+	// plugin computation is inserted between reading private facts and release.
+	if err = s.loadWorkbench(ctx, r, &p); err != nil {
+		return p, err
+	}
+	p.Live = workbenchLivePath(p, r)
 	p.Status, err = s.Core.WebStatus(ctx)
 	if err != nil {
 		return p, err
 	}
 	switch p.View {
 	case "app-service":
-		err = s.loadAppService(ctx, &p)
+		ui := s.appInterface(ctx, r.URL.Query().Get("interface_revision"), requestLanguage(r))
+		err = s.loadAppService(context.WithValue(ctx, appInterfaceKey{}, ui), r, &p)
 	case "apps":
 		err = s.loadApps(ctx, r, &p)
 	case "memory":
@@ -158,6 +163,113 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, p page) {
 		}
 	}
 	w.Header().Set("Content-Language", p.Language)
+	if p.Workbench != nil {
+		w.Header().Set("X-Steward-Workbench-Reader", p.Workbench.ReaderRevision)
+	}
+	if p.View == "capabilities" {
+		fragment, err := renderCapabilityView(p, r)
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		outer := requestLayout(r).Funcs(template.FuncMap{"capabilityPageView": func() template.HTML { return fragment }})
+		if _, err = outer.New("capabilities-page").Parse(`{{capabilityPageView}}`); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		var body bytes.Buffer
+		if err = outer.Execute(&body, p); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(body.Bytes())
+		return
+	}
+
+	if p.Settings != nil && p.Settings.View != nil {
+		name := "model-list"
+		if p.Settings.Section == "new" {
+			name = "model-new"
+		}
+		fragment, err := renderModelView(p, r, name)
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		outer := requestLayout(r).Funcs(template.FuncMap{"modelConnectionsView": func() template.HTML { return fragment }})
+		if _, err = outer.New(name).Parse(`{{modelConnectionsView}}`); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		var body bytes.Buffer
+		if err = outer.Execute(&body, p); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(body.Bytes())
+		return
+	}
+	if p.Trace != nil && p.Trace.WorkbenchManaged {
+		outer, err := tracePageLayout(r, p.Trace)
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		var body bytes.Buffer
+		if err = outer.Execute(&body, p); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(body.Bytes())
+		return
+	}
+	if p.Memory != nil && p.Memory.Presentation != nil {
+		if validateMemoryStylesheet(p.Memory.Presentation.Stylesheet) != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		view, err := compileMemoryView(p.Memory.Presentation.ViewSource, memoryViewBindings(p.Memory, r), requestLayout(r))
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		fragment, err := renderMemoryView(view, p.Memory)
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		configuration, err := memoryClientConfiguration(p.Memory)
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		outer := requestLayout(r).Funcs(memoryPresentationFunctions(p.Memory)).Funcs(template.FuncMap{"memoryPageView": func() template.HTML { return fragment + configuration }})
+		if _, err = outer.New("memory-page").Parse(`{{memoryPageView}}`); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		var body bytes.Buffer
+		if err := outer.Execute(&body, p); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(body.Bytes())
+		return
+	}
+	if p.Workbench != nil {
+		outer, err := workbenchPageLayout(p, r)
+		if err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		var body bytes.Buffer
+		if err = outer.Execute(&body, p); err != nil {
+			fail(w, http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write(body.Bytes())
+		return
+	}
 	_ = requestLayout(r).Execute(w, p)
 }
 func conversationCursor(r *http.Request) (int64, error) {

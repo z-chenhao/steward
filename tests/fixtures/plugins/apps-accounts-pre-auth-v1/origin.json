@@ -1,0 +1,14 @@
+{
+  "kind": "exact repository-owned pre-auth-service package source and manifest",
+  "base_commit": "69c806c58a88e3ec101344a33cfcd79cf5774d44",
+  "source_snapshot_manifest": "work/plugins-migration/gate-apps-account-workflow-prototype.json",
+  "files": {
+    "intent.go.txt": "b9e58871c538a824dab4fa498ab67535ae74a0ac3cfeb516b9e24f28a3e0edc2",
+    "steward.plugin.json": "305a206a9e889f14d6be5bcf070e47960b807ea2dafdbd6784565dda88380aa4"
+  },
+  "contract_shape": "connect-intent only, no auth opt-in",
+  "retention_reason": "cold and in-flight pre-service compatibility; no production native fallback after auth opt-in",
+  "external_or_live_provider_claim": false,
+  "build_scope": "exact retained handler and manifest rebuilt under unchanged current protocol/SDK; not a full old release/compiler artifact",
+  "delete_when": "no retained pre-auth graphs or in-flight pre-opt-in owner actions require this historical boundary"
+}

@@ -51,10 +51,15 @@ test('shared skins and ordinary layout rules remain valid',()=>{
 test('the gate discovers new nested pages and reports an actionable file location',()=>{
  const root=mkdtempSync(join(tmpdir(),'steward-controls-policy-'));
  try{
-  mkdirSync(join(root,'web/src/future'),{recursive:true});mkdirSync(join(root,'internal/interaction/web/templates'),{recursive:true});
+  mkdirSync(join(root,'web/src/future'),{recursive:true});mkdirSync(join(root,'internal/interaction/web/templates'),{recursive:true});mkdirSync(join(root,'internal/plugin/modelconnections/view'),{recursive:true});
   writeFileSync(join(root,'web/src/future/picker.ts'),'// private dropdown\nmenu.showPopover();');
   assert.throws(()=>assertSharedControls(root),/web\/src\/future\/picker.ts:2: Use the shared Select/);
   writeFileSync(join(root,'web/src/future/picker.ts'),'const field=document.querySelector("select");');
+  assert.doesNotThrow(()=>assertSharedControls(root));
+  const owned=join(root,'internal/plugin/modelconnections/view/models.html');
+  writeFileSync(owned,'<div role="listbox"></div>');
+  assert.throws(()=>assertSharedControls(root),/internal\/plugin\/modelconnections\/view\/models.html:1: Use the shared Select/);
+  writeFileSync(owned,'<select name="service"><option>OpenAI</option></select>');
   assert.doesNotThrow(()=>assertSharedControls(root));
  }finally{rmSync(root,{recursive:true,force:true})}
 });

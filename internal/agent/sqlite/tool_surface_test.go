@@ -31,6 +31,12 @@ func delegateToolWork(execute func(llm.GenerationRequest) (llm.GenerationResult,
 }
 
 func TestMainAndWorkerUseOnlyCodeModeWithinTheirFrozenRole(t *testing.T) {
+	testCodeModeRoles(t, false)
+}
+func TestSkillPluginCodeModeKeepsMainAndWorkerRoleBoundaries(t *testing.T) {
+	testCodeModeRoles(t, true)
+}
+func testCodeModeRoles(t *testing.T, managed bool, configure ...func(*Store, *Runs)) {
 	defs := append(environment.Definitions("role-test"), computer.Definitions("role-test")...)
 	defs = append(defs, codemode.Definition(), memory.Definition(), recall.Definition(recall.UnconfiguredIdentity), evidence.Definition())
 	defs = append(defs, automation.Definitions()...)
@@ -51,6 +57,12 @@ func TestMainAndWorkerUseOnlyCodeModeWithinTheirFrozenRole(t *testing.T) {
 	}
 	r.registry = registry
 	a.Registry = registry
+	if managed {
+		installSkillPlugin(t, s, r)
+	}
+	for _, setup := range configure {
+		setup(s, r)
+	}
 	mainSeen, workerSeen := false, false
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if len(req.Tools) != 1 || req.Tools[0].Name != codemode.ToolName {
@@ -60,6 +72,9 @@ func TestMainAndWorkerUseOnlyCodeModeWithinTheirFrozenRole(t *testing.T) {
 			workerSeen = true
 			if req.Messages[len(req.Messages)-1].Role == "tool" {
 				return llm.GenerationResult{Text: "worker evidence"}, nil
+			}
+			if managed {
+				return calls(codemode.ToolName, `{"source":"if (ALL_TOOLS.some(t=>t.name==='builtin__task_manage'||t.name==='builtin__evidence_read')) throw Error('Main authority leaked');const methods=await tools.builtin__skill_list({query:'research'});if(!JSON.stringify(methods).includes('FROZEN_SKILL_INDEX'))throw Error('frozen methods missing');return await tools.mcp__fixture__echo({text:'worker evidence'});"}`), nil
 			}
 			return calls(codemode.ToolName, `{"source":"if (ALL_TOOLS.some(t=>t.name==='builtin__task_manage'||t.name==='builtin__evidence_read')) throw Error('Main authority leaked');return await tools.mcp__fixture__echo({text:'worker evidence'});"}`), nil
 		}

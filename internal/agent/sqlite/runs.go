@@ -27,16 +27,26 @@ import (
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/plugin/webaccess"
 	"github.com/z-chenhao/assistant/internal/recall"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"github.com/z-chenhao/assistant/internal/tool/codemode"
 	"github.com/z-chenhao/assistant/internal/webcontent"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	sqlitedriver "modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
 type Runs struct {
+	mcpNamespaces         mcpNamespaceCache
+	appsGuidance          appsGuidanceCache
+	uiDefinition          uiDefinitionCache
+	scheduleGuidance      scheduleGuidanceCache
+	skillRead             func(context.Context, string) tool.Result
+	recallSnapshotVault   func(context.Context, string) (memory.Vault, error)
+	plugins               *rsi.Host
 	webAccess             webaccess.Config
+	webSourceRead         func(context.Context, string, webaccess.SearchQuery, webaccess.QuerySearch) (webaccess.SourceObservation, error)
 	webSecrets            llm.SecretStore
 	webProvider           llm.LLMProvider
 	webContentFetch       func(context.Context, webcontent.Config, string, string) (webaccess.Page, error)
@@ -99,8 +109,75 @@ func runEvent(ctx context.Context, tx *sql.Tx, id, kind string, version int64) e
 }
 func (r *Runs) write(ctx context.Context, fn func(*sql.Tx) error) error {
 	var err error
+	var admission *capabilityPrivacy
 	for attempt := 0; attempt < 3; attempt++ {
-		err = r.host.Transaction(ctx, fn)
+		err = r.host.Transaction(ctx, func(tx *sql.Tx) error {
+			if admission != nil {
+				if err := admission.check(ctx, tx); err != nil {
+					return err
+				}
+			}
+			return fn(tx)
+		})
+		var namespace *mcpNamespaceNeed
+		var apps *appsGuidanceNeed
+		var uiDefinition *uiDefinitionNeed
+		var schedule *scheduleGuidanceNeed
+		needsMCP := errors.As(err, &namespace)
+		needsApps := errors.As(err, &apps)
+		needsUI := errors.As(err, &uiDefinition)
+		needsSchedule := errors.As(err, &schedule)
+		if needsMCP || needsApps || needsUI || needsSchedule {
+			// Transaction has rolled back. No candidate process/IO runs under
+			// a state writer; Forget must not resubmit old ingress on retry.
+			if attempt == 2 {
+				err = tool.ErrResource
+				break
+			}
+			if admission == nil {
+				var original capabilityPrivacy
+				if needsMCP {
+					original = namespace.privacy
+				} else if needsApps {
+					original = apps.privacy
+				} else if needsUI {
+					original = uiDefinition.privacy
+				} else {
+					original = schedule.privacy
+				}
+				admission = &original
+			}
+			if needsMCP {
+				if err = r.prepareMCPNamespaces(ctx, namespace); err != nil {
+					break
+				}
+			}
+			if needsApps {
+				if err = r.prepareAppsGuidance(ctx, apps); err != nil {
+					break
+				}
+			}
+			if needsUI {
+				if err = r.prepareUIDefinition(ctx, uiDefinition); err != nil {
+					break
+				}
+			}
+			if needsSchedule {
+				if err = r.prepareScheduleGuidance(ctx, schedule); err != nil {
+					break
+				}
+			}
+			if needsMCP {
+				r.host.boundary("before_mcp_namespace_retry")
+			}
+			if needsApps {
+				r.host.boundary("before_apps_guidance_retry")
+			}
+			if needsSchedule {
+				r.host.boundary("before_schedule_guidance_retry")
+			}
+			continue
+		}
 		var sqliteErr *sqlitedriver.Error
 		if !errors.As(err, &sqliteErr) || (sqliteErr.Code()&0xff != sqlite3.SQLITE_BUSY && sqliteErr.Code()&0xff != sqlite3.SQLITE_LOCKED) || attempt == 2 {
 			break
@@ -139,17 +216,17 @@ func fence(ctx context.Context, tx *sql.Tx, c agent.RunClaim) error {
 }
 
 func (r *Runs) Submit(ctx context.Context, key string, parts []conversation.ContentPart) (agent.Receipt, error) {
-	return r.submit(ctx, key, parts, nil, "", nil)
+	return r.submit(ctx, key, parts, nil, "", nil, nil)
 }
 
 func (r *Runs) AcceptInbound(ctx context.Context, e interaction.InboundEvent) (agent.Receipt, error) {
 	if err := e.Validate(); err != nil {
 		return agent.Receipt{}, err
 	}
-	return r.submit(ctx, "", e.Content, &e, "", nil)
+	return r.submit(ctx, "", e.Content, &e, "", nil, nil)
 }
 
-func (r *Runs) submit(ctx context.Context, key string, parts []conversation.ContentPart, inbound *interaction.InboundEvent, feedbackRef string, uiAction *uiActionInput) (agent.Receipt, error) {
+func (r *Runs) submit(ctx context.Context, key string, parts []conversation.ContentPart, inbound *interaction.InboundEvent, feedbackRef string, uiAction *uiActionInput, uiForm *uiFormInput) (agent.Receipt, error) {
 	parts, err := conversation.Normalize(parts)
 	if err != nil {
 		return agent.Receipt{}, err
@@ -221,6 +298,11 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 		if profile == "" || status != "ready" {
 			return agent.ErrSetup
 		}
+		if uiForm != nil {
+			if err := uiForm.check(ctx, tx, r); err != nil {
+				return err
+			}
+		}
 		if err = supersedeGitHubMain(ctx, tx, agentID); err != nil {
 			return err
 		}
@@ -256,6 +338,11 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 		raw, _ := encoded(message)
 		if _, err = tx.ExecContext(ctx, `INSERT INTO main_input(agent_id,request_key,run_id,message_id,message_json) VALUES(?,?,?,?,?)`, agentID, key, receipt.RunID, receipt.MessageID, raw); err != nil {
 			return err
+		}
+		if uiForm != nil {
+			if err := uiForm.save(ctx, tx, receipt.MessageID); err != nil {
+				return err
+			}
 		}
 		if inbound != nil && inbound.Channel == "web" {
 			if err = r.freezeUIInput(ctx, tx, receipt.MessageID, uiAction); err != nil {
@@ -502,11 +589,45 @@ func (r *Runs) Initialize(ctx context.Context, c agent.RunClaim) error {
 		return err
 	}
 	if run.Kind == "worker" {
-		return r.prepareTaskCode(ctx, c, run)
+		if err := r.prepareTaskCode(ctx, c, run); err != nil {
+			return err
+		}
+		if run.Checkpoint.ContextReady {
+			return nil
+		}
+		run.Checkpoint.Messages, err = r.prepareProgressGuidance(ctx, c, run)
+		if err != nil {
+			return err
+		}
+		var delegation *delegationPolicy
+		run.Checkpoint.Messages, delegation, err = r.prepareDelegation(ctx, c, run)
+		if err != nil {
+			var reason llm.ProviderError
+			if errors.As(err, &reason) {
+				if e := r.Fail(ctx, c, run.Version, reason.Error()); e != nil {
+					return e
+				}
+				return agent.CommittedRunFailure(reason)
+			}
+			return err
+		}
+		return r.initializeWorkerEnvironment(ctx, c, run, delegation)
 	}
 	if run.Checkpoint.ContextReady {
 		return nil
 	}
+	messages, err := r.prepareConversation(ctx, c, run)
+	if err != nil {
+		var reason llm.ProviderError
+		if errors.As(err, &reason) {
+			if e := r.Fail(ctx, c, run.Version, reason.Error()); e != nil {
+				return e
+			}
+			return agent.CommittedRunFailure(reason)
+		}
+		return err
+	}
+	run.Checkpoint.Messages = messages
 	rows, err := r.host.db.QueryContext(ctx, `SELECT message_id FROM conversation_intent WHERE sequence>coalesce((SELECT history_floor FROM memory_privacy WHERE agent_id=(SELECT agent_id FROM run WHERE run_id=?)),0) AND sequence<=(SELECT history_boundary FROM run WHERE run_id=?)`, c.RunID(), c.RunID())
 	if err != nil {
 		return agent.ErrStorage
@@ -683,13 +804,17 @@ func (r *Runs) Checkpoint(ctx context.Context, c agent.RunClaim, version int64, 
 			return err
 		}
 	}
+	selection, err := r.prepareProgressSelection(ctx, c, cp)
+	if err != nil {
+		return err
+	}
 	progress := false
-	err := r.write(ctx, func(tx *sql.Tx) error {
+	err = r.write(ctx, func(tx *sql.Tx) error {
 		if err := checkpoint(ctx, tx, c, version, cp); err != nil {
 			return err
 		}
 		var err error
-		progress, err = r.checkpointProgress(ctx, tx, c, cp)
+		progress, err = r.checkpointProgress(ctx, tx, c, cp, selection)
 		return err
 	})
 	if err == nil && progress {
@@ -797,6 +922,9 @@ func (r *Runs) terminal(ctx context.Context, c agent.RunClaim, version int64, st
 		if worker {
 			r.host.boundary("before_result_commit")
 		}
+		if err = r.enqueuePluginEvent(ctx, tx, c.RunID(), rsiplugin.RunSettled, version+1); err != nil {
+			return err
+		}
 		return runEvent(ctx, tx, c.RunID(), "run."+status, version+1)
 	})
 	if err == nil && done && worker {
@@ -853,6 +981,9 @@ func (r *Runs) Wait(ctx context.Context, c agent.RunClaim, v int64, reason strin
 			return agent.ErrConflict
 		}
 		if _, err = tx.ExecContext(ctx, `UPDATE run_claim SET token=NULL,expires_at=0,version=version+1 WHERE run_id=?`, c.RunID()); err != nil {
+			return err
+		}
+		if err = r.enqueuePluginEvent(ctx, tx, c.RunID(), rsiplugin.RunWaiting, v+1); err != nil {
 			return err
 		}
 		return runEvent(ctx, tx, c.RunID(), "run.waiting", v+1)

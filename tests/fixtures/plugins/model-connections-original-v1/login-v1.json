@@ -1,0 +1,33 @@
+[
+  {
+    "models": [],
+    "selected": ""
+  },
+  {
+    "models": [
+      "Zulu",
+      "Alpha"
+    ],
+    "selected": "Zulu"
+  },
+  {
+    "models": [
+      "Alpha",
+      "Zulu"
+    ],
+    "selected": "Alpha"
+  },
+  {
+    "models": [
+      "Same",
+      "Same"
+    ],
+    "selected": "Same"
+  },
+  {
+    "models": [
+      "Only"
+    ],
+    "selected": "Only"
+  }
+]

@@ -21,7 +21,8 @@ type ContextOptions struct {
 }
 
 func InitialContext(o ContextOptions) []AgentMessage {
-	safety, worker, execution := prompt.Safety(), prompt.Worker(), "<execution_rules>\n"+prompt.Execution()+"\n</execution_rules>"
+	safety, worker, execution := prompt.Safety(), prompt.Worker(), prompt.Execution()
+	delegationMethod := ""
 	// Inherit typed, frozen sections, never parse model-facing text or import
 	// the parent's transcript/capability index into a Child.
 	for _, m := range o.ParentSystem {
@@ -40,6 +41,8 @@ func InitialContext(o ContextOptions) []AgentMessage {
 				worker = text
 			case "execution":
 				execution = text
+			case "capabilities":
+				delegationMethod = section.DelegationText
 			}
 		}
 	}
@@ -48,10 +51,11 @@ func InitialContext(o ContextOptions) []AgentMessage {
 	switch o.Position {
 	case "main":
 		role = SystemSection{Kind: "main_role", Text: prompt.Main()}
-		executionSection.Text = strings.TrimSuffix(execution, "\n</execution_rules>") + "\n" + prompt.MainExecution() + "\n</execution_rules>"
+		safety = prompt.MainSafety()
+		executionSection.Text = prompt.MainExecution()
 	case "root":
-		role.Text, role.ChildText = prompt.Identity()+"\n\n"+worker, worker
-		executionSection.Text = strings.TrimSuffix(execution, "\n</execution_rules>") + "\n" + prompt.Progress() + "\n</execution_rules>"
+		role.Text, role.ChildText = prompt.Identity(), worker
+		executionSection.Text = strings.TrimSuffix(execution, "\n</rules>") + "\n" + prompt.Progress() + "\n</rules>"
 		executionSection.ChildText, executionSection.Progress = execution, true
 	case "child":
 		// The inherited shared role and execution need no Root-only additions.
@@ -59,36 +63,11 @@ func InitialContext(o ContextOptions) []AgentMessage {
 		panic("invalid context position")
 	}
 	sections := []SystemSection{role, {Kind: "safety", Text: safety}, executionSection}
-	seen := map[string]bool{}
-	rules := []string{}
-	for _, s := range o.Tools {
-		if s.Internal {
-			if strings.HasPrefix(s.Name, "builtin__computer_") && !seen["computer"] {
-				rules = append(rules, "- "+prompt.Computer())
-				seen["computer"] = true
-			}
-			continue
-		}
-		var rule string
-		switch {
-		case s.Name == "builtin__read" || s.Name == "builtin__bash" || s.Name == "builtin__edit" || s.Name == "builtin__write":
-			rule = prompt.Environment()
-		case s.Name == "builtin__codemode_execute":
-			rule = prompt.CodeMode()
-		case s.Name == RunToolName:
-			rule = prompt.Delegation()
-		case s.Name == "builtin__artifact_manage":
-			rule = prompt.Artifacts()
-		case s.Name == "builtin__memory_search":
-			rule = prompt.Memory()
-		}
-		if rule != "" && !seen[rule] {
-			rules = append(rules, "- "+rule)
-			seen[rule] = true
-		}
-	}
-	if len(rules) > 0 {
-		sections = append(sections, SystemSection{Kind: "capabilities", Text: "<capability_guidance>\n" + strings.Join(rules, "\n") + "\n</capability_guidance>"})
+	// Main owns its compact tools/rules layout; Worker capability guidance
+	// remains derived from its frozen tool set.
+	if o.Position != "main" {
+		capabilities := workerCapabilities(o.Tools, delegationMethod)
+		sections = []SystemSection{role, capabilities, {Kind: "safety", Text: safety}, executionSection}
 	}
 	texts := make([]string, 0, len(sections))
 	for _, section := range sections {
@@ -182,4 +161,45 @@ type Compaction struct {
 	SourceRefs []string `json:"source_refs"`
 	ArchiveRef string   `json:"history_artifact"`
 	MaxBytes   int      `json:"max_bytes"`
+}
+
+// Rebuild only tool-derived guidance from the exact frozen capability set.
+func workerCapabilities(specs []tool.Spec, delegationMethod string) SystemSection {
+	contribution := delegationMethod
+	if delegationMethod == "" {
+		delegationMethod = prompt.Delegation()
+	}
+	seen := map[string]bool{}
+	rules := []string{}
+	for _, s := range specs {
+		if s.Internal {
+			if strings.HasPrefix(s.Name, "builtin__computer_") && !seen["computer"] {
+				rules = append(rules, "- "+prompt.Computer())
+				seen["computer"] = true
+			}
+			continue
+		}
+		var rule string
+		switch {
+		case s.Name == "builtin__read" || s.Name == "builtin__bash" || s.Name == "builtin__edit" || s.Name == "builtin__write":
+			rule = prompt.Environment()
+		case s.Name == "builtin__codemode_execute":
+			rule = prompt.CodeMode()
+		case s.Name == RunToolName:
+			rule = delegationMethod
+		case s.Name == "builtin__artifact_manage":
+			rule = prompt.Artifacts()
+		case s.Name == "builtin__memory_search":
+			rule = prompt.Memory()
+		case s.Name == "builtin__skill_list" || s.Name == "builtin__skill_view":
+			rule = "Skills: follow relevant Skills for the current task."
+		case s.Name == tool.SearchName:
+			rule = "Tool search: use directly available tools first. Search when a needed capability is missing."
+		}
+		if rule != "" && !seen[rule] {
+			rules = append(rules, "- "+rule)
+			seen[rule] = true
+		}
+	}
+	return SystemSection{Kind: "capabilities", Text: "<tools>\nAvailable tools and their schemas are supplied with each request. Use only tools available in this run.\n" + strings.Join(rules, "\n") + "\n</tools>", DelegationText: contribution}
 }

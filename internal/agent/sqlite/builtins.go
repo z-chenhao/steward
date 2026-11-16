@@ -20,6 +20,8 @@ func (t *tools) ExecuteBuiltin(ctx context.Context, inv tool.Invocation) (tool.R
 		return tool.Failure("PERMISSION_DENIED"), nil
 	}
 	switch family {
+	case tool.SkillBuiltin:
+		return t.executeSkill(ctx, inv)
 	case tool.WebAccessBuiltin:
 		return t.executeWebAccess(ctx, inv)
 	case tool.UIBuiltin:

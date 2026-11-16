@@ -1,0 +1,522 @@
+[
+  {
+    "key": "%d isolated provider(s) advertised %d allowed tools. No advertised tool was invoked.",
+    "value": "%d 个隔离服务提供了 %d 个允许的工具。测试未调用任何工具。"
+  },
+  {
+    "key": "A fixed diagnostic command completed in the configured kernel sandbox. No user command or network access was used.",
+    "value": "固定诊断命令已在配置的内核沙箱中完成。未使用用户命令或访问网络。"
+  },
+  {
+    "key": "API key reference (optional)",
+    "value": "API 密钥引用（可选）"
+  },
+  {
+    "key": "Add MCP server",
+    "value": "添加 MCP 服务"
+  },
+  {
+    "key": "Add allowed tool",
+    "value": "添加允许使用的工具"
+  },
+  {
+    "key": "Agent",
+    "value": "智能体"
+  },
+  {
+    "key": "Allowed tools",
+    "value": "允许使用的工具"
+  },
+  {
+    "key": "Architecture",
+    "value": "架构"
+  },
+  {
+    "key": "Auto",
+    "value": "自动"
+  },
+  {
+    "key": "Automatic mode stores a private encryption key in Steward’s local credential files. Custom mode uses your existing 32-byte key reference. Keep the original key for existing memories and backups.",
+    "value": "自动模式会将私有加密密钥保存在 Steward 本地凭据文件中。自定义模式使用你已有的 32 字节密钥引用。已有记忆和备份须保留原密钥。"
+  },
+  {
+    "key": "Automatic mode uses local text search without a service. Custom mode connects your embedding model; encrypted memory requires a literal loopback endpoint. Changing an existing vector identity requires an offline index rebuild.",
+    "value": "自动模式使用本地文本搜索，无需服务。自定义模式连接你的向量模型；加密记忆要求本机回环地址。更换已有向量索引身份需要离线重建索引。"
+  },
+  {
+    "key": "Capabilities",
+    "value": "能力"
+  },
+  {
+    "key": "Capability not available.",
+    "value": "能力不可用。"
+  },
+  {
+    "key": "Catalog directory",
+    "value": "目录位置"
+  },
+  {
+    "key": "Choose Agent or Workspace for the skill scope.",
+    "value": "请选择技能的适用范围：智能体或工作区。"
+  },
+  {
+    "key": "Choose a permission for every allowed tool.",
+    "value": "请为每个允许使用的工具选择权限。"
+  },
+  {
+    "key": "Choose how Memory finds relevant information.",
+    "value": "选择记忆的检索方式。"
+  },
+  {
+    "key": "Command arguments (optional)",
+    "value": "命令参数（可选）"
+  },
+  {
+    "key": "Complete the Computer connection, Guest access and sealed base compatibility fields.",
+    "value": "请填写完整的 Computer 连接、Guest 访问和密封基础镜像兼容性信息。"
+  },
+  {
+    "key": "Computer",
+    "value": "Computer"
+  },
+  {
+    "key": "Computer connection",
+    "value": "Computer 连接"
+  },
+  {
+    "key": "Computer connection failed. Check the Lume endpoint/version, sealed base compatibility/integrity and Guest credential reference. The diagnostic does not boot or modify a VM.",
+    "value": "电脑环境连接失败。请检查 Lume 端点与版本、基础镜像兼容性与完整性，以及虚拟机凭据引用。诊断不会启动或修改虚拟机。"
+  },
+  {
+    "key": "Computer requires the JavaScript runtime configuration.",
+    "value": "电脑环境需要 JavaScript 运行时配置。"
+  },
+  {
+    "key": "Computer store directory",
+    "value": "Computer 存储目录"
+  },
+  {
+    "key": "Computer store unavailable. Provision the private Lume store and sealed base before testing.",
+    "value": "电脑环境存储不可用。测试前请准备私有 Lume 存储与封存基础镜像。"
+  },
+  {
+    "key": "Configuration mode",
+    "value": "配置方式"
+  },
+  {
+    "key": "Configure",
+    "value": "配置"
+  },
+  {
+    "key": "Connect allowlisted tools from isolated local stdio providers.",
+    "value": "连接隔离的本地 stdio 服务中已加入允许名单的工具。"
+  },
+  {
+    "key": "Connection available.",
+    "value": "连接正常。"
+  },
+  {
+    "key": "Custom",
+    "value": "自定义"
+  },
+  {
+    "key": "Discover curated, versioned methods and their resources.",
+    "value": "发现经整理、带版本的方法及其资源。"
+  },
+  {
+    "key": "Driver SHA-256",
+    "value": "Driver SHA-256"
+  },
+  {
+    "key": "Driver bundle",
+    "value": "Driver 应用包标识"
+  },
+  {
+    "key": "Driver team",
+    "value": "Driver 开发团队标识"
+  },
+  {
+    "key": "Driver version",
+    "value": "Driver 版本"
+  },
+  {
+    "key": "Embedding connection failed. Check the endpoint, model, dimensions and credential reference; redirects and invalid vectors are rejected.",
+    "value": "嵌入连接失败。请检查端点、模型、维度与凭据引用；重定向和无效向量会被拒绝。"
+  },
+  {
+    "key": "Embedding endpoint returned a valid %d-dimensional vector for a fixed diagnostic sentence.",
+    "value": "嵌入端点已为固定诊断句返回有效的 %d 维向量。"
+  },
+  {
+    "key": "Embedding service",
+    "value": "嵌入服务"
+  },
+  {
+    "key": "Enabled",
+    "value": "已启用"
+  },
+  {
+    "key": "Encryption",
+    "value": "加密"
+  },
+  {
+    "key": "Encryption key reference",
+    "value": "加密密钥引用"
+  },
+  {
+    "key": "Endpoint URL",
+    "value": "端点 URL"
+  },
+  {
+    "key": "Enter a SecretStore or environment reference, never a secret value.",
+    "value": "请输入 SecretStore 或环境变量引用，不要输入密钥值。"
+  },
+  {
+    "key": "Enter a whole number within the range shown.",
+    "value": "请输入所示范围内的整数。"
+  },
+  {
+    "key": "Enter absolute paths for the Computer store, Node executable and sidecar script.",
+    "value": "请填写 Computer 存储目录、Node 可执行文件和 Sidecar 脚本的绝对路径。"
+  },
+  {
+    "key": "Enter an absolute private directory path, not the filesystem root.",
+    "value": "请输入私有目录的绝对路径，不要使用文件系统根目录。"
+  },
+  {
+    "key": "Enter one absolute toolchain directory per line.",
+    "value": "请每行输入一个工具链目录的绝对路径。"
+  },
+  {
+    "key": "Enter the embedding service URL and its exact model ID.",
+    "value": "请输入嵌入服务的 URL 及其准确的模型 ID。"
+  },
+  {
+    "key": "Executable path",
+    "value": "可执行文件路径"
+  },
+  {
+    "key": "File tools use Computer. Configure and test that backend instead.",
+    "value": "文件工具使用电脑环境，请配置并测试对应后端。"
+  },
+  {
+    "key": "Files and commands",
+    "value": "文件与命令"
+  },
+  {
+    "key": "Files and commands use the Computer workspace. Open Computer to verify its connection.",
+    "value": "文件与命令使用电脑环境的工作空间。请打开电脑环境以验证连接。"
+  },
+  {
+    "key": "Give each allowed tool a unique name.",
+    "value": "请为每个允许使用的工具填写唯一名称。"
+  },
+  {
+    "key": "Guest access",
+    "value": "Guest 访问"
+  },
+  {
+    "key": "Guest build",
+    "value": "Guest 构建版本"
+  },
+  {
+    "key": "Guest password reference",
+    "value": "Guest 密码引用"
+  },
+  {
+    "key": "Guest user",
+    "value": "Guest 用户名"
+  },
+  {
+    "key": "JavaScript runtime",
+    "value": "JavaScript 运行时"
+  },
+  {
+    "key": "JavaScript runtime unavailable. Check the absolute Node/sidecar paths and install the pinned runtime dependencies.",
+    "value": "JavaScript 运行时不可用。请检查 Node 与 sidecar 的绝对路径，并安装固定版本的运行时依赖。"
+  },
+  {
+    "key": "Keep between one and 128 allowed tools per provider.",
+    "value": "每个提供方须配置 1 至 128 个允许使用的工具。"
+  },
+  {
+    "key": "Keep between one and 32 tool providers.",
+    "value": "请保留 1 至 32 个工具提供方。"
+  },
+  {
+    "key": "Local workspace",
+    "value": "本地工作区"
+  },
+  {
+    "key": "Lume endpoint",
+    "value": "Lume 服务地址"
+  },
+  {
+    "key": "Lume version, sealed base and credential availability verified. Guest runtime identity is checked when a Run first opens its Computer.",
+    "value": "Lume 版本、封存基础镜像与凭据可用性已验证。执行首次打开电脑环境时，会检查虚拟机运行时身份。"
+  },
+  {
+    "key": "MCP discovery failed. Check absolute executable/private directory paths, the kernel sandbox, protocol and allowlisted tool names.",
+    "value": "MCP 发现失败。请检查可执行文件与私有目录的绝对路径、内核沙箱、协议及允许的工具名。"
+  },
+  {
+    "key": "MCP tools",
+    "value": "MCP 工具"
+  },
+  {
+    "key": "May make changes",
+    "value": "允许产生变更"
+  },
+  {
+    "key": "Memory",
+    "value": "记忆"
+  },
+  {
+    "key": "Memory key unavailable. Provide the referenced 32-byte key in SecretStore or the process environment.",
+    "value": "记忆密钥不可用。请在 SecretStore 或进程环境中提供所引用的 32 字节密钥。"
+  },
+  {
+    "key": "Model ID",
+    "value": "模型 ID"
+  },
+  {
+    "key": "Name each provider and use absolute executable and private directory paths.",
+    "value": "请为每个提供方命名，并填写可执行文件和私有目录的绝对路径。"
+  },
+  {
+    "key": "Needs attention",
+    "value": "需要检查"
+  },
+  {
+    "key": "New MCP server",
+    "value": "新 MCP 服务"
+  },
+  {
+    "key": "Node executable path",
+    "value": "Node 可执行文件路径"
+  },
+  {
+    "key": "Off",
+    "value": "关闭"
+  },
+  {
+    "key": "Permission",
+    "value": "权限"
+  },
+  {
+    "key": "Pinned SSH host key",
+    "value": "固定的 SSH 主机密钥指纹"
+  },
+  {
+    "key": "Prepare the catalog outside application data and execution workspaces. Testing validates the actual catalog and its bounded resources. An empty valid catalog is allowed.",
+    "value": "将目录放在应用数据与执行工作空间之外。测试会验证真实目录及其受限资源，允许有效的空目录。"
+  },
+  {
+    "key": "Preparing",
+    "value": "准备中"
+  },
+  {
+    "key": "Private state directory",
+    "value": "私有状态目录"
+  },
+  {
+    "key": "Provider version",
+    "value": "提供方版本"
+  },
+  {
+    "key": "Read only",
+    "value": "只读"
+  },
+  {
+    "key": "Read, edit, write and run commands in a private isolated workspace.",
+    "value": "在私有隔离工作空间中读写、编辑文件并运行命令。"
+  },
+  {
+    "key": "Read-only toolchain directories (optional)",
+    "value": "只读工具链目录（可选）"
+  },
+  {
+    "key": "Remember useful details across conversations.",
+    "value": "记住对话中的有用信息。"
+  },
+  {
+    "key": "Remove server",
+    "value": "移除服务"
+  },
+  {
+    "key": "Remove tool",
+    "value": "移除工具"
+  },
+  {
+    "key": "Restart required",
+    "value": "重启后生效"
+  },
+  {
+    "key": "Restoration manifest version",
+    "value": "恢复清单版本"
+  },
+  {
+    "key": "SSH port",
+    "value": "SSH 端口"
+  },
+  {
+    "key": "Save",
+    "value": "保存"
+  },
+  {
+    "key": "Sealed base compatibility",
+    "value": "密封基础镜像兼容性"
+  },
+  {
+    "key": "Semantic search",
+    "value": "语义检索"
+  },
+  {
+    "key": "Server name",
+    "value": "服务名称"
+  },
+  {
+    "key": "Sidecar script path",
+    "value": "Sidecar 脚本路径"
+  },
+  {
+    "key": "Skill catalog",
+    "value": "技能目录"
+  },
+  {
+    "key": "Skill catalog unavailable. Prepare a readable catalog with valid SKILL.md files and bounded resources at the configured root.",
+    "value": "技能目录不可用。请在配置的根目录准备可读取的目录、有效的 SKILL.md 文件及受限资源。"
+  },
+  {
+    "key": "Skill scope",
+    "value": "技能适用范围"
+  },
+  {
+    "key": "Skills",
+    "value": "技能"
+  },
+  {
+    "key": "Steward manages the default. You can choose custom settings or turn it off.",
+    "value": "Steward 自动管理默认资源。你也可以自定义配置或关闭这项能力。"
+  },
+  {
+    "key": "Steward will manage this capability automatically. Save and restart to apply the default.",
+    "value": "Steward 将自动管理此能力。保存并重启后使用默认配置。"
+  },
+  {
+    "key": "The actual Skill catalog and its resources passed validation (%d discovery/read tools).",
+    "value": "真实技能目录及其资源已通过验证（%d 个发现或读取工具）。"
+  },
+  {
+    "key": "The isolated diagnostic command did not complete successfully.",
+    "value": "隔离诊断命令未成功完成。"
+  },
+  {
+    "key": "The referenced 32-byte encryption key is available. No memory was read or written.",
+    "value": "所引用的 32 字节加密密钥可用。测试未读取或写入记忆。"
+  },
+  {
+    "key": "The saved Memory key is unavailable in local credential files. Restore the original key before restarting. Existing keys are never replaced.",
+    "value": "本地凭据文件中缺少已保存的记忆密钥，请恢复原密钥后再重启。程序不会替换已有密钥。"
+  },
+  {
+    "key": "These settings cannot be edited here. Your existing configuration is unchanged.",
+    "value": "暂时无法在此编辑，现有配置保持不变。"
+  },
+  {
+    "key": "This candidate disables the capability. Save and restart to apply it; existing work keeps its original capabilities.",
+    "value": "此候选配置将禁用该能力。保存并重启后生效；已有工作保留原能力。"
+  },
+  {
+    "key": "Tool name",
+    "value": "工具名称"
+  },
+  {
+    "key": "Unavailable on this device",
+    "value": "此设备暂不支持"
+  },
+  {
+    "key": "Use a custom local workspace",
+    "value": "使用自定义本地工作区"
+  },
+  {
+    "key": "Use a private macOS desktop, prepared automatically on first use.",
+    "value": "使用私有 macOS 桌面，首次使用时自动准备。"
+  },
+  {
+    "key": "Use a separate private directory and optional read-only toolchains. Testing creates the workspace if needed and runs only a fixed diagnostic command in the kernel sandbox. Disable Computer first to select this backend. An empty setting restores the default local workspace.",
+    "value": "使用独立的私有目录，可配置只读工具链。测试会按需创建工作空间，仅在内核沙箱中运行固定诊断命令。选择此后端前，请先禁用电脑环境。清空设置可恢复默认本地工作空间。"
+  },
+  {
+    "key": "Use at most 32 arguments per provider, one per line.",
+    "value": "每个提供方最多填写 32 个参数，每行一个。"
+  },
+  {
+    "key": "Vector dimensions",
+    "value": "向量维度"
+  },
+  {
+    "key": "Verification expired. Test this candidate again before saving.",
+    "value": "验证已过期，保存前请重新测试此候选配置。"
+  },
+  {
+    "key": "Workspace",
+    "value": "工作空间"
+  },
+  {
+    "key": "Workspace diagnostic failed. Check private directory permissions, Python 3, bash, kernel sandbox permissions and read-only toolchain paths.",
+    "value": "工作空间诊断失败。请检查私有目录权限、Python 3、bash、内核沙箱权限与只读工具链路径。"
+  },
+  {
+    "key": "Workspace directory",
+    "value": "工作区目录"
+  },
+  {
+    "key": "agent",
+    "value": "智能体执行"
+  },
+  {
+    "key": "command",
+    "value": "命令"
+  },
+  {
+    "key": "context",
+    "value": "上下文"
+  },
+  {
+    "key": "invalid capability configuration; check the documented fields and separate private paths",
+    "value": "能力配置无效，请检查文档字段及独立的私有路径。"
+  },
+  {
+    "key": "ready",
+    "value": "就绪"
+  },
+  {
+    "key": "root",
+    "value": "根执行者"
+  },
+  {
+    "key": "timeout",
+    "value": "超时时间"
+  },
+  {
+    "key": "tools",
+    "value": "工具"
+  },
+  {
+    "key": "unavailable",
+    "value": "不可用"
+  },
+  {
+    "key": "user",
+    "value": "用户"
+  },
+  {
+    "key": "← All capabilities",
+    "value": "← 全部能力"
+  },
+  {
+    "key": "← Memory",
+    "value": "← 记忆列表"
+  }
+]

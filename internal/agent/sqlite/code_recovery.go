@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
+	"github.com/z-chenhao/assistant/internal/plugin/codemodepolicy/contract"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"github.com/z-chenhao/assistant/internal/tool/codemode"
 )
@@ -50,6 +51,17 @@ func (b *codeBridge) claim(ctx context.Context, inv tool.Invocation) error {
 		// Include identities and complete frozen capability JSON, not mutable profile metadata.
 		snapshots := digest(capID + ":" + modelID + ":" + raw)
 		manifest, _ := encoded(*req) // Claim fields are empty until identity is frozen.
+		// A newly computed envelope is accepted with the manifest under the
+		// current Guardian fence. Already frozen executions retain their limits.
+		var newManaged bool
+		if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM rsi_run r,json_each(r.managed_services_json) s WHERE r.run_id=? AND s.value=?) AND NOT EXISTS(SELECT 1 FROM code_manifest WHERE execution_id=?)`, b.t.claim.RunID(), contract.LimitsContract, inv.ID).Scan(&newManaged); err != nil {
+			return err
+		}
+		if newManaged {
+			if err := b.t.runs.pluginDispatchFence(ctx, tx, b.t.claim.RunID()); err != nil {
+				return err
+			}
+		}
 		now := time.Now().UnixMicro()
 		inserted, err := tx.ExecContext(ctx, `INSERT INTO code_execution VALUES(?,?,?,?,?) ON CONFLICT DO NOTHING`, inv.ID, req.SourceHash, req.RuntimeVersion, req.PreludeVersion, now)
 		if err != nil {

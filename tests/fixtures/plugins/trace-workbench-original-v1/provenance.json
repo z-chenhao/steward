@@ -1,0 +1,192 @@
+{
+  "accepted_parent_source_sha256": "6f3cea0080687e932fd919a10feb54f44db8e2c88e8bd180233e61bed1c15199",
+  "existing_plugin": "steward.trace-inspector",
+  "existing_version": "1.0.1",
+  "captured_before_remaining_workbench_producer": true,
+  "files": [
+    {
+      "source": "internal/interaction/web/traces.go",
+      "capture": "internal__interaction__web__traces.go.txt",
+      "sha256": "3c8f93db211990a5ce51e916e8a9cb9b9d6df37f7533d55132001df6c075d055",
+      "bytes": 11508
+    },
+    {
+      "source": "internal/interaction/web/context.go",
+      "capture": "internal__interaction__web__context.go.txt",
+      "sha256": "9be1041fba926899151542d929933a6c90d7738a07b94a0cf99803be679f7c75",
+      "bytes": 6460
+    },
+    {
+      "source": "internal/interaction/web/templates.go",
+      "capture": "internal__interaction__web__templates.go.txt",
+      "sha256": "a2a35fa837861b6100a59787d112cab35ba253d08067df9ef64c8d4e9426dc9c",
+      "bytes": 5025
+    },
+    {
+      "source": "internal/interaction/web/templates/traces.html",
+      "capture": "internal__interaction__web__templates__traces.html.txt",
+      "sha256": "23bee98212054ce9ca638431a73819cb6206798dc6a6eb92015beb724bd64898",
+      "bytes": 19173
+    },
+    {
+      "source": "internal/interaction/web/templates/observation-detail.html",
+      "capture": "internal__interaction__web__templates__observation-detail.html.txt",
+      "sha256": "1405ce822315cdede43c405b0e72d4668f059b4b7d8368276522c05db44713bc",
+      "bytes": 14575
+    },
+    {
+      "source": "internal/interaction/web/templates/context.html",
+      "capture": "internal__interaction__web__templates__context.html.txt",
+      "sha256": "4950f04bf42e699a0a1060aeb8f14dfa98f71f5f9ac081bb4fa8557094e151f2",
+      "bytes": 3243
+    },
+    {
+      "source": "web/src/observability.ts",
+      "capture": "web__src__observability.ts.txt",
+      "sha256": "0b517a583baba8b52bb5bff9135b1d63e3c1ba66ef1f3b4bd7171f625702d92c",
+      "bytes": 13996
+    },
+    {
+      "source": "web/src/observability.css",
+      "capture": "web__src__observability.css.txt",
+      "sha256": "14f489882b5d49b845f7bbe49290af5f9efc05d0f3241b57e882d6c4833bbb08",
+      "bytes": 28846
+    },
+    {
+      "source": "web/src/trace-request.ts",
+      "capture": "web__src__trace-request.ts.txt",
+      "sha256": "34401541bbe61c2b7d28419d5534077ba03dffd93c8c9fc5348858120fa743d9",
+      "bytes": 4213
+    },
+    {
+      "source": "web/src/trace-activity.ts",
+      "capture": "web__src__trace-activity.ts.txt",
+      "sha256": "f505eddde93af85e64811923bacc4d9ddfb7d5b2b5fd2188d40aa188db5c5e02",
+      "bytes": 6925
+    },
+    {
+      "source": "web/src/trace-timeline.ts",
+      "capture": "web__src__trace-timeline.ts.txt",
+      "sha256": "78bdbfab9d5726b492290a503b3f3b8c1fa3b225fcccc8c217e472961be4c871",
+      "bytes": 8538
+    },
+    {
+      "source": "web/src/trace-time.ts",
+      "capture": "web__src__trace-time.ts.txt",
+      "sha256": "56d06acd2ceae7a119ec94bb5b4c56d4b08129a99adfba34b16c8337308ba582",
+      "bytes": 1844
+    },
+    {
+      "source": "plugins/trace-inspector/steward.plugin.json",
+      "capture": "plugins__trace-inspector__steward.plugin.json.txt",
+      "sha256": "cf63a997a3d417d95980ae1bc3db3265a79d71505bbc3bbc7b66f2d6eb0b91bd",
+      "bytes": 6631
+    },
+    {
+      "source": "internal/plugin/traceinspector/contract/contract.go",
+      "capture": "internal__plugin__traceinspector__contract__contract.go.txt",
+      "sha256": "f2143b2468eb3f4a2e014436e758d58a41899b90dc2276325ee2ca47850a895f",
+      "bytes": 1369
+    },
+    {
+      "source": "internal/plugin/traceinspector/contract/diff.go",
+      "capture": "internal__plugin__traceinspector__contract__diff.go.txt",
+      "sha256": "e0e5ca291f52d06062705dce76ad99ab9315e37c245258f3b1d6226f8e366c04",
+      "bytes": 979
+    },
+    {
+      "source": "internal/plugin/traceinspector/contract/tool.go",
+      "capture": "internal__plugin__traceinspector__contract__tool.go.txt",
+      "sha256": "1a23120271631e1edae8b4022d5f364c564427d15f79846a8800cdaf8314b420",
+      "bytes": 592
+    },
+    {
+      "source": "internal/plugin/traceinspector/diff.go",
+      "capture": "internal__plugin__traceinspector__diff.go.txt",
+      "sha256": "b974786ea49a4fd5aca87070f1dfaf3edad33979dfaa52ec14f9d97bf90f3285",
+      "bytes": 2847
+    },
+    {
+      "source": "internal/plugin/traceinspector/plugin.go",
+      "capture": "internal__plugin__traceinspector__plugin.go.txt",
+      "sha256": "ff29e45d85d760c641ece3cda4ffdc1270bbaa38ef5a4817e926f81547c16a2b",
+      "bytes": 4817
+    },
+    {
+      "source": "internal/plugin/traceinspector/tool.go",
+      "capture": "internal__plugin__traceinspector__tool.go.txt",
+      "sha256": "34a39e99c84a1cb037ee2d4aa94265991af572ed46951018b4cb8dd37c1220df",
+      "bytes": 1451
+    }
+  ],
+  "client_behavior": {
+    "capture": "client-behavior.json",
+    "sha256": "e60e37857b314d85b5950acce9db71863b2c5a6a9b45d18ec3358a2a574fe9c8",
+    "method": "execute archived native TypeScript via esbuild/VM with controlled DOM and storage; execute original exported time functions",
+    "counts": {
+      "tree": 105,
+      "columns": 14,
+      "bounded_window": 21,
+      "zoom_window": 36,
+      "bucket_selection": 25,
+      "elapsed_label": 10,
+      "time_micros": 8,
+      "activity_geometry": 3,
+      "activity_index": 24
+    },
+    "capture_script": "trace65-original-client-capture.mjs",
+    "capture_log": "trace65-original-client-capture.log",
+    "captured_before_replacement_producer": true
+  },
+  "tooltip_localization": {
+    "source": "internal/interaction/web/locales/zh-CN.json",
+    "source_sha256": "30fc6622caa7402a5683e2ece3acc9ab4c4abffcbb8ec00e733c96b5d581da40",
+    "accepted_parent_match": true,
+    "capture": "timeline-tooltip-labels-v1.json",
+    "sha256": "9a248a9914580e3e84fd4aeff279e909d8a3626703373e4bd7fb9b2916a84708",
+    "keys": [
+      "Start",
+      "Duration",
+      "Ongoing; end time not recorded",
+      "End time not recorded",
+      "First model output",
+      "Time since trace start"
+    ],
+    "method": "capture only original labels after verifying unchanged source bytes against trace65 initial accepted-parent snapshot; no candidate output used"
+  },
+  "activity_sources": [
+    {
+      "source": "internal/observability/sqlite/traces.go",
+      "capture": "internal__observability__sqlite__traces.go.txt",
+      "sha256": "b8a6a1a8b841dbcd82b95309ed36b687c881f750eaf36a9c17103d524ff0ca47",
+      "bytes": 13383
+    },
+    {
+      "source": "internal/observability/sqlite/activity_test.go",
+      "capture": "internal__observability__sqlite__activity_test.go.txt",
+      "sha256": "7f8a26c7cc72add3d795154a4821c699f3507036449168443a8c46e814c04251",
+      "bytes": 316
+    }
+  ],
+  "activity_behavior": {
+    "capture": "activity-behavior.json",
+    "sha256": "f65a5c7d8a34af3da800bbd5d74b4f7eeab5588edc3f82d0138e3d1af80e0964",
+    "cases": 220,
+    "method": "execute original archived window block and interval function in standalone Go harness, only bind query/null-int/timestamp primitives",
+    "script": "trace65-activity-original-capture.go",
+    "captured_before_activity_producer": true,
+    "retained_fields": [
+      "facts",
+      "expected"
+    ],
+    "full_original_capture": "trace65-activity-original-results-with-bins.json (external evidence; unused bin arrays omitted from repository fixture)",
+    "full_original_sha256": "4f07490d5f24875ddf6384cd1657d160ca990eb6ea8ef4331184abbc96a0f24b"
+  },
+  "request_reader_localization": {
+    "source": "internal/interaction/web/locales/zh-CN.json",
+    "source_sha256": "30fc6622caa7402a5683e2ece3acc9ab4c4abffcbb8ec00e733c96b5d581da40",
+    "capture": "request-reader-labels-v1.json",
+    "sha256": "70c3a8ecfe037763cf3d702fdb08c6f1ba73ed8f5507dc2dfc5b2e990fc09961",
+    "method": "Captured unchanged original global localization after exact full-source hash match to initial accepted Memory parent; absent Message/Tool keys retain original English fallback. Not candidate output."
+  }
+}

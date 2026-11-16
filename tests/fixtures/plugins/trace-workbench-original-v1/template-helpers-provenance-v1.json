@@ -1,0 +1,36 @@
+{
+  "source": "trace65-template-final-gate-source.json",
+  "source_sha256": "0693e8c4eeeb6fa656faafb513892614c9ee2f2b59c8d054de207c35fd489785",
+  "files": {
+    "internal/interaction/web/trace_view.go": {
+      "sha256": "beed7e96df9bddf98befd8bffcfeb3721dd2867c0917dab4fa9e68dde2d5cd89",
+      "copy": "helper-original-trace_view.go.txt"
+    },
+    "internal/interaction/web/inspection.go": {
+      "sha256": "b86c7a8d4ec90f304b89b508870f0292398d012409da566953e5764e1cfd140a",
+      "copy": "helper-original-inspection.go.txt"
+    },
+    "internal/interaction/web/presentation.go": {
+      "sha256": "eddcb54e8a42f924fc513bf7a4abfb95b12cc12c8ade24d84e2c3bf755c06b7c",
+      "copy": "helper-original-presentation.go.txt"
+    },
+    "internal/interaction/web/traces.go": {
+      "sha256": "d1f1bb9e152e96bfdfceaa6c0c0f3eb85d96f14d4a86556add9404f4525c6215",
+      "copy": "helper-original-traces.go.txt"
+    }
+  },
+  "method": "Go overlay appends an external capture-only test; production files and existing tests remain unchanged on disk; results come from current native helper functions before their migration",
+  "results": "template-helpers-v1.json",
+  "scope": "Read-only original-behavior capture, not a managed migration or acceptance claim",
+  "results_sha256": "b38e41eef4da0e394f14cf9096333988aca3fb138cdbe997f77437560cdf3870",
+  "execution": {
+    "log": "trace65-template-helper-original-capture.log",
+    "status": "passed",
+    "labels": 42,
+    "kinds": 72,
+    "titles": 24,
+    "SSR_geometry": 9,
+    "columns": 10,
+    "statuses": 6
+  }
+}

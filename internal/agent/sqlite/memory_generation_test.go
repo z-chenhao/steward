@@ -30,7 +30,7 @@ type semanticProvider struct {
 func (p *semanticProvider) Generate(ctx context.Context, req llm.GenerationRequest, _ func(llm.GenerationEvent)) (llm.GenerationResult, error) {
 	p.calls++
 	instruction, _, _ := strings.Cut(req.Messages[0].Text, "\nThe previous attempt was rejected: ")
-	if len(req.Tools) != 0 || len(req.Messages) != 2 || (instruction != memory.CurationInstruction && instruction != memory.DreamInstruction && instruction != memory.GroundedDreamInstruction && instruction != memory.WorkerDreamInstruction) || !strings.HasPrefix(req.SessionID, "memory:") {
+	if len(req.Tools) != 0 || len(req.Messages) != 2 || ((instruction != memory.CurationInstruction && instruction != memory.DreamInstruction && instruction != memory.GroundedDreamInstruction && instruction != memory.WorkerDreamInstruction) && !strings.HasPrefix(instruction, memoryPolicySafety+"\n\n")) || !strings.HasPrefix(req.SessionID, "memory:") {
 		return llm.GenerationResult{}, llm.InvalidProviderResponse
 	}
 	release, e := req.DispatchGuard(ctx)
@@ -143,7 +143,14 @@ func TestSemanticDreamDeadlineRetainsAcceptanceLeaseHeadroom(t *testing.T) {
 }
 
 func TestSemanticRuntimeAcceptedReplayAndNoUserTask(t *testing.T) {
+	testSemanticRuntimeAcceptedReplay(t, false)
+}
+
+func testSemanticRuntimeAcceptedReplay(t *testing.T, managed bool) {
 	s, r, m, a, p := semanticRuntime(t)
+	if managed {
+		installCuratorPlugin(t, s, r)
+	}
 	ctx := context.Background()
 	mustSubmit(t, a, "one", "我喜欢无糖绿茶")
 	tasks, runs := scalar(t, s, `SELECT count(*) FROM task`), scalar(t, s, `SELECT count(*) FROM run`)
@@ -193,7 +200,13 @@ func TestSemanticRuntimeAcceptedReplayAndNoUserTask(t *testing.T) {
 	}
 }
 func TestSemanticRuntimeInvalidQuarantinesWithoutBlockingLaterInput(t *testing.T) {
+	testSemanticRuntimeInvalid(t, false)
+}
+func testSemanticRuntimeInvalid(t *testing.T, managed bool) {
 	s, r, _, a, p := semanticRuntime(t)
+	if managed {
+		installCuratorPlugin(t, s, r)
+	}
 	ctx := context.Background()
 	p.reply = func(memory.CurationInput) llm.GenerationResult {
 		return llm.GenerationResult{Text: `{"facts":[{"operation":"add","facet":"fake","category":"health","content":"invented","quote":"not in source","tentative":false}]}`}
@@ -217,7 +230,13 @@ func TestSemanticRuntimeInvalidQuarantinesWithoutBlockingLaterInput(t *testing.T
 	}
 }
 func TestSemanticRuntimeForgetBeforeAcceptanceAndDispatch(t *testing.T) {
+	testSemanticRuntimeForget(t, false)
+}
+func testSemanticRuntimeForget(t *testing.T, managed bool) {
 	s, r, m, a, p := semanticRuntime(t)
+	if managed {
+		installCuratorPlugin(t, s, r)
+	}
 	ctx := context.Background()
 	mustSubmit(t, a, "private", "我喜欢无糖绿茶")
 	p.beforeAccept = func() {
@@ -321,7 +340,7 @@ func TestSemanticMigrationFromV46PreservesAcceptedWork(t *testing.T) {
 	if e := migrate(ctx, s.db, migrations); e != nil {
 		t.Fatal(e)
 	}
-	if SchemaVersion() != 51 || scalar(t, s, `PRAGMA user_version`) != 51 || scalar(t, s, `SELECT count(*) FROM conversation_intent`) != original || scalar(t, s, `SELECT count(*) FROM run WHERE run_id=?`, receipt.RunID) != 1 {
+	if SchemaVersion() != len(migrations) || scalar(t, s, `PRAGMA user_version`) != SchemaVersion() || scalar(t, s, `SELECT count(*) FROM conversation_intent`) != original || scalar(t, s, `SELECT count(*) FROM run WHERE run_id=?`, receipt.RunID) != 1 {
 		t.Fatal("forward migration changed accepted work")
 	}
 	if scalar(t, s, `SELECT count(*) FROM memory_generation`) != 0 {

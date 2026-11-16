@@ -157,110 +157,63 @@ func (s *session) call(method string, params any, result any) error {
 	}
 	return errInvalid
 }
+
+// Startup captures authoritative schema facts before default plugin selection.
+// This collector is not a Run's method selection or result presentation.
 func (s *session) list() ([]advertised, error) {
 	var all []advertised
 	cursor := ""
-	seen := map[string]bool{}
+	catalog := catalogFacts{seen: map[string]bool{}}
 	for page := 0; page < 16; page++ {
-		var response struct {
-			Tools []advertised `json:"tools"`
-			Next  string       `json:"nextCursor"`
-		}
-		params := map[string]string{}
-		if cursor != "" {
-			params["cursor"] = cursor
-		}
-		if s.call("tools/list", params, &response) != nil {
+		items, next, err := s.listPage(cursor)
+		if err != nil || catalog.accept(items) != nil {
 			return nil, errInvalid
 		}
-		for _, a := range response.Tools {
-			if !identifier.MatchString(a.Name) || seen[a.Name] || len(a.Description) > 4096 || len(a.InputSchema) > 65536 {
-				return nil, errInvalid
-			}
-			seen[a.Name] = true
-			all = append(all, a)
-			if len(all) > 4096 {
-				return nil, errInvalid
-			}
-		}
-		if response.Next == "" {
+		all = append(all, items...)
+		if next == "" {
 			sort.Slice(all, func(i, j int) bool { return all[i].Name < all[j].Name })
 			return all, nil
 		}
-		if response.Next == cursor {
+		if next == cursor {
 			return nil, errInvalid
 		}
-		cursor = response.Next
+		cursor = next
 	}
 	return nil, errInvalid
+}
+
+type catalogFacts struct{ seen map[string]bool }
+
+func (c *catalogFacts) accept(items []advertised) error {
+	for _, a := range items {
+		if !identifier.MatchString(a.Name) || c.seen[a.Name] || len(a.Description) > 4096 || len(a.InputSchema) > 65536 {
+			return errInvalid
+		}
+		c.seen[a.Name] = true
+		if len(c.seen) > 4096 {
+			return errInvalid
+		}
+	}
+	return nil
+}
+func (s *session) listPage(cursor string) ([]advertised, string, error) {
+	var response struct {
+		Tools []advertised `json:"tools"`
+		Next  string       `json:"nextCursor"`
+	}
+	params := map[string]string{}
+	if cursor != "" {
+		params["cursor"] = cursor
+	}
+	if s.call("tools/list", params, &response) != nil {
+		return nil, "", errInvalid
+	}
+	return response.Tools, response.Next, nil
 }
 func hash(v any) string {
 	b, _ := json.Marshal(v)
 	h := sha256.Sum256(b)
 	return hex.EncodeToString(h[:])
-}
-
-// invoke reopens the sandboxed peer and verifies the frozen tool before dispatch.
-// The boolean marks an ambiguous reply after dispatch, never permission to retry.
-func invoke(ctx context.Context, c Config, a advertised, args string) (tool.Result, bool) {
-	peer, err := start(ctx, c)
-	if err != nil {
-		return tool.Failure("PROVIDER_UNAVAILABLE"), false
-	}
-	defer peer.close()
-	current, err := peer.list()
-	if err != nil {
-		return tool.Failure("PROVIDER_UNAVAILABLE"), false
-	}
-	matched := false
-	for _, v := range current {
-		if v.Name == a.Name {
-			matched = hash(v) == hash(a)
-		}
-	}
-	if !matched {
-		return tool.Failure("NON_DETERMINISTIC_REPLAY"), false
-	}
-	var params any
-	if json.Unmarshal([]byte(args), &params) != nil {
-		return tool.Failure("INVALID_ARGUMENT"), false
-	}
-	return peer.callTool(a.Name, params)
-}
-
-// callTool preserves missing/null distinctions at the untrusted MCP boundary.
-func (s *session) callTool(name string, params any) (tool.Result, bool) {
-	// Pointers distinguish required empty values from missing/null
-	// values. A malformed reply after dispatch cannot prove an effect.
-	var reply *struct {
-		Content *[]struct {
-			Type string  `json:"type"`
-			Text *string `json:"text"`
-		} `json:"content"`
-		IsError json.RawMessage `json:"isError"`
-	}
-	if s.call("tools/call", map[string]any{"name": name, "arguments": params}, &reply) != nil || reply == nil || reply.Content == nil {
-		return tool.Failure("PROVIDER_UNAVAILABLE"), true
-	}
-	var isError bool
-	if len(reply.IsError) > 0 {
-		var flag *bool
-		if json.Unmarshal(reply.IsError, &flag) != nil || flag == nil {
-			return tool.Failure("PROVIDER_UNAVAILABLE"), true
-		}
-		isError = *flag
-	}
-	text := ""
-	for _, part := range *reply.Content {
-		if part.Type != "text" || part.Text == nil {
-			return tool.Failure("PROVIDER_UNAVAILABLE"), true
-		}
-		text += *part.Text
-	}
-	if isError {
-		return tool.Failure("INVALID_ARGUMENT"), false
-	}
-	return tool.Result{Text: text}, false
 }
 
 func Definitions(ctx context.Context, c Config) ([]tool.Definition, error) {
@@ -288,6 +241,10 @@ func Definitions(ctx context.Context, c Config) ([]tool.Definition, error) {
 		return nil, errInvalid
 	}
 	var defs []tool.Definition
+	namespaceSource := c.Description
+	if namespaceSource == "" {
+		namespaceSource = s.instructions
+	}
 	for _, a := range all {
 		permission, ok := c.Tools[a.Name]
 		if !ok {
@@ -307,7 +264,7 @@ func Definitions(ctx context.Context, c Config) ([]tool.Definition, error) {
 			Tool   advertised
 		}{executionConfig(c), a}), Version: 1, InputSchema: string(a.InputSchema), Permission: permission, ReplayPolicy: "safe", Risk: "low", Provider: "mcp:" + c.Name, TimeoutMS: 10000, OutputBytes: 65536, ConflictPolicy: "server-v1", Exposure: tool.CodeMode, CodeModeOnly: true, NamespaceDescription: namespaceDescription(c.Description, s.instructions)}
 
-		d := tool.Definition{Spec: spec, ConflictKeys: func(string) []string { return []string{"mcp:" + c.Name} }}
+		d := tool.Definition{Spec: spec, NamespaceSource: &namespaceSource, ConflictKeys: func(string) []string { return []string{"mcp:" + c.Name} }}
 		if permission == "read_only" {
 			d.Execute = func(ctx context.Context, args string) tool.Result { r, _ := invoke(ctx, c, a, args); return r }
 		} else {

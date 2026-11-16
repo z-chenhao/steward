@@ -1,0 +1,362 @@
+[
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "account",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "account",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "account",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "account",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "account",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "account",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "account",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "account",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "account",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "account",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "account",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "account",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "api",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "api",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "api",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "api",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "api",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "api",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "api",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "api",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "api",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "api",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "api",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "api",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "other",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "other",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "https://api.openai.com/v1",
+      "method": "other",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": false,
+      "wire_api": "openai_completions"
+    },
+    "facts": {
+      "has_source": false,
+      "method": "other",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "other",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "other",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "other",
+      "provider": "compatible",
+      "service": "openai",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "other",
+      "openai_endpoint": true
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "other",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "other",
+      "openai_endpoint": false
+    }
+  },
+  {
+    "expected": {
+      "endpoint": "",
+      "method": "other",
+      "provider": "compatible",
+      "service": "custom",
+      "use_source": true,
+      "wire_api": ""
+    },
+    "facts": {
+      "has_source": true,
+      "method": "other",
+      "openai_endpoint": false
+    }
+  }
+]

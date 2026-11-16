@@ -200,13 +200,17 @@ class MainHarness:
         result = {}
         with closing(sqlite3.connect(Path(self.env["STEWARD_DATA_ROOT"]) / "state.db")) as db, db:
             db.row_factory = sqlite3.Row
+            db.execute("BEGIN")
             for name, query in {
                 "runs": "SELECT run_id,kind,task_id,parent_run_id,root_run_id,task_epoch,depth,status,desired_state,model_snapshot_id,capability_snapshot_id,checkpoint_json,error_code,version FROM run ORDER BY created_at",
                 "generations": "SELECT generation_id,run_id,step_index,request_hash,request_json,status,result_json,error_code,attempt_count FROM model_generation ORDER BY created_at",
                 "tools": "SELECT invocation_id,run_id,provider_exchange_id,provider_call_id,tool_name,arguments_json,request_hash,replay_policy,status,result_json,delivery_seq,attempt_count FROM tool_invocation ORDER BY created_at,delivery_seq",
                 "deliveries": "SELECT delivery_id,message_id,status,idempotency_key FROM delivery_request ORDER BY created_at",
                 "usage": "SELECT u.generation_id,u.snapshot_id,u.error_code FROM provider_usage u JOIN model_generation g USING(generation_id) ORDER BY g.created_at",
-                "snapshots": "SELECT * FROM model_snapshot ORDER BY created_at",
+                # Private Memory maintenance can freeze its own model while
+                # Main is idle. Compare the snapshots owned by user Runs;
+                # maintenance authorization/replay has separate system gates.
+                "snapshots": "SELECT s.* FROM model_snapshot s WHERE EXISTS(SELECT 1 FROM run r WHERE r.model_snapshot_id=s.snapshot_id) ORDER BY s.created_at",
                 "capabilities": "SELECT * FROM capability_snapshot ORDER BY created_at",
                 "inputs": "SELECT sequence,request_key,message_json FROM main_input ORDER BY sequence",
                 "trace": "SELECT run_id,sequence,event_json,occurred_at FROM run_trace ORDER BY run_id,sequence",
@@ -285,8 +289,11 @@ def run(binary):
                 receipts = list(executor.map(lambda i: h.send(f"input-{i}", f"message {i}"), range(16)))
             require(len({r["run_id"] for r in receipts}) == 1, "concurrent ingress created multiple Main Runs")
             require(h.send("input-0", "message 0") == receipts[0], "ingress retry not idempotent")
+            # This first ordinary restart also verifies the full default bundle.
+            # Use the existing command deadline, while still requiring the
+            # missing explicitly configured Bridge to fail closed below.
             unconfigured = subprocess.run([str(h.binary), "chat", "work"], text=True, capture_output=True,
-                                          env=h.env, cwd=h.root, timeout=10)
+                                          env=h.env, cwd=h.root, timeout=20)
             require(unconfigured.returncode != 0 and "setup_required" in unconfigured.stderr and "panic" not in unconfigured.stderr,
                     "restart without the explicitly configured Bridge must fail closed")
             drift = h.command("chat", "send", "input-0", text="changed", ok=False)

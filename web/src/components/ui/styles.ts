@@ -9,7 +9,7 @@ export const buttonVariants = cva(
         default: 'bg-foreground text-background hover:bg-foreground/86',
         secondary: 'secondary border border-border bg-background hover:bg-muted',
       },
-      size: {default: 'h-9 px-4 py-2', icon: 'size-9'},
+      size: {default: 'control-form-action h-9 px-4 py-2', icon: 'size-9'},
     },
     defaultVariants: {variant: 'default', size: 'default'},
   },

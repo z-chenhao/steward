@@ -36,6 +36,21 @@ F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../inte
 
 `verify_tasks.py` 按持久化的上下文准备记录区分普通生成与摘要生成：两者必须使用同一 Run 的冻结模型；普通请求的工具名称及 schema 对照 Capability Snapshot，并保持逐轮一致；只有标记为 `summary_request`、具有摘要计划且上下文与准备记录一致的请求才能不声明工具。`test_model_task_control.py` 的负例继续拒绝摘要获得工具、未标记的无工具请求、模型/schema 漂移和准备上下文漂移。
 
+### 独立阶段方法验收（F-005）
+
+- `TestProgressPlugin*` 将原有多阶段／重复文本／完整响应／Child 与历史上下文隔离／512 字节边界／事务失败换 owner 恢复场景跑在实际隔离包上，核对失败前先行接纳的选择仅有一份；提示／筛选结果提交失败留下 unknown 时，真实 Actor 恢复继续业务且不重放 unknown。
+- 独立编译的 v1.1 改变提示并滤除 `NOISE:` 原句；实际 Root 与 Child 工具链验证旧 Root 固定版本、新 Root 接入新行为、回滚、退役保留、停用后业务完成且不复活原生摘要。`agent.TestProgressGuidance*` 保护共享 execution／角色／安全／输入的精确值。
+- `tasks` 和 `task-control` 在同一真实图中组合 Task 与进度包；进度提交前后 SIGKILL 检查 guidance／selection 已持久化，恢复时方法与 generation 不重新执行，原有 Reporter／Main／通知断言保留。
+- 必需检查包括 `make test lint`、`make test-prompts`、`make test-memory`、进度策略 race、核心系统门禁和 memory-maintenance／recall。真实模型摘要质量另行评测。
+
+### 问答／审阅配方验收（F-004）
+
+- `TestFeedbackPlugin*` 将现有实际 Actor／SQLite 的并发回答去重、陈旧／停止／Forget、跨 Task 因果、晚 Main、确切成果 pin、最大转义答案、回答事务失败与重新打开测试跑在独立隔离包上。
+- 实际 v1.1 二进制将期限改为一天并修改续作指引；检查新旧问题、回滚、新旧 Main、退役待执行 Run、停用后历史回答和新建不可用。原问题／回答／Task／成果数据及 Host 无批准提示必须精确保留；纯配方不写第二份 RSI 调用。
+- 配方绑定写入失败必须回滚问题、替代状态与原回执；问题已接纳但工具回执失败后，隔离旧包仍可 drain 原结果。v1.2 放宽自身 schema 与所有者机械用例后，Host 仍拒绝超过原七天上限的期限，不能替代有效旧问题。
+- `TestV56FeedbackPolicyMigration*` 验证旧记录的原文、状态、来源、时刻与原生配方，保护不可改／删／replace；共享系统夹具 schema expectation 同步至 57。
+- `tasks`／`task-control` 在真实分发组合中包含 Task、进度和问答包，检查原反馈入口、回答 SIGKILL／幂等／陈旧断言及每条问题的固定图和默认期限；必要检查包含完整 test／lint、prompts、memory、问答 race 和核心／相关系统门禁。
+
 ### F-004 信息反馈验收路径
 
 - `internal/task/task_test.go`：新问题/审阅分支的严格 union、必填/越臂/重复/null 字段、成果数量与冻结旧 schema 拒绝；旧请求省略新字段时保留规范化身份。
@@ -158,3 +173,11 @@ to survive the command or test harness.
 执行详情阅读回归使用实际 HTTP 模型 peer 产出的合成中文标题、长说明及含表格的 Main 报告；首轮 Root 受控延迟用于截取运行中桌面／手机状态。native-trace 核对说明默认折叠及轮询后仍展开、单次历史去重、18px 标题与首屏高度、桌面／手机明暗布局，继续验证独立刷新、前后记录、原生全页及无脚本。模板回归覆盖交付后隐藏旧进展与单次历史。
 
 执行详情的 `executionDetails` 浏览器回归先要求非空正文和 Markdown 表格，再检查桌面、移动端和明暗主题下的实际 UI 字体、14px 字号及表格与正文一致性，并保留对应截图；不能让零匹配的循环跳过检查。
+
+Task 搜索／默认标题已独立迁移；状态、Root、epoch、审批、原始 brief 与回执仍归 Host，已定位任务的安全控制保持独立。契约与恢复取舍见[插件设计](../designs/plugins-evolution.md#已提取的-task-发现与标题边界)。验证为 `TestTaskPlugin*`、`make test-prompts`、`tasks` 和 `task-control` 的实际分发包门禁。
+
+标题恢复补充：`TestTaskPluginInterruptedLegacyLabelRecoversWithoutRetryingOpaqueCall` 保留真实 schema63 未完成调用，直接走 Actor 恢复并验证 Task／Root 唯一、原 unknown 不删不重试；`TestTaskPluginCompletedLegacyLabelKeepsOriginalChoice` 核对旧选择原样沿用。`TestTaskPluginLabelInterruptedBeforeAcceptanceRecoversDuplicateTask` 注入完整方案接纳失败，验证双调用恢复、原模型请求与费用次数不变；`TestTaskPluginLabelLateForgetAndGuardianFence` 覆盖提交前／后 Forget、停机、隔离与方案不可改写／复活。`TestV63TaskLabelPlanMigrationPreservesOpaqueCallsAndRequests` 保护前向升级；新 schema 版本必须与共享 system fixture 一致。以上均进入既有 `make test-prompts`，Forget 系列同时由 required memory race 发现；`tasks` 系统门禁保留重复创建与原 SIGKILL 断言，追加纯标题提交前／后两处 kill，核对已冻结方案的原值、组合及 action hash，并留存调用状态以定位异常。
+
+### 版本方法的实际冷恢复
+
+`TestTaskPluginIndependentUpgradeRollbackKeepsOriginalRequests` 和 `TestFeedbackPluginIndependentUpgradeRetainsAcceptedQuestionsAndResponseData` 在回退并退役后关闭原 Store、新建 Store／Catalog，直接 drain 已排队请求；核对原默认标题、canonical hash、确切问题和所选配方。停用后再次重开，禁止新标签／问题恢复 native，但所有已接纳问答仍可按原配方、原来源去重回答。`TestProgressPluginIndependentUpgradeRetainedRootsChildIsolationAndDisable` 同样直接恢复原 Root，保留原版本／Child 隔离，停用不阻断业务也不恢复摘要。

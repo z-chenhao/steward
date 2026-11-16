@@ -1,0 +1,61 @@
+{{define "app-sidebar"}}
+{{if .Apps.Managed}}<p class="settings-nav-heading apps-sidebar-heading">{{appCopyText $.Apps $.Apps.Copy.ConnectedApps}}</p><nav class="section-navigation apps-connections" aria-label="{{appCopyText $.Apps $.Apps.Copy.ConnectedApps}}">{{range .Apps.Managed}}{{appSidebarView $.Apps .}}{{end}}</nav>{{end}}
+{{end}}
+{{define "apps-page"}}
+<section class="workspace-page settings-page apps-page" data-apps data-app-revision="{{.Apps.State.Revision}}" data-app-interface-mode="{{.Apps.InterfaceMode}}" data-app-interface-revision="{{.Apps.InterfaceRevision}}" data-app-interface-profile="{{.Apps.InterfaceJSON}}"{{if .Apps.InterfaceLocalized}} data-app-interface-localized="true"{{end}}>
+{{range appParts .Apps "page"}}{{if eq . "heading"}}{{template "app-page-heading" $}}{{else if eq . "unavailable"}}{{template "app-page-unavailable" $}}{{else if eq . "feedback"}}{{template "app-page-feedback" $}}{{else if eq . "inventory"}}{{template "app-page-inventory" $}}{{else if eq . "body"}}{{template "app-page-body" $}}{{else if eq . "dialog"}}{{template "app-page-dialog" $}}{{end}}{{end}}</section>
+{{end}}
+
+{{define "app-detail"}}
+{{with .Apps.Selected}}<div class="app-detail" data-app-detail="{{.Slug}}"{{if $.Apps.InterfaceRevision}} data-app-no-auth="{{.NoAuth}}" data-app-suggested="{{$.Apps.Suggested}}"{{end}}>{{template "app-detail-sections" $}}</div>{{end}}
+{{end}}
+
+{{define "app-accounts"}}
+{{range appAccountViews .Apps}}<div class="app-account" data-app-account="{{.ID}}" data-app-slug="{{.Toolkit}}" data-app-state="{{.Status}}" data-app-public="{{.Public}}">{{template "app-account-sections" (appAccountContext $.Apps .)}}</div>{{end}}
+{{end}}
+
+{{define "app-service-page"}}
+<section class="workspace-page settings-page">
+{{range appParts .Apps "service"}}{{if eq . "heading"}}{{template "app-service-heading" $}}{{else if eq . "back"}}{{template "app-service-back" $}}{{else if eq . "project"}}{{template "app-service-project" $}}{{end}}{{end}}</section>
+{{end}}
+
+{{define "app-interface-reference"}}{{if .InterfaceRevision}}<input type="hidden" name="interface_revision" value="{{.InterfaceRevision}}">{{end}}{{end}}
+
+{{define "app-directory-tabs"}}{{appDirectoryPart .Apps "tabs"}}{{end}}
+{{define "app-directory-collection-back"}}{{appDirectoryPart .Apps "collection-back"}}{{end}}
+{{define "app-directory-categories"}}{{appDirectoryPart .Apps "categories"}}{{end}}
+{{define "app-directory-groups"}} {{range .Apps.Groups}}<section class="apps-group"><div class="apps-group-heading"><h2>{{tr .Title}}</h2>{{if .URL}}<a class="text-link" href="{{.URL}}" aria-label="{{appCopyText $.Apps $.Apps.Copy.ViewAll}}: {{tr .Title}}">{{appCopyText $.Apps $.Apps.Copy.ViewAll}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>{{end}}</div><div class="apps-grid">{{range .Items}}{{appCardView $.Apps .}}{{end}}</div></section>{{else}}<p class="apps-empty">{{appCopyText $.Apps $.Apps.Copy.NoApps}}</p>{{end}}
+{{end}}
+{{define "app-directory-pagination"}}{{appDirectoryPart .Apps "pagination"}}{{end}}
+{{define "app-directory-sections"}}{{range appParts .Apps "directory"}}{{if eq . "tabs"}}{{template "app-directory-tabs" $}}{{else if eq . "collection-back"}}{{template "app-directory-collection-back" $}}{{else if eq . "categories"}}{{template "app-directory-categories" $}}{{else if eq . "groups"}}{{template "app-directory-groups" $}}{{else if eq . "pagination"}}{{template "app-directory-pagination" $}}{{end}}{{end}}{{end}}
+{{define "app-page-heading"}} <div class="page-heading apps-heading"><div><h1>{{appCopyText $.Apps $.Apps.Copy.AppsTitle}}</h1></div>
+ <div class="apps-toolbar"><a class="control-icon-button" href="/settings/apps/service" aria-label="{{appCopyText $.Apps $.Apps.Copy.AppSettings}}" title="{{appCopyText $.Apps $.Apps.Copy.AppSettings}}">{{template "icon-settings"}}</a>{{if not .Apps.Selected}}{{if not .Apps.ConnectedOnly}}<form method="get" action="/settings/apps" class="apps-search control-search" role="search"><input type="hidden" name="view" value="all"><input type="hidden" name="category" value="{{.Apps.Category}}"><label for="app-search" class="sr-only">{{appCopyText $.Apps $.Apps.Copy.SearchApps}}</label><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" id="app-search" name="search" value="{{.Apps.Search}}" maxlength="200" placeholder="{{appCopyText $.Apps $.Apps.Copy.SearchApps}}"><button class="sr-only" type="submit">{{appCopyText $.Apps $.Apps.Copy.Search}}</button></form>{{end}}{{end}}<a class="control-icon-button" href="/settings/apps" aria-label="{{appCopyText $.Apps $.Apps.Copy.RefreshApps}}" title="{{appCopyText $.Apps $.Apps.Copy.RefreshApps}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/></svg></a></div></div>
+{{end}}
+{{define "app-page-unavailable"}} {{if .Apps.Unavailable}}<p class="apps-notice" role="alert">{{appCopyText $.Apps $.Apps.Copy.DirectoryUnavailable}}</p>{{end}}
+{{end}}
+{{define "app-page-feedback"}} <p class="feedback" role="status" aria-live="polite" data-app-feedback hidden></p>
+{{end}}
+{{define "app-page-inventory"}} <div id="app-accounts" hidden>{{template "app-accounts" .Apps.Inventory}}</div>
+{{end}}
+{{define "app-page-body"}} {{if .Apps.Selected}}<a class="back-link" href="/settings/apps">{{appCopyText $.Apps $.Apps.Copy.BackToApps}}</a><section class="app-detail-page">{{template "app-detail" .}}</section>{{else}}
+{{template "app-directory-sections" .}} {{end}}
+{{end}}
+{{define "app-page-dialog"}} <dialog class="control-dialog apps-dialog" data-app-dialog aria-labelledby="app-dialog-title"><button type="button" class="control-icon-button apps-dialog-close" data-app-close aria-label="{{tr "Close"}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button><div data-app-dialog-body></div></dialog>
+{{end}}
+{{define "app-detail-heading"}}{{with .Apps.Selected}}{{$ui:=appCardUI $.Apps .}}<header>{{appIconView $.Apps .}}<div><h2>{{.Name}}</h2><p>{{tr .Description}}</p></div></header>
+{{end}}{{end}}
+{{define "app-detail-feedback"}}{{with .Apps.Selected}}{{$ui:=appCardUI $.Apps .}}<p class="feedback" data-app-detail-feedback role="status" aria-live="polite" hidden></p>
+{{end}}{{end}}
+{{define "app-detail-connect"}}{{appConnectPart .Apps "first"}}{{end}}
+{{define "app-detail-accounts"}}{{with .Apps.Selected}}{{$ui:=appCardUI $.Apps .}}<h3>{{appCopyText $.Apps $.Apps.Copy.YourConnections}}</h3><div data-app-detail-accounts>{{template "app-accounts" $}}</div><p class="muted" data-app-no-accounts {{if $ui.EmptyHidden}}hidden{{end}}>{{appCopyText $.Apps $.Apps.Copy.NoConnections}}</p>
+{{end}}{{end}}
+{{define "app-detail-additional"}}{{appConnectPart .Apps "additional"}}{{end}}
+{{define "app-detail-sections"}}{{range appParts .Apps "detail"}}{{if eq . "heading"}}{{template "app-detail-heading" $}}{{else if eq . "feedback"}}{{template "app-detail-feedback" $}}{{else if eq . "connect"}}{{template "app-detail-connect" $}}{{else if eq . "accounts"}}{{template "app-detail-accounts" $}}{{else if eq . "additional"}}{{template "app-detail-additional" $}}{{end}}{{end}}{{end}}
+{{define "app-account-copy"}}{{appAccountPart . "copy"}}{{end}}
+{{define "app-account-actions"}}{{appAccountPart . "actions"}}{{end}}
+{{define "app-account-sections"}}{{range appParts .Apps "account"}}{{if eq . "copy"}}{{template "app-account-copy" $}}{{else if eq . "actions"}}{{template "app-account-actions" $}}{{end}}{{end}}{{end}}
+{{define "app-service-heading"}} <div class="page-heading"><div><h1>{{appCopyText $.Apps $.Apps.Copy.ServiceTitle}}</h1></div></div>
+{{end}}
+{{define "app-service-back"}} <a class="back-link" href="/settings/apps">{{appCopyText $.Apps $.Apps.Copy.BackToApps}}</a>
+{{end}}
+{{define "app-service-project"}}{{appSettingsProject .}}{{end}}

@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/automation"
@@ -15,6 +14,7 @@ import (
 )
 
 type ScheduleSettings interface {
+	ScheduleDefaults(context.Context) (automation.EditorDefaults, error)
 	Schedule(context.Context, string) (task.ScheduledWork, error)
 	ConfigureSchedule(context.Context, string, automation.OwnerConfiguration) (automation.OwnerReceipt, error)
 }
@@ -28,56 +28,37 @@ type scheduleEditor struct {
 
 func scheduleURL(ref string) string { return "/tasks/schedules/" + url.PathEscape(ref) }
 
-func localScheduleTime(language, raw, zone string) string {
-	at, err := time.Parse(time.RFC3339Nano, raw)
-	if err != nil {
-		return raw
-	}
-	loc, err := time.LoadLocation(zone)
-	if err != nil {
-		return raw
-	}
-	format := "Jan 2, 2006 · 15:04"
-	if language == "zh-CN" {
-		format = "2006年1月2日 · 15:04"
-	}
-	return at.In(loc).Format(format) + " " + zone
-}
-func scheduleFrequency(kind, spec string) string {
-	if kind == "at" {
-		return "Scheduled once"
-	}
-	f := strings.Fields(spec)
-	if len(f) != 5 {
-		return "Custom cron"
-	}
-	m, me := strconv.Atoi(f[0])
-	h, he := strconv.Atoi(f[1])
-	if me != nil || he != nil || m < 0 || m > 59 || h < 0 || h > 23 {
-		return "Custom cron"
-	}
-	switch {
-	case f[2] == "*" && f[3] == "*" && f[4] == "*":
-		return "Every day"
-	case f[2] == "*" && f[3] == "*" && f[4] == "1-5":
-		return "Weekdays"
-	case f[2] == "*" && f[3] == "*" && len(f[4]) == 1 && f[4] >= "0" && f[4] <= "6":
-		return "Weekly"
-	case f[3] == "*" && f[4] == "*":
-		if day, err := strconv.Atoi(f[2]); err == nil && day >= 1 && day <= 31 {
-			return "Monthly"
+func localScheduleTime(language string, v *task.Schedule) string {
+	if v.Presentation != nil {
+		if language == "zh-CN" {
+			return v.Presentation.TimeChinese
 		}
+		return v.Presentation.TimeEnglish
 	}
-	return "Custom cron"
+	return legacyLocalScheduleTime(language, v.Spec, v.Timezone)
+}
+func scheduleFrequency(language string, v *task.Schedule) string {
+	if v.Presentation != nil {
+		if language == "zh-CN" {
+			return v.Presentation.FrequencyChinese
+		}
+		return v.Presentation.FrequencyEnglish
+	}
+	return translate(language, legacyScheduleFrequency(v.Type, v.Spec))
 }
 
 func (s *Server) loadSchedule(ctx context.Context, r *http.Request, p *page) error {
 	if s.Schedules == nil {
 		return errPageNotFound
 	}
-	e := &scheduleEditor{Key: sourceID(), Frequency: "daily", Time: "08:00", Timezone: "UTC", Enabled: true, Weekday: "1", Day: "1"}
+	e := &scheduleEditor{Key: sourceID()}
 	p.Schedule = e
 	if r.URL.Path == "/tasks/schedules/new" {
+		defaults, err := s.Schedules.ScheduleDefaults(ctx)
+		if err != nil {
+			return err
+		}
+		applyScheduleDefaults(e, defaults)
 		return nil
 	}
 	ref := strings.TrimPrefix(r.URL.Path, "/tasks/schedules/")
@@ -88,6 +69,13 @@ func (s *Server) loadSchedule(ctx context.Context, r *http.Request, p *page) err
 	if v.Restricted {
 		return task.ErrNotFound
 	}
+	var defaults automation.EditorDefaults
+	if v.Presentation != nil && v.Presentation.EditorDefaults != nil {
+		defaults = *v.Presentation.EditorDefaults
+	} else {
+		defaults = automation.LegacyEditorDefaults()
+	}
+	applyScheduleDefaults(e, defaults)
 	e.Ref, e.Version, e.Instruction, e.Timezone, e.Enabled, e.TaskRef = v.Ref, v.Version, v.Instruction, v.Timezone, v.Enabled, v.TaskRef
 	if v.Below != nil {
 		e.Threshold = strconv.FormatInt(*v.Below, 10)
@@ -97,70 +85,25 @@ func (s *Server) loadSchedule(ctx context.Context, r *http.Request, p *page) err
 	if v.Type == "at" {
 		e.OriginalSpec, e.OriginalTimezone = v.Spec, v.Timezone
 		e.Frequency = "once"
-		at, err := time.Parse(time.RFC3339Nano, v.Spec)
-		if err != nil {
-			return err
+		if v.OwnerLocal != nil {
+			e.Date, e.Time = v.OwnerLocal.Date, v.OwnerLocal.Clock
+			return nil
 		}
-		loc, err := time.LoadLocation(v.Timezone)
-		if err != nil {
-			return err
+		return loadLegacyScheduleEditor(e, v)
+	} else if v.OwnerFrequency != nil {
+		e.Frequency, e.Time = v.OwnerFrequency.Frequency, v.OwnerFrequency.Clock
+		if e.Frequency == "weekly" {
+			e.Weekday = v.OwnerFrequency.Weekday
 		}
-		e.Date, e.Time = at.In(loc).Format("2006-01-02"), at.In(loc).Format("15:04")
+		if e.Frequency == "monthly" {
+			e.Day = v.OwnerFrequency.Day
+		}
 	} else {
-		fields := strings.Fields(v.Spec)
-		if len(fields) == 5 {
-			minute, em := strconv.Atoi(fields[0])
-			hour, eh := strconv.Atoi(fields[1])
-			if em == nil && eh == nil && minute >= 0 && minute < 60 && hour >= 0 && hour < 24 {
-				e.Time = time.Date(2000, 1, 1, hour, minute, 0, 0, time.UTC).Format("15:04")
-				switch {
-				case fields[2] == "*" && fields[3] == "*" && fields[4] == "*":
-					e.Frequency = "daily"
-				case fields[2] == "*" && fields[3] == "*" && fields[4] == "1-5":
-					e.Frequency = "weekdays"
-				case fields[2] == "*" && fields[3] == "*" && len(fields[4]) == 1 && fields[4] >= "0" && fields[4] <= "6":
-					e.Frequency = "weekly"
-					e.Weekday = fields[4]
-				case fields[3] == "*" && fields[4] == "*":
-					if day, err := strconv.Atoi(fields[2]); err == nil && day >= 1 && day <= 31 {
-						e.Frequency = "monthly"
-						e.Day = fields[2]
-					}
-				}
-			}
-		}
+		return loadLegacyScheduleEditor(e, v)
 	}
 	return nil
 }
 
-// A local date/time must identify exactly one instant. Go's ParseInLocation
-// silently normalizes DST gaps/folds, so collect matching zone offsets instead.
-func exactLocalOnce(date, clock, zone string) (string, error) {
-	loc, err := time.LoadLocation(zone)
-	if err != nil || zone == "" || zone == "Local" {
-		return "", automation.ErrInvalid
-	}
-	wall, err := time.Parse("2006-01-02T15:04", date+"T"+clock)
-	if err != nil {
-		return "", automation.ErrInvalid
-	}
-	offsets := map[int]bool{}
-	for h := -36; h <= 36; h++ {
-		_, offset := wall.Add(time.Duration(h) * time.Hour).In(loc).Zone()
-		offsets[offset] = true
-	}
-	var matches []time.Time
-	for offset := range offsets {
-		candidate := wall.Add(-time.Duration(offset) * time.Second)
-		if candidate.In(loc).Format("2006-01-02T15:04") == date+"T"+clock {
-			matches = append(matches, candidate)
-		}
-	}
-	if len(matches) != 1 {
-		return "", automation.ErrInvalid
-	}
-	return matches[0].UTC().Format(time.RFC3339), nil
-}
 func decodeScheduleForm(r *http.Request) (*scheduleEditor, automation.OwnerConfiguration, error) {
 	e := &scheduleEditor{}
 	q := automation.OwnerConfiguration{}
@@ -192,54 +135,29 @@ func decodeScheduleForm(r *http.Request) (*scheduleEditor, automation.OwnerConfi
 	switch e.Frequency {
 	case "once":
 		q.Type = "at"
-		// A new owner edit proves this original against stored Spec and zone inside
-		// the transaction. Retrying carries the same exact command to its receipt.
+		q.LocalDate, q.LocalClock = e.Date, e.Time
 		if e.Ref != "" && e.OriginalSpec != "" && e.OriginalTimezone == e.Timezone {
-			at, parseErr := time.Parse(time.RFC3339Nano, e.OriginalSpec)
-			loc, zoneErr := time.LoadLocation(e.Timezone)
-			if parseErr == nil && zoneErr == nil && at.In(loc).Format("2006-01-02") == e.Date && at.In(loc).Format("15:04") == e.Time {
-				q.Spec, q.PreserveSpec = e.OriginalSpec, e.OriginalSpec
-			}
+			q.PreserveSpec = e.OriginalSpec
 		}
-		if q.Spec == "" {
-			q.Spec, err = exactLocalOnce(e.Date, e.Time, e.Timezone)
-		}
+
 	case "custom":
 		q.Type = "cron"
 		q.Spec = e.Cron
 	case "daily", "weekdays", "weekly", "monthly":
-		clock, parseErr := time.Parse("15:04", e.Time)
-		if parseErr != nil {
-			err = automation.ErrInvalid
-			break
-		}
-		day, weekday := "*", "*"
-		if e.Frequency == "weekdays" {
-			weekday = "1-5"
-		}
+		q.Type = "cron"
+		q.Frequency = &automation.OwnerFrequency{Frequency: e.Frequency, Clock: e.Time}
 		if e.Frequency == "weekly" {
-			value, parseErr := strconv.Atoi(e.Weekday)
-			if parseErr != nil || value < 0 || value > 6 {
-				err = automation.ErrInvalid
-				break
-			}
-			weekday = strconv.Itoa(value)
+			q.Frequency.Weekday = e.Weekday
 		}
 		if e.Frequency == "monthly" {
-			value, parseErr := strconv.Atoi(e.Day)
-			if parseErr != nil || value < 1 || value > 31 {
-				err = automation.ErrInvalid
-				break
-			}
-			day = strconv.Itoa(value)
+			q.Frequency.Day = e.Day
 		}
-		q.Type = "cron"
-		q.Spec = strconv.Itoa(clock.Minute()) + " " + strconv.Itoa(clock.Hour()) + " " + day + " * " + weekday
+
 	default:
 		err = automation.ErrInvalid
 	}
 	if err == nil {
-		err = q.Validate()
+		err = q.ValidateShape()
 	}
 	return e, q, err
 }
@@ -264,6 +182,10 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 		message = "The schedule could not be saved. Your draft is preserved; try again with the same form."
 	}
 	p := page{Tab: "/tasks", View: "schedule", Title: "Schedule settings", Path: r.URL.Path, Schedule: e, Error: message}
+	if err := s.loadWorkbench(r.Context(), r, &p); err != nil {
+		fail(w, http.StatusServiceUnavailable)
+		return nil
+	}
 	if status, statusErr := s.Core.WebStatus(r.Context()); statusErr == nil {
 		p.Status = status
 	}
@@ -271,4 +193,8 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 	w.WriteHeader(http.StatusConflict)
 	s.render(w, r, p)
 	return nil
+}
+
+func applyScheduleDefaults(e *scheduleEditor, v automation.EditorDefaults) {
+	e.Frequency, e.Date, e.Time, e.Timezone, e.Cron, e.Weekday, e.Day, e.Enabled = v.Frequency, v.Date, v.Clock, v.Timezone, v.Cron, v.Weekday, v.Day, v.Enabled
 }

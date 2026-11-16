@@ -1,0 +1,1027 @@
+[
+  {
+    "key": "A new schedule is a separate arrangement; it does not change this task or its current work.",
+    "en": "A new schedule is a separate arrangement; it does not change this task or its current work.",
+    "zh_cn": "新计划是独立安排，不会修改此任务或正在执行的工作。"
+  },
+  {
+    "key": "A scheduled occurrence is a trigger, not a guaranteed start time. Current task state and available resources still apply.",
+    "en": "A scheduled occurrence is a trigger, not a guaranteed start time. Current task state and available resources still apply.",
+    "zh_cn": "计划时间表示触发时间，不保证立即开始；执行仍取决于任务状态和可用资源。"
+  },
+  {
+    "key": "Accepted instructions",
+    "en": "Accepted instructions",
+    "zh_cn": "已接收的指令"
+  },
+  {
+    "key": "Adjust this task",
+    "en": "Adjust this task",
+    "zh_cn": "调整此任务"
+  },
+  {
+    "key": "Advanced",
+    "en": "Advanced",
+    "zh_cn": "高级选项"
+  },
+  {
+    "key": "All statuses",
+    "en": "All statuses",
+    "zh_cn": "全部状态"
+  },
+  {
+    "key": "Answer question",
+    "en": "Answer question",
+    "zh_cn": "回答问题"
+  },
+  {
+    "key": "Apply filters",
+    "en": "Apply filters",
+    "zh_cn": "应用筛选"
+  },
+  {
+    "key": "Approval could not be confirmed. Checking its current state. Your draft is kept.",
+    "en": "Approval could not be confirmed. Checking its current state. Your draft is kept.",
+    "zh_cn": "尚未确认审批结果，正在检查当前状态。草稿已保留。"
+  },
+  {
+    "key": "Attach a file",
+    "en": "Attach a file",
+    "zh_cn": "添加附件"
+  },
+  {
+    "key": "Browse tasks needing attention",
+    "en": "Browse tasks needing attention",
+    "zh_cn": "浏览待处理任务"
+  },
+  {
+    "key": "Cancel",
+    "en": "Cancel",
+    "zh_cn": "取消"
+  },
+  {
+    "key": "Chat",
+    "en": "Chat",
+    "zh_cn": "对话"
+  },
+  {
+    "key": "Check current items",
+    "en": "Check current items",
+    "zh_cn": "查看当前待办"
+  },
+  {
+    "key": "Clear task context",
+    "en": "Clear task context",
+    "zh_cn": "清除任务关联"
+  },
+  {
+    "key": "Completed / failed",
+    "en": "Completed / failed",
+    "zh_cn": "已完成 / 失败"
+  },
+  {
+    "key": "Completes when its work finishes successfully, unless Ghost explicitly continues it.",
+    "en": "Completes when its work finishes successfully, unless Ghost explicitly continues it.",
+    "zh_cn": "工作成功结束后完成，除非 Ghost 明确继续此任务。"
+  },
+  {
+    "key": "Completion rule unavailable",
+    "en": "Completion rule unavailable",
+    "zh_cn": "完成规则暂不可用"
+  },
+  {
+    "key": "Configurations",
+    "en": "Configurations",
+    "zh_cn": "任务配置"
+  },
+  {
+    "key": "Connect a ready model before sending. Your draft can stay here.",
+    "en": "Connect a ready model before sending. Your draft can stay here.",
+    "zh_cn": "请先连接可用模型再发送。草稿会保留在这里。"
+  },
+  {
+    "key": "Connection lost. Reconnecting… Your draft is kept.",
+    "en": "Connection lost. Reconnecting… Your draft is kept.",
+    "zh_cn": "连接已断开，正在重连…草稿已保留。"
+  },
+  {
+    "key": "Continue this task →",
+    "en": "Continue this task →",
+    "zh_cn": "继续此任务 →"
+  },
+  {
+    "key": "Create a separate schedule →",
+    "en": "Create a separate schedule →",
+    "zh_cn": "创建独立计划 →"
+  },
+  {
+    "key": "Create schedule",
+    "en": "Create schedule",
+    "zh_cn": "创建计划"
+  },
+  {
+    "key": "Created",
+    "en": "Created",
+    "zh_cn": "创建时间"
+  },
+  {
+    "key": "Cron expression",
+    "en": "Cron expression",
+    "zh_cn": "Cron 表达式"
+  },
+  {
+    "key": "Custom cron",
+    "en": "Custom cron",
+    "zh_cn": "自定义 Cron"
+  },
+  {
+    "key": "Date",
+    "en": "Date",
+    "zh_cn": "日期"
+  },
+  {
+    "key": "Day of month",
+    "en": "Day of month",
+    "zh_cn": "每月日期"
+  },
+  {
+    "key": "Day of week",
+    "en": "Day of week",
+    "zh_cn": "星期"
+  },
+  {
+    "key": "Delegated work ·",
+    "en": "Delegated work ·",
+    "zh_cn": "委派工作 ·"
+  },
+  {
+    "key": "Delivered files",
+    "en": "Delivered files",
+    "zh_cn": "交付文件"
+  },
+  {
+    "key": "Describe what you have in mind…",
+    "en": "Describe what you have in mind…",
+    "zh_cn": "发消息，或交给 Ghost 一件事…"
+  },
+  {
+    "key": "Disabled",
+    "en": "Disabled",
+    "zh_cn": "已停用"
+  },
+  {
+    "key": "Disabling stops future triggers. Work already admitted keeps its frozen instructions; this does not pause or cancel the linked task.",
+    "en": "Disabling stops future triggers. Work already admitted keeps its frozen instructions; this does not pause or cancel the linked task.",
+    "zh_cn": "停用后不再产生后续触发；已接收的工作保留冻结指令，不会因此暂停或取消关联任务。"
+  },
+  {
+    "key": "Draft reply",
+    "en": "Draft reply",
+    "zh_cn": "回复草稿"
+  },
+  {
+    "key": "Draft reply from Ghost",
+    "en": "Draft reply from Ghost",
+    "zh_cn": "Ghost 的回复草稿"
+  },
+  {
+    "key": "Earlier messages",
+    "en": "Earlier messages",
+    "zh_cn": "更早的消息"
+  },
+  {
+    "key": "Edit schedule",
+    "en": "Edit schedule",
+    "zh_cn": "编辑计划"
+  },
+  {
+    "key": "Enabled",
+    "en": "Enabled",
+    "zh_cn": "已启用"
+  },
+  {
+    "key": "Every day",
+    "en": "Every day",
+    "zh_cn": "每天"
+  },
+  {
+    "key": "Execution actions",
+    "en": "Execution actions",
+    "zh_cn": "执行操作"
+  },
+  {
+    "key": "Execution details",
+    "en": "Execution details",
+    "zh_cn": "执行详情"
+  },
+  {
+    "key": "Execution records",
+    "en": "Execution records",
+    "zh_cn": "执行记录"
+  },
+  {
+    "key": "Execution result",
+    "en": "Execution result",
+    "zh_cn": "执行结果"
+  },
+  {
+    "key": "Execution round",
+    "en": "Execution round",
+    "zh_cn": "执行轮次"
+  },
+  {
+    "key": "Execution rule",
+    "en": "Execution rule",
+    "zh_cn": "执行规则"
+  },
+  {
+    "key": "Execution updates are temporarily unavailable. Retrying…",
+    "en": "Execution updates are temporarily unavailable. Retrying…",
+    "zh_cn": "执行信息暂时不可用，正在重试…"
+  },
+  {
+    "key": "Filters",
+    "en": "Filters",
+    "zh_cn": "筛选"
+  },
+  {
+    "key": "Find a task",
+    "en": "Find a task",
+    "zh_cn": "查找任务"
+  },
+  {
+    "key": "Find a task by title or goal",
+    "en": "Find a task by title or goal",
+    "zh_cn": "按标题或目标查找任务"
+  },
+  {
+    "key": "Finished",
+    "en": "Finished",
+    "zh_cn": "已结束"
+  },
+  {
+    "key": "Finishing a work session keeps this task open. Further work needs a new instruction or a configured trigger.",
+    "en": "Finishing a work session keeps this task open. Further work needs a new instruction or a configured trigger.",
+    "zh_cn": "一轮工作结束后，任务仍保持开启；后续工作需要新指令或已配置的触发条件。"
+  },
+  {
+    "key": "Five fields: minute, hour, day of month, month, weekday. Uses the time zone below.",
+    "en": "Five fields: minute, hour, day of month, month, weekday. Uses the time zone below.",
+    "zh_cn": "五个字段依次为：分钟、小时、日期、月份、星期；使用下方时区。"
+  },
+  {
+    "key": "Frequency",
+    "en": "Frequency",
+    "zh_cn": "频率"
+  },
+  {
+    "key": "Friday",
+    "en": "Friday",
+    "zh_cn": "周五"
+  },
+  {
+    "key": "Ghost has a question",
+    "en": "Ghost has a question",
+    "zh_cn": "Ghost 有一个问题"
+  },
+  {
+    "key": "Ghost is working…",
+    "en": "Ghost is working…",
+    "zh_cn": "Ghost 正在处理…"
+  },
+  {
+    "key": "In progress",
+    "en": "In progress",
+    "zh_cn": "进行中"
+  },
+  {
+    "key": "Input requested",
+    "en": "Input requested",
+    "zh_cn": "需要补充信息"
+  },
+  {
+    "key": "Inspect execution epochs →",
+    "en": "Inspect execution epochs →",
+    "zh_cn": "检查执行轮次 →"
+  },
+  {
+    "key": "Instructions",
+    "en": "Instructions",
+    "zh_cn": "指令"
+  },
+  {
+    "key": "Latest messages ↓",
+    "en": "Latest messages ↓",
+    "zh_cn": "最新消息 ↓"
+  },
+  {
+    "key": "Latest progress",
+    "en": "Latest progress",
+    "zh_cn": "最新进展"
+  },
+  {
+    "key": "Local time",
+    "en": "Local time",
+    "zh_cn": "当地时间"
+  },
+  {
+    "key": "Message Ghost",
+    "en": "Message Ghost",
+    "zh_cn": "给 Ghost 发消息"
+  },
+  {
+    "key": "Monday",
+    "en": "Monday",
+    "zh_cn": "周一"
+  },
+  {
+    "key": "Monthly",
+    "en": "Monthly",
+    "zh_cn": "每月"
+  },
+  {
+    "key": "Months without this date are skipped.",
+    "en": "Months without this date are skipped.",
+    "zh_cn": "没有此日期的月份将跳过。"
+  },
+  {
+    "key": "More approvals in conversation",
+    "en": "More approvals in conversation",
+    "zh_cn": "在对话中查看更多审批"
+  },
+  {
+    "key": "More questions and reviews",
+    "en": "More questions and reviews",
+    "zh_cn": "更多问题与审阅"
+  },
+  {
+    "key": "Needs attention",
+    "en": "Needs attention",
+    "zh_cn": "需要检查"
+  },
+  {
+    "key": "Needs input",
+    "en": "Needs input",
+    "zh_cn": "Needs input"
+  },
+  {
+    "key": "Needs me",
+    "en": "Needs me",
+    "zh_cn": "待我处理"
+  },
+  {
+    "key": "Needs you",
+    "en": "Needs you",
+    "zh_cn": "待你处理"
+  },
+  {
+    "key": "Needs your attention",
+    "en": "Needs your attention",
+    "zh_cn": "待你处理"
+  },
+  {
+    "key": "Needs your decision",
+    "en": "Needs your decision",
+    "zh_cn": "需要你确认"
+  },
+  {
+    "key": "Next execution",
+    "en": "Next execution",
+    "zh_cn": "下一次执行"
+  },
+  {
+    "key": "Next scheduled occurrence",
+    "en": "Next scheduled occurrence",
+    "zh_cn": "下次计划触发"
+  },
+  {
+    "key": "No automatic schedule is configured for this task.",
+    "en": "No automatic schedule is configured for this task.",
+    "zh_cn": "此任务未配置自动执行计划。"
+  },
+  {
+    "key": "No finished tasks yet",
+    "en": "No finished tasks yet",
+    "zh_cn": "暂无已结束的任务"
+  },
+  {
+    "key": "No further scheduled occurrence",
+    "en": "No further scheduled occurrence",
+    "zh_cn": "没有后续计划触发"
+  },
+  {
+    "key": "No matching tasks",
+    "en": "No matching tasks",
+    "zh_cn": "没有匹配的任务"
+  },
+  {
+    "key": "No recorded milestones yet.",
+    "en": "No recorded milestones yet.",
+    "zh_cn": "暂无里程碑记录。"
+  },
+  {
+    "key": "No related updates yet.",
+    "en": "No related updates yet.",
+    "zh_cn": "暂无相关更新。"
+  },
+  {
+    "key": "No result has been delivered for this run yet.",
+    "en": "No result has been delivered for this run yet.",
+    "zh_cn": "本轮尚无已交付结果。"
+  },
+  {
+    "key": "Nothing needs your attention",
+    "en": "Nothing needs your attention",
+    "zh_cn": "暂无需要你处理的事项"
+  },
+  {
+    "key": "Notify when entering below",
+    "en": "Notify when entering below",
+    "zh_cn": "数值进入以下阈值时通知"
+  },
+  {
+    "key": "Older milestones →",
+    "en": "Older milestones →",
+    "zh_cn": "更早的里程碑 →"
+  },
+  {
+    "key": "Older tasks →",
+    "en": "Older tasks →",
+    "zh_cn": "更早的任务 →"
+  },
+  {
+    "key": "Once",
+    "en": "Once",
+    "zh_cn": "单次"
+  },
+  {
+    "key": "One-time task",
+    "en": "One-time task",
+    "zh_cn": "单次任务"
+  },
+  {
+    "key": "Ongoing task",
+    "en": "Ongoing task",
+    "zh_cn": "持续任务"
+  },
+  {
+    "key": "Open attention items in a new tab",
+    "en": "Open attention items in a new tab",
+    "zh_cn": "在新标签页打开待办"
+  },
+  {
+    "key": "Open in conversation →",
+    "en": "Open in conversation →",
+    "zh_cn": "在对话中打开 →"
+  },
+  {
+    "key": "Open model settings",
+    "en": "Open model settings",
+    "zh_cn": "打开模型设置"
+  },
+  {
+    "key": "Opens in a new tab",
+    "en": "Opens in a new tab",
+    "zh_cn": "在新标签页打开"
+  },
+  {
+    "key": "Optional integer threshold. Leave blank for ordinary scheduling; zero is a valid threshold. Editing a schedule stops observations from older schedule versions from notifying.",
+    "en": "Optional integer threshold. Leave blank for ordinary scheduling; zero is a valid threshold. Editing a schedule stops observations from older schedule versions from notifying.",
+    "zh_cn": "可选的整数阈值；普通计划请留空，0 也是有效值。编辑计划后，旧版本计划的观测不再触发通知。"
+  },
+  {
+    "key": "Outcome unconfirmed",
+    "en": "Outcome unconfirmed",
+    "zh_cn": "结果未确认"
+  },
+  {
+    "key": "Pending approval",
+    "en": "Pending approval",
+    "zh_cn": "待确认"
+  },
+  {
+    "key": "Planned objective",
+    "en": "Planned objective",
+    "zh_cn": "计划目标"
+  },
+  {
+    "key": "Previous execution",
+    "en": "Previous execution",
+    "zh_cn": "上一次执行"
+  },
+  {
+    "key": "Recent runs",
+    "en": "Recent runs",
+    "zh_cn": "最近运行"
+  },
+  {
+    "key": "Refresh",
+    "en": "Refresh",
+    "zh_cn": "刷新"
+  },
+  {
+    "key": "Regarding",
+    "en": "Regarding",
+    "zh_cn": "关于"
+  },
+  {
+    "key": "Related updates from Ghost",
+    "en": "Related updates from Ghost",
+    "zh_cn": "Ghost 的相关交付"
+  },
+  {
+    "key": "Reload saved schedule",
+    "en": "Reload saved schedule",
+    "zh_cn": "重新加载已保存的计划"
+  },
+  {
+    "key": "Remove attachment",
+    "en": "Remove attachment",
+    "zh_cn": "移除附件"
+  },
+  {
+    "key": "Request & milestone history",
+    "en": "Request & milestone history",
+    "zh_cn": "请求与里程碑历史"
+  },
+  {
+    "key": "Request updated",
+    "en": "Request updated",
+    "zh_cn": "请求已更新"
+  },
+  {
+    "key": "Retry updates",
+    "en": "Retry updates",
+    "zh_cn": "重试更新"
+  },
+  {
+    "key": "Review result",
+    "en": "Review result",
+    "zh_cn": "审阅成果"
+  },
+  {
+    "key": "Review this result",
+    "en": "Review this result",
+    "zh_cn": "审阅此项成果"
+  },
+  {
+    "key": "Reviewing a result does not approve external actions. Ghost will consider your feedback before continuing.",
+    "en": "Reviewing a result does not approve external actions. Ghost will consider your feedback before continuing.",
+    "zh_cn": "审阅成果不代表批准外部动作。Ghost 会先理解你的意见，再决定如何继续。"
+  },
+  {
+    "key": "Run details",
+    "en": "Run details",
+    "zh_cn": "运行详情"
+  },
+  {
+    "key": "Running / queued / waiting",
+    "en": "Running / queued / waiting",
+    "zh_cn": "运行中 / 排队中 / 等待中"
+  },
+  {
+    "key": "Saturday",
+    "en": "Saturday",
+    "zh_cn": "周六"
+  },
+  {
+    "key": "Save schedule",
+    "en": "Save schedule",
+    "zh_cn": "保存计划"
+  },
+  {
+    "key": "Saving configures future triggers only. It does not run the task now or rewrite instructions for work already admitted.",
+    "en": "Saving configures future triggers only. It does not run the task now or rewrite instructions for work already admitted.",
+    "zh_cn": "保存只配置后续触发，不会立即执行任务，也不会改写已接收工作的指令。"
+  },
+  {
+    "key": "Schedule",
+    "en": "Schedule",
+    "zh_cn": "执行计划"
+  },
+  {
+    "key": "Schedule details are unavailable because the original scheduling context was revoked.",
+    "en": "Schedule details are unavailable because the original scheduling context was revoked.",
+    "zh_cn": "原始计划上下文已撤销，无法显示计划详情。"
+  },
+  {
+    "key": "Schedule details unavailable",
+    "en": "Schedule details unavailable",
+    "zh_cn": "计划详情暂不可用"
+  },
+  {
+    "key": "Schedule disabled",
+    "en": "Schedule disabled",
+    "zh_cn": "计划已停用"
+  },
+  {
+    "key": "Schedule enabled",
+    "en": "Schedule enabled",
+    "zh_cn": "启用计划"
+  },
+  {
+    "key": "Scheduled instructions",
+    "en": "Scheduled instructions",
+    "zh_cn": "计划指令"
+  },
+  {
+    "key": "Scheduled time",
+    "en": "Scheduled time",
+    "zh_cn": "计划时间"
+  },
+  {
+    "key": "Scheduled work",
+    "en": "Scheduled work",
+    "zh_cn": "计划中的工作"
+  },
+  {
+    "key": "Schedules are temporarily unavailable.",
+    "en": "Schedules are temporarily unavailable.",
+    "zh_cn": "计划暂时不可用。"
+  },
+  {
+    "key": "Search",
+    "en": "Search",
+    "zh_cn": "搜索"
+  },
+  {
+    "key": "Send answer",
+    "en": "Send answer",
+    "zh_cn": "发送回答"
+  },
+  {
+    "key": "Send message",
+    "en": "Send message",
+    "zh_cn": "发送消息"
+  },
+  {
+    "key": "Send review feedback",
+    "en": "Send review feedback",
+    "zh_cn": "发送审阅意见"
+  },
+  {
+    "key": "Sending your response…",
+    "en": "Sending your response…",
+    "zh_cn": "正在发送回答…"
+  },
+  {
+    "key": "Set up Steward →",
+    "en": "Set up Steward →",
+    "zh_cn": "配置 Steward →"
+  },
+  {
+    "key": "Setup required",
+    "en": "Setup required",
+    "zh_cn": "需要设置"
+  },
+  {
+    "key": "Showing the 20 most recent instructions. Earlier additions remain in request and milestone history.",
+    "en": "Showing the 20 most recent instructions. Earlier additions remain in request and milestone history.",
+    "zh_cn": "显示最近 20 条指令；更早的补充内容保留在请求与里程碑历史中。"
+  },
+  {
+    "key": "Sign in",
+    "en": "Sign in",
+    "zh_cn": "登录"
+  },
+  {
+    "key": "Some attention items are temporarily unavailable. The items below are still current.",
+    "en": "Some attention items are temporarily unavailable. The items below are still current.",
+    "zh_cn": "部分待办暂时无法读取，以下事项仍为当前待办。"
+  },
+  {
+    "key": "Status",
+    "en": "Status",
+    "zh_cn": "状态"
+  },
+  {
+    "key": "Stopped",
+    "en": "Stopped",
+    "zh_cn": "Stopped"
+  },
+  {
+    "key": "Sunday",
+    "en": "Sunday",
+    "zh_cn": "周日"
+  },
+  {
+    "key": "Task",
+    "en": "Task",
+    "zh_cn": "任务"
+  },
+  {
+    "key": "Task configuration →",
+    "en": "Task configuration →",
+    "zh_cn": "任务配置 →"
+  },
+  {
+    "key": "Task instructions",
+    "en": "Task instructions",
+    "zh_cn": "任务指令"
+  },
+  {
+    "key": "Task reference:",
+    "en": "Task reference:",
+    "zh_cn": "任务引用："
+  },
+  {
+    "key": "Task sections",
+    "en": "Task sections",
+    "zh_cn": "任务分类"
+  },
+  {
+    "key": "Tasks",
+    "en": "Tasks",
+    "zh_cn": "任务"
+  },
+  {
+    "key": "Technical details",
+    "en": "Technical details",
+    "zh_cn": "技术详情"
+  },
+  {
+    "key": "The original objective and completion rule are fixed for this task. Create a new task to use a different completion rule.",
+    "en": "The original objective and completion rule are fixed for this task. Create a new task to use a different completion rule.",
+    "zh_cn": "此任务的原始目标和完成规则已固定；如需不同的完成规则，请创建新任务。"
+  },
+  {
+    "key": "The request changed while your response was being sent. Your draft is kept; check the conversation before retrying.",
+    "en": "The request changed while your response was being sent. Your draft is kept; check the conversation before retrying.",
+    "zh_cn": "发送回答时问题已变更。草稿已保留，请先核对对话后再决定是否重试。"
+  },
+  {
+    "key": "This answer is too long or invalid. Edit it before sending again.",
+    "en": "This answer is too long or invalid. Edit it before sending again.",
+    "zh_cn": "回答过长或无效，请修改后再发送。"
+  },
+  {
+    "key": "This answer is too long. Shorten it before sending.",
+    "en": "This answer is too long. Shorten it before sending.",
+    "zh_cn": "回答过长，请缩短后再发送。"
+  },
+  {
+    "key": "This is a page of current items, not a total count.",
+    "en": "This is a page of current items, not a total count.",
+    "zh_cn": "这里显示一页当前待办，并非全部待办的总数。"
+  },
+  {
+    "key": "This question or review changed. Your draft is kept for reference and has not been submitted.",
+    "en": "This question or review changed. Your draft is kept for reference and has not been submitted.",
+    "zh_cn": "问题或审阅已变更。草稿已保留供你参考，尚未提交。"
+  },
+  {
+    "key": "This run did not finish. Open task configuration to review the task.",
+    "en": "This run did not finish. Open task configuration to review the task.",
+    "zh_cn": "本轮未完成，可在任务配置中查看任务。"
+  },
+  {
+    "key": "This run is queued. Results will appear here when delivered.",
+    "en": "This run is queued. Results will appear here when delivered.",
+    "zh_cn": "本轮正在排队，交付后将在这里显示结果。"
+  },
+  {
+    "key": "This run is waiting. Open task configuration to review any required action.",
+    "en": "This run is waiting. Open task configuration to review any required action.",
+    "zh_cn": "本轮正在等待，可在任务配置中查看需要处理的事项。"
+  },
+  {
+    "key": "This run was cancelled. No result has been delivered.",
+    "en": "This run was cancelled. No result has been delivered.",
+    "zh_cn": "本轮已取消，尚无交付结果。"
+  },
+  {
+    "key": "Thursday",
+    "en": "Thursday",
+    "zh_cn": "周四"
+  },
+  {
+    "key": "Time zone",
+    "en": "Time zone",
+    "zh_cn": "时区"
+  },
+  {
+    "key": "Title",
+    "en": "Title",
+    "zh_cn": "标题"
+  },
+  {
+    "key": "Trace ID",
+    "en": "Trace ID",
+    "zh_cn": "Trace ID"
+  },
+  {
+    "key": "Tuesday",
+    "en": "Tuesday",
+    "zh_cn": "周二"
+  },
+  {
+    "key": "Type",
+    "en": "Type",
+    "zh_cn": "类型"
+  },
+  {
+    "key": "Updated",
+    "en": "Updated",
+    "zh_cn": "更新于"
+  },
+  {
+    "key": "Updates paused. Your draft is kept. ",
+    "en": "Updates paused. Your draft is kept. ",
+    "zh_cn": "更新已暂停，草稿已保留。 "
+  },
+  {
+    "key": "Use an IANA time zone. One-time times during a clock change must identify one unambiguous instant.",
+    "en": "Use an IANA time zone. One-time times during a clock change must identify one unambiguous instant.",
+    "zh_cn": "请使用 IANA 时区；单次计划在夏令时切换期间必须对应唯一的有效时间。"
+  },
+  {
+    "key": "Use model",
+    "en": "Use model",
+    "zh_cn": "使用此模型"
+  },
+  {
+    "key": "View original request",
+    "en": "View original request",
+    "zh_cn": "查看原始请求"
+  },
+  {
+    "key": "View related message",
+    "en": "View related message",
+    "zh_cn": "查看关联消息"
+  },
+  {
+    "key": "View trace →",
+    "en": "View trace →",
+    "zh_cn": "查看执行轨迹 →"
+  },
+  {
+    "key": "Waiting",
+    "en": "Waiting",
+    "zh_cn": "Waiting"
+  },
+  {
+    "key": "Wednesday",
+    "en": "Wednesday",
+    "zh_cn": "周三"
+  },
+  {
+    "key": "Weekdays",
+    "en": "Weekdays",
+    "zh_cn": "工作日"
+  },
+  {
+    "key": "Weekly",
+    "en": "Weekly",
+    "zh_cn": "每周"
+  },
+  {
+    "key": "What would you like to work on?",
+    "en": "What would you like to work on?",
+    "zh_cn": "今天想一起做些什么？"
+  },
+  {
+    "key": "Work attempt failed",
+    "en": "Work attempt failed",
+    "zh_cn": "本次执行失败"
+  },
+  {
+    "key": "Work is in progress. Updates will appear here when delivered.",
+    "en": "Work is in progress. Updates will appear here when delivered.",
+    "zh_cn": "任务正在执行，交付后的更新会显示在这里。"
+  },
+  {
+    "key": "Work round completed",
+    "en": "Work round completed",
+    "zh_cn": "本轮工作已完成"
+  },
+  {
+    "key": "Working",
+    "en": "Working",
+    "zh_cn": "工作中"
+  },
+  {
+    "key": "Workspace",
+    "en": "Workspace",
+    "zh_cn": "工作空间"
+  },
+  {
+    "key": "You",
+    "en": "You",
+    "zh_cn": "你"
+  },
+  {
+    "key": "Your access changed. Sign in again before sending. Your draft is kept.",
+    "en": "Your access changed. Sign in again before sending. Your draft is kept.",
+    "zh_cn": "访问权限已变更，请重新登录后再发送。草稿已保留。"
+  },
+  {
+    "key": "Your answer",
+    "en": "Your answer",
+    "zh_cn": "你的回答"
+  },
+  {
+    "key": "Your answer goes to Ghost in the conversation. It does not directly restart the task.",
+    "en": "Your answer goes to Ghost in the conversation. It does not directly restart the task.",
+    "zh_cn": "回答会送达对话中的 Ghost，不会直接重新启动任务。"
+  },
+  {
+    "key": "Your decision is needed",
+    "en": "Your decision is needed",
+    "zh_cn": "需要你的决定"
+  },
+  {
+    "key": "Your response was not confirmed. Checking the current request. Your draft is kept.",
+    "en": "Your response was not confirmed. Checking the current request. Your draft is kept.",
+    "zh_cn": "尚未确认回答已保存，正在核对当前问题。草稿已保留。"
+  },
+  {
+    "key": "Your response was not saved. Review the current request before trying again.",
+    "en": "Your response was not saved. Review the current request before trying again.",
+    "zh_cn": "回答尚未保存。请先核对当前问题，再决定是否重试。"
+  },
+  {
+    "key": "Your response was saved. Ghost will review it in the conversation.",
+    "en": "Your response was saved. Ghost will review it in the conversation.",
+    "zh_cn": "回答已保存，Ghost 会在对话中处理。"
+  },
+  {
+    "key": "Your review feedback",
+    "en": "Your review feedback",
+    "zh_cn": "你的审阅意见"
+  },
+  {
+    "key": "Your saved draft",
+    "en": "Your saved draft",
+    "zh_cn": "已保留的草稿"
+  },
+  {
+    "key": "active",
+    "en": "active",
+    "zh_cn": "有效"
+  },
+  {
+    "key": "cancelled",
+    "en": "cancelled",
+    "zh_cn": "已取消"
+  },
+  {
+    "key": "completed",
+    "en": "completed",
+    "zh_cn": "已完成"
+  },
+  {
+    "key": "failed",
+    "en": "failed",
+    "zh_cn": "失败"
+  },
+  {
+    "key": "instant",
+    "en": "instant",
+    "zh_cn": "瞬时"
+  },
+  {
+    "key": "paused",
+    "en": "paused",
+    "zh_cn": "已暂停"
+  },
+  {
+    "key": "queued",
+    "en": "queued",
+    "zh_cn": "排队中"
+  },
+  {
+    "key": "records on this page",
+    "en": "records on this page",
+    "zh_cn": "条记录在本页"
+  },
+  {
+    "key": "running",
+    "en": "running",
+    "zh_cn": "运行中"
+  },
+  {
+    "key": "succeeded",
+    "en": "succeeded",
+    "zh_cn": "succeeded"
+  },
+  {
+    "key": "total",
+    "en": "total",
+    "zh_cn": "项"
+  },
+  {
+    "key": "unknown",
+    "en": "unknown",
+    "zh_cn": "未知"
+  },
+  {
+    "key": "waiting",
+    "en": "waiting",
+    "zh_cn": "等待中"
+  },
+  {
+    "key": "· epoch",
+    "en": "· epoch",
+    "zh_cn": "· 执行轮次"
+  }
+]

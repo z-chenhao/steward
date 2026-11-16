@@ -26,13 +26,23 @@ func resolveUIComponent(ctx context.Context, q interface {
 	if !found || err != nil || i < 0 || strconv.Itoa(i) != index || len(ref) > 256 {
 		return ui.Component{}, agent.ErrNotFound
 	}
-	var raw string
-	err = q.QueryRowContext(ctx, `SELECT w.document_json FROM ui_widget w JOIN run r USING(run_id) JOIN conversation_intent c ON c.message_id=w.message_id JOIN tool_invocation t USING(invocation_id) WHERE w.ui_ref=? AND r.kind='main' AND r.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.status='succeeded'`, base).Scan(&raw)
+	var raw, receipt string
+	var managed bool
+	err = q.QueryRowContext(ctx, `SELECT `+uiStoredColumns+` FROM ui_widget w JOIN run r USING(run_id) JOIN conversation_intent c ON c.message_id=w.message_id JOIN tool_invocation t USING(invocation_id) WHERE w.ui_ref=? AND r.kind='main' AND r.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.status='succeeded'`, base).Scan(&raw, &managed, &receipt)
 	if err != nil {
 		return ui.Component{}, agent.ErrNotFound
 	}
-	w, ok := ui.ParseWidget(raw)
-	if !ok || i >= len(w.Components) {
+	var w ui.Widget
+	valid := false
+	if managed {
+		var decodeErr error
+		w, _, decodeErr = storedUI(raw, true, receipt)
+		valid = decodeErr == nil
+	} else {
+		// Legacy executable HTML remains excluded from interactive authority.
+		w, valid = ui.ParseWidget(raw)
+	}
+	if !valid || i >= len(w.Components) {
 		return ui.Component{}, agent.ErrNotFound
 	}
 	return w.Components[i], nil
@@ -107,7 +117,7 @@ func (r *Runs) SubmitUIAction(ctx context.Context, ref, source string) (agent.Re
 		return agent.Receipt{}, conversation.ErrInvalid
 	}
 	e := interaction.InboundEvent{Channel: "web", Subject: "browser", Destination: "local", SourceID: "ui-action:" + source, EventID: "ui-action:" + source, Content: conversation.Text(action.Label)}
-	return r.submit(ctx, "", e.Content, &e, "", &uiActionInput{Ref: ref, Source: source, Action: action, DefinitionHash: ui.Hash(c.Props)})
+	return r.submit(ctx, "", e.Content, &e, "", &uiActionInput{Ref: ref, Source: source, Action: action, DefinitionHash: ui.Hash(c.Props)}, nil)
 }
 
 // freezeUIInput takes the snapshot in the ordinary input transaction, once.

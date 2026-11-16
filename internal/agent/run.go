@@ -28,10 +28,13 @@ type RunClaim interface{ RunID() string }
 type SystemSection struct {
 	Kind string `json:"kind"`
 	Text string `json:"text"`
-	// ChildText excludes Root-only instructions from a Child's frozen rules.
+	// ChildText freezes the Child role or shared rules without Root-only instructions.
 	ChildText string `json:"child_text,omitempty"`
 	// Progress opts the Root's execution section into Host stage projection.
 	Progress bool `json:"progress,omitempty"`
+	// DelegationText is a managed contribution; Child capabilities are rebuilt
+	// from their own frozen tools with the same inherited delegation method.
+	DelegationText string `json:"delegation_text,omitempty"`
 }
 
 type AgentMessage struct {

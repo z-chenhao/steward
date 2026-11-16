@@ -89,3 +89,9 @@ CLI capabilities 的 `tool-loading` 场景在真实 stdio MCP 的 500 工具目�
 显式 Code Mode-only 冻结面的 Main/Worker 组件场景验证模型只声明 Code Mode、Main 脚本能创建 Task、Worker 脚本只能看到自身冻结权限，以及伪造顶层普通工具调用在 schema 校验前被拒绝。真实 500 工具 stdio 场景检查无原生 MCP 声明、脚本搜索默认 8 条、服务描述可作为独立搜索入口、全部 500 个允许工具可通过 Code Mode 发现且直接绕过失败；Main 与 Worker 的实际请求均不含 MCP Server 目录或其描述。`TestAgentStartsWithOneFrozenSystemMessage` 与完整消息字节快照同时覆盖 Main、Root、Child 的无目录系统上下文。原生模型系统回归检查实际 HTTP tools 数组包含 Code Mode 与角色允许的固定高频工具，并从数据库独立核对被隐藏的角色权限仍存在。旧冻结面和加载 checkpoint 的回归用于证明恢复兼容，不代表新增暴露模式。
 
 PR 的 `Ubuntu checks` 显式运行 capabilities 的 `tool-loading` 与 `main-business` 两个场景，使用真实 MCP/QuickJS/SQLite 验证目录规模、具体动作审批与慢工具挂起期间的 Main 响应，并保留失败证据。完整回归仍覆盖相同场景；不需要真实模型账号。
+
+Computer 动作参数的原 hash／解析选项、批准前固化与不重算、失权及存储故障、旧审批迁移由[Computer 回归](computer-use.md)覆盖；普通原生审批与其他工具的协议继续运行原门禁。Web 使用真实有值投影检查手机触控、明暗与无脚本，不改决定／执行流程。
+
+`TestToolUnknownReconciliationUsesOnlyOriginalQueryableResource` 经真实审批与 unknown 回执结束 Run，再改变无关能力，分别验证无 Query／原 Query 确认成功／原 Query 仍未知／目标资源漂移／目标移除。无关能力不得阻断扫描；原目标指纹改变不得调用 Query，原参数和幂等键保持冻结，不重发或复活 Run。该入口随 required `mcp-plugins` race 执行，实际默认二十二包审批／unknown 冷恢复另经 MCP 专项系统链验证。
+
+`TestToolUnknownUnfrozenOperationCannotAcquireNewQueryAuthority` 验证能力快照以外的未知动作在工具仍不可用、后注册 Query 或后注册无 Query 定义时都保持未知；不调用新定义、不重发、不复活 Run。原 `TestTaskControlCancelTreeAndInvocationOutcomes` 的 once／ongoing 取消树与继续语义同时保留，并进入 required MCP 恢复 race。

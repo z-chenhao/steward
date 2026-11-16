@@ -25,6 +25,7 @@ func (r *Runs) ConfigureImageOCR(engine ImageOCR) { r.imageOCR = engine }
 
 func (t *tools) executeImageOCR(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
 	var args, identity string
+	var managed bool
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
 		_, name, accepted, err := t.acceptedBuiltin(ctx, tx, inv)
 		if err != nil {
@@ -34,6 +35,9 @@ func (t *tools) executeImageOCR(ctx context.Context, inv tool.Invocation) (tool.
 			return tool.ErrApprovalDenied
 		}
 		args = accepted
+		if err = tx.QueryRowContext(ctx, `SELECT coalesce(json_extract(policy_json,'$.image_ocr_plugin'),0) FROM run_context_policy WHERE run_id=?`, t.claim.RunID()).Scan(&managed); err != nil && err != sql.ErrNoRows {
+			return err
+		}
 		return tx.QueryRowContext(ctx, `SELECT json_extract(j.value,'$.resource_hash') FROM run r JOIN capability_snapshot c ON c.snapshot_id=r.capability_snapshot_id,json_each(c.tools_json) j WHERE r.run_id=? AND json_extract(j.value,'$.name')=?`, t.claim.RunID(), name).Scan(&identity)
 	})
 	if err != nil {
@@ -70,11 +74,19 @@ func (t *tools) executeImageOCR(ctx context.Context, inv tool.Invocation) (tool.
 		}
 		return artifactFailure(err), nil
 	}
-	document, err := t.runs.imageOCR.Extract(ctx, kind, data)
+	var document ocr.Document
+	if managed {
+		document, err = t.pluginOCR(ctx, inv, request.Ref, kind, data)
+	} else {
+		document, err = t.runs.imageOCR.Extract(ctx, kind, data)
+	}
 	if ctx.Err() != nil {
 		err = ctx.Err()
 	}
 	if err != nil {
+		if errors.Is(err, agent.ErrClaimLost) || errors.Is(err, agent.ErrStorage) {
+			return tool.Result{}, err
+		}
 		code := "PROVIDER_UNAVAILABLE"
 		switch {
 		case errors.Is(err, context.Canceled):

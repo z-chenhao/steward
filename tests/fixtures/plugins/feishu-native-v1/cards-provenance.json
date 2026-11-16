@@ -1,0 +1,11 @@
+{
+  "source": "executed native composeProjection and taskFeedbackCard before card plugin migration",
+  "command": "go test ./internal/interaction/feishu -run ^TestCaptureNativeCardsV1$ -count=1",
+  "samples": 8,
+  "sha256": {
+    "internal/interaction/feishu/projection.go": "2f05a4db747da9ce7bd0b49a96670c98ab38ef6c4aac9e3d46be70e9b1b35e3b",
+    "internal/interaction/feishu/task_question.go": "cf0052478e14d62fa760713929f8089eb660e9cf74c96e06e3f22de9684769b7",
+    "internal/delivery/ui/spec.go": "a418442411729bf6af9def5d5acb31919860b5528329bd48e1050da8db89b53b",
+    "tests/fixtures/plugins/feishu-native-v1/cards.json": "7fd233a7a5309c281ee20d002162f26f0296f8080abc75536dd71f24d21a39d0"
+  }
+}

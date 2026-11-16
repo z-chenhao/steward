@@ -27,7 +27,7 @@ func TestContextPromptBytes(t *testing.T) {
 		{Name: "builtin__computer_observe", Internal: true},
 		{Name: "mcp__calendar__lookup", Provider: "mcp:calendar", NamespaceDescription: "Find calendar events", Exposure: tool.CodeMode, CodeModeOnly: true},
 	}
-	for _, tc := range []struct{ position, hash string }{{"main", "a2bd465f1631a8ec64722d9af21a728ea65fdb3dcf4a26a87a02b694aedcf099"}, {"root", "cd7b4fc10e03bf7179d30b44f7214c978c1f1c3709f0f075e03348d3c2278fcd"}, {"child", "0515c60c08c2a290e496c36e12e70efe5c09222bcfc678a0b361326bc195179f"}} {
+	for _, tc := range []struct{ position, hash string }{{"main", "f7a7ee104c41ccddaa700e4fbd73b5163dd43404469d2a4b9e7b80574b5f58bc"}, {"root", "549f9f5c3fb9b198c551dab4f11ae905804802392d4868d6f9ac910256d15463"}, {"child", "4c08c85b9d7a6a1eedcdd58f45748e846f32025d3aaea2969e16f971b60714e8"}} {
 		t.Run(tc.position, func(t *testing.T) {
 			messages, err := ProviderMessages(InitialContext(ContextOptions{Position: tc.position, Tools: specs, Title: "Review", Task: "Keep constraints", ArtifactRefs: []string{"artifact:input"}}), false, false)
 			if err != nil {
@@ -95,9 +95,9 @@ func TestContextRolesAndFrozenResources(t *testing.T) {
 	if err != nil || json.Unmarshal(frozen, &root) != nil {
 		t.Fatal("frozen sections did not round-trip", err)
 	}
-	child := InitialContext(ContextOptions{Position: "child", Tools: specs, Task: "explicit subtask", ParentSystem: append(root, TextMessage("user", "PARENT_PRIVATE"))})
+	child := InitialContext(ContextOptions{Position: "child", Tools: specs, Task: "explicit subtask", ParentSystem: append(root, TextMessage("user", "PARENT_PRIVATE"), RuntimeContext("execution_environment", "", true, map[string]string{"cwd": "PARENT_ONLY_CWD"}))})
 	raw, _ := json.Marshal(child)
-	if !strings.Contains(string(raw), "frozen parent safety") || strings.Contains(string(raw), "PARENT_PRIVATE") || strings.Contains(string(raw), prompt.Identity()) || strings.Contains(string(raw), prompt.Progress()) {
+	if !strings.Contains(string(raw), "frozen parent safety") || strings.Contains(string(raw), "PARENT_PRIVATE") || strings.Contains(string(raw), "PARENT_ONLY_CWD") || strings.Contains(string(raw), prompt.Identity()) || strings.Contains(string(raw), prompt.Progress()) {
 		t.Fatal("child scope or frozen rules drift", string(raw))
 	}
 	for _, needle := range []string{"frozen parent safety", "frozen parent Worker role", "frozen parent execution", "Delegation:"} {

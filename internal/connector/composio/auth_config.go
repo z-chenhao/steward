@@ -2,8 +2,8 @@ package composio
 
 import (
 	"context"
-	"errors"
 	"net/url"
+	"strconv"
 )
 
 // Only metadata is decoded. Auth config responses can also contain private
@@ -26,57 +26,44 @@ type AuthConfigSelection struct {
 	Readable bool
 }
 
-func (c Client) AuthConfig(ctx context.Context, toolkit, override string) (string, error) {
-	selection, err := c.FindAuthConfig(ctx, toolkit, override)
-	return selection.ID, err
+// AuthConfigMetadata is a closed source metadata view. Credentials, raw bodies
+// and private OAuth fields never leave the original decoder.
+type AuthConfigMetadata struct {
+	ID, Created                                                      string
+	ToolkitMatch, Enabled, Router, Unmanaged, ValidID, ExplicitMatch bool
 }
-func (c Client) FindAuthConfig(ctx context.Context, toolkit, override string) (AuthConfigSelection, error) {
-	if !ValidID(toolkit) || override != "" && !ValidID(override) {
-		return AuthConfigSelection{}, &Error{Status: 400}
+type AuthConfigPage struct {
+	Items []AuthConfigMetadata
+	Next  string
+}
+
+func authMetadata(value authConfig, toolkit, override string) AuthConfigMetadata {
+	return AuthConfigMetadata{ID: value.ID, Created: value.Created, ToolkitMatch: value.Toolkit.Slug == toolkit, Enabled: value.Status == "ENABLED", Router: value.Router, Unmanaged: !value.Managed, ValidID: ValidID(value.ID), ExplicitMatch: value.ID == override}
+}
+func (c Client) ReadAuthConfig(ctx context.Context, toolkit, id string) (AuthConfigMetadata, error) {
+	if !ValidID(toolkit) || !ValidID(id) {
+		return AuthConfigMetadata{}, &Error{Status: 400}
 	}
-	if override != "" {
-		var config authConfig
-		if err := c.request(ctx, "GET", "/auth_configs/"+override, nil, nil, &config); err != nil {
-			return AuthConfigSelection{}, err
-		}
-		if config.ID != override || config.Toolkit.Slug != toolkit || config.Status != "ENABLED" || !config.Router {
-			return AuthConfigSelection{}, &Error{Status: 400}
-		}
-		return AuthConfigSelection{ID: override, Readable: true}, nil
+	var value authConfig
+	if err := c.request(ctx, "GET", "/auth_configs/"+id, nil, nil, &value); err != nil {
+		return AuthConfigMetadata{}, err
 	}
-	var chosen authConfig
-	cursor := ""
-	seen := map[string]bool{}
-	for range 20 {
-		var page struct {
-			Items []authConfig `json:"items"`
-			Next  string       `json:"next_cursor"`
-		}
-		err := c.request(ctx, "GET", "/auth_configs", url.Values{"toolkit_slug": {toolkit}, "is_composio_managed": {"false"}, "show_disabled": {"false"}, "limit": {"200"}, "cursor": {cursor}}, nil, &page)
-		if err != nil {
-			// Scoped keys without auth-config read permission can still use
-			// Composio-managed sign-in. The link endpoint decides availability.
-			var failure *Error
-			if errors.As(err, &failure) && (failure.Status == 401 || failure.Status == 403) {
-				return AuthConfigSelection{}, nil
-			}
-			return AuthConfigSelection{}, err
-		}
-		for _, config := range page.Items {
-			if config.Toolkit.Slug == toolkit && !config.Managed && config.Status == "ENABLED" && config.Router && ValidID(config.ID) {
-				if chosen.ID == "" || config.Created > chosen.Created || config.Created == chosen.Created && config.ID > chosen.ID {
-					chosen = config
-				}
-			}
-		}
-		if page.Next == "" {
-			return AuthConfigSelection{ID: chosen.ID, Readable: true}, nil
-		}
-		if seen[page.Next] {
-			return AuthConfigSelection{}, &Error{}
-		}
-		seen[page.Next] = true
-		cursor = page.Next
+	return authMetadata(value, toolkit, id), nil
+}
+func (c Client) ReadAuthConfigPage(ctx context.Context, toolkit, cursor string, limit int) (AuthConfigPage, error) {
+	if !ValidID(toolkit) || limit < 1 || limit > 200 {
+		return AuthConfigPage{}, &Error{Status: 400}
 	}
-	return AuthConfigSelection{}, &Error{}
+	var page struct {
+		Items []authConfig `json:"items"`
+		Next  string       `json:"next_cursor"`
+	}
+	if err := c.request(ctx, "GET", "/auth_configs", url.Values{"toolkit_slug": {toolkit}, "is_composio_managed": {"false"}, "show_disabled": {"false"}, "limit": {strconv.Itoa(limit)}, "cursor": {cursor}}, nil, &page); err != nil {
+		return AuthConfigPage{}, err
+	}
+	out := AuthConfigPage{Next: page.Next, Items: make([]AuthConfigMetadata, len(page.Items))}
+	for i, row := range page.Items {
+		out.Items[i] = authMetadata(row, toolkit, "")
+	}
+	return out, nil
 }

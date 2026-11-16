@@ -9,6 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/conversation"
@@ -19,7 +20,14 @@ import (
 )
 
 func TestUICorrectionRecoversAfterReceiptCommitFailure(t *testing.T) {
+	testUICorrectionRecovery(t, false)
+}
+
+func testUICorrectionRecovery(t *testing.T, managed bool) {
 	s, runs, a, p := childFixture(t, ui.ShowDefinition())
+	if managed {
+		installUIRuntimePlugin(t, s, runs)
+	}
 	var step atomic.Int32
 	var oldRef string
 	doc := `{"title":"Original","fallback":"Original","components":[{"name":"Table","props":{"title":"Value","columns":["N"],"rows":[["42"]],"source":"Calculated"}}]}`
@@ -67,6 +75,15 @@ func TestUICorrectionRecoversAfterReceiptCommitFailure(t *testing.T) {
 	mustDrain(t, a)
 	if scalar(t, s, `SELECT count(*) FROM ui_widget`) != 2 || scalar(t, s, `SELECT count(*) FROM ui_widget WHERE message_id IS NOT NULL`) != 1 || scalar(t, s, `SELECT count(*) FROM tool_invocation WHERE status='succeeded'`) != 2 {
 		t.Fatal("recovery duplicated or lost correction")
+	}
+	if managed {
+		assertUIFrozenPluginDefinition(t, s)
+		if got := scalar(t, s, `SELECT count(*) FROM rsi_call WHERE instance_id='intelligent-ui' AND result_json IS NOT NULL`); got != 4 {
+			t.Fatal("normalization/definition receipts missing or replayed", got)
+		}
+		if got := scalar(t, s, `SELECT count(*) FROM ui_widget w JOIN rsi_run b USING(run_id) WHERE EXISTS(SELECT 1 FROM json_each(b.managed_services_json) WHERE value='steward.ui-document/1')`); got != 2 {
+			t.Fatal("UI bypassed managed Run boundary", got)
+		}
 	}
 }
 
@@ -186,7 +203,18 @@ func TestUIEmptyExpressionsPersistCanonicalArtifactAndRejectNonemptyString(t *te
 }
 
 func TestMainUIWidgetUsesCodeModeAndDurableReply(t *testing.T) {
+	testMainUIWidgetCodeMode(t, false)
+}
+
+func TestUIManagedWidgetUsesCodeModeAndDurableReply(t *testing.T) {
+	testMainUIWidgetCodeMode(t, true)
+}
+
+func testMainUIWidgetCodeMode(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t, ui.ShowDefinition(), codemode.Definition())
+	if managed {
+		installUIRuntimePlugin(t, s, r)
+	}
 	r.ConfigureJavaScript(realCodeRuntime(t))
 	var previewed atomic.Bool
 	var committed atomic.Bool
@@ -294,6 +322,12 @@ func TestMainUIWidgetUsesCodeModeAndDurableReply(t *testing.T) {
 	if scalar(t, s, `SELECT count(*) FROM ui_widget`) != 1 {
 		t.Fatal("settled UI repeated")
 	}
+	if managed {
+		assertUIFrozenPluginDefinition(t, s)
+		if got := scalar(t, s, `SELECT count(*) FROM rsi_call c JOIN tool_invocation i ON c.run_id=i.run_id AND c.operation_id IN ('ui-normalize:'||i.invocation_id,'ui-definition:'||i.invocation_id) WHERE c.instance_id='intelligent-ui' AND c.result_json IS NOT NULL AND i.parent_invocation_id IS NOT NULL AND i.tool_name='builtin__intelligent_ui_show' AND i.status='succeeded'`); got != 2 {
+			t.Fatal("nested CodeMode UI bypassed durable plugin dispatch", got)
+		}
+	}
 }
 
 func TestUIStagingRecoversAfterResultCommitFailure(t *testing.T) {
@@ -345,13 +379,23 @@ func TestUIStagingRecoversAfterResultCommitFailure(t *testing.T) {
 
 type uiStreamingProvider struct {
 	*loopProvider
-	raw  string
-	fail bool
+	raw       string
+	fail      bool
+	previewed <-chan struct{}
 }
 
 func (p uiStreamingProvider) Generate(ctx context.Context, req llm.GenerationRequest, sink func(llm.GenerationEvent)) (llm.GenerationResult, error) {
 	if req.Messages[len(req.Messages)-1].Role != "tool" {
 		sink(llm.GenerationEvent{Kind: "ui_delta", ToolCall: &llm.ToolCall{ID: "stream-call", Name: ui.ShowName, Arguments: p.raw[:len(p.raw)-4]}})
+		// A real prefix remains in flight until the UI observer can consume it.
+		// Queue scheduling must not make this fixture depend on a synchronous sink.
+		select {
+		case <-p.previewed:
+		case <-time.After(5 * time.Second):
+			return llm.GenerationResult{}, errors.New("fixture prefix preview was not observed")
+		case <-ctx.Done():
+			return llm.GenerationResult{}, ctx.Err()
+		}
 		if p.fail {
 			return llm.GenerationResult{}, llm.ProviderUnavailable
 		}
@@ -372,11 +416,14 @@ func TestMainDirectUIPreviewIsEphemeralAndWithdrawnOnFailure(t *testing.T) {
 				}
 				return calls(ui.ShowName, raw), nil
 			}
-			a.Provider = uiStreamingProvider{loopProvider: p, raw: raw, fail: fail}
+			previewed := make(chan struct{})
+			a.Provider = uiStreamingProvider{loopProvider: p, raw: raw, fail: fail, previewed: previewed}
 			var early, discarded, committed atomic.Bool
 			a.Sink = func(e agent.Event) {
 				if e.Kind == "ui_preview_update" && e.UIPreview != nil && len(e.UIPreview.Components) > 0 && scalar(t, s, `SELECT count(*) FROM ui_widget`) == 0 {
-					early.Store(true)
+					if early.CompareAndSwap(false, true) {
+						close(previewed)
+					}
 				}
 				if e.Kind == "ui_preview_discarded" {
 					discarded.Store(true)

@@ -18,6 +18,11 @@ func (a *App) PollGitHub(ctx context.Context) error {
 	if a.github == nil {
 		return errors.New("github configuration is required")
 	}
+	if a.prepareGitHubPlugins != nil {
+		if err := a.prepareGitHubPlugins(ctx); err != nil {
+			return err
+		}
+	}
 	return a.github.Poll(ctx)
 }
 

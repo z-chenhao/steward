@@ -7,7 +7,9 @@ import (
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/evidence"
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/media/ocr"
 	"github.com/z-chenhao/assistant/internal/task"
+	"github.com/z-chenhao/assistant/internal/tool/codemode"
 )
 
 // artifactsReply only selects actions; independent CLI readback judges them.
@@ -26,7 +28,7 @@ func artifactsReply(r llm.GenerationRequest) llm.GenerationResult {
 		if at := strings.Index(m.Text, "Artifact fixture:\n"); at >= 0 {
 			rootTask = m.Text[at+len("Artifact fixture:\n"):]
 		}
-		root = root || strings.Contains(m.Text, "general Worker executing")
+		root = root || workerMessage(m)
 		followup = followup || m.Origin == "runtime" && strings.HasPrefix(m.Text, "Runtime task update")
 		if m.Role == "user" && m.Origin == "" {
 			user = m.Text
@@ -59,6 +61,7 @@ func artifactsReply(r llm.GenerationRequest) llm.GenerationResult {
 		Draft     bool     `json:"draft"`
 		Offset    int64    `json:"offset"`
 		Limit     int      `json:"limit"`
+		Code      bool     `json:"code"`
 	}
 	user, _, _ = strings.Cut(user, "\nExplicit artifact references: ")
 	// Decode the plan, not the Host's human-readable media hint suffix.
@@ -98,6 +101,13 @@ func artifactsReply(r llm.GenerationRequest) llm.GenerationResult {
 		return call("mcp__fixture__large", map[string]any{})
 	case "read":
 		return call(artifacttools.Manage, map[string]any{"operation": "read", "artifactRef": request.Ref})
+	case "ocr":
+		args := map[string]string{"artifactRef": request.Ref}
+		if request.Code {
+			raw, _ := json.Marshal(args)
+			return call(codemode.ToolName, map[string]string{"source": "const result = await tools.builtin__image_ocr(" + string(raw) + "); text(result);"})
+		}
+		return call(ocr.Name, args)
 	case "evidence":
 		return call(evidence.ToolName, evidence.Request{Ref: request.Ref, Offset: request.Offset, Limit: request.Limit})
 	case "publish":

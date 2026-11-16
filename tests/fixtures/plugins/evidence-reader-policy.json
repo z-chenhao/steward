@@ -1,0 +1,41 @@
+{
+  "id": "evidence-system-policy",
+  "allowed_contracts": [
+    "steward.evidence-text-window/1",
+    "steward.evidence-link-window/1"
+  ],
+  "allowed_requests": [],
+  "allowed_hooks": [],
+  "cases": [
+    {
+      "instance_id": "evidence-reader",
+      "contract": "steward.evidence-text-window/1",
+      "input": {
+        "bytes": 8,
+        "boundaries": [
+          0,
+          3,
+          6,
+          7,
+          8
+        ],
+        "breaks": [
+          7
+        ]
+      },
+      "expected": {
+        "bytes": 8
+      }
+    },
+    {
+      "instance_id": "evidence-reader",
+      "contract": "steward.evidence-link-window/1",
+      "input": {
+        "candidates": 21
+      },
+      "expected": {
+        "take": 20
+      }
+    }
+  ]
+}

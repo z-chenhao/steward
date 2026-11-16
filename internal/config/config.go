@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
-	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/computer/environment"
 	"github.com/z-chenhao/assistant/internal/computer/macosvm"
 	contextbuilder "github.com/z-chenhao/assistant/internal/context"
@@ -50,7 +49,7 @@ type Config struct {
 	Execution  *environment.Config   `yaml:"execution"`
 	Delivery   delivery.Policy       `yaml:"delivery"`
 	Version    int                   `yaml:"version"`
-	Artifact   artifact.Policy       `yaml:"artifact"`
+	Artifact   Artifact              `yaml:"artifact"`
 	App        App                   `yaml:"app"`
 	NATS       eventnats.Options     `yaml:"nats"`
 	Tools      ToolLimits            `yaml:"tools"`
@@ -174,7 +173,7 @@ func Decode(raw []byte, lookupEnv func(string) (string, bool)) (Config, error) {
 		Scheduler: agent.DefaultSchedulerLimits(),
 		Children:  agent.DefaultChildLimits(),
 		Delivery:  delivery.DefaultPolicy(),
-		Artifact:  artifact.DefaultPolicy(),
+		Artifact:  defaultArtifact(),
 		Tools:     ToolLimits{ApprovalTTLSeconds: 3600, Global: 32, Agent: 24, Run: 4, Provider: 16, Tool: 8},
 		Tasks:     Tasks{RecentDays: 30, RecentLimit: 200},
 		App:       App{DataRoot: filepath.Join(home, ".local", "share", "steward"), LogLevel: "info", LogMaxBytes: 16 << 20, LogBackups: 2},

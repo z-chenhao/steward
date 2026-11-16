@@ -22,6 +22,13 @@
 - 系统：用真实 CLI/Web/Actor/Bridge 链路证明目标行为；允许受控外部 peer，不能伪造产品内部接受结果。
 - Live/质量：涉及真实账户、Guest 平台或语义质量时单独记录环境与证据；不适用项说明理由，不用软件回归代替。
 
+## 独立方法与预算迁移验收
+
+- `TestDelegationPlugin*` 把原有真实 Root／Child／Grandchild、单次接纳计数、原子回滚、并发重复与旧 owner、冻结模型／能力、上限／业务失败、逐调用审批／释放槽、私有成果／晚 epoch、unknown 不转成功、任务指令隔离、乱序返回和大结果归一化跑在实际隔离包上。admission 夹具先执行生产初始化，再冻结 generation。
+- 独立 v1.1 二进制收紧深度／数量并修改提示；验证新旧树、已排队 Root、Child 方法继承、回滚、退役和停用；原 `run_tree` 上限不变。v1.2 通过其机械用例后，仍不能扩大实际树上限，Root 在模型工作前安全失败，Task 可续作且无热重试。
+- 绑定写入失败必须回滚 ContextReady 和方法；换 owner 后恢复一次，旧 owner 不能写。实际隔离进程的返回前提交 Forget，验证无方法、已初始化上下文、模型或 Child 被迟到结果接纳。`TestV57DelegationPolicyMigration*` 用实际原生树验证前向迁移保留快照／状态／版本／原安全计数，不回溯 opt-in。
+- `children` CLI／PTY／SIGKILL 门禁组合真实 Task／进度／问答／委派包，以独立静态所有者用例激活；保留原父子／权限／快照／审批／成果／去重／恢复断言，并检查图固定与 Host 上限。`make test-prompts` 包含该系列，Forget 变体进入 `make test-memory`；必要检查为完整 test／lint、系列 race、core、memory-maintenance／recall 及相关调度场景。
+
 ## 已有检查与缺失覆盖
 
 | 入口 | 覆盖用途与限制 |
@@ -63,3 +70,5 @@ Golden Cases are not scored by this Child fixture; [Core](product.md) and
 使用隔离配置与可丢弃数据，保留产品版本、实际命令、环境、结果和清理情况。区分通过、失败、跳过、未执行以及未知外部结果。
 
 需求完成需要对应入口可用、正常与相关失败/恢复场景有证据、使用说明与技术方案一致。报告沿用现有 evidence/流程；不为本方案建立另一套测试平台或复制历史评测资产。
+
+`TestDelegationPluginIndependentUpgradeRetainedTreesRollbackAndDisable` 还在回退／退役后关闭 Store、新建 Store／Catalog，直接推进原排队 Root；验证退役版本仍控制 Root／Child、原 Host 上限不变。停用后再次重开，真实 Child 工具调用仍返回不可用；不重新选择、更新 binding 或重写 checkpoint。

@@ -1,0 +1,9 @@
+{{/* Only actual original markup1–5 graphs/references. Remove after those consumers retire. */}}
+{{define "app-directory-tabs-legacy-v5"}} <nav class="apps-tabs" aria-label="{{appCopyText $.Apps $.Apps.Copy.AppViews}}"><a href="/settings/apps" {{if and (not .Apps.ConnectedOnly) (not .Apps.Directory)}}aria-current="page"{{end}}>{{appCopyText $.Apps $.Apps.Copy.Discover}}</a><a href="/settings/apps?view=connected" {{if .Apps.ConnectedOnly}}aria-current="page"{{end}}>{{appCopyText $.Apps $.Apps.Copy.YourApps}}</a><a href="/settings/apps?view=all" {{if .Apps.Directory}}aria-current="page"{{end}}>{{appCopyText $.Apps $.Apps.Copy.AllApps}}</a></nav>
+{{end}}
+{{define "app-directory-collection-back-legacy-v5"}} {{if .Apps.Collection}}<a class="back-link" href="/settings/apps">{{appCopyText $.Apps $.Apps.Copy.BackToApps}}</a>{{end}}
+{{end}}
+{{define "app-directory-categories-legacy-v5"}} {{if .Apps.Categories}}<form method="get" action="/settings/apps" class="apps-filter" data-app-category-form><input type="hidden" name="view" value="all"><input type="hidden" name="search" value="{{.Apps.Search}}"><label for="app-category" class="sr-only">{{appCopyText $.Apps $.Apps.Copy.Category}}</label><select id="app-category" name="category"><option value="">{{appCopyText $.Apps $.Apps.Copy.AllCategories}}</option>{{range .Apps.Categories}}<option value="{{.ID}}" {{if eq $.Apps.Category .ID}}selected{{end}}>{{tr .Name}}</option>{{end}}</select><noscript><button class="secondary">{{appCopyText $.Apps $.Apps.Copy.Filter}}</button></noscript></form>{{end}}
+{{end}}
+{{define "app-directory-pagination-legacy-v5"}} {{if .Apps.Catalog.NextCursor}}<a class="button secondary" href="/settings/apps?view=all&amp;search={{.Apps.Search}}&amp;category={{.Apps.Category}}&amp;cursor={{.Apps.Catalog.NextCursor}}">{{appCopyText $.Apps $.Apps.Copy.MoreApps}}</a>{{end}}
+{{end}}

@@ -23,6 +23,11 @@ func dispatchCommand(ctx context.Context, application *app.App, cfg config.Confi
 		application.StartMemory(ctx)
 	}
 	switch command.kind {
+	case commandPlugin:
+		if flags.Arg(1) == "parser-resource" {
+			return runParserResource(ctx, application, cfg, flags.Arg(2), out)
+		}
+		return runPlugin(ctx, application, flags, in, out)
 	case commandCoding:
 		if flags.Arg(1) == "report-pr" {
 			value, err := application.SaveCodePRReport(ctx, flags.Arg(2), flags.Arg(3))

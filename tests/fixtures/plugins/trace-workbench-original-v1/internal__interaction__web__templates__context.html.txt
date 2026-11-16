@@ -1,0 +1,16 @@
+{{define "context-reader"}}
+<div class="context-reader" data-context-run="{{.Query.RunID}}" data-context-step="{{.Query.Step}}" data-context-section="{{.Query.Section}}" data-context-item="{{.Query.Item}}" data-context-offset="{{.Query.Offset}}">
+ <div class="context-heading"><h3>{{tr "Full frozen context"}}</h3><span class="status-pill">{{tr "Read only"}}</span></div>
+ <nav class="round-links" aria-label="{{tr "Model rounds"}}">{{range .Rounds.Items}}<a href="{{contextLink $ "step" .Step}}" {{if eq $.Query.Step .Step}}aria-current="page"{{end}}>{{tr "Step"}} {{.Step}}</a>{{end}}</nav>{{if .Rounds.Next}}<a href="{{contextLink . "round_after" .Rounds.Next}}">{{tr "More rounds →"}}</a>{{end}}
+ {{with .Frozen}}
+ <nav class="context-tabs section-tabs compact" aria-label="{{tr "Context sections"}}">{{range $name:=contextSections}}<a href="{{contextLink $ $name 0}}" {{if eq $.Query.Section $name}}aria-current="page"{{end}}>{{tr $name}}</a>{{end}}</nav>
+ <details class="context-index" open><summary>{{tr $.Query.Section}} {{tr "· choose an item"}}</summary><ol class="context-items">{{range .Items}}<li><a class="context-item-link" href="{{contextLink $ "item" .Index}}" {{if eq $.Query.Item .Index}}aria-current="page"{{end}}>[{{.Index}}] {{.Label}}</a></li>{{else}}<li>{{tr "No saved items in this section."}}</li>{{end}}</ol>{{if .Next}}<a href="{{contextLink $ "after" .Next}}">{{tr "More section items →"}}</a>{{end}}</details>
+ {{with .Selected}}<article class="context-content" data-context-index="{{.Index}}"><div class="row-heading"><h3>[{{.Index}}] {{.Label}}</h3>{{if or (eq $.Query.Section "messages") (eq $.Query.Section "response")}}<nav class="content-format" aria-label="{{tr "Content format"}}"><a href="{{contextLink $ "text" 0}}" {{if not $.Query.JSON}}aria-current="page"{{end}}>{{tr "Readable text"}}</a><a href="{{contextLink $ "json" 0}}" {{if $.Query.JSON}}aria-current="page"{{end}}>{{tr "Complete stored item (JSON)"}}</a></nav>{{end}}</div>
+ <pre class="frozen-content">{{$.Frozen.Content}}</pre>
+ {{if or $.Frozen.NextOffset $.Query.Offset}}<div class="context-range">{{if $.Frozen.NextOffset}}<a class="context-continue" href="{{contextLink $ "offset" $.Frozen.NextOffset}}">{{tr "Continue full content →"}}</a>{{end}}{{if $.Query.Offset}} · <a href="{{contextLink $ "offset" 0}}">{{tr "Start of content"}}</a>{{end}}</div>{{end}}
+
+ <details class="technical-details"><summary aria-label="{{tr "Source & frozen request"}}">{{tr "Source & frozen request"}}{{template "help" (help "context-source-help" (tr "Source & frozen request") (tr "Host input before provider conversion. Source references do not grant access to an archive. A missing response or provenance remains unknown."))}}</summary><p>{{tr "Recorded source:"}} {{if .SourceRef}}{{template "identifier" (identifier "" .SourceRef "")}} · {{.SourceKind}}{{else}}{{tr "not recorded"}}{{end}}{{if .ToolCallID}} {{tr "· call"}} {{template "identifier" (identifier "" .ToolCallID "")}}{{end}}</p><p>{{tr "Frozen request hash"}} {{template "identifier" (identifier "" $.Frozen.RequestHash "")}}</p></details>
+ </article>{{end}}
+ {{else}}<p class="obs-empty">{{tr "No model round has been saved for this execution."}}</p>{{end}}
+</div>
+{{end}}

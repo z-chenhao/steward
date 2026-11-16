@@ -1,0 +1,164 @@
+package appsinterface
+
+import (
+	"context"
+	"errors"
+	"github.com/z-chenhao/assistant/internal/plugin/appsinterface/contract"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
+	"strings"
+)
+
+func presentationLocale(call rsiplugin.Call) (string, error) {
+	var request contract.LocaleRequest
+	if err := rsiplugin.Decode(call.Input, &request); err != nil {
+		return "", err
+	}
+	if request.Locale != "en" && request.Locale != "zh-CN" {
+		return "", errors.New("unsupported Apps locale")
+	}
+	return request.Locale, nil
+}
+func localizedText(locale, text string) string {
+	if locale != "zh-CN" {
+		return text
+	}
+	key := strings.TrimSpace(text)
+	if value, ok := chineseText[key]; ok {
+		return strings.Replace(text, key, value, 1)
+	}
+	return text
+}
+func compileLocalizedProfile(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
+	locale, err := presentationLocale(call)
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	p := profile()
+	for i := range p.Accounts {
+		p.Accounts[i].StatusLabel = localizedText(locale, p.Accounts[i].StatusLabel)
+	}
+	for i := range p.Cards {
+		p.Cards[i].FirstLabel = localizedText(locale, p.Cards[i].FirstLabel)
+	}
+	for i := range p.Errors {
+		p.Errors[i] = localizedText(locale, p.Errors[i])
+	}
+	p.Notices.AccountSaved = localizedText(locale, p.Notices.AccountSaved)
+	p.Notices.ServiceSaved = localizedText(locale, p.Notices.ServiceSaved)
+	p.Notices.Unsaved = localizedText(locale, p.Notices.Unsaved)
+	p.Browser.Messages.OpenAuthorization = localizedText(locale, p.Browser.Messages.OpenAuthorization)
+	p.Browser.Messages.DetailsFailed = localizedText(locale, p.Browser.Messages.DetailsFailed)
+	p.Browser.Messages.ConnectionUnknown = localizedText(locale, p.Browser.Messages.ConnectionUnknown)
+	p.Browser.Messages.PollPaused = localizedText(locale, p.Browser.Messages.PollPaused)
+	p.Browser.Messages.PollFailed = localizedText(locale, p.Browser.Messages.PollFailed)
+	p.Browser.Messages.AuthorizationFailed = localizedText(locale, p.Browser.Messages.AuthorizationFailed)
+	p.Browser.Messages.AuthorizationOpened = localizedText(locale, p.Browser.Messages.AuthorizationOpened)
+	p.Browser.Messages.PopupBlocked = localizedText(locale, p.Browser.Messages.PopupBlocked)
+	p.Browser.Messages.LinkExpired = localizedText(locale, p.Browser.Messages.LinkExpired)
+
+	for i := range p.Browser.PollNotices {
+		p.Browser.PollNotices[i].Text = localizedText(locale, p.Browser.PollNotices[i].Text)
+	}
+	for i := range p.Browser.SuccessNotices {
+		p.Browser.SuccessNotices[i] = localizedText(locale, p.Browser.SuccessNotices[i])
+	}
+	return rsiplugin.JSONResult(ctx, p)
+}
+func compileLocalizedComposition(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
+	locale, err := presentationLocale(call)
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	c := composition()
+	c.Copy.AppsTitle = localizedText(locale, c.Copy.AppsTitle)
+	c.Copy.AppSettings = localizedText(locale, c.Copy.AppSettings)
+	c.Copy.SearchApps = localizedText(locale, c.Copy.SearchApps)
+	c.Copy.Search = localizedText(locale, c.Copy.Search)
+	c.Copy.RefreshApps = localizedText(locale, c.Copy.RefreshApps)
+	c.Copy.DirectoryUnavailable = localizedText(locale, c.Copy.DirectoryUnavailable)
+	c.Copy.BackToApps = localizedText(locale, c.Copy.BackToApps)
+	c.Copy.AppViews = localizedText(locale, c.Copy.AppViews)
+	c.Copy.Discover = localizedText(locale, c.Copy.Discover)
+	c.Copy.YourApps = localizedText(locale, c.Copy.YourApps)
+	c.Copy.AllApps = localizedText(locale, c.Copy.AllApps)
+	c.Copy.Category = localizedText(locale, c.Copy.Category)
+	c.Copy.AllCategories = localizedText(locale, c.Copy.AllCategories)
+	c.Copy.Filter = localizedText(locale, c.Copy.Filter)
+	c.Copy.ViewAll = localizedText(locale, c.Copy.ViewAll)
+	c.Copy.ManageApp = localizedText(locale, c.Copy.ManageApp)
+	c.Copy.AboutApp = localizedText(locale, c.Copy.AboutApp)
+	c.Copy.NoApps = localizedText(locale, c.Copy.NoApps)
+	c.Copy.MoreApps = localizedText(locale, c.Copy.MoreApps)
+	c.Copy.ConnectionsUnavailable = localizedText(locale, c.Copy.ConnectionsUnavailable)
+	c.Copy.YourConnections = localizedText(locale, c.Copy.YourConnections)
+	c.Copy.NoConnections = localizedText(locale, c.Copy.NoConnections)
+	c.Copy.AddAccount = localizedText(locale, c.Copy.AddAccount)
+	c.Copy.ServiceTitle = localizedText(locale, c.Copy.ServiceTitle)
+	c.Copy.ProjectTitle = localizedText(locale, c.Copy.ProjectTitle)
+	c.Copy.ProjectHelp = localizedText(locale, c.Copy.ProjectHelp)
+	c.Copy.AuthenticationTitle = localizedText(locale, c.Copy.AuthenticationTitle)
+	c.Copy.ConnectedApps = localizedText(locale, c.Copy.ConnectedApps)
+
+	return rsiplugin.JSONResult(ctx, c)
+}
+
+// These exact current feature translations belong to the versioned package.
+// The public contract carries final text, not a mutable Host dictionary.
+var chineseText = map[string]string{
+	"About app":                     "关于应用",
+	"Account connected.":            "账户已连接。",
+	"Account disconnected.":         "账户已断开。",
+	"Add account":                   "添加账户",
+	"All apps":                      "全部应用",
+	"All categories":                "全部分类",
+	"App authentication":            "应用授权",
+	"App connection service":        "应用连接服务",
+	"App connection service saved.": "应用连接服务已保存。",
+	"App connections are unavailable. The installation owner manages this service in App settings.": "应用连接暂不可用。安装所有者可在应用设置中管理此服务。",
+	"App connections changed. Refresh and try again.":                                               "应用连接已发生变化，请刷新后重试。",
+	"App details could not be loaded. Refresh and try again.":                                       "无法加载应用详情，请刷新后重试。",
+	"App service unavailable. Ask the installation owner to check the connection service.":          "应用服务暂不可用，请联系部署者检查连接服务。",
+	"App settings":          "应用设置",
+	"App settings updated.": "应用设置已更新。",
+	"App views":             "应用视图",
+	"Apps":                  "应用",
+	"Authorization expired": "授权失效",
+	"Authorization expired. Reconnect the account to continue.":                    "授权已过期，请重新连接账户。",
+	"Automatic status checks paused. Refresh the status or reconnect the account.": "自动检查已暂停，请刷新状态或重新连接账户。",
+	"Awaiting authorization": "等待授权",
+	"Back to apps":           "返回应用",
+	"Category":               "分类",
+	"Check the app, account alias and credential reference.": "请检查应用、账户别名和凭据引用。",
+	"Choose a label for the additional account.":             "请为新增账户填写别名。",
+	"Composio project": "Composio 项目",
+	"Configure the shared connection service once. People connect their own app accounts from Apps.": "在此统一配置连接服务，使用者在「应用」中连接各自的账户。",
+	"Connect":                "连接",
+	"Connected":              "已连接",
+	"Connected apps":         "已连接的应用",
+	"Disconnected":           "已断开",
+	"Discover":               "发现",
+	"Enable app":             "启用应用",
+	"Enabled public service": "已启用公开服务",
+	"Filter":                 "筛选",
+	"Finish signing in in the authorization tab. This page checks automatically.": "请在授权标签页中完成登录，此页面会自动检查结果。",
+	"Manage app":              "管理应用",
+	"More apps":               "更多应用",
+	"No app connections yet.": "尚未连接应用。",
+	"No apps found.":          "未找到应用。",
+	"Open authorization page": "打开授权页面",
+	"Refresh apps":            "刷新应用",
+	"Search":                  "搜索",
+	"Search apps":             "搜索应用",
+	"Status could not be refreshed. Your accounts have been kept; retrying shortly.":                                "暂时无法刷新状态，已保留账户，稍后会重试。",
+	"The authorization page could not be opened.":                                                                   "无法打开授权页面。",
+	"The browser blocked the authorization tab. Use Open authorization page to continue.":                           "浏览器拦截了授权标签页，请点击「打开授权页面」继续。",
+	"The connection could not be confirmed. Refresh the page before trying again.":                                  "尚未确认连接结果，请刷新页面检查后再试。",
+	"The live directory is unavailable. Your saved connections have been kept.":                                     "暂时无法获取实时目录，已保存的连接仍予以保留。",
+	"This account cannot be used. Reconnect it to continue.":                                                        "此账户暂不可用，请重新连接。",
+	"This app requires your own OAuth app. Ask the installation owner to configure it in Composio, then reconnect.": "此应用需要自有 OAuth 应用。请安装负责人在 Composio 中配置后，再重新连接。",
+	"This authorization link has expired. Reconnect the account to continue.":                                       "授权链接已过期，请重新连接该账户。",
+	"Unsaved changes.": "有未保存的更改。",
+	"View all":         "查看全部",
+	"Your apps":        "我的应用",
+	"Your connections": "你的连接",
+}

@@ -1,0 +1,26 @@
+/* Retained original Table rules; shared controls still use Host styles. */
+.ogui-theme .answer-table{border:0;border-radius:0;margin:0;overflow:hidden}
+.ogui-theme .answer-table-scroll{overflow:auto;border:1px solid var(--border);border-radius:8px;scrollbar-width:none;overscroll-behavior-x:contain}
+.ogui-theme .answer-table-scroll::-webkit-scrollbar{display:none}
+.ogui-theme .answer-table table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.ogui-theme .answer-table caption{text-align:start;font:600 14px/1.5 var(--font-ui);padding:12px;border-bottom:1px solid var(--border);color:var(--foreground)}
+.ogui-theme .answer-table :is(th,td){padding:11px 12px;line-height:1.6;border-bottom:1px solid var(--border);text-align:left}
+.ogui-theme .answer-table th{background:var(--card);font-size:12px;font-weight:500;color:var(--muted-foreground)}
+.ogui-theme .answer-table tr:last-child td{border-bottom:0}
+.ogui-theme .answer-table tbody tr:hover{background:color-mix(in srgb,var(--card) 55%,transparent)}
+.ogui-theme .answer-table [data-numeric=true]{text-align:end;font-variant-numeric:tabular-nums}
+.ogui-theme .answer-table [data-numeric=true] .answer-column-sort{justify-content:flex-end}
+.ogui-theme .answer-table-source{font-size:12px;color:var(--muted-foreground);margin:0;padding:9px 1px 0}
+.ogui-theme .answer-column-sort,.ogui-theme .answer-cell-select{justify-content:flex-start;min-height:0}
+.ogui-theme .answer-column-sort:hover,.ogui-theme .answer-cell-select:hover{background:transparent;color:var(--foreground);text-decoration:none}
+.ogui-theme .answer-column-sort:focus-visible,.ogui-theme .answer-cell-select:focus-visible{outline-offset:3px;border-radius:2px}
+html.ogui-theme[data-host-compact] .answer-column-sort,html.ogui-theme[data-host-compact] .answer-cell-select{min-height:36px}
+
+/* Preserve the original shared-control computed styles inside the frame. */
+.ogui-theme button.answer-column-sort,.ogui-theme button.answer-cell-select{align-items:center;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;text-align:start;cursor:pointer;box-shadow:none;transform:none;transition:background .18s,color .18s}
+.ogui-theme button.answer-column-sort{display:flex;gap:6px;width:100%}
+.ogui-theme button.answer-cell-select{display:inline-flex;gap:8px}
+.ogui-theme .answer-column-sort svg{width:13px;height:13px;flex:none}
+.ogui-theme .answer-table tr[aria-selected=true]{background:var(--hover)}
+.ogui-theme button.answer-column-sort:hover,.ogui-theme button.answer-cell-select:hover{background:transparent;color:var(--foreground)}
+.ogui-theme button.answer-column-sort:focus-visible,.ogui-theme button.answer-cell-select:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:2px}

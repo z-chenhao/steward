@@ -52,6 +52,19 @@ class ChannelHarness(MainHarness):
         self.bind = self.command('channel','manage',text=json.dumps(dict(op='bind',channel='feishu',subject='sandbox-tenant:sandbox-app:owner',destination='bound-chat',enabled=True,version=0)))
         self.process = None
 
+    def enable_default_plugins(self):
+        # Production owner bootstrap precedes the first input. Disable the
+        # runtime-only test event flag for this control command, retaining the
+        # explicitly supplied local SecretStore and original fixture afterward.
+        fixture,events=self.fixture,self.production_events
+        try:
+            self.fixture=''
+            self.production_events=False
+            self.command('channel','status')
+        finally:
+            self.fixture=fixture
+            self.production_events=events
+
     def args(self, *args):
         return [str(self.binary), '-config', str(self.config), '-test-bridge', self.fixture, *(['-test-events'] if getattr(self, 'production_events', False) else []), *(['-test-automation-now',self.now] if hasattr(self,'now') else []), *args]
 
@@ -68,6 +81,12 @@ class ChannelHarness(MainHarness):
         require(line, 'Web launch exited: '+(self.process.stderr.read() if not line else ''))
         self.url=json.loads(line)['url']
         return self.process
+
+    def wait_runtime_ready(self, description):
+        # Cold startup independently verifies the entire shipped composition.
+        # This harness deadline is separate from Run leases and tool budgets.
+        self.wait_state(lambda status: status['readiness'] == 'ready', description,
+                        reader=lambda _: self.http('/api/status'), timeout=60)
 
     def stop(self, kill=False):
         if self.process and self.process.poll() is None:
@@ -149,7 +168,7 @@ class ChannelHarness(MainHarness):
         executable=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
         if executable.exists():env['STEWARD_BROWSER_EXECUTABLE']=str(executable)
         run=self.processes.run if self.processes is not None else subprocess.run
-        result=run(['node',str(ROOT/'tests/system/channels_browser.mjs'),self.url,str(evidence),phase],env=env,capture_output=True,text=True,timeout=45)
+        result=run(['node',str(ROOT/'tests/system/channels_browser.mjs'),self.url,str(evidence),phase],env=env,capture_output=True,text=True,timeout=90 if phase=='capability-setup' else 45)
         require(result.returncode==0,'browser drive failed: '+result.stderr)
 
 
@@ -298,11 +317,13 @@ def attention_workspace(binary, evidence, report):
         finally: h.cleanup()
 
 
-def feishu_topic_delivery(binary, report):
+def feishu_topic_delivery(binary, report, managed=False):
     """Signed source -> real Actor -> frozen reply -> actual HTTP peer."""
     from urllib.parse import urlsplit
     with tempfile.TemporaryDirectory(prefix='steward-feishu-topics-') as temp, Sandbox() as platform:
         h = ChannelHarness(binary, Path(temp), platform, 'tasks')
+        if managed:
+            h.enable_default_plugins()
         try:
             h.config.write_text(h.config.read_text() + '  workspace_url: https://owner-workspace.example.test\n')
             h.setup(); h.start()
@@ -369,10 +390,12 @@ def feishu_topic_delivery(binary, report):
             h.cleanup()
 
 
-def feishu_task_questions(binary, report):
+def feishu_task_questions(binary, report, managed=False):
     """Signed Card 2.0 input, real reply receipt, and the existing Main path."""
     with tempfile.TemporaryDirectory(prefix='steward-feishu-questions-') as temp, Sandbox() as platform:
         h = ChannelHarness(binary, Path(temp), platform, 'tasks')
+        if managed:
+            h.enable_default_plugins()
         state = h.root / 'data/state.db'
 
         def rows(query, args=()):
@@ -521,11 +544,13 @@ def feishu_task_questions(binary, report):
             h.cleanup()
 
 
-def feishu_artifact_reviews(binary, report):
+def feishu_artifact_reviews(binary, report, managed=False):
     """Authenticated Workspace link and the exact review revision round trip."""
     from urllib.parse import urlsplit
     with tempfile.TemporaryDirectory(prefix='steward-feishu-reviews-') as temp, Sandbox() as platform:
         h = ChannelHarness(binary, Path(temp), platform, 'tasks')
+        if managed:
+            h.enable_default_plugins()
 
         def rows(query, args=()):
             with closing(sqlite3.connect(h.root / 'data/state.db')) as db, db:
@@ -683,7 +708,7 @@ def streaming_replies(binary, evidence, report):
             server.mode = 'web-stream'
             h.env['STEWARD_STREAM_GATES'] = str(h.root)
             h.start()
-            h.wait_state(lambda status: status['readiness']=='ready', 'stream runtime readiness', lambda _:h.http('/api/status'))
+            h.wait_runtime_ready('stream runtime readiness')
             h.http('/api/conversation/stream', auth=False, expected=401)
             h.browser(evidence.parent/'channels-streaming', 'streaming')
             h.wait(lambda state: sorted(r['status'] for r in state['runs']) == ['completed', 'failed'], 'committed and failed stream outcomes')
@@ -985,7 +1010,7 @@ def memory_inspection(binary, evidence, report):
             h.cleanup()
 
 
-def default_capability_settings(binary,evidence,report):
+def default_capability_settings(binary,evidence,report,managed=False):
     """Real startup defaults with an explicitly injected, owned binary SecretStore."""
     class MemorySecrets(socketserver.StreamRequestHandler):
         def handle(self):
@@ -1008,6 +1033,8 @@ def default_capability_settings(binary,evidence,report):
         original=h.args;h.args=lambda *args:original('-test-secret-store',str(socket),*args)
         try:
             with h.config.open('a') as out:out.write('defaults: {memory: true, search: true, skills: true, computer: true}\n')
+            if managed:
+                h.enable_default_plugins()
             h.setup();h.start()
             h.browser(evidence.parent/'default-settings-ui','capability-defaults')
             key_ref=json.loads((root/'data/default-memory.json').read_text())['ref']
@@ -1022,9 +1049,9 @@ def default_capability_settings(binary,evidence,report):
             h.cleanup();server.shutdown();server.server_close();thread.join(10)
 
 
-def capability_settings(binary,evidence,report):
+def capability_settings(binary,evidence,report,managed=False):
     """Owner UI -> real config/probes -> restart, retaining frozen Run records."""
-    default_capability_settings(binary,evidence,report)
+    default_capability_settings(binary,evidence,report,managed=managed)
     from verify_recall import Embeddings
     with tempfile.TemporaryDirectory(prefix='steward-capability-settings-') as temp, Sandbox() as platform:
         root=Path(temp).resolve();h=ChannelHarness(binary,root,platform,'terminal-input')
@@ -1049,6 +1076,8 @@ def capability_settings(binary,evidence,report):
             run=h.processes.run if h.processes is not None else subprocess.run
             prepared=run([str(binary),'-config',str(preparing),'computer','prepare-base',str(source)],env=h.env,cwd=root,capture_output=True,text=True,timeout=20)
             require(prepared.returncode==0,'Computer base preparation failed: '+prepared.stderr)
+            if managed:
+                h.enable_default_plugins()
             h.setup();h.start()
             h.http('/api/message',dict(source_id='capability-baseline',content=[dict(type='text',text='Owner configuration baseline.')]))
             h.wait(lambda state:state['deliveries'] and all(d['status']=='sent' for d in state['deliveries']),'baseline before configuration')
@@ -1155,7 +1184,7 @@ def native_trace_inspection(binary,evidence,report):
             h.setup(metadata=dict(name='Trace HTTP fixture',provider_kind='openai_compatible',endpoint=f'http://127.0.0.1:{server.server_port}/v1',wire_api='openai_completions',model_id='fixture-model',context_window=65536,max_output_tokens=4096,generation_defaults={},compatibility=dict(tool_result_format='openai'),capabilities=dict(text_input=True),auth_connection_id=auth['connection_id']))
             server.mode='tasks';server.reject_next=True
             h.start()
-            h.wait_state(lambda status:status['readiness']=='ready','native trace runtime readiness',lambda _:h.http('/api/status'))
+            h.wait_runtime_ready('native trace runtime readiness')
             h.browser(evidence.parent/'execution-empty-ui','execution-empty')
             # The Root terminal commit can precede its causal Main follow-up. Wait
             # for both Main runs and their deliveries before measuring read-only UI.
@@ -1190,7 +1219,10 @@ def native_trace_inspection(binary,evidence,report):
                 require([json.loads(a[0]) for a in attempts]==before,'observed final request differs from actual HTTP body')
                 raw=''.join(r[0] or '' for r in db.execute('SELECT body_json FROM dispatch_observation'))
                 require(h.env['STEWARD_TRACE_KEY'] not in raw and 'Bearer ' not in raw,'wire capture persisted credentials')
-                facts=dict(main=main,root=root,generation=generation,counts={table:db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ('model_generation','provider_usage','tool_invocation','dispatch_observation','run_trace')})
+                selected = db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]
+                packages = {row[0] for row in db.execute("SELECT p.plugin_id FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?", (selected,))}
+                require('steward.trace-inspector' in packages, 'native Web tracing bypassed distributed display policy')
+                facts=dict(main=main,root=root,generation=generation,plugin_graph=selected,counts={table:db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ('model_generation','provider_usage','tool_invocation','dispatch_observation','run_trace','rsi_call','rsi_state','rsi_audit','recall_candidate_snapshot')})
             tree=h.http('/api/developer/observations?'+urlencode(dict(run=main)))
             require(sum(o['name']=='Provider HTTP' for o in tree['items'])>=2,'actual sends missing from observation tree')
             round_tree=h.http('/api/developer/observations?'+urlencode(dict(run=main,obs='generation:'+generation)))
@@ -1211,12 +1243,17 @@ def native_trace_inspection(binary,evidence,report):
             h.stop(kill=True);h.start()
             require(h.http('/api/developer/observations?'+urlencode(dict(run=main)))==tree,'completed trace changed across restart')
             h.env['STEWARD_NATIVE_TRACE_FACTS']=json.dumps(facts)
-            h.browser(evidence.parent/'trace-ui','native-trace')
+            for phase in ('native-trace-list','native-trace-detail','native-trace','native-trace-execution'):
+                h.browser(evidence.parent/'trace-ui'/phase,phase)
             with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
                 db.execute('BEGIN')
                 after={table:db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in facts['counts']}
             require(after==facts['counts'],'browsing tracing mutated execution or observations: '+json.dumps(dict(before=facts['counts'],after=after)))
-            report['scenarios']['native-traces']=dict(read_only=True,actual_attempts=2,restart=True)
+            h.command('plugin','quarantine',facts['plugin_graph'])
+            h.http('/developer/observability?'+urlencode(dict(run=main)),expected=503)
+            require(h.http('/api/developer/observations?'+urlencode(dict(run=main)))==tree,
+                    'quarantining display policy changed original diagnostics')
+            report['scenarios']['native-traces']=dict(read_only=True,actual_attempts=2,restart=True,plugin_graph=facts['plugin_graph'],quarantine=True)
             report['checks'].append('Langfuse-style trace tree/timeline/details; actual Go provider final HTTP bodies and retries, terminal restart without re-execution, missing usage/pricing, authenticated browser, responsive/no-JS and unchanged ledgers')
         finally:
             h.cleanup();server.shutdown();server.server_close();thread.join()
@@ -1236,7 +1273,7 @@ def inspection_relationships(binary, evidence, report):
                 context_window=65536,max_output_tokens=4096,generation_defaults={},
                 compatibility=dict(tool_result_format='openai'),capabilities=dict(text_input=True)))
             h.start('after_generation_commit')
-            h.wait_state(lambda status:status['readiness']=='ready','inspection runtime readiness',lambda _:h.http('/api/status'))
+            h.wait_runtime_ready('inspection runtime readiness')
             h.http('/api/message',dict(source_id='inspect-tree',content=[dict(type='text',text=plan([
                 dict(name='builtin__task_manage',arguments=dict(operation='create',task=root))]))]))
             def first_accepted(_):
@@ -1402,7 +1439,7 @@ def rich_replies(binary, evidence, report):
             result['components'].append(dict(name='generateSandboxedUi',props=dict(initialHeight=160,placeholderMessages=[],css='',html='<label>Scenario level <input id="level" type="range" min="0" max="100" value="20"></label><output id="level-value">20</output>',jsFunctions='function initialize(){document.querySelector("#level").addEventListener("input",e=>document.querySelector("#level-value").textContent=e.target.value)}',jsExpressions=['initialize()'])))
             server.widgets=[result];server.mode='intelligent-ui'
             h.start()
-            h.wait_state(lambda status:status['readiness']=='ready','native UI runtime readiness',lambda _:h.http('/api/status'))
+            h.wait_runtime_ready('native UI runtime readiness')
             source = 'SHOW_INTELLIGENT_UI: Compare these options and ask for the trip details.'
             h.http('/api/message', dict(source_id='rich-reply-request', content=[dict(type='text', text=source)]))
             initial = h.wait(lambda s: len(s['deliveries']) == 1 and s['deliveries'][0]['status'] == 'sent', 'normal Main rich reply delivered')
@@ -1420,7 +1457,7 @@ def rich_replies(binary, evidence, report):
                              all(r['status'] == 'completed' for r in s['runs']), 'two form answers and Main continuations')
             require(not settled['approvals'], 'answering a form created an approval')
             h.stop(kill=True); h.start()
-            h.wait_state(lambda status:status['readiness']=='ready','restored UI runtime ready',lambda _:h.http('/api/status'))
+            h.wait_runtime_ready('restored UI runtime ready')
             data = dict(message_id=message['message_id'], form_id=forms[0]['form_id'], **{'field.choice':'0'})
             headers = {'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
             def retry(_):
@@ -1746,11 +1783,16 @@ def account_presentation(binary, browser_evidence, report):
                 request=Request(endpoint+'/fixture/authorize',data=json.dumps(dict(url=private_url)).encode(),headers={'Content-Type':'application/json'})
                 with urlopen(request,timeout=10) as response:callback=json.load(response)['callback']
                 with urlopen(callback,timeout=10) as response:require(response.status==200,'OAuth callback rejected')
-                connected=h.wait_state(lambda s:s['status']=='connected','Web account login completes',lambda _:h.http('/api/auth'))
+                # First model activation waits for the entire cold plugin
+                # composition, just like initial runtime readiness. This is
+                # separate from OAuth cancellation, Run and Tool deadlines.
+                connected=h.wait_state(lambda s:s['status']=='connected','Web account login completes',lambda _:h.http('/api/auth'),timeout=60)
                 aid=connected['account_id'];require(aid,'account metadata absent')
                 h.http('/model/add',urlencode(dict(account=aid,model='hidden-model')).encode(),headers=form,expected=409)
                 profile=h.command('model','list')[0]
-                require(h.http('/api/status')['readiness']=='ready','Web account profile unavailable')
+                require(not connected.get('error'), 'Web account activation failed: ' + str(connected.get('error')))
+                first_status = h.http('/api/status')
+                require(first_status['readiness']=='ready', 'Web account profile unavailable: ' + json.dumps(first_status, sort_keys=True))
                 with urlopen(endpoint+'/fixture/stats',timeout=10) as response:
                     require(json.load(response)['generations']==0,'account connection sent unnecessary test generations')
                 detail = '/settings/models/' + profile['profile_id']
@@ -1821,8 +1863,27 @@ def account_presentation(binary, browser_evidence, report):
                             db.execute('SELECT count(*) FROM model_probe').fetchone()[0]==0,
                             'account reconnect generated inference or fabricated a probe')
                 restored_page = h.http(resources)
-                require('fixture-account-model' in h.http('/') and 'Test connection' not in restored_page and 'Use model' not in restored_page,
-                        'restored model still exposes replaced actions')
+                # Owned lexicons are inert JSON, not rendered actions. Inspect
+                # the actual server controls; raw substring checks also match
+                # labels for actions which this ready profile cannot expose.
+                from html.parser import HTMLParser
+                class Actions(HTMLParser):
+                    def __init__(self):
+                        super().__init__(); self.controls=[]; self.current=None
+                    def handle_starttag(self, tag, attrs):
+                        if tag in ('button','a'):
+                            self.current=(tag,[])
+                            label=dict(attrs).get('aria-label')
+                            if label: self.controls.append(label)
+                    def handle_data(self, text):
+                        if self.current: self.current[1].append(text)
+                    def handle_endtag(self, tag):
+                        if self.current and tag==self.current[0]:
+                            self.controls.append(''.join(self.current[1]).strip()); self.current=None
+                actions=Actions(); actions.feed(restored_page)
+                require('fixture-account-model' in h.http('/') and not any(
+                    term in label for label in actions.controls for term in ('Test connection','Use model')),
+                    'restored model still exposes replaced actions')
                 h.browser(browser_evidence/'restored', 'account-restored')
                 # Price a real accepted response using the bundled catalog. Only
                 # the owned OAuth/Responses peer is substituted; no ledger or

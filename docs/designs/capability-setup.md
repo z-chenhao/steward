@@ -55,7 +55,7 @@ Computer `Provider.Probe` 与实际执行的 lock 路径共用 checkHost，校�
 
 - [config/setup](../../internal/config/setup/manager.go)：状态/证明/保存编排；[document.go](../../internal/config/setup/document.go)：文档编辑与原子写入；[resources.go](../../internal/config/setup/resources.go)：六类资源投影；[probe.go](../../internal/config/setup/probe.go)：适配器诊断。
 - [Config.Load/Decode](../../internal/config/config.go)：默认发现、严格共享校验。
-- [Web control plane](../../internal/interaction/web/capabilities.go) 与 [模板](../../internal/interaction/web/templates/capabilities.html)。
+- [Web control plane](../../internal/interaction/web/capabilities.go) 与 [owning 视图](../../internal/plugin/capabilityforms/view/capabilities.html)。
 - [Computer shared probe](../../internal/computer/macosvm/probe.go)。
 
 无新依赖、模型工具、DB schema、CI gate 或评测体系。自动 Computer 使用由宿主进程管理的私有 Lume 服务。设置层前端复用现有样式、原生输入与按钮；共用提交增强保留 clicked action，避免禁用按钮丢失表单字段，并保留初始 disabled 状态供 bfcache 返回恢复。
@@ -73,3 +73,36 @@ Computer `Provider.Probe` 与实际执行的 lock 路径共用 checkHost，校�
 自动保存单次处理候选，失败保留输入，挂起期间的后续字段修改排队。MCP 增加行仅重绘草稿；有效删除随既有 apply 链路校验保存，最后服务删除停用 MCP；提交保留原 revision，不默默重基。必要目录、端点、权限是领域复杂度；通用表单引擎、公开字段 schema、格式编辑器和新持久层属于未证实复杂度，本次不引入。原生无脚本仍可提交，重启与冻结快照的边界保持原样。
 
 默认应用使用数据根 `secrets/` 的文件 SecretStore 准备 Memory 密钥，不请求系统钥匙串。已有密钥引用始终复用；文件丢失时保留原引用并显示不可用，迁移保留既有加密身份。账户文件继续使用独立 account-secrets 目录。
+
+## Guided forms 的托管边界
+
+具体消费者是已有能力设置 GET 与 guided POST。原问题是 Web 直接实现六类表单解释与编码，无法独立换版。现将完整表单策略放入一个 `capability-settings` 包：`prepare` 接收当前能力 ID、owner YAML 文档与默认密钥引用；`submit` 再接收表单字段和明确动作，返回强类型 Form、候选文档、草稿／动作及有界校验文案。接口仅仓库内部实验级，不公开 Web Capability、配置领域模型、yaml.Node、数据库或 SecretStore。YAML 是现有所有者配置格式，插件不读取实际密钥；附加 POST 文档、配置版本及无关请求字段不传入。原生 codec 回归迁至 owning 包，普通 Web codec 已移除。
+
+```mermaid
+flowchart LR
+ U[所有者表单] --> H[Host：认证与权威基线]
+ H --> P[同一能力设置插件：准备或提交]
+ P --> V[Host：隐藏配置保留与候选接纳]
+ V --> T[原 Test / Save / 版本与身份保护]
+ T --> R[新配置仅供重启后的新执行]
+```
+
+Host 的 `capability_guard` 属于领域必需的授权接纳：只允许现有表单可编辑路径变化，拒绝隐式 YAML alias、重复键、隐藏字段漂移、外来 provider 高级数据及未经原表单选择的关闭。MCP 保留各行原 identity 与未显示配置，新增行不能继承其他行的私有字段。仅允许原删除操作触发既有 apply 语义，不允许插件把普通新增草稿改成自动保存。Test／Save 和成功候选绑定仍由原 Manager 完整验证，不把插件输出当配置事实。
+
+默认表单值、组件转字段、增删行及校验表达是可迭代业务；认证、凭据、未显示数据完整性、事务／证明／版本以及旧能力快照是固定机制。拒绝按每个能力字段拆插件、通用任意 patch API、任意配置访问或新的状态表。`legacyv1` 只解释从未激活服务的历史图／嵌入；停用、缺包和当前读取失败均不回退。原 Advanced YAML 控制面继续原授权及 Test／Save 语义。说明、顺序、检索入口和诊断展示已在同包托管；本批整体验收与跨 feature 资源预置审计完成前仍不宣告整个 F-030 闭环。
+
+### 配置说明与诊断投影
+
+实际消费者是 Manager.List／Detail 和 Manager.Test。一个 `steward.capability-presentation/1` 读取返回六类说明、示例、列表顺序／Memory 子入口标记及完整诊断词表，共用表单包版本。输入只有用于原示例路径的应用数据根，不传配置正文、凭据、私有诊断错误或内部配置模型。Host 校验六个已知 ID 恰好一次及文本大小；只绑定这些 ID 的原权威字段。列表顺序和检索的 Memory 归属从 owning 输出读取，原直接过滤和说明 switch 已清理。
+
+诊断执行与成功证明保留 Host：固定的 SecretStore 摘要、embedding 诊断句、catalog/discovery、隔离命令和 Computer 检查不能被文字投影扩大。driver 只返回真实状态、已知诊断代码及实际计数。Host 在任何诊断效果前读取词表，之后只绑定 dimensions／providers／tools 三个现有计数，不执行通用模板。原证明保留接纳时的文字；之后版本变化或停用不能覆盖它，也不能把失败状态变成 ready。读取失败不能触发新诊断；List／Detail 仍返回原事实，以 PresentationUnavailable 和基础故障诊断区分缺失，不恢复旧业务文案。
+
+本次未开放自动启动配方接口。256 位密钥分配、确认后发布引用、进程锁和既有私有资源身份属于 Host 机制，实际消费者是启动、原加密数据、配置身份检查、Run／Child 冻结资源和备份恢复。已发布 `mode: automatic` 与 Memory／search 联动是现有配置协议的解释与原子接纳；不允许通过仅重构改变其含义。自动 Skills 的原 agent 目录身份沿用，变更身份应走显式配置／迁移。Computer 的具体驱动预置仍由 F-027 清单审计，不能以本段把它宣布为可信内核或已迁移业务。拒绝在此次迁移中新造启动框架、通用策略表或配置补丁语言。
+
+### 同包视图与词条
+
+`prepare`／`submit` 的现有读取可请求同包 view／copy 资源，资源名、路径及 source digest 必须匹配确切包 manifest。设置页只消费本次读取已接纳的资源；提交结果在 Test／Save 前固定并按实际字段验证视图，效果后不再重新读取生成器。Host 复用既有私有模板校验器，能力页仅暴露显示 DTO 与同一强类型 Form，不暴露配置正文、路径、Server／Manager 或其他页面。原生模板已清理为解析所需的空槽，实际读取失败返回不可用，不执行旧普通视图。历史嵌入和从未激活该服务的图只使用具名 legacyv1 同包解释。
+
+原 HTML 搬入封存资源并使用独立 capabilityTr 词表。130 项原中英文随包读取；共享外壳仍用 Host 词表，专属旧词条已删除。缺少 owning 词条时保留原文，不借另一版本补齐。带数量的原诊断仅支持现有数字位置。共享 help／icons／控件继续由 Host 提供，不接受候选脚本、任意 CSS、外链资源或通用格式化函数。
+
+DOM 接纳只允许原同源 capability configure 表单及六类内部链接，绑定原能力／版本和 MCP 行 identity；拒绝未知字段、外部目标、隐藏凭据字段、原生事件、脚本和 noscript 网络资源。模板只能遍历真实的记录／provider／tools 数组，校验私有辅助模板展开预算，并限制输出字节。字段编码还与原提交逐项绑定，禁止在隐藏设置保留的同时偷换有效凭据、端点、私有路径或工具授权。这里的额外检查是当前 owner 表单的授权与效果接纳，不是通用表单框架。

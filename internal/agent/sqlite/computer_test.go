@@ -62,7 +62,7 @@ func (f *lifecycleFake) Destroy(ctx context.Context, r computer.Request) error {
 	return nil
 }
 
-func computerClaims(t *testing.T) (*Store, *Runs, []*codeBridge, []tool.Invocation) {
+func computerClaims(t *testing.T, configure ...func(*Store, *Runs)) (*Store, *Runs, []*codeBridge, []tool.Invocation) {
 	t.Helper()
 	ctx := context.Background()
 	defs := append(computer.Definitions("pinned-test"), codemode.Definition())
@@ -72,7 +72,7 @@ func computerClaims(t *testing.T) (*Store, *Runs, []*codeBridge, []tool.Invocati
 		}
 	}
 	calls := []llm.ToolCall{{ID: "first", Name: codemode.ToolName, Arguments: `{"source":"return 1;"}`}, {ID: "second", Name: codemode.ToolName, Arguments: `{"source":"return 1;"}`}}
-	s, r, _, e, exchange := admitPolicy(t, defs, calls)
+	s, r, _, e, exchange := admitPolicyRun(t, defs, calls, false, configure...)
 	invs, err := e.Store.Accept(ctx, exchange, calls, e.Registry.Describe())
 	if err != nil {
 		t.Fatal(err)

@@ -91,13 +91,23 @@ func StoredWidget(raw string) (Widget, bool) {
 		return w, false
 	}
 	for _, c := range w.Components {
-		if !valid(c) {
+		if !ValidComponent(c) {
 			return w, false
 		}
 	}
 	return w, true
 }
 func WidgetComponents(w Widget, ref, message string, offset int) []Component {
+	return bindWidgetComponents(w, ref, message, offset, false)
+}
+
+// ManagedWidgetComponents binds Host identities without reinterpreting the
+// already accepted component summaries of a managed document.
+func ManagedWidgetComponents(w Widget, ref, message string, offset int) []Component {
+	return bindWidgetComponents(w, ref, message, offset, true)
+}
+
+func bindWidgetComponents(w Widget, ref, message string, offset int, managed bool) []Component {
 	if w.HTML != "" {
 		return []Component{{Type: "widget", Text: w.Fallback, Title: w.Title, WidgetRef: ref}}
 	}
@@ -112,7 +122,9 @@ func WidgetComponents(w Widget, ref, message string, offset int) []Component {
 				out[i].Text = w.Fallback
 				continue
 			}
-			out[i].Text = nativeSummary(out[i])
+			if !managed {
+				out[i].Text = nativeSummary(out[i])
+			}
 			if out[i].Name == "scheduleTime" || out[i].Name == "steward.form" {
 				out[i].MessageID = message
 				out[i].FormID = Hash([]any{"openintelligentui-response-v1", message, offset + i, out[i]})

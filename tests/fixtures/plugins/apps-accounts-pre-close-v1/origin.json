@@ -1,0 +1,9 @@
+{
+  "source": "/private/var/folders/_h/65wkv4dn2m51ch2p4y9tpjm40000gn/T/steward-apps-account-close-djiidn5t/source",
+  "files": {
+    "intent.go.txt": "c6894e3c3d4ddc9afe917e96b877aa427e7b6817513e24a514250f2302037481",
+    "steward.plugin.json": "c296ce9fc2a0e63a1122c700895d81d05a8bfe748f10e807cb1d0b464b105863"
+  },
+  "retention": "Exact pre-close four-method graph and captured pre-opt-in actions; delete with those consumers.",
+  "not_a_full_old_release_compiler_claim": true
+}

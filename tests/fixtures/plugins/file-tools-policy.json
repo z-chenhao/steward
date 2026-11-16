@@ -1,0 +1,52 @@
+{
+  "id": "file-system-owner",
+  "allowed_contracts": [
+    "steward.file-window/1",
+    "steward.file-edit-span/1"
+  ],
+  "allowed_requests": [
+    "input.read"
+  ],
+  "cases": [
+    {
+      "instance_id": "file-tools",
+      "contract": "steward.file-window/1",
+      "input": {
+        "input_id": "file",
+        "offset": 1,
+        "limit": 2,
+        "output_bytes": 48000,
+        "as_artifact": false
+      },
+      "inputs": [
+        {
+          "id": "file",
+          "data": "Zmlyc3QKc2Vjb25kCg=="
+        }
+      ],
+      "expected": {
+        "artifact": false,
+        "start": 0,
+        "end": 13,
+        "next_offset": 3
+      }
+    },
+    {
+      "instance_id": "file-tools",
+      "contract": "steward.file-edit-span/1",
+      "input": {
+        "input_id": "file",
+        "old_text": "OLD"
+      },
+      "inputs": [
+        {
+          "id": "file",
+          "data": "cHJlZml4IE9MRCB0YWls"
+        }
+      ],
+      "expected": {
+        "start": 7
+      }
+    }
+  ]
+}

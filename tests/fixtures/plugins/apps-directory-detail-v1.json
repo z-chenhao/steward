@@ -1,0 +1,230 @@
+[
+  {
+    "name": "offline-editorial",
+    "slug": "gmail",
+    "configured": false,
+    "connected": false,
+    "mode": "",
+    "expected": {
+      "slug": "gmail",
+      "name": "Gmail",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "Read and organize your email",
+        "categories": [
+          {
+            "id": "communication",
+            "name": "Communication"
+          }
+        ],
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "offline-unknown",
+    "slug": "custom_app",
+    "configured": false,
+    "connected": false,
+    "mode": "",
+    "expected": {
+      "slug": "",
+      "name": "",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "",
+        "tools_count": 0
+      }
+    },
+    "error": "invalid"
+  },
+  {
+    "name": "offline-editorial-before-connection",
+    "slug": "gmail",
+    "configured": false,
+    "connected": true,
+    "mode": "",
+    "expected": {
+      "slug": "gmail",
+      "name": "Gmail",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "Read and organize your email",
+        "categories": [
+          {
+            "id": "communication",
+            "name": "Communication"
+          }
+        ],
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "offline-connection",
+    "slug": "custom_app",
+    "configured": false,
+    "connected": true,
+    "mode": "",
+    "expected": {
+      "slug": "custom_app",
+      "name": "Saved custom_app",
+      "no_auth": true,
+      "meta": {
+        "logo": "",
+        "description": "",
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "live-editorial",
+    "slug": "gmail",
+    "configured": true,
+    "connected": false,
+    "mode": "success",
+    "expected": {
+      "slug": "gmail",
+      "name": "Live gmail",
+      "no_auth": true,
+      "meta": {
+        "logo": "",
+        "description": "",
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "live-unknown",
+    "slug": "custom_app",
+    "configured": true,
+    "connected": false,
+    "mode": "success",
+    "expected": {
+      "slug": "custom_app",
+      "name": "Live custom_app",
+      "no_auth": true,
+      "meta": {
+        "logo": "",
+        "description": "",
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "live-error-editorial",
+    "slug": "gmail",
+    "configured": true,
+    "connected": false,
+    "mode": "error",
+    "expected": {
+      "slug": "gmail",
+      "name": "Gmail",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "Read and organize your email",
+        "categories": [
+          {
+            "id": "communication",
+            "name": "Communication"
+          }
+        ],
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "live-error-editorial-before-connection",
+    "slug": "gmail",
+    "configured": true,
+    "connected": true,
+    "mode": "error",
+    "expected": {
+      "slug": "gmail",
+      "name": "Gmail",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "Read and organize your email",
+        "categories": [
+          {
+            "id": "communication",
+            "name": "Communication"
+          }
+        ],
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "live-error-connection",
+    "slug": "custom_app",
+    "configured": true,
+    "connected": true,
+    "mode": "error",
+    "expected": {
+      "slug": "custom_app",
+      "name": "Saved custom_app",
+      "no_auth": true,
+      "meta": {
+        "logo": "",
+        "description": "",
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  },
+  {
+    "name": "live-error-missing",
+    "slug": "custom_app",
+    "configured": true,
+    "connected": false,
+    "mode": "error",
+    "expected": {
+      "slug": "",
+      "name": "",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "",
+        "tools_count": 0
+      }
+    },
+    "error": "unavailable"
+  },
+  {
+    "name": "live-mismatch-editorial",
+    "slug": "gmail",
+    "configured": true,
+    "connected": false,
+    "mode": "mismatch",
+    "expected": {
+      "slug": "gmail",
+      "name": "Gmail",
+      "no_auth": false,
+      "meta": {
+        "logo": "",
+        "description": "Read and organize your email",
+        "categories": [
+          {
+            "id": "communication",
+            "name": "Communication"
+          }
+        ],
+        "tools_count": 0
+      }
+    },
+    "error": ""
+  }
+]

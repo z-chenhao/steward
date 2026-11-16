@@ -12,12 +12,12 @@ func TestControlledRenderingAndFallback(t *testing.T) {
 		s    Spec
 		want string
 	}{
-		{"safe text", Spec{1, "semantic", []Component{{Type: "markdown", Text: `<script>alert(1)</script>`}}}, "&lt;script&gt;"},
-		{"unknown version", Spec{9, "semantic", nil}, "semantic"},
-		{"unknown component", Spec{1, "semantic", []Component{{Type: "react", Text: "evil"}}}, "semantic"},
-		{"failed table", Spec{1, "semantic", []Component{{Type: "table", Columns: []string{"x"}, Rows: [][]string{{"a", "b"}}}}}, "semantic"},
-		{"escaped table", Spec{1, "semantic", []Component{{Type: "table", Columns: []string{"<x>"}, Rows: [][]string{{"<b>"}}}}}, "&lt;x&gt;"},
-		{"bad attachment", Spec{1, "semantic", []Component{{Type: "artifact", ArtifactRef: "javascript:evil"}}}, "semantic"},
+		{"safe text", Spec{SchemaVersion: 1, Fallback: "semantic", Components: []Component{{Type: "markdown", Text: `<script>alert(1)</script>`}}}, "&lt;script&gt;"},
+		{"unknown version", Spec{SchemaVersion: 9, Fallback: "semantic", Components: nil}, "semantic"},
+		{"unknown component", Spec{SchemaVersion: 1, Fallback: "semantic", Components: []Component{{Type: "react", Text: "evil"}}}, "semantic"},
+		{"failed table", Spec{SchemaVersion: 1, Fallback: "semantic", Components: []Component{{Type: "table", Columns: []string{"x"}, Rows: [][]string{{"a", "b"}}}}}, "semantic"},
+		{"escaped table", Spec{SchemaVersion: 1, Fallback: "semantic", Components: []Component{{Type: "table", Columns: []string{"<x>"}, Rows: [][]string{{"<b>"}}}}}, "&lt;x&gt;"},
+		{"bad attachment", Spec{SchemaVersion: 1, Fallback: "semantic", Components: []Component{{Type: "artifact", ArtifactRef: "javascript:evil"}}}, "semantic"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

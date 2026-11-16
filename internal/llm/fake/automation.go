@@ -13,7 +13,7 @@ func automationReply(r llm.GenerationRequest) llm.GenerationResult {
 	last := r.Messages[len(r.Messages)-1]
 	worker, followup := false, false
 	for _, m := range r.Messages {
-		worker = worker || strings.Contains(m.Text, "general Worker executing")
+		worker = worker || workerMessage(m)
 		followup = followup || m.Origin == "runtime" && strings.HasPrefix(m.Text, "Runtime task update")
 	}
 	call := func(name, args string) llm.GenerationResult {

@@ -1,0 +1,12 @@
+{
+  "source_snapshot": "trace66-original-source.json",
+  "source_sha256": "e445c0db92bb3886b0273bdc3e00f03009e2f7e03a14ad6de83dd82581350e76",
+  "files": {
+    "internal/interaction/web/trace_view.go": "24628d4548a047e2d1b7f1a0054f0c397b7c6bad74cffc780857ded2cf4571e5",
+    "internal/interaction/web/traces_test.go": "f10c75e845bdc0cec6cbdb70ae8b238a72e7280609f0797433177479c8428f34"
+  },
+  "method": "Execute original primaryObservations and traceRows with an external Go overlay. Only wall clock fixed at1_000_000_000 microseconds; empty guide slices normalized for value comparison. No production sources edited.",
+  "cases": 384,
+  "results_sha256": "76db84f22bc2bdffdb38bae6f9ed35e7af6af1490c87081d6c8ae16d6d5ccede",
+  "results_file": "view-policy-v1.json"
+}

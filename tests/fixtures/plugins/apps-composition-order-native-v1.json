@@ -1,0 +1,63 @@
+{
+  "page": [
+    "heading",
+    "unavailable",
+    "feedback",
+    "inventory",
+    "body",
+    "dialog"
+  ],
+  "directory": [
+    "tabs",
+    "collection-back",
+    "categories",
+    "groups",
+    "pagination"
+  ],
+  "detail": [
+    "heading",
+    "feedback",
+    "connect",
+    "accounts",
+    "additional"
+  ],
+  "account": [
+    "copy",
+    "actions"
+  ],
+  "service": [
+    "heading",
+    "back",
+    "project"
+  ],
+  "copy": {
+    "apps_title": "Apps",
+    "app_settings": "App settings",
+    "search_apps": "Search apps",
+    "search": "Search",
+    "refresh_apps": "Refresh apps",
+    "directory_unavailable": "The live directory is unavailable. Your saved connections have been kept.",
+    "back_to_apps": "Back to apps",
+    "app_views": "App views",
+    "discover": "Discover",
+    "your_apps": "Your apps",
+    "all_apps": "All apps",
+    "category": "Category",
+    "all_categories": "All categories",
+    "filter": "Filter",
+    "view_all": "View all",
+    "manage_app": "Manage app",
+    "about_app": "About app",
+    "no_apps": "No apps found.",
+    "more_apps": "More apps",
+    "connections_unavailable": "App connections are unavailable. The installation owner manages this service in App settings.",
+    "your_connections": "Your connections",
+    "no_connections": "No app connections yet.",
+    "add_account": "Add account",
+    "service_title": "App connection service",
+    "project_title": "Composio project",
+    "project_help": "Configure the shared connection service once. People connect their own app accounts from Apps.",
+    "authentication_title": "App authentication",
+    "connected_apps": "Connected apps"
+  }
+}

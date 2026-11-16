@@ -1,0 +1,71 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.experience-learning",
+  "version": "1.0.1",
+  "feature_ids": [
+    "F-023"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.experience-policy/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "success",
+              "correction",
+              "recovered_failure"
+            ]
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "required_runs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 128
+          },
+          "introduction": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        },
+        "required": [
+          "required_runs",
+          "introduction"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

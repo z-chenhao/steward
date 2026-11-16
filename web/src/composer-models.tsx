@@ -3,20 +3,23 @@ import {createRoot} from 'react-dom/client';
 import {flushSync} from 'react-dom';
 import {z} from 'zod';
 import {SelectView} from './components/ui/select-view';
-import {t} from './i18n';
+import {pickerPresentation,modelPickerView,type PickerError} from './model-picker-view';
 
-const models=z.object({choices:z.array(z.object({key:z.string(),label:z.string(),disabled:z.boolean().optional()})),current:z.string(),config_version:z.number().int(),unavailable:z.boolean().optional()});
+const models=z.object({choices:z.array(z.object({key:z.string(),label:z.string(),disabled:z.boolean().optional()})),current:z.string(),config_version:z.number().int(),unavailable:z.boolean().optional(),picker:pickerPresentation,reader_revision:z.string().regex(/^sha256:[0-9a-f]{64}$/).optional()});
 type Models=z.infer<typeof models>;
-// Reads and acknowledgements contain authoritative saved profiles, whose keys
-// can change on activation. Retain only the extra account catalogue entries.
-function retainAccountChoices(previous:Models,received:Models):Models{
- const choices=new Map(previous.choices.filter(choice=>choice.key.startsWith('account:')).map(choice=>[choice.key,choice]));
- for(const choice of received.choices)choices.set(choice.key,choice);
- return {...received,choices:[...choices.values()].sort((a,b)=>{const x=a.label.toLowerCase(),y=b.label.toLowerCase();return x===y?0:x>y?-1:1})};
+// Local snapshots are display facts only. Host binds owning-plugin output back
+// to these exact choices; current/config_version always come from the read/ack.
+async function projectChoices(previous:Models,received:Models,reason:'refresh'|'ack',signal?:AbortSignal):Promise<Models>{
+ const facts=(value:Models)=>value.choices.map(choice=>({...choice,sort_key:choice.label.toLowerCase()}));
+ const response=await fetch('/api/models/project',{method:'POST',headers:{'Content-Type':'application/json',...(received.reader_revision?{'X-Steward-Model-Reader':received.reader_revision}:{})},signal:signal?AbortSignal.any([signal,AbortSignal.timeout(30000)]):AbortSignal.timeout(30000),body:JSON.stringify({previous:facts(previous),received:facts(received),reason,unavailable:!!received.unavailable})});
+ if(!response.ok)throw Error();
+ return {...received,choices:models.shape.choices.parse(await response.json())};
 }
 function ModelPicker({initial,composer}:{initial:Models;composer:HTMLFormElement}){
- const[data,setData]=useState(initial),[open,setOpen]=useState(false),[loading,setLoading]=useState(false),[ready,setReady]=useState(false),[saving,setSaving]=useState(false),[sending,setSending]=useState(!!composer.dataset.submitting),[error,setError]=useState('');
+ const[data,setData]=useState(initial),[open,setOpen]=useState(false),[loading,setLoading]=useState(false),[ready,setReady]=useState(false),[saving,setSaving]=useState(false),[sending,setSending]=useState(!!composer.dataset.submitting),[error,setError]=useState<PickerError>('');
  useEffect(()=>{const observer=new MutationObserver(()=>setSending(!!composer.dataset.submitting));observer.observe(composer,{attributes:true,attributeFilter:['data-submitting']});return()=>observer.disconnect()},[composer]);
+ const dataRef=useRef(initial);
+ function commit(value:Models){dataRef.current=value;setData(value)}
  const reading=useRef<{controller:AbortController;promise:Promise<Models|undefined>}|null>(null);
  useEffect(()=>{void refresh();return()=>{reading.current?.controller.abort();reading.current=null}},[]);
  function refresh():Promise<Models|undefined>{
@@ -28,13 +31,13 @@ function ModelPicker({initial,composer}:{initial:Models;composer:HTMLFormElement
     const response=await fetch('/api/models',{cache:'no-store',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(30000)])});
     if(!response.ok)throw Error();const value=models.parse(await response.json());
     if(controller.signal.aborted)return;
-    setData(previous=>{
-     if(value.config_version<previous.config_version)return previous;
-     if(!value.unavailable)return value;
-     return retainAccountChoices(previous,value);
-    });
-    if(value.unavailable)setError('Some account models are unavailable. Try again.');return value;
-   }catch{if(!controller.signal.aborted)setError('The account model list is unavailable.')}
+    const previous=dataRef.current;
+    if(value.config_version>=previous.config_version){
+     const projected=await projectChoices(previous,value,'refresh',controller.signal);
+     if(!controller.signal.aborted&&dataRef.current===previous)commit(projected);
+    }
+    if(value.unavailable)setError('partial');return value;
+   }catch{if(!controller.signal.aborted)setError('unavailable')}
    finally{if(reading.current?.controller===controller){reading.current=null;setLoading(false);setReady(true)}}
   })();
   reading.current={controller,promise};return promise;
@@ -45,25 +48,29 @@ function ModelPicker({initial,composer}:{initial:Models;composer:HTMLFormElement
   reading.current?.controller.abort();reading.current=null;setLoading(false);
   setOpen(false);setSaving(true);setError('');composer.dataset.modelSelecting='true';
   const submit=composer.querySelector<HTMLButtonElement>('button[type=submit]');if(submit)submit.disabled=true;
-  try{const response=await fetch('/model/choose',{method:'POST',headers:{Accept:'application/json'},signal:AbortSignal.timeout(30000),body:new URLSearchParams({consent:'yes',choice:value,config_version:String(data.config_version)})});if(!response.ok)throw Error();const confirmed=models.parse(await response.json());setData(previous=>retainAccountChoices(previous,confirmed))}
+  try{const response=await fetch('/model/choose',{method:'POST',headers:{Accept:'application/json'},signal:AbortSignal.timeout(30000),body:new URLSearchParams({consent:'yes',choice:value,config_version:String(data.config_version)})});if(!response.ok)throw Error();const confirmed=models.parse(await response.json());const previous=dataRef.current;const projected=await projectChoices(previous,confirmed,'ack');if(dataRef.current===previous&&confirmed.config_version>=previous.config_version)commit(projected)}
   catch{
    const latest=await refresh();
    // Activation increments a saved profile's version, so readback compares its
    // logical profile identity as well as exact account-model keys.
    const profile=value.startsWith('profile:')?value.slice(0,value.lastIndexOf(':')):undefined;
    const current=latest?.current;
-   if(current!==value&&!(profile&&current?.slice(0,current.lastIndexOf(':'))===profile))setError('Model selection failed. Try again.');
+   if(!latest)setError('unavailable');else if(current!==value&&!(profile&&current?.slice(0,current.lastIndexOf(':'))===profile))setError('selection');
   }
   finally{delete composer.dataset.modelSelecting;setSaving(false);if(submit)submit.disabled=!!composer.dataset.submitting||document.querySelector<HTMLElement>('[data-can-send]')?.dataset.canSend==='false'}
  }
+ const shown=modelPickerView(data.picker,{ready,loading,saving,sending,hasCurrent:!!data.current},error,document.documentElement.lang);
  const options=data.choices.map(choice=>({value:choice.key,label:choice.label,disabled:!!choice.disabled,lang:''}));
- if(!data.current)options.unshift({value:'',label:t('Choose model'),disabled:true,lang:''});
- return <><SelectView id="composer-model-picker" label={t('Model')} value={data.current} options={options} disabled={saving||sending} busy={saving||loading} pendingText={!ready?t('Loading models…'):undefined} open={open} language={false} variant="inline" setOpen={value=>{setOpen(value);if(value)void refresh()}} choose={value=>void choose(value)}/>{error&&<span className="composer-model-error" role="status">{t(error)}</span>}</>;
+ if(shown.placeholder)options.unshift({value:'',label:shown.placeholder_label,disabled:true,lang:''});
+ return <><SelectView id="composer-model-picker" label={shown.label} value={data.current} options={options} disabled={shown.disabled} busy={shown.busy} pendingText={shown.pending_text||undefined} open={open} language={false} variant="inline" setOpen={value=>{setOpen(value);if(value)void refresh()}} choose={value=>void choose(value)}/>{shown.error&&<span className="composer-model-error" role="status">{shown.error}</span>}</>;
 }
 export function enhanceComposerModels(){
  const host=document.querySelector<HTMLElement>('[data-composer-model]'),composer=document.querySelector<HTMLFormElement>('.composer');
  const select=host?.querySelector<HTMLSelectElement>('select');if(!host||!composer||!select||typeof fetch!=='function')return;
- const initial:Models={choices:[...select.options].filter(option=>option.value).map(option=>({key:option.value,label:option.label,disabled:option.disabled})),current:host.dataset.current??'',config_version:Number(host.dataset.configVersion)};
+ let initial:Models;
+ try{initial=models.parse({choices:[...select.options].filter(option=>option.value).map(option=>({key:option.value,label:option.label,disabled:option.disabled})),current:host.dataset.current??'',config_version:Number(host.dataset.configVersion),picker:JSON.parse(host.dataset.modelPicker??'null'),...(host.dataset.readerRevision?{reader_revision:host.dataset.readerRevision}:{})})}
+ catch{select.disabled=true;return}
+
  flushSync(()=>createRoot(host).render(<ModelPicker initial={initial} composer={composer}/>));
  document.querySelector('.model-native-submit')?.remove();
 }

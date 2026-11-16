@@ -1,0 +1,31 @@
+{
+  "id": "feedback-system-owner",
+  "allowed_contracts": [
+    "steward.task-feedback-policy/1"
+  ],
+  "allowed_requests": [],
+  "cases": [
+    {
+      "instance_id": "task-feedback",
+      "contract": "steward.task-feedback-policy/1",
+      "input": {
+        "kind": "input"
+      },
+      "expected": {
+        "lifetime_seconds": 604800,
+        "response_guidance": "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"
+      }
+    },
+    {
+      "instance_id": "task-feedback",
+      "contract": "steward.task-feedback-policy/1",
+      "input": {
+        "kind": "review"
+      },
+      "expected": {
+        "lifetime_seconds": 604800,
+        "response_guidance": "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"
+      }
+    }
+  ]
+}

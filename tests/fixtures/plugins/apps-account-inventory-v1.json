@@ -1,0 +1,592 @@
+[
+  {
+    "Name": "empty",
+    "Rows": null,
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": false,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": null,
+    "ExpectedConnectedOrder": null
+  },
+  {
+    "Name": "active-private",
+    "Rows": [
+      {
+        "id": "private-id-Original private name",
+        "toolkit": "example",
+        "name": "Original private name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": true,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "Original private name",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "active-public",
+    "Rows": [
+      {
+        "public": true,
+        "id": "private-id-Original public name",
+        "toolkit": "example",
+        "name": "Original public name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": true,
+      "PublicActive": true,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "Original public name",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": true,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "pending",
+    "Rows": [
+      {
+        "id": "private-id-Pending name",
+        "toolkit": "example",
+        "name": "Pending name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "pending",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": true
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "Pending name",
+        "Managed": true,
+        "Connected": false,
+        "PublicActive": false,
+        "Pending": true
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "unknown",
+    "Rows": [
+      {
+        "id": "private-id-Other name",
+        "toolkit": "example",
+        "name": "Other name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "unexpected",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "Other name",
+        "Managed": true,
+        "Connected": false,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "confirmed-disconnected",
+    "Rows": [
+      {
+        "id": "private-id-Old name",
+        "toolkit": "example",
+        "name": "Old name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "disconnected",
+        "revocation_confirmed": true
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": false,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": null,
+    "ExpectedConnectedOrder": null
+  },
+  {
+    "Name": "unconfirmed-disconnected",
+    "Rows": [
+      {
+        "id": "private-id-Unknown revocation",
+        "toolkit": "example",
+        "name": "Unknown revocation",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "disconnected",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "Unknown revocation",
+        "Managed": true,
+        "Connected": false,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "first-eligible-name",
+    "Rows": [
+      {
+        "id": "private-id-Skipped name",
+        "toolkit": "example",
+        "name": "Skipped name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "disconnected",
+        "revocation_confirmed": true
+      },
+      {
+        "id": "private-id-Earlier other",
+        "toolkit": "other",
+        "name": "Earlier other",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "pending",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "private-id-Selected name",
+        "toolkit": "example",
+        "name": "Selected name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": true,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "other",
+        "Name": "Earlier other",
+        "Managed": true,
+        "Connected": false,
+        "PublicActive": false,
+        "Pending": true
+      },
+      {
+        "Slug": "example",
+        "Name": "Selected name",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "other",
+      "example"
+    ]
+  },
+  {
+    "Name": "first-of-duplicates-and-last-public",
+    "Rows": [
+      {
+        "id": "private-id-First name",
+        "toolkit": "example",
+        "name": "First name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      },
+      {
+        "public": true,
+        "id": "private-id-Last name",
+        "toolkit": "example",
+        "name": "Last name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": true,
+      "PublicActive": true,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "First name",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": true,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "last-active-private",
+    "Rows": [
+      {
+        "public": true,
+        "id": "private-id-First public",
+        "toolkit": "example",
+        "name": "First public",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "private-id-Last private",
+        "toolkit": "example",
+        "name": "Last private",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": true,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "First public",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example"
+    ]
+  },
+  {
+    "Name": "mixed-pending-active",
+    "Rows": [
+      {
+        "id": "private-id-First pending",
+        "toolkit": "example",
+        "name": "First pending",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "pending",
+        "revocation_confirmed": false
+      },
+      {
+        "public": true,
+        "id": "private-id-Unrelated public",
+        "toolkit": "other",
+        "name": "Unrelated public",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "private-id-Next active",
+        "toolkit": "example",
+        "name": "Next active",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": true,
+      "PublicActive": false,
+      "Pending": true
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "First pending",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": false,
+        "Pending": true
+      },
+      {
+        "Slug": "other",
+        "Name": "Unrelated public",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": true,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example",
+      "other"
+    ]
+  },
+  {
+    "Name": "equal-folded-names-preserve-distinct-orders",
+    "Rows": [
+      {
+        "id": "private-id-Same name",
+        "toolkit": "b",
+        "name": "Same name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      },
+      {
+        "public": true,
+        "id": "private-id-SAME NAME",
+        "toolkit": "a",
+        "name": "SAME NAME",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": false,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "b",
+        "Name": "Same name",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": false,
+        "Pending": false
+      },
+      {
+        "Slug": "a",
+        "Name": "SAME NAME",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": true,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "a",
+      "b"
+    ]
+  },
+  {
+    "Name": "empty-and-unicode-names",
+    "Rows": [
+      {
+        "id": "private-id-",
+        "toolkit": "example",
+        "name": "",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "pending",
+        "revocation_confirmed": false
+      },
+      {
+        "public": true,
+        "id": "private-id-汉字",
+        "toolkit": "other",
+        "name": "汉字",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "private-id-🙂 name",
+        "toolkit": "third",
+        "name": "🙂 name",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": true,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": true
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "example",
+        "Name": "example",
+        "Managed": true,
+        "Connected": false,
+        "PublicActive": false,
+        "Pending": true
+      },
+      {
+        "Slug": "other",
+        "Name": "汉字",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": true,
+        "Pending": false
+      },
+      {
+        "Slug": "third",
+        "Name": "🙂 name",
+        "Managed": true,
+        "Connected": true,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      "example",
+      "other",
+      "third"
+    ]
+  },
+  {
+    "Name": "empty-toolkit-and-status",
+    "Rows": [
+      {
+        "id": "private-id-",
+        "toolkit": "",
+        "name": "",
+        "alias": "private-alias",
+        "account_id": "private-account",
+        "status": "",
+        "revocation_confirmed": false
+      }
+    ],
+    "ExpectedCard": {
+      "Slug": "example",
+      "Name": "Original toolkit",
+      "Managed": false,
+      "Connected": false,
+      "PublicActive": false,
+      "Pending": false
+    },
+    "ExpectedInventory": [
+      {
+        "Slug": "",
+        "Name": "",
+        "Managed": true,
+        "Connected": false,
+        "PublicActive": false,
+        "Pending": false
+      }
+    ],
+    "ExpectedConnectedOrder": [
+      ""
+    ]
+  }
+]

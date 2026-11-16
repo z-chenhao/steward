@@ -45,7 +45,7 @@ func (s *Server) postFailure(w http.ResponseWriter, r *http.Request, cause error
 		path, query = u.Path, u.Query()
 	case "/message":
 		query.Set("task", r.FormValue("task_ref"))
-	case "/model/add", "/model/catalog":
+	case "/model/add":
 		path = "/settings/models/new"
 		query.Set("provider", "compatible")
 		if r.FormValue("account") != "" {

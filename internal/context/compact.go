@@ -20,6 +20,9 @@ type Policy struct {
 	// user images, preserving their accepted request bytes and replay hashes.
 	UserImages bool `yaml:"-" json:"user_images,omitempty"`
 	DOCXText   bool `yaml:"-" json:"docx_text,omitempty"`
+	// Missing on historical Runs preserves their native DOCX interpreter.
+	DOCXPlugin     bool `yaml:"-" json:"docx_plugin,omitempty"`
+	ImageOCRPlugin bool `yaml:"-" json:"image_ocr_plugin,omitempty"`
 	// Missing on older policies preserves their query, evidence and placement.
 	ContextualRecall bool `yaml:"-" json:"contextual_recall,omitempty"`
 	// Historical inline policies attach timestamped recall to the input and expose plain

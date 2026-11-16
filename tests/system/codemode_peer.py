@@ -25,7 +25,7 @@ def project(body):
     if ENTRY not in names or not set(names) <= MAIN_DIRECT:
         return body, False
     body = copy.deepcopy(body)
-    root = any('general Worker executing' in str(m.get('content', '')) for m in body['messages'])
+    root = any(m.get('role') == 'system' and any(marker in str(m.get('content', '')) for marker in ('You are a Root Worker', 'You are a Subagent Worker', 'general Worker executing')) for m in body['messages'])
     body['tools'] = [dict(type='function', function=dict(name=name)) for name in (WORKER if root else MAIN)]
     for message in body['messages']:
         for call in message.get('tool_calls', []):

@@ -55,6 +55,15 @@ func (t *tools) executeCode(ctx context.Context, inv tool.Invocation) (result to
 	if fingerprintErr != nil {
 		return tool.Result{}, agent.ErrStorage
 	}
+	if err := t.prepareCodeLimits(ctx, inv, &b.req); err != nil {
+		if codeMethodUnavailable(err) {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
+		if errors.Is(err, tool.ErrReplay) {
+			return tool.Failure("NON_DETERMINISTIC_REPLAY"), nil
+		}
+		return tool.Result{}, err
+	}
 	defer func() {
 		if b.req.ClaimToken != "" && b.req.ExecutionEpoch > 0 {
 			result.HostFence = codeClaimFence{b.req.ClaimToken, b.req.ExecutionEpoch}
@@ -89,7 +98,10 @@ func (t *tools) executeCode(ctx context.Context, inv tool.Invocation) (result to
 		}
 	}()
 	var err error
-	b.registry, err = t.runs.registry.Select(b.req.Tools)
+	base, err := t.runs.RegistryForRun(ctx, t.claim, t.runs.registry)
+	if err == nil {
+		b.registry, err = base.Select(b.req.Tools)
+	}
 	if err != nil {
 		return tool.Result{}, err
 	}
@@ -323,7 +335,7 @@ func (b *codeBridge) Handle(ctx context.Context, method string, m codemode.Messa
 	case "host.store_get", "host.store_put":
 		return b.store(ctx, method, m.CallKey, m.Arguments)
 	case "host.discover":
-		return b.discover(m), nil
+		return b.discoverVersioned(ctx, m)
 	}
 	return denied("PERMISSION_DENIED"), nil
 }
@@ -507,7 +519,7 @@ func (b *codeBridge) discover(m codemode.Message) codemode.Reply {
 		if !progressive {
 			return codemode.Reply{Value: legacy}
 		}
-		return codemode.Reply{Value: tool.SearchTools(candidates, nil, query, options.Limit).Tools}
+		return codemode.Reply{Value: tool.SearchToolsLegacyV1(candidates, nil, query, options.Limit).Tools}
 	}
 	return codemode.Reply{}
 }

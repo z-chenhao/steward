@@ -175,6 +175,16 @@ func (s Inspector) ContextDiff(ctx context.Context, q observability.DiffQuery) (
 	if out.Previous == nil {
 		return out, nil
 	}
+	managed, err := s.traceManaged(ctx, tx)
+	if err != nil {
+		return out, err
+	}
+	if managed {
+		return s.pluginDiff(ctx, tx, q, *out.Previous)
+	}
+	if q.ReaderRevision != "" {
+		return out, observability.ErrNotFound
+	}
 	key := `coalesce('ref:'||nullif(json_extract(j.value,'$.source.ref'),''),'call:'||nullif(json_extract(j.value,'$.tool_call_id'),''),'position:'||j.key)`
 	if q.Section == "tools" {
 		key = `'tool:'||json_extract(j.value,'$.name')`

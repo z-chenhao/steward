@@ -8,7 +8,7 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/llm"
-	"github.com/z-chenhao/assistant/internal/llm/pricing"
+	pricing "github.com/z-chenhao/assistant/internal/llm/pricing/legacyv1"
 	"github.com/z-chenhao/assistant/internal/observability"
 )
 
@@ -20,7 +20,7 @@ func (e referenceEstimator) Quote(s llm.Snapshot, _ llm.TokenUsage) (agent.Refer
 
 func TestAcceptedReferenceEstimateIsImmutableAndReadOnly(t *testing.T) {
 	s, _, _, a, p := loopFixture(t)
-	s.ConfigureCostEstimator(referenceEstimator{1000000})
+	s.ConfigureLegacyReferenceEstimator(referenceEstimator{1000000})
 	p.respond = func(llm.GenerationRequest) (llm.GenerationResult, error) {
 		return llm.GenerationResult{Text: "answer", Usage: &llm.TokenUsage{InputTokens: 3, OutputTokens: 4, CacheReadTokens: 5, CacheWriteTokens: 7}}, nil
 	}
@@ -43,7 +43,7 @@ func TestAcceptedReferenceEstimateIsImmutableAndReadOnly(t *testing.T) {
 		t.Fatal(cost)
 	}
 	// A new catalog and replay cannot revise a previously accepted estimate.
-	s.ConfigureCostEstimator(referenceEstimator{9000000})
+	s.ConfigureLegacyReferenceEstimator(referenceEstimator{9000000})
 	mustSubmit(t, a, "estimated", "hello")
 	mustDrain(t, a)
 	if scalar(t, s, `SELECT count(*) FROM generation_cost_estimate`) != 1 || scalar(t, s, `SELECT estimated_micros FROM generation_cost_estimate`) != 22 {
@@ -63,7 +63,7 @@ func TestAcceptedReferenceEstimateIsImmutableAndReadOnly(t *testing.T) {
 func TestReferenceEstimateMissingUsageAndExplicitOverride(t *testing.T) {
 	t.Run("failed response with known usage", func(t *testing.T) {
 		s, _, _, a, p := loopFixture(t)
-		s.ConfigureCostEstimator(referenceEstimator{1000000})
+		s.ConfigureLegacyReferenceEstimator(referenceEstimator{1000000})
 		p.respond = func(llm.GenerationRequest) (llm.GenerationResult, error) {
 			return llm.GenerationResult{Usage: &llm.TokenUsage{InputTokens: 3}}, llm.ModelNotFound
 		}
@@ -77,7 +77,7 @@ func TestReferenceEstimateMissingUsageAndExplicitOverride(t *testing.T) {
 	})
 	t.Run("missing usage", func(t *testing.T) {
 		s, _, _, a, p := loopFixture(t)
-		s.ConfigureCostEstimator(referenceEstimator{1000000})
+		s.ConfigureLegacyReferenceEstimator(referenceEstimator{1000000})
 		p.respond = func(llm.GenerationRequest) (llm.GenerationResult, error) {
 			return llm.GenerationResult{Text: "answer"}, nil
 		}
@@ -89,7 +89,7 @@ func TestReferenceEstimateMissingUsageAndExplicitOverride(t *testing.T) {
 	})
 	t.Run("manual override", func(t *testing.T) {
 		s, r, a, p, c, run := spendRoot(t, 0)
-		s.ConfigureCostEstimator(referenceEstimator{9000000})
+		s.ConfigureLegacyReferenceEstimator(referenceEstimator{9000000})
 		p.respond = func(llm.GenerationRequest) (llm.GenerationResult, error) {
 			return llm.GenerationResult{Text: "answer", Usage: &llm.TokenUsage{InputTokens: 3}}, nil
 		}
@@ -107,7 +107,7 @@ func TestReferenceCatalogPricesAcceptedUsageWithoutConfiguration(t *testing.T) {
 	input := modelInput()
 	input.Endpoint, input.ModelID = "https://api.openai.com/v1", "gpt-6-luna"
 	activateLoop(t, s, input)
-	s.ConfigureCostEstimator(pricing.New())
+	s.ConfigureLegacyReferenceEstimator(pricing.New())
 	p.respond = func(llm.GenerationRequest) (llm.GenerationResult, error) {
 		return llm.GenerationResult{Text: "answer", Usage: &llm.TokenUsage{InputTokens: 1000000, OutputTokens: 1000000}}, nil
 	}
@@ -148,7 +148,7 @@ func TestEstimateMigrationDoesNotRepriceHistoricalGenerations(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer upgraded.Close()
-	upgraded.ConfigureCostEstimator(referenceEstimator{9000000})
+	upgraded.ConfigureLegacyReferenceEstimator(referenceEstimator{9000000})
 	tree, err := upgraded.Inspector().Observations(context.Background(), observability.ObservationQuery{RunID: receipt.RunID})
 	if err != nil || tree.Trace.Metrics.Unpriced != 1 || len(tree.Trace.Metrics.Costs) != 0 || scalar(t, upgraded, `SELECT count(*) FROM generation_cost_estimate`) != 0 {
 		t.Fatal("migration invented historical estimates", tree, err)

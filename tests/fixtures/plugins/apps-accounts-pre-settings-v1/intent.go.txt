@@ -1,0 +1,64 @@
+package appsaccounts
+
+import (
+	"bytes"
+	"context"
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/contract"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
+)
+
+func Handlers() rsiplugin.Handlers {
+	return rsiplugin.Handlers{PluginID: "steward.apps-accounts", Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.ConnectIntent: connectIntent, contract.AuthConfig: authConfig, contract.SessionFlow: sessionFlow, contract.AccountCheck: accountCheck, contract.AccountClose: accountClose, contract.Reconnect: reconnect}}
+}
+func connectIntent(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
+	var request contract.ConnectRequest
+	if err := rsiplugin.Decode(call.Input, &request); err != nil {
+		return rsiplugin.Result{}, err
+	}
+	if len(call.Inputs) != 1 || call.Inputs[0].ID != contract.ConnectInputID {
+		return rsiplugin.Result{}, errors.New("invalid connection input")
+	}
+	var raw bytes.Buffer
+	if err := rsiplugin.ReadInputTo(ctx, call.Inputs[0], &raw); err != nil {
+		return rsiplugin.Result{}, err
+	}
+	rows, err := contract.DecodeConnectRows(raw.Bytes(), request.Count)
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	return rsiplugin.JSONResult(ctx, chooseConnect(rows, request.Alias))
+}
+func chooseConnect(rows []contract.ConnectRow, alias string) contract.ConnectPlan {
+	if alias == "" {
+		for _, row := range rows {
+			if row.Facts&contract.Active != 0 && row.Facts&contract.Public == 0 {
+				return contract.ConnectPlan{Kind: "alias_required"}
+			}
+		}
+		for i := len(rows) - 1; i >= 0; i-- {
+			if rows[i].Facts&contract.Pending != 0 {
+				row := i
+				return contract.ConnectPlan{Kind: "pending", Row: &row}
+			}
+		}
+		alias = "personal"
+		for _, row := range rows {
+			if row.Alias == alias {
+				alias = "personal_" + uuid.NewString()[:8]
+			}
+		}
+	}
+	for i, row := range rows {
+		if row.Alias == alias && row.Facts&contract.Disconnected == 0 {
+			if row.Facts&contract.Pending != 0 {
+				value := i
+				return contract.ConnectPlan{Kind: "pending", Row: &value}
+			}
+			return contract.ConnectPlan{Kind: "conflict"}
+		}
+	}
+	return contract.ConnectPlan{Kind: "new", Alias: alias}
+}

@@ -1,0 +1,4 @@
+{{define "developer-navigation"}}
+<div class="section-navigation-heading"><span>{{tr "Developer"}}</span></div>
+<nav class="section-navigation" aria-label="{{tr "Developer sections"}}"><a href="/developer/observability" {{if eq .Tab "/developer/observability"}}aria-current="page"{{end}}>{{template "icon-traces"}}<span>{{tr "Traces"}}</span></a><a href="/developer/memory" {{if eq .Tab "/developer/memory"}}aria-current="page"{{end}}>{{template "icon-memory"}}<span>{{tr "Memory"}}</span></a></nav>
+{{end}}

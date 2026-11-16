@@ -71,14 +71,15 @@ type FrozenContext struct {
 }
 
 type DiffQuery struct {
-	RunID   string
-	Step    int64
-	Section string
-	After   int
+	ReaderRevision string
+	RunID          string
+	Step           int64
+	Section        string
+	After          int
 }
 
 func (q DiffQuery) Validate() error {
-	if q.Section != "messages" && q.Section != "tools" {
+	if !ValidReaderRevision(q.ReaderRevision) || q.Section != "messages" && q.Section != "tools" {
 		return ErrInvalid
 	}
 	return (ContextQuery{RunID: q.RunID, Step: q.Step, Section: q.Section, After: q.After}).Validate()
@@ -92,7 +93,8 @@ type ContextChange struct {
 }
 
 type ContextDiff struct {
-	Previous *int64          `json:"previous_step,omitempty"`
-	Items    []ContextChange `json:"items"`
-	Next     *int            `json:"next,omitempty"`
+	ReaderRevision string          `json:"reader_revision,omitempty"`
+	Previous       *int64          `json:"previous_step,omitempty"`
+	Items          []ContextChange `json:"items"`
+	Next           *int            `json:"next,omitempty"`
 }

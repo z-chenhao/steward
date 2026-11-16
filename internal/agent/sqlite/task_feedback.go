@@ -12,6 +12,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/interaction"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
@@ -28,6 +29,20 @@ func (t *tools) requestTaskFeedback(ctx context.Context, tx *sql.Tx, change *tas
 	if revoked {
 		return tool.Failure("PERMISSION_DENIED"), nil
 	}
+	p := change.feedbackPolicy
+	if p.managed {
+		if p.revision == "" {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
+		if err := t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID()); errors.Is(err, rsi.ErrRevoked) {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		} else if err != nil {
+			return tool.Result{}, err
+		}
+	}
+	if !validFeedbackPolicy(p.Policy) {
+		return tool.Result{}, rsi.ErrInvalid
+	}
 	if _, err := tx.ExecContext(ctx, `UPDATE task_feedback SET status='superseded' WHERE task_id=? AND status='pending'`, change.id); err != nil {
 		return tool.Result{}, err
 	}
@@ -43,7 +58,14 @@ func (t *tools) requestTaskFeedback(ctx context.Context, tx *sql.Tx, change *tas
 	if err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT c.message_id FROM conversation_intent c WHERE c.message_id=?),(SELECT c.message_id FROM task_request q JOIN conversation_intent c ON c.message_id=q.source_message_id WHERE json_extract(q.receipt_json,'$.taskRef')=? ORDER BY c.sequence LIMIT 1),'')`, change.source, change.reference).Scan(&source); err != nil {
 		return tool.Result{}, err
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO task_feedback(feedback_ref,task_id,task_epoch,privacy_epoch,kind,prompt,source_message_id,artifact_refs,status,created_at,expires_at) VALUES(?,?,?,?,?,?,?,?,'pending',?,?)`, change.feedbackRef, change.id, change.epoch, epoch, kind, change.request.Prompt, source, change.artifactsJSON, change.at, change.at+int64(7*24*time.Hour/time.Microsecond)); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO task_feedback(feedback_ref,task_id,task_epoch,privacy_epoch,kind,prompt,source_message_id,artifact_refs,status,created_at,expires_at) VALUES(?,?,?,?,?,?,?,?,'pending',?,?)`, change.feedbackRef, change.id, change.epoch, epoch, kind, change.request.Prompt, source, change.artifactsJSON, change.at, change.at+p.LifetimeSeconds*int64(time.Second/time.Microsecond)); err != nil {
+		return tool.Result{}, err
+	}
+	var revision any
+	if p.managed {
+		revision = p.revision
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO task_feedback_policy_binding(feedback_ref,graph_revision,response_guidance) VALUES(?,?,?)`, change.feedbackRef, revision, p.ResponseGuidance); err != nil {
 		return tool.Result{}, err
 	}
 	for _, ref := range change.request.ArtifactRefs {
@@ -160,6 +182,13 @@ func (r *Runs) respondTaskFeedback(ctx context.Context, ref, answer string, inbo
 	if err != nil {
 		return agent.Receipt{}, agent.ErrStorage
 	}
+	if f.Status == "expired" || f.Status == "superseded" {
+		return agent.Receipt{}, task.ErrFeedbackStale
+	}
+	var guidance string
+	if err = r.host.db.QueryRowContext(ctx, `SELECT response_guidance FROM task_feedback_policy_binding WHERE feedback_ref=?`, f.Ref).Scan(&guidance); err != nil {
+		return agent.Receipt{}, agent.ErrStorage
+	}
 	data, err := encoded(struct {
 		FeedbackRef string   `json:"feedback_ref"`
 		TaskRef     string   `json:"task_ref"`
@@ -171,7 +200,7 @@ func (r *Runs) respondTaskFeedback(ctx context.Context, ref, answer string, inbo
 	if err != nil {
 		return agent.Receipt{}, conversation.ErrInvalid
 	}
-	text := "Response to a saved Task question or artifact review. If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference; this response grants no external-action approval.\n" + data
+	text := "Response to a saved Task question or artifact review. " + guidance + " this response grants no external-action approval.\n" + data
 	// Keep valid maximum-size text usable even when JSON escaping expands it
 	// beyond one ContentPart. Provider projection concatenates adjacent text.
 	parts := []conversation.ContentPart{}
@@ -194,7 +223,7 @@ func (r *Runs) respondTaskFeedback(ctx context.Context, ref, answer string, inbo
 		}
 		inbound.Content = parts
 	}
-	return r.submit(ctx, "task-feedback:"+ref, parts, inbound, ref, nil)
+	return r.submit(ctx, "task-feedback:"+ref, parts, inbound, ref, nil, nil)
 }
 
 // requireCurrentFeedback joins ingress and later Main Task admission so a

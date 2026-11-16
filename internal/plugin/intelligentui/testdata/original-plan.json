@@ -1,0 +1,63 @@
+[
+  {
+    "name": "plain",
+    "input": {
+      "approach": "Ship core",
+      "technology": "Go",
+      "key_elements": [
+        "Loop",
+        "Host"
+      ]
+    },
+    "expected": {
+      "html": "<details class=\"native-plan\"><summary><span>Plan: Go</span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></summary><div class=\"native-plan-body\"><p>Ship core</p><ul><li>Loop</li><li>Host</li></ul></div></details>",
+      "text": "Plan: GoShip coreLoopHost",
+      "closed": true
+    }
+  },
+  {
+    "name": "empty",
+    "input": {
+      "approach": "",
+      "technology": "",
+      "key_elements": []
+    },
+    "expected": {
+      "html": "<details class=\"native-plan\"><summary><span>Plan: visualization</span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></summary></details>",
+      "text": "Plan: visualization",
+      "closed": true
+    }
+  },
+  {
+    "name": "escaping",
+    "input": {
+      "approach": "<script>literal</script> & \"quoted\"",
+      "technology": "<img src=x onerror=alert(1)>",
+      "key_elements": [
+        "<b>literal</b>",
+        "A&B"
+      ]
+    },
+    "expected": {
+      "html": "<details class=\"native-plan\"><summary><span>Plan: &lt;img src=x onerror=alert(1)&gt;</span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></summary><div class=\"native-plan-body\"><p>&lt;script&gt;literal&lt;/script&gt; &amp; \"quoted\"</p><ul><li>&lt;b&gt;literal&lt;/b&gt;</li><li>A&amp;B</li></ul></div></details>",
+      "text": "Plan: <img src=x onerror=alert(1)><script>literal</script> & \"quoted\"<b>literal</b>A&B",
+      "closed": true
+    }
+  },
+  {
+    "name": "unicode",
+    "input": {
+      "approach": "保持原始语义\n第二行",
+      "technology": "中文 / Go",
+      "key_elements": [
+        "内核",
+        "插件 😀"
+      ]
+    },
+    "expected": {
+      "html": "<details class=\"native-plan\"><summary><span>Plan: 中文 / Go</span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></summary><div class=\"native-plan-body\"><p>保持原始语义\n第二行</p><ul><li>内核</li><li>插件 😀</li></ul></div></details>",
+      "text": "Plan: 中文 / Go保持原始语义\n第二行内核插件 😀",
+      "closed": true
+    }
+  }
+]

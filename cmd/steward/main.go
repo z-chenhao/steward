@@ -17,7 +17,9 @@ import (
 	"github.com/z-chenhao/assistant/internal/computer/macosvm"
 	"github.com/z-chenhao/assistant/internal/config"
 	"github.com/z-chenhao/assistant/internal/llm/bridge"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/startup"
+	"github.com/z-chenhao/assistant/internal/webcontent/parserresource"
 )
 
 func main() {
@@ -34,6 +36,12 @@ func main() {
 }
 
 func run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer) (err error) {
+	if handled, err := parserresource.Exec(args); handled {
+		return err
+	}
+	if handled, err := rsi.ExecPlugin(args); handled {
+		return err
+	}
 	if len(args) == 1 && args[0] == "-model-bridge" {
 		return (&bridge.Server{}).Serve(ctx, in, out)
 	}
@@ -55,6 +63,12 @@ func run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer
 	command, err := selectCommand(flags, in)
 	if err != nil {
 		return err
+	}
+	if command.kind == commandPlugin && flags.Arg(1) == "seal" {
+		return sealPlugin(flags.Arg(2), out)
+	}
+	if command.kind == commandPlugin && flags.Arg(1) == "parser-bundle" {
+		return bundleParser(ctx, flags.Arg(2), flags.Arg(3), flags.Arg(4))
 	}
 	if command.kind == commandService {
 		return runService(ctx, options, out)
@@ -113,7 +127,7 @@ func run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer
 		application, err = app.OpenRuntime(ctx, cfg, options.testBridge, options.testSecrets)
 	} else if command.kind == commandEvidence {
 		application, err = app.OpenEvidenceControl(ctx, cfg, options.testBridge, options.testSecrets)
-	} else if command.kind == commandModel || command.kind == commandOps || command.kind == commandGitHub || command.kind == commandCoding || command.kind == commandTask && flags.Arg(1) == "feedbacks" || flags.Arg(0) == "status" {
+	} else if command.kind == commandPlugin || command.kind == commandModel || command.kind == commandOps || command.kind == commandGitHub || command.kind == commandCoding || command.kind == commandTask && flags.Arg(1) == "feedbacks" || flags.Arg(0) == "status" {
 		application, err = app.OpenControl(ctx, cfg, options.testBridge, options.testSecrets)
 	} else if options.testBridge != "" {
 		application, err = app.OpenWithTestBridge(ctx, cfg, options.testBridge)

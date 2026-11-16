@@ -1,0 +1,9 @@
+{
+  "method": "Executed original Server.reconnectModel with real llm.Control; observed SelectAccount, probe and runtime-wait effects before changing policy.",
+  "source": "internal/interaction/web/model_actions.go",
+  "source_sha256": "fb574c87761b193e1feffc998d7501794d1f0e83ab73e8824a108b460cd1794c",
+  "capture_sha256": "0beed1f77d8f168225e8eb3ca5eb00d49749053491a45101c2f5630ce7c9e6d4",
+  "fixture_sha256": "45f5dc9501b21ee5d675782b0cf527b20b3a18c9c1f8afcee1334e7c963f5192",
+  "cases": 3,
+  "command": "STEWARD_NATIVE_CAPTURE=/tmp/steward-models69-reconnect-native.json go test -overlay /tmp/steward-models69-reconnect-overlay.json ./internal/interaction/web -run ^TestCaptureNativeReconnectActions$ -count=1"
+}

@@ -1,0 +1,320 @@
+[
+  {
+    "input": {
+      "name": "plain",
+      "text": "Full answer with @all \u003cb\u003eplain\u003c/b\u003e",
+      "sequence": 0,
+      "intent": "completion",
+      "workspace": ""
+    },
+    "card": {
+      "config": {
+        "wide_screen_mode": true
+      },
+      "elements": [
+        {
+          "tag": "div",
+          "text": {
+            "content": "Full answer with @all \u003cb\u003eplain\u003c/b\u003e",
+            "tag": "plain_text"
+          }
+        }
+      ]
+    },
+    "include_artifacts": true
+  },
+  {
+    "input": {
+      "name": "linked",
+      "text": "Full answer",
+      "sequence": 42,
+      "intent": "completion",
+      "workspace": "https://workspace.example.test/"
+    },
+    "card": {
+      "config": {
+        "wide_screen_mode": true
+      },
+      "elements": [
+        {
+          "tag": "div",
+          "text": {
+            "content": "Full answer",
+            "tag": "plain_text"
+          }
+        },
+        {
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "content": "Open full response and files",
+                "tag": "plain_text"
+              },
+              "type": "default",
+              "url": "https://workspace.example.test/?before=43#message-42"
+            }
+          ],
+          "tag": "action"
+        }
+      ]
+    },
+    "include_artifacts": false
+  },
+  {
+    "input": {
+      "name": "unicode-preview",
+      "text": "完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀",
+      "sequence": 43,
+      "intent": "completion",
+      "workspace": "https://workspace.example.test"
+    },
+    "card": {
+      "config": {
+        "wide_screen_mode": true
+      },
+      "elements": [
+        {
+          "tag": "div",
+          "text": {
+            "content": "完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀完整结论😀…",
+            "tag": "plain_text"
+          }
+        },
+        {
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "content": "Open full response and files",
+                "tag": "plain_text"
+              },
+              "type": "default",
+              "url": "https://workspace.example.test/?before=44#message-43"
+            }
+          ],
+          "tag": "action"
+        }
+      ]
+    },
+    "include_artifacts": false
+  },
+  {
+    "input": {
+      "name": "approval-keeps-full",
+      "text": "Approve ID HASH",
+      "sequence": 44,
+      "intent": "approval",
+      "workspace": "https://workspace.example.test"
+    },
+    "card": {
+      "config": {
+        "wide_screen_mode": true
+      },
+      "elements": [
+        {
+          "tag": "div",
+          "text": {
+            "content": "Approve ID HASH",
+            "tag": "plain_text"
+          }
+        }
+      ]
+    },
+    "include_artifacts": true
+  },
+  {
+    "input": {
+      "name": "no-sequence",
+      "text": "Unsequenced answer",
+      "sequence": 0,
+      "intent": "completion",
+      "workspace": "https://workspace.example.test"
+    },
+    "card": {
+      "config": {
+        "wide_screen_mode": true
+      },
+      "elements": [
+        {
+          "tag": "div",
+          "text": {
+            "content": "Unsequenced answer",
+            "tag": "plain_text"
+          }
+        }
+      ]
+    },
+    "include_artifacts": true
+  },
+  {
+    "input": {
+      "name": "linked-file",
+      "text": "File ready",
+      "sequence": 45,
+      "intent": "completion",
+      "workspace": "https://workspace.example.test",
+      "artifact": "artifact:report"
+    },
+    "card": {
+      "config": {
+        "wide_screen_mode": true
+      },
+      "elements": [
+        {
+          "tag": "div",
+          "text": {
+            "content": "File ready\nfile: artifact:report",
+            "tag": "plain_text"
+          }
+        },
+        {
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "content": "Open full response and files",
+                "tag": "plain_text"
+              },
+              "type": "default",
+              "url": "https://workspace.example.test/?before=46#message-45"
+            }
+          ],
+          "tag": "action"
+        }
+      ]
+    },
+    "include_artifacts": false
+  },
+  {
+    "input": {
+      "name": "question",
+      "text": "Which role?",
+      "sequence": 46,
+      "intent": "needs_input",
+      "workspace": "",
+      "feedback": "feedback:question"
+    },
+    "card": {
+      "body": {
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "content": "Which role?",
+              "tag": "plain_text"
+            }
+          },
+          {
+            "elements": [
+              {
+                "name": "answer",
+                "placeholder": {
+                  "content": "Your answer",
+                  "tag": "plain_text"
+                },
+                "required": true,
+                "tag": "input"
+              },
+              {
+                "behaviors": [
+                  {
+                    "type": "callback",
+                    "value": {
+                      "feedback_ref": "feedback:question"
+                    }
+                  }
+                ],
+                "form_action_type": "submit",
+                "name": "steward_task_question_submit",
+                "tag": "button",
+                "text": {
+                  "content": "Send answer",
+                  "tag": "plain_text"
+                },
+                "type": "primary"
+              }
+            ],
+            "name": "steward_task_question",
+            "tag": "form"
+          }
+        ]
+      },
+      "schema": "2.0"
+    },
+    "include_artifacts": false
+  },
+  {
+    "input": {
+      "name": "review",
+      "text": "Review the report",
+      "sequence": 47,
+      "intent": "needs_input",
+      "workspace": "",
+      "feedback": "feedback:review",
+      "review_url": "https://workspace.example.test/tasks/task:one#feedback:review"
+    },
+    "card": {
+      "body": {
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "content": "Review the report",
+              "tag": "plain_text"
+            }
+          },
+          {
+            "behaviors": [
+              {
+                "default_url": "https://workspace.example.test/tasks/task:one#feedback:review",
+                "type": "open_url"
+              }
+            ],
+            "tag": "button",
+            "text": {
+              "content": "Open result in Steward",
+              "tag": "plain_text"
+            },
+            "type": "default"
+          },
+          {
+            "elements": [
+              {
+                "name": "answer",
+                "placeholder": {
+                  "content": "Your review feedback",
+                  "tag": "plain_text"
+                },
+                "required": true,
+                "tag": "input"
+              },
+              {
+                "behaviors": [
+                  {
+                    "type": "callback",
+                    "value": {
+                      "feedback_ref": "feedback:review"
+                    }
+                  }
+                ],
+                "form_action_type": "submit",
+                "name": "steward_task_question_submit",
+                "tag": "button",
+                "text": {
+                  "content": "Send review feedback",
+                  "tag": "plain_text"
+                },
+                "type": "primary"
+              }
+            ],
+            "name": "steward_task_question",
+            "tag": "form"
+          }
+        ]
+      },
+      "schema": "2.0"
+    },
+    "include_artifacts": false
+  }
+]

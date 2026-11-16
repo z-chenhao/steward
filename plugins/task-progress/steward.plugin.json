@@ -1,0 +1,93 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.task-progress",
+  "version": "1.0.1",
+  "feature_ids": [
+    "F-005"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.task-progress-guidance/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "root"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "instructions": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "instructions"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.task-progress-selection/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "publish": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "publish"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

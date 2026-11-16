@@ -10,6 +10,7 @@ import shutil
 import signal
 import sqlite3
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -71,6 +72,9 @@ def tree(root):
 def prepare(binary, root, mode='edit', metadata=None):
     repo = root / 'repo'
     shutil.copytree(Path(__file__).resolve().parents[2] / 'tests/fixtures/coding-v1', repo)
+    # The production sandbox rejects symlinked roots. macOS tempfile paths
+    # commonly use /var -> /private/var; configure the actual canonical root.
+    repo = repo.resolve()
     for args in [('init', '-q', '-b', 'feature/eval'), ('add', '.'),
                  ('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test',
                   'commit', '-qm', 'fixture')]:
@@ -90,13 +94,23 @@ def prepare(binary, root, mode='edit', metadata=None):
     (root / 'provider').mkdir()
     shutil.copyfile(Path(__file__).resolve().parents[2] / 'tests/fixtures/m3-capabilities-v1.json',
                     root / 'provider/mcp-data.json')
+    toolchains = [str(Path(shutil.which('go')).resolve().parent.parent)]
+    if sys.platform == 'darwin':
+        # Select the trusted developer Git directly. /usr/bin/git is a shim
+        # that can launch Xcode's configuration UI outside the sandbox scope.
+        git = Path(fixture_run(['/usr/bin/xcrun', '--no-cache', '--find', 'git'],
+                               text=True, capture_output=True, check=True).stdout.strip()).resolve()
+        require(git.is_file() and any(git.is_relative_to(Path(p)) for p in
+                ('/Library/Developer', '/Applications/Xcode.app/Contents/Developer')),
+                'doctor: developer Git is outside the trusted toolchain scope')
+        toolchains.append(str(git.parent.parent))
     config = ('version: 1\nmcp:\n  - name: fixture\n    command: ' + json.dumps(str(binary)) +
               '\n    directory: ' + json.dumps(str(root / 'provider')) +
               '\n    args: ["-test-mcp-server", ' + json.dumps(str(root / 'provider')) + ']\n' +
               '    tools: {read: read_only, send: external_effect}\n' +
               'skills:\n  root: ' + json.dumps(str(root / 'skills')) + '\n  scope: workspace\n' +
               'execution:\n  root: ' + json.dumps(str(repo)) + '\n  toolchain_roots: [' +
-              json.dumps(str(Path(shutil.which('go')).resolve().parent.parent)) + ']\n')
+              ', '.join(json.dumps(p) for p in toolchains) + ']\n')
     from codemode_peer import runtime_yaml
     config += runtime_yaml()
     (root / 'config.yaml').write_text(config)
@@ -131,6 +145,64 @@ def content(invocation):
     return json.loads(invocation['result_json'])
 
 
+
+def select_managed_environment(h):
+    repo = Path(__file__).resolve().parents[2]
+    bindings = []
+    policy = dict(id='environment-system-owner', allowed_contracts=[], allowed_requests=[], cases=[])
+    for name in ('file-tools', 'shell-tools', 'coding-workspace'):
+        installed = h.command('plugin', 'install', str(h.binary.parent / 'plugins' / name))
+        bindings.append(dict(instance_id=name, package_digest=installed['digest'], config={}, state_namespace=name, state_version=1))
+        contribution = json.loads((repo / ('tests/fixtures/plugins/' + name + '-policy.json')).read_text())
+        policy['allowed_contracts'] += contribution['allowed_contracts']
+        policy['allowed_requests'] += contribution.get('allowed_requests', [])
+        policy['cases'] += contribution['cases']
+    graph = h.command('plugin', 'prepare', text=json.dumps(dict(protocol='steward-rsi-plugins/0.1', bindings=bindings)))
+    h.command('plugin', 'policy', text=json.dumps(policy))
+    h.command('plugin', 'propose', text=json.dumps(dict(candidate_id='file-system', baseline='', target=graph['revision'], policy_id=policy['id'], goal='Independent file, shell and coding methods under original workspace and concrete approval')))
+    decision = h.command('plugin', 'verify', 'file-system')
+    h.command('plugin', 'activate', text=json.dumps(dict(operation_id='file-select', expected_graph_revision='', target_graph_revision=graph['revision'], decision_ref=decision['decision_ref'])))
+    return graph['revision']
+
+
+def check_managed_environment(h, revision):
+    with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db:
+        db.execute('BEGIN')
+        rows = db.execute("SELECT i.invocation_id,b.graph_revision,b.managed_services_json FROM tool_invocation i JOIN rsi_run b USING(run_id) WHERE i.tool_name IN ('builtin__read','builtin__edit','builtin__write','builtin__bash') AND i.attempt_count>0").fetchall()
+        require(all(r[1] == revision and {'steward.file-window/1','steward.file-edit-span/1','steward.shell-limits/1','steward.coding-import-limits/1','steward.coding-report-recipe/1'} <= set(json.loads(r[2])) for r in rows), 'environment call lost its frozen managed composition')
+        missing = db.execute("SELECT count(*) FROM tool_invocation i LEFT JOIN file_method_plan p USING(invocation_id) WHERE i.tool_name IN ('builtin__edit','builtin__write') AND i.status='succeeded' AND (p.invocation_id IS NULL OR p.graph_revision!=?)", (revision,)).fetchone()[0]
+        require(missing == 0, 'successful mutation lacked a prior accepted method')
+        require(db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='file-tools'").fetchone()[0] == 0, 'pure file method created second unknown effect ledger')
+        missing_shell = db.execute("SELECT count(*) FROM tool_invocation i LEFT JOIN shell_method_plan p USING(invocation_id) WHERE i.tool_name='builtin__bash' AND i.status='succeeded' AND (p.invocation_id IS NULL OR p.graph_revision!=? OR p.timeout_seconds>coalesce(json_extract(i.arguments_json,'$.timeout'),120) OR p.output_bytes>48000)", (revision,)).fetchone()[0]
+        require(missing_shell == 0, 'successful command lacked its bounded accepted resource recipe')
+        require(db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='shell-tools'").fetchone()[0] == 0, 'pure shell recipe created second unknown effect ledger')
+        imports = db.execute('SELECT e.status,e.scope_hash,b.managed,b.scope_hash,b.graph_revision,b.driver_hash,b.limits_json FROM task_code_environment e LEFT JOIN code_import_policy_binding b USING(task_id)').fetchall()
+        require(all(managed == 1 and scope == saved_scope and (status != 'ready' or graph == revision and driver.startswith('steward-coding-driver/1:') and json.loads(limits) == dict(entries=4096,file_bytes=8388608,tree_bytes=67108864)) for status,scope,managed,saved_scope,graph,driver,limits in imports), 'Task import lost its prior accepted complete-snapshot method')
+        missing_reports = db.execute("SELECT count(*) FROM artifact a LEFT JOIN code_report_method_binding b USING(artifact_ref) WHERE a.name='code-review.json' AND (b.artifact_ref IS NULL OR b.graph_revision!=?)", (revision,)).fetchone()[0]
+        require(missing_reports == 0, 'code report Artifact lost its atomically accepted recipe')
+        require(db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='coding-workspace'").fetchone()[0] == 0, 'pure coding method created second unknown effect ledger')
+        return dict(graph=revision, invocations=len(rows), accepted_file_methods=db.execute('SELECT count(*) FROM file_method_plan').fetchone()[0], accepted_shell_methods=db.execute('SELECT count(*) FROM shell_method_plan').fetchone()[0], accepted_import_methods=sum(r[4] is not None for r in imports), accepted_report_methods=db.execute('SELECT count(*) FROM code_report_method_binding').fetchone()[0])
+
+def select_managed_skills(h):
+    repo = Path(__file__).resolve().parents[2]
+    installed = h.command('plugin', 'install', str(h.binary.parent / 'plugins/skill-library'))
+    graph = h.command('plugin', 'prepare', text=json.dumps(dict(protocol='steward-rsi-plugins/0.1', bindings=[dict(instance_id='skill-library', package_digest=installed['digest'], config={}, state_namespace='skill-library', state_version=1)])))
+    policy = json.loads((repo / 'tests/fixtures/plugins/skill-library-policy.json').read_text())
+    h.command('plugin', 'policy', text=json.dumps(policy))
+    h.command('plugin', 'propose', text=json.dumps(dict(candidate_id='skills-system', baseline='', target=graph['revision'], policy_id=policy['id'], goal='Independent frozen method discovery and reads')))
+    decision = h.command('plugin', 'verify', 'skills-system')
+    h.command('plugin', 'activate', text=json.dumps(dict(operation_id='skills-select', expected_graph_revision='', target_graph_revision=graph['revision'], decision_ref=decision['decision_ref'])))
+    return graph['revision']
+
+
+def check_managed_skill_receipts(h, revision):
+    with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db, db:
+        count, managed = db.execute("SELECT count(*),sum(b.graph_revision=? AND EXISTS(SELECT 1 FROM json_each(b.managed_services_json) WHERE value='steward.skill-discovery/1')) FROM tool_invocation i JOIN rsi_run b USING(run_id) WHERE i.tool_name IN ('builtin__skill_list','builtin__skill_view') AND i.status='succeeded'", (revision,)).fetchone()
+        pure, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='skill-library'").fetchone()
+    require(count >= 2 and count == managed and pure == 0, 'Skill calls bypassed the frozen package or wrote redundant pure-read operations')
+    return dict(graph=revision, successful_reads=count, pure_read=True)
+
+
 def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
     report = {'version': 1, 'scope': 'MCP/Skill and native file/command contracts; approvals, isolated persistent execution, CAS and unknown effects',
               'checks': [], 'crashes': [], 'cleanup': False, 'scenario_jobs': scenario_jobs}
@@ -157,37 +229,41 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             try:
                 if fixture_context:
                     h.send('fixture-context', fixture_context)
-                return kind, fn(h)
+                revision = select_managed_environment(h) if fn.__name__ in ('coding','dirty_index','audit','crash','task_code_environments','task_code_recovery') else None
+                result = fn(h)
+                if revision:
+                    result['managed_environment'] = check_managed_environment(h, revision)
+                return kind, result
             finally:
                 h.cleanup()
 
         def coding(h):
             repo = h.root / 'repo'
             original = tree(repo)
-            call(h, 'rules', 'builtin__read', {'path': 'AGENTS.md'})
-            before = call(h, 'red', 'builtin__bash', {'command': 'go test -race ./...', 'timeout': 120})
+            call(h, 'rules', 'builtin__read', {'path': 'AGENTS.md'}, worker=True)
+            before = call(h, 'red', 'builtin__bash', {'command': 'go test -race ./...', 'timeout': 120}, worker=True)
             observed = json.loads(content(before)['text'])
             require(observed['exit_code'] != 0 and 'flag provided but not defined' in observed['output'], 'fixture did not reproduce missing --status: ' + str(observed))
             path = 'cmd/taskctl/main.go'
-            source = json.loads(content(call(h, 'source', 'builtin__read', {'path': path}))['text'])
+            source = json.loads(content(call(h, 'source', 'builtin__read', {'path': path}, worker=True))['text'])
             replacement = source['text'].replace('status := "" // CLI_STATUS_FLAG',
                                                 'status := ""\n\tflags.StringVar(&status, "status", "", "Filter Task status")')
             edited = call(h, 'edit', 'builtin__edit',
                           {'path': path, 'before_hash': source['hash'], 'old_text': 'status := "" // CLI_STATUS_FLAG', 'new_text': 'status := ""\n\tflags.StringVar(&status, "status", "", "Filter Task status")'}, worker=True)
             require(not content(edited).get('error') and (repo / path).read_text() == replacement, 'approved Worker edit failed')
             test_path = 'cmd/taskctl/main_test.go'
-            source_test = json.loads(content(call(h, 'test-source', 'builtin__read', {'path': test_path}))['text'])
+            source_test = json.loads(content(call(h, 'test-source', 'builtin__read', {'path': test_path}, worker=True))['text'])
             edited_test = call(h, 'test-edit', 'builtin__edit', {'path': test_path, 'before_hash': source_test['hash'],
                                'old_text': 'package main', 'new_text': 'package main\n// verification retains existing tests'}, worker=True)
             require(not content(edited_test).get('error'), 'multi-file edit failed')
-            tested = call(h, 'green', 'builtin__bash', {'command': 'go test -race ./...', 'timeout': 120})
+            tested = call(h, 'green', 'builtin__bash', {'command': 'go test -race ./...', 'timeout': 120}, worker=True)
             passed = json.loads(content(tested)['text'])
             require(passed['exit_code'] == 0 and not passed['timed_out'], 'real sandbox tests failed: ' + str(passed))
             # Git is a regular approved command; explicit no-refresh/index scope
             # avoids treating index maintenance as a source-file modification.
-            diff = json.loads(content(call(h, 'diff', 'builtin__bash', {'command': 'git --no-optional-locks diff --no-ext-diff'}))['text'])
-            require('flags.StringVar' in diff['output'], 'Git diff omitted edit')
-            published = content(call(h, 'deliver', 'builtin__read', {'path': path, 'as_artifact': True}))
+            diff = json.loads(content(call(h, 'diff', 'builtin__bash', {'command': 'git --no-optional-locks diff --no-ext-diff'}, worker=True))['text'])
+            require(diff['exit_code'] == 0 and 'flags.StringVar' in diff['output'], 'Git diff omitted edit: ' + str(diff))
+            published = content(call(h, 'deliver', 'builtin__read', {'path': path, 'as_artifact': True}, worker=True))
             artifact = fixture_run(h.args('artifact', 'open', published['artifact_refs'][0]), capture_output=True, env=h.env, cwd=h.root, timeout=20)
             require(artifact.returncode == 0 and artifact.stdout == replacement.encode(), 'native read did not retain file as Artifact')
             final = tree(repo)
@@ -200,11 +276,11 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
         def dirty_index(h):
             repo = h.root / 'repo'
             path = 'docs/notes.md'
-            source = json.loads(content(call(h, 'read-dirty', 'builtin__read', {'path': path}))['text'])
+            source = json.loads(content(call(h, 'read-dirty', 'builtin__read', {'path': path}, worker=True))['text'])
             first = call(h, 'first-edit', 'builtin__edit', {'path': path, 'before_hash': source['hash'],
                          'old_text': 'SENTINEL', 'new_text': 'SENTINEL + FIRST'}, worker=True)
             require(not content(first).get('error'), 'dirty-file edit rejected')
-            current = json.loads(content(call(h, 'read-first', 'builtin__read', {'path': path}))['text'])
+            current = json.loads(content(call(h, 'read-first', 'builtin__read', {'path': path}, worker=True))['text'])
             second = call(h, 'second-edit', 'builtin__edit', {'path': path, 'before_hash': current['hash'],
                           'old_text': 'FIRST', 'new_text': 'SECOND'}, worker=True)
             require(not content(second).get('error') and (repo / path).read_text() == 'USER_UNCOMMITTED_SENTINEL + SECOND\n', 'continuous edits lost user content')
@@ -213,7 +289,7 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             require(content(stale)['error']['code'] == 'PERMISSION_DENIED', 'stale preimage overwrote changes')
             created = call(h, 'create', 'builtin__write', {'path': 'output/result.txt', 'content': 'created'}, worker=True)
             require(not content(created).get('error'), 'file creation failed')
-            denied = call(h, 'overwrite', 'builtin__write', {'path': 'output/result.txt', 'content': 'blind'})
+            denied = call(h, 'overwrite', 'builtin__write', {'path': 'output/result.txt', 'content': 'blind'}, worker=True)
             require(content(denied)['error']['code'] == 'PERMISSION_DENIED', 'blind overwrite allowed')
             return {'name': 'continuous_dirty_edits_create_and_stale_hash_refusal', 'state': h.state()}
         scenario('dirty-index', dirty_index)
@@ -221,17 +297,18 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
         def audit(h):
             repo = h.root / 'repo'
             before = tree(repo)
-            read = content(call(h, 'read', 'builtin__read', {'path': 'internal/retry/executor.go'}))
+            read = content(call(h, 'read', 'builtin__read', {'path': 'internal/retry/executor.go'}, worker=True))
             text = json.loads(read['text'])['text']
             require('provider.Execute()' in text and 'ledger.Lookup()' in text, 'read lacks call-order evidence')
-            denied = call(h, 'denied-command', 'builtin__bash', {'command': 'touch forbidden'}, approve=False)
+            denied = call(h, 'denied-command', 'builtin__bash', {'command': 'touch forbidden'}, approve=False, worker=True)
             require(content(denied)['error']['code'] == 'APPROVAL_DENIED' and tree(repo) == before, 'unapproved bash modified workspace')
-            traversal = content(call(h, 'traversal', 'builtin__read', {'path': '../config.yaml'}))
+            traversal = content(call(h, 'traversal', 'builtin__read', {'path': '../config.yaml'}, worker=True))
             require(traversal['error']['code'] == 'PERMISSION_DENIED', 'file traversal escaped workspace')
             return {'name': 'reads_automatic_mutations_require_exact_approval', 'state': h.state()}
         scenario('audit', audit)
 
         def discovery(h):
+            revision = select_managed_skills(h)
             listed = content(call(h, 'skills', 'builtin__skill_list', {'query':'review'}, worker=True))
             summaries = json.loads(listed['text'])
             require(len(summaries) == 1 and 'PRIVATE_BODY_MARKER' not in listed['text'], 'Skill list exposed body')
@@ -269,10 +346,11 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             serialized = json.dumps(next(g for g in value['generations'] if g['run_id'] in workers))
             require('Inspect code and preserve user files.' not in serialized and 'PRIVATE_BODY_MARKER' not in serialized,
                     'startup Skill disclosure is not progressive')
-            return {'name': 'MCP_transport_Skill_scope_role_denial_unknown', 'state': value}
+            return {'name': 'MCP_transport_Skill_scope_role_denial_unknown', 'state': value, 'managed_skills': check_managed_skill_receipts(h, revision)}
         scenario('discovery', discovery)
 
         def main_business(h):
+            revision = select_managed_skills(h)
             provider = h.root / 'provider'
             read = call(h, 'main-read', 'mcp__fixture__read', {'text': 'direct Main lookup'})
             require(content(read)['text'] == 'direct Main lookup', 'Main lookup lost its result')
@@ -318,6 +396,7 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             require(all(r['kind'] == 'main' for r in after['runs']), 'Main-scoped Code Mode unexpectedly delegated simple business or Skill inspection')
             require(len((provider / 'mcp-effects.jsonl').read_text().splitlines()) == 1, 'Main write replayed')
             return dict(name='Main_business_Skills_exact_approval_responsive_MCP',
+                        managed_skills=check_managed_skill_receipts(h, revision),
                         response_seconds=latency, reply_before_tool_release=True, state=after)
         scenario('main-business', main_business)
 
@@ -405,11 +484,11 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
         def crash(h):
             repo = h.root / 'repo'
             path = 'cmd/taskctl/main.go'
-            source = json.loads(content(call(h, 'source', 'builtin__read', {'path': path}))['text'])
+            source = json.loads(content(call(h, 'source', 'builtin__read', {'path': path}, worker=True))['text'])
             replacement = source['text'].replace('package main', 'package main\n// accepted edit', 1)
             plan = [{'name': 'builtin__edit', 'arguments': {'path': path, 'before_hash': source['hash'],
                      'old_text': 'package main', 'new_text': 'package main\n// accepted edit'}}]
-            h.send('crash-edit', 'Capabilities: ' + json.dumps(plan))
+            h.send('crash-edit', 'Delegate capabilities: ' + json.dumps(plan))
             h.command('chat', 'work')
             a = [a for a in h.command('approval', 'list') if a['status'] == 'pending'][0]
             h.command('approval', 'approve', a['approval_id'], a['frozen_arguments_hash'])
@@ -429,7 +508,7 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             source = (h.root / 'repo').resolve()
             workspaces = h.root.resolve() / 'task-workspaces'
             text = (h.root / 'config.yaml').read_text()
-            old = 'execution:\n  root: ' + json.dumps(str(h.root / 'repo'))
+            old = 'execution:\n  root: ' + json.dumps(str((h.root / 'repo').resolve()))
             new = 'execution:\n  root: ' + json.dumps(str(workspaces)) + '\n  repository_source: ' + json.dumps(str(source))
             require(old in text, 'coding fixture execution configuration missing')
             (h.root / 'config.yaml').write_text(text.replace(old, new))
@@ -569,7 +648,7 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
         for kind, result in run_cases(cases, drive, scenario_jobs):
             report[kind].append(result)
         if not selected:
-            expected = {'500_tool_progressive_exposure_Main_search_Worker_codemode',
+            expected = {'500_tools_Code_Mode_only',
                         'Main_business_Skills_exact_approval_responsive_MCP',
                         'real_red_edit_green_with_Worker_approval',
                         'continuous_dirty_edits_create_and_stale_hash_refusal',
@@ -581,7 +660,7 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
                     {row['name'] for row in report['checks']} == expected and
                     {row['name'] for row in report['crashes']} == {'edit_after_effect_before_result_commit', 'task_code_publish_recovery'} and
                     len(report['crashes']) == 2,
-                    'complete software capability scenario inventory required')
+                    'complete software capability scenario inventory required: checks=' + str(sorted(row['name'] for row in report['checks'])) + ', crashes=' + str(sorted(row['name'] for row in report['crashes'])))
     report['cleanup'] = not root.exists()
     require(report['cleanup'], 'disposable roots remain')
     return report

@@ -1,0 +1,47 @@
+{
+  "props": {
+    "title": "Card choices",
+    "items": [
+      {
+        "title": "Alpha",
+        "text": "Ship safe core <script>not executable</script>",
+        "url": "https://example.com/alpha",
+        "label": "Details",
+        "image_ref": "artifact:0f51d8d57d9af653eb6c7f64840fc27e283a5f0ab2cd0dd5e6131fbffad08e59"
+      },
+      {
+        "title": "Beta",
+        "text": "Second choice"
+      }
+    ]
+  },
+  "states": [
+    {
+      "component_ref": "ui:01a1d790-44b8-7c11-a3cc-b41e30d04f1e#0",
+      "state_json": "{\"query\":\"\",\"selected\":\"Beta\"}",
+      "model_context_json": "{\"filter\":\"\",\"selection\":\"Beta\"}",
+      "version": 1,
+      "updated_at": 1794617921310272
+    },
+    {
+      "component_ref": "ui:01a1d790-44b8-7c11-a3cc-b41e30d04f1e#1",
+      "state_json": "{\"index\":1}",
+      "model_context_json": "{\"title\":\"Card choices\",\"visible_item\":\"Beta\"}",
+      "version": 1,
+      "updated_at": 1794617921277924
+    }
+  ],
+  "source_sha256": "c1da535dedd470243aaa1aaeff4959162815ee92a7d0637fbd34ce20f8afe1bc",
+  "binary_sha256": "e8a1d7f1df9ff8eb9efa2eb0d4c5066c6e36cd28a8468ef626dee29d327cefe6",
+  "checks": [
+    "real App original native cards before candidate renderer",
+    "next-card index and disabled previous control",
+    "group selection filters actual Table",
+    "HTTPS link attributes and escaped text",
+    "actual saved PNG loaded via authenticated Host image route",
+    "actual Host CAS/model_context and reload restore",
+    "desktop/mobile light/dark screenshots",
+    "fullscreen/modal/PiP preserve index and selection; close restores inline"
+  ],
+  "scope": "independent original cards baseline; no images or future plugin renderer claim; Cards has no export action"
+}

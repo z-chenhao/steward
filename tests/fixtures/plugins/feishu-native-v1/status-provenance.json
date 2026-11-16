@@ -1,0 +1,9 @@
+{
+  "method": "Executed original Client.ConnectionStatus/Check and App.FeishuStatus before migration",
+  "sources": {
+    "internal/interaction/feishu/status.go": "4f20d950577d24872311030309c08600232bddf80ffc8a89c9cb8826f005da89",
+    "internal/app/feishu.go": "5746e5c1f397bcee5069f7361582942cd9723290b70380f1dfcccab0be3f3e0d"
+  },
+  "fixture_sha256": "ec6713719d89a64db4dfbdbdedda8037100bb17385f660826389905402b2cc99",
+  "cases": 12
+}

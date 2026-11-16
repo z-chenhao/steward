@@ -37,7 +37,9 @@ type ReferencePrice struct {
 	Source   string
 }
 
-type CostEstimator interface {
+// LegacyReferenceEstimator is retained for generations admitted before the
+// managed reference-rate service, and explicit never-managed embeddings only.
+type LegacyReferenceEstimator interface {
 	Quote(llm.Snapshot, llm.TokenUsage) (ReferencePrice, bool)
 }
 

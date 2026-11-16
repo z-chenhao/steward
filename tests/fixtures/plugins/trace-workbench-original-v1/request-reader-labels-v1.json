@@ -1,0 +1,9 @@
+{
+  "Request": "请求",
+  "Request body was not captured.": "未记录请求正文。",
+  "System instructions": "系统指令",
+  "Message": "Message",
+  "Tool": "Tool",
+  "Tools": "工具",
+  "Parameters": "参数"
+}

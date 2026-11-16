@@ -17,10 +17,25 @@ import (
 )
 
 func codeClaimFixture(t *testing.T) (*Store, *Runs, *codeBridge, tool.Invocation) {
+	return codeClaimFixtureMode(t, false)
+}
+func codeClaimFixtureMode(t *testing.T, managed bool) (*Store, *Runs, *codeBridge, tool.Invocation) {
+	t.Helper()
+	s, r, b, inv := unclaimedCodeFixture(t, managed)
+	if err := b.claim(context.Background(), inv); err != nil {
+		t.Fatal(err)
+	}
+	return s, r, b, inv
+}
+func unclaimedCodeFixture(t *testing.T, managed bool) (*Store, *Runs, *codeBridge, tool.Invocation) {
 	t.Helper()
 	echo, _ := tool.FixtureRegistry().Resolve("mcp__fixture__echo")
 	calls := []llm.ToolCall{{ID: "code", Name: codemode.ToolName, Arguments: `{"source":"return 1;"}`}}
-	s, r, _, e, exchange := admitPolicy(t, []tool.Definition{codemode.Definition(), echo}, calls)
+	s, r, _, e, exchange := admitPolicyRun(t, []tool.Definition{codemode.Definition(), echo}, calls, false, func(s *Store, r *Runs) {
+		if managed {
+			installCodeModePlugin(t, s, r)
+		}
+	})
 	invs, err := e.Store.Accept(context.Background(), exchange, calls, e.Registry.Describe())
 	if err != nil {
 		t.Fatal(err)
@@ -29,7 +44,7 @@ func codeClaimFixture(t *testing.T) (*Store, *Runs, *codeBridge, tool.Invocation
 		t.Fatal(err)
 	}
 	b := &codeBridge{t: e.Store.(*tools), registry: e.Registry, attempt: newID(), req: codemode.ExecutionRequest{ProtocolVersion: codemode.ProtocolVersion, RuntimeVersion: codemode.RuntimeVersion, PreludeVersion: codemode.PreludeVersion, ExecutionID: invs[0].ID, ParentInvocationID: invs[0].ID, RunID: e.Store.(*tools).claim.RunID(), Source: "return 1;", SourceHash: digest("return 1;"), Limits: codemode.DefaultLimits()}}
-	if err = b.claim(context.Background(), invs[0]); err != nil {
+	if err = b.t.prepareCodeLimits(context.Background(), invs[0], &b.req); err != nil {
 		t.Fatal(err)
 	}
 	return s, r, b, invs[0]
@@ -38,7 +53,13 @@ func codeMessage(b *codeBridge) codemode.Message {
 	return codemode.Message{ExecutionID: b.req.ExecutionID, ParentInvocationID: b.req.ParentInvocationID, RunID: b.req.RunID, ClaimToken: b.req.ClaimToken, ExecutionEpoch: b.req.ExecutionEpoch, Sequence: 1, CallID: "1", CallKey: strings.Repeat("a", 64), ToolName: "mcp__fixture__echo", Arguments: json.RawMessage(`{"text":"first"}`)}
 }
 func TestCodeReplayFrozenRequestAndAtomicAdmission(t *testing.T) {
-	s, _, b, _ := codeClaimFixture(t)
+	testCodeReplayFrozenRequestAndAtomicAdmission(t, false)
+}
+func TestCodeModePluginReplayFrozenRequestAndAtomicAdmission(t *testing.T) {
+	testCodeReplayFrozenRequestAndAtomicAdmission(t, true)
+}
+func testCodeReplayFrozenRequestAndAtomicAdmission(t *testing.T, managed bool) {
+	s, _, b, _ := codeClaimFixtureMode(t, managed)
 	ctx := context.Background()
 	m := codeMessage(b)
 	for i := 0; i < 2; i++ {
@@ -72,7 +93,13 @@ func TestCodeReplayFrozenRequestAndAtomicAdmission(t *testing.T) {
 	}
 }
 func TestCodeClaimWakeAndOldCallbackFencing(t *testing.T) {
-	s, r, b, inv := codeClaimFixture(t)
+	testCodeClaimWakeAndOldCallbackFencing(t, false)
+}
+func TestCodeModePluginClaimWakeAndOldCallbackFencing(t *testing.T) {
+	testCodeClaimWakeAndOldCallbackFencing(t, true)
+}
+func testCodeClaimWakeAndOldCallbackFencing(t *testing.T, managed bool) {
+	s, r, b, inv := codeClaimFixtureMode(t, managed)
 	ctx := context.Background()
 	observed, err := b.wake(ctx)
 	if err != nil {

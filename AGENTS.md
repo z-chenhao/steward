@@ -4,6 +4,37 @@
 
 Steward’s Go entry point is `cmd/steward/`; domain packages and adapters live in `internal/`. Keep `internal/app/` focused on composition. React/TypeScript sources live in `web/src/`; generated assets in `internal/interaction/web/assets/`. Model protocols live in `internal/llm/provider/`; the isolated RPC client/server share `internal/llm/bridge/`. The Node execution sidecar lives in `runtime/javascript/`; `provider-bridge/` retains the compatibility launcher and protocol fixtures. `guest-browser/` contains browser checks; `tests/{system,harness,fixtures}/` holds system flows, Python regressions, and fixtures. Operational helpers belong in `scripts/`.
 
+## Plugin-first Feature Architecture
+
+Steward is committed to moving all existing and new business features into
+independently versioned, Host/Guardian-managed plugins. Read the
+[architecture rule](docs/designs/plugins-evolution.md#plugin-first) before adding
+or extending feature behavior; track its actual migration status in the
+[Feature Map](docs/feature-map.md#插件化与自进化).
+
+- Split by atomic feature and independent, lossless iteration. A manifest,
+  directory move or native proxy alone is not a migration.
+- Keep the fixed Agent Loop and the minimum trusted Host/Guardian mechanisms:
+  authorization, credentials, authoritative facts, transactions, frozen versions,
+  privacy/revocation, effect acceptance/recovery and independent audit/control.
+  Keep replaceable business policies and implementations in their owning plugin.
+- New or extended business behavior must use the managed plugin path. Native
+  compatibility is limited to explicit historical snapshots or a documented
+  migration boundary; do not add silent native fallback after plugin activation.
+- Prove real business dispatch, retained Run/Child/reference compatibility,
+  independent upgrade/rollback and deactivation, including approvals, Forget and
+  unknown-effect non-replay where applicable. Describe any unmigrated remainder.
+- Clean up obsolete code in the same migration: remove replaced implementations,
+  transitional proxies, dead branches, unused configuration/dependencies and tests
+  for deleted behavior. Do not leave two default implementations. Keep only
+  compatibility code required by an explicit historical version, in-flight Run or
+  published reference; name that boundary, record its consumers, retention reason
+  and deletion condition, and remove it when those consumers no longer need it.
+  Cleanup is required before marking a migration complete.
+- Record why any new trusted mechanism belongs in the kernel, its real consumers
+  and the narrow typed seam. Do not move business policy into Host under a
+  generic safety label or stabilize speculative public contracts.
+
 ## Build, Test, and Development Commands
 
 Use Go 1.26.10+, Node 24.21.0 (`.node-version`), Python 3.10.12+, bash, and a C compiler.

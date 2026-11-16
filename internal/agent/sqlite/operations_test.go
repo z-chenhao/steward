@@ -35,9 +35,12 @@ func TestOperationsPriorSchemaRollbackAndActiveWorkUpgrade(t *testing.T) {
 		t.Fatal(e)
 	}
 	registry := tool.FixtureRegistry()
+	// Current Main admission also compiles the schema68 source-method fence;
+	// removeGitHubFixtureSchema removes these temporary columns before upgrade.
 	// Current constructors freeze tool delivery for new Runs. Seed the older
-	// fixture with them, then remove that metadata to represent pre-v32 work.
-	if _, e = db.Exec(responsiveMainSQL + githubObservationsSQL + taskFeedbackSQL + feishuReplySourcesSQL + githubTaskContinuationSQL + githubRuleObservationSQL); e != nil {
+	// fixture with them and native plugin-boundary tables, then use the existing
+	// schema cleanup to restore an actual pre-v32 fixture.
+	if _, e = db.Exec(responsiveMainSQL + githubObservationsSQL + taskFeedbackSQL + feishuReplySourcesSQL + githubTaskContinuationSQL + githubRuleObservationSQL + rsiPluginsSQL + rsiFeatureSnapshotsSQL + githubSourceMethodSQL); e != nil {
 		t.Fatal(e)
 	}
 	r := s.Runs(h, registry)
@@ -45,8 +48,14 @@ func TestOperationsPriorSchemaRollbackAndActiveWorkUpgrade(t *testing.T) {
 	receipt := mustSubmit(t, a, "before-upgrade", "PRIVATE_USER_TEXT_29")
 	// This pre-v26 fixture never seeded the v51 message-time projection.
 	cleanup := strings.Replace(removeGitHubFixtureSchema, "ALTER TABLE conversation_intent DROP COLUMN memory_created_at; ", "", 1)
+	// This raw historical fixture never seeded schema69. Keep its cleanup
+	// limited to the temporary dependencies it actually installed.
+	cleanup = strings.Replace(cleanup, removeArtifactRecipeFixtureSchema, "", 1)
 	if _, e = db.Exec(`DROP TRIGGER main_tool_protocol_retained; DROP TRIGGER main_tool_protocol_immutable; DROP TRIGGER main_tool_protocol_initial; DROP TABLE main_tool_protocol;` + cleanup); e != nil {
 		t.Fatal(e)
+	}
+	if scalar(t, s, "PRAGMA user_version") != 25 || scalar(t, s, `SELECT count(*) FROM sqlite_schema WHERE name IN ('github_watch','github_observation','github_task_followup','rsi_run')`) != 0 {
+		t.Fatal("fixture did not restore the actual pre-protocol schema")
 	}
 	var snapshot string
 	if e = db.QueryRow(`SELECT model_snapshot_id FROM run WHERE run_id=?`, receipt.RunID).Scan(&snapshot); e != nil {

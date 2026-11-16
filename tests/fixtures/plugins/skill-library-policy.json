@@ -1,0 +1,55 @@
+{
+  "id": "skills-system-policy",
+  "allowed_contracts": [
+    "steward.skill-discovery/1",
+    "steward.skill-entry/1"
+  ],
+  "allowed_requests": [],
+  "allowed_hooks": [],
+  "cases": [
+    {
+      "instance_id": "skill-library",
+      "contract": "steward.skill-discovery/1",
+      "input": {
+        "query": "",
+        "limit": 8,
+        "entries": [
+          {
+            "name": "zeta",
+            "description": "research"
+          },
+          {
+            "name": "alpha",
+            "description": "coding"
+          }
+        ]
+      },
+      "expected": {
+        "indices": [
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "instance_id": "skill-library",
+      "contract": "steward.skill-entry/1",
+      "input": {
+        "path": ""
+      },
+      "expected": {
+        "path": "SKILL.md"
+      }
+    },
+    {
+      "instance_id": "skill-library",
+      "contract": "steward.skill-entry/1",
+      "input": {
+        "path": "references/details.md"
+      },
+      "expected": {
+        "path": "references/details.md"
+      }
+    }
+  ]
+}

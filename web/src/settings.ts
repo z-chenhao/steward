@@ -1,4 +1,6 @@
 import {t} from './i18n';
+import {enhanceModelConnectionControls} from './model-connection-controls';
+import {enhanceLegacyModelConnectionV1} from './legacy/model-connection-v1';
 import {confirmSettingsAction,enhanceSettingsControls} from './settings-controls';
 import {enhanceNotificationPreference} from './notification-preference';
 import {enhanceLanguagePreference} from './preferences';
@@ -46,30 +48,17 @@ async function openSignIn(popup:Window, form:HTMLFormElement){
 
 // Settings use native navigation; a submission has one explicit attempt.
 export function enhanceSettings(){
- document.querySelector<HTMLSelectElement>('[data-model-account]')?.addEventListener('change',event=>{(event.target as HTMLSelectElement).form?.requestSubmit()});
  try{enhanceLanguagePreference()}finally{document.querySelector('[data-language-preference]')?.setAttribute('data-language-ready','')}
  enhanceNotificationPreference();
  enhanceSettingsControls();
  const api=document.querySelector<HTMLFormElement>('[data-api-connection]');
- if(api){
-  const provider=api.querySelector<HTMLSelectElement>('[name=service]')!,key=api.querySelector<HTMLInputElement>('[name=api_key]')!,endpoint=api.querySelector<HTMLInputElement>('[name=endpoint]')!,advanced=api.querySelector<HTMLDetailsElement>('.model-connection-advanced')!;
-  const sync=()=>{key.required=provider.value==='openai';endpoint.readOnly=provider.value==='openai';if(provider.value==='custom')advanced.open=true};
-  sync();provider.addEventListener('change',()=>{sync();if(provider.value==='custom'&&endpoint.value==='https://api.openai.com/v1')endpoint.value='http://127.0.0.1:8000/v1';if(provider.value==='openai')endpoint.value='https://api.openai.com/v1'});
- }
+ if(api?.hasAttribute('data-model-owner-connection'))enhanceModelConnectionControls(api);
+ else if(api?.hasAttribute('data-model-legacy-v1'))enhanceLegacyModelConnectionV1(api);
 
  if(location.hash===signInOpenedHash){
   const signIn=document.querySelector<HTMLElement>('#signin-status');
   if(signIn?.querySelector('[data-signin-pending]'))signIn.dataset.authWindowOpened='';
   history.replaceState(history.state,'',location.pathname+location.search);
- }
- const provider=document.querySelector<HTMLFormElement>('[data-model-provider]');
- const select=provider?.querySelector<HTMLSelectElement>('select');
- if(provider&&select){
-  const panels=document.querySelectorAll<HTMLElement>('[data-model-provider-panel]');
-  const showSelected=()=>{for(const panel of panels)panel.hidden=panel.dataset.modelProviderPanel!==select.value};
-  provider.addEventListener('submit',event=>event.preventDefault());
-  select.addEventListener('change',showSelected);
-  showSelected();
  }
  const forms=document.querySelectorAll<HTMLFormElement>('.settings-page form');
  const reset=new Map<HTMLFormElement,()=>void>();
@@ -94,7 +83,7 @@ export function enhanceSettings(){
   // clicked action before applying the double-submit guard.
   if(submitter instanceof HTMLButtonElement&&submitter.name){action=document.createElement('input');action.type='hidden';action.name=submitter.name;action.value=submitter.value;form.append(action)}
   form.dataset.submitting='true';form.setAttribute('aria-busy','true');
-  const verifying=form.hasAttribute('data-model-verify')||form.getAttribute('action')?.endsWith('/model/test')&&!submitter?.hasAttribute('data-model-restore');
+  const verifying=form.hasAttribute('data-model-verify');
   for(const button of buttons){button.disabled=true;if(!form.hasAttribute('data-preserve-submit-label'))button.textContent=verifying?t('Verifying…'):t('Working…')}
   reset.set(form,()=>{action?.remove();delete form.dataset.submitting;form.removeAttribute('aria-busy');buttons.forEach((button,i)=>{button.disabled=disabled[i];button.textContent=labels[i]})});
  })}

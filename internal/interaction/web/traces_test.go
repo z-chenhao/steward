@@ -69,14 +69,14 @@ func TestTraceRunningListShowsLatestMetricsWithoutPartialBadges(t *testing.T) {
 	}
 }
 
-func TestTraceLabelUsesIncomingMessageOrWorkerTitle(t *testing.T) {
+func TestTraceLegacyLabelUsesIncomingMessageOrWorkerTitle(t *testing.T) {
 	for _, tc := range []struct{ role, title, input, want string }{
 		{"main", "Main conversation", "Plan my trip", "Plan my trip"},
 		{"main", "Main conversation", "", "Main conversation"},
 		{"root", "Research itinerary", "Research itinerary", "Research itinerary"},
 	} {
 		trace := observability.Trace{Execution: observability.Execution{Role: tc.role}, Title: tc.title, Input: tc.input}
-		if got := traceLabel(trace); got != tc.want {
+		if got := legacyTraceLabelV1(trace); got != tc.want {
 			t.Fatalf("label=%q, want %q", got, tc.want)
 		}
 	}
@@ -257,7 +257,7 @@ func TestTraceWorkbenchAuthenticatedCompleteEscapedAndValidated(t *testing.T) {
 
 func TestTraceRowsGroupActualParentsAndBoundWaterfall(t *testing.T) {
 	tree := observability.ObservationTree{Trace: observability.Trace{Execution: observability.Execution{CreatedAt: "2026-10-29T01:00:00Z", EndedAt: "2026-10-29T01:00:01Z"}}, Items: []observability.Observation{{ID: "root"}, {ID: "a", Parent: "root"}, {ID: "b", Parent: "root"}, {ID: "grandchild", Parent: "a"}}}
-	rows := traceRows(tree)
+	rows := legacyTraceRowsV1(tree)
 	if len(rows) != 4 || rows[2].ID != "grandchild" || rows[3].ID != "b" || !rows[0].HasChildren || len(rows[2].Guides) != 2 || rows[3].HasChildren {
 		t.Fatal(rows)
 	}
@@ -267,12 +267,12 @@ func TestTraceRowsGroupActualParentsAndBoundWaterfall(t *testing.T) {
 		}
 	}
 	tree.Items = []observability.Observation{{ID: "fragment", Parent: "outside"}}
-	rows = traceRows(tree)
+	rows = legacyTraceRowsV1(tree)
 	if len(rows) != 1 || !rows[0].ParentOutside || rows[0].Depth != 0 {
 		t.Fatal(rows)
 	}
 	tree.Items = []observability.Observation{{ID: "a", Parent: "b"}, {ID: "b", Parent: "a"}}
-	if len(traceRows(tree)) != 2 {
+	if len(legacyTraceRowsV1(tree)) != 2 {
 		t.Fatal("cycle escaped bounded rendering")
 	}
 }
@@ -342,14 +342,14 @@ func TestTraceJSONDisplayPreservesNumericEvidence(t *testing.T) {
 	}
 }
 
-func TestTraceOperationColorUsesRecordedSpanMeaning(t *testing.T) {
-	if observationKind(observability.Observation{Type: "span", Name: "Provider HTTP"}) != "http" {
+func TestTraceLegacyOperationColorUsesRecordedSpanMeaning(t *testing.T) {
+	if legacyTraceObservationKindV1(observability.Observation{Type: "span", Name: "Provider HTTP"}) != "http" {
 		t.Fatal("HTTP span lost its operation identity")
 	}
-	if observationKind(observability.Observation{Type: "span", Timing: "approval wait"}) != "wait" {
+	if legacyTraceObservationKindV1(observability.Observation{Type: "span", Timing: "approval wait"}) != "wait" {
 		t.Fatal("approval wait lost its operation identity")
 	}
-	if observationKind(observability.Observation{Type: "span", Timing: "observed execution segment"}) != "span" {
+	if legacyTraceObservationKindV1(observability.Observation{Type: "span", Timing: "observed execution segment"}) != "span" {
 		t.Fatal("generic execution was guessed into a different type")
 	}
 }
@@ -373,35 +373,35 @@ func TestPrimaryObservationsHideOnlyRoutineInternalsAndKeepDeepSelections(t *tes
 		{ID: "compact", Name: "Compact context", Parent: "root"}, {ID: "gen", Name: "Model call", Parent: "root"},
 		{ID: "http", Name: "Provider HTTP", Parent: "gen"}, {ID: "error", Name: "Provider HTTP", Parent: "gen", Status: "failed"},
 	}}
-	rows, hidden := primaryObservations(tree)
+	rows, hidden := legacyTracePrimaryObservationsV1(tree)
 	if len(rows) != 4 || hidden != 2 {
 		t.Fatal(rows, hidden)
 	}
 	tree.Selected = tree.Items[4]
-	rows, hidden = primaryObservations(tree)
+	rows, hidden = legacyTracePrimaryObservationsV1(tree)
 	if len(rows) != 5 || hidden != 1 {
 		t.Fatal("deep selected HTTP disappeared", rows, hidden)
 	}
 }
 
-func TestGenerationOutputRateRequiresSameAttemptTerminalEvidence(t *testing.T) {
+func TestLegacyTraceGenerationOutputRateRequiresSameAttemptTerminalEvidence(t *testing.T) {
 	tree := observability.ObservationTree{Selected: observability.Observation{Status: "completed"}, Generation: &observability.GenerationDetails{Metrics: observability.Metrics{KnownUsage: 1, Output: 100}}, ProviderTimings: []observability.ProviderTiming{
 		{Attempt: "failed", Phase: "started", At: 1000000}, {Attempt: "failed", Phase: "first_text", At: 1100000},
 		{Attempt: "accepted", Phase: "started", At: 2000000}, {Attempt: "accepted", Phase: "first_tool_call", At: 2500000}, {Attempt: "accepted", Phase: "stream_terminal", At: 4500000},
 	}}
-	if got := generationOutputRate(tree); got == nil || *got != 50 {
+	if got := legacyTraceGenerationOutputRateV1(tree); got == nil || *got != 50 {
 		t.Fatal(got)
 	}
 	tree.ProviderTimings = tree.ProviderTimings[:4]
-	if generationOutputRate(tree) != nil {
+	if legacyTraceGenerationOutputRateV1(tree) != nil {
 		t.Fatal("missing terminal fabricated throughput")
 	}
 	tree.ProviderTimings = append(tree.ProviderTimings, observability.ProviderTiming{Attempt: "other", Phase: "stream_terminal", At: 4500000})
-	if generationOutputRate(tree) != nil {
+	if legacyTraceGenerationOutputRateV1(tree) != nil {
 		t.Fatal("different attempts mixed")
 	}
 	tree.Generation.Metrics.KnownUsage = 0
-	if generationOutputRate(tree) != nil {
+	if legacyTraceGenerationOutputRateV1(tree) != nil {
 		t.Fatal("missing usage became zero")
 	}
 }
@@ -456,7 +456,7 @@ func TestActivityRangeLinkKeepsFiltersAndClearsPagination(t *testing.T) {
 	}
 }
 
-func TestTraceActivityNativeBarsHaveValidHeightAndExactNavigation(t *testing.T) {
+func TestTraceLegacyActivityBarsHaveValidHeightAndExactNavigation(t *testing.T) {
 	v := &traceView{List: observability.Traces{Total: 3, Activity: []observability.TraceBucket{{At: "2026-11-08T00:00:00Z", Until: "2026-11-08T00:00:05Z", Count: 3}}}}
 	var out strings.Builder
 	if err := localizedLayout("en").ExecuteTemplate(&out, "observability-page", page{Trace: v}); err != nil {
@@ -473,7 +473,7 @@ func TestTimelinePreservesParallelIntervalsAndDoesNotInventUnknownEnds(t *testin
 	end := base + 1000000
 	aEnd, bEnd := base+600000, base+800000
 	tree := observability.ObservationTree{Trace: observability.Trace{Execution: observability.Execution{CreatedAt: "2026-10-29T01:00:00Z", EndedAt: "2026-10-29T01:00:01Z"}}, Items: []observability.Observation{{ID: "root", Started: base, Ended: &end}, {ID: "a", Parent: "root", Started: base + 100000, Ended: &aEnd}, {ID: "b", Parent: "root", Started: base + 200000, Ended: &bEnd}, {ID: "point", Parent: "root", Started: base + 300000}}}
-	rows := traceRows(tree)
+	rows := legacyTraceRowsV1(tree)
 	if len(rows) != 4 || rows[1].X >= rows[2].X || rows[1].X+rows[1].Width <= rows[2].X || rows[3].Ended != nil || rows[3].Running {
 		t.Fatal(rows)
 	}
@@ -482,7 +482,7 @@ func TestTimelinePreservesParallelIntervalsAndDoesNotInventUnknownEnds(t *testin
 	tree.Items[0].Type = "agent"
 	tree.Items[1].Ended = nil
 	tree.Items[1].Type, tree.Items[1].Status = "generation", "pending"
-	rows = traceRows(tree)
+	rows = legacyTraceRowsV1(tree)
 	if !rows[0].Running || !rows[1].Running || rows[0].Ended != nil || rows[1].Ended != nil || rows[3].Running {
 		t.Fatal("ongoing execution and unknown event ends were conflated", rows)
 	}
@@ -491,11 +491,104 @@ func TestTimelinePreservesParallelIntervalsAndDoesNotInventUnknownEnds(t *testin
 func TestActivityGeometryKeepsClippedBucketWidths(t *testing.T) {
 	buckets := []observability.TraceBucket{{At: "2026-11-08T00:00:00.000500Z", Until: "2026-11-08T00:00:00.001000Z"}, {At: "2026-11-08T00:00:00.001000Z", Until: "2026-11-08T00:00:00.002000Z"}, {At: "2026-11-08T00:00:00.002000Z", Until: "2026-11-08T00:00:00.002500Z"}}
 	for i, want := range []float64{250, 500, 250} {
-		if got := activityWidth(buckets[i], buckets); got != want {
+		if got := legacyTraceActivityWidthV1(buckets[i], buckets); got != want {
 			t.Fatal(i, got, want)
 		}
 	}
-	if activityX(buckets[1], buckets) != 250 || activityX(buckets[2], buckets) != 750 {
+	if legacyTraceActivityXV1(buckets[1], buckets) != 250 || legacyTraceActivityXV1(buckets[2], buckets) != 750 {
 		t.Fatal("time axis positions differ from clipped intervals")
+	}
+}
+
+func TestTraceReaderRevisionSurvivesOwnerNavigation(t *testing.T) {
+	revision := "sha256:" + strings.Repeat("a", 64)
+	v, err := traceQuery(httptest.NewRequest("GET", "/developer/observability?run=source&tab=diff&reader_revision="+url.QueryEscape(revision), nil))
+	if err != nil || v.ReaderRevision != revision {
+		t.Fatal(v, err)
+	}
+	next, err := url.Parse(traceURL(v, "diff_after", 40))
+	if err != nil || next.Query().Get("reader_revision") != revision {
+		t.Fatal("diff continuation lost interpretation", next, err)
+	}
+	context, err := url.Parse(contextURL("source", revision))
+	if err != nil || context.Query().Get("reader_revision") != revision {
+		t.Fatal("before/after source link lost interpretation", context, err)
+	}
+	c := &contextView{Query: observability.ContextQuery{RunID: "source", Step: 1, Section: "messages"}, ReaderRevision: revision, RoundAfter: -1}
+	link, err := url.Parse(contextLink(c, "offset", 8192))
+	if err != nil || link.Query().Get("reader_revision") != revision {
+		t.Fatal("context continuation lost interpretation", link, err)
+	}
+	for _, bad := range []string{"sha256:../../private", "sha256:" + strings.Repeat("A", 64), revision + "&reader_revision=" + revision} {
+		if _, err := traceQuery(httptest.NewRequest("GET", "/developer/observability?run=source&reader_revision="+bad, nil)); err == nil {
+			t.Fatal("invalid interpretation accepted", bad)
+		}
+	}
+}
+
+type legacyProjectedTraceReader struct {
+	traceReader
+	onlyOverview bool
+}
+
+func (r legacyProjectedTraceReader) ProjectedObservations(ctx context.Context, q observability.ObservationQuery) (observability.ObservationTree, *observability.TracePresentation, error) {
+	tree, err := r.Observations(ctx, q)
+	if err != nil {
+		return tree, nil, err
+	}
+	tree.Trace.EndedAt = ""
+	for i := range tree.Items {
+		tree.Items[i].Ended = nil
+		tree.Items[i].Status = "running"
+		if tree.Items[i].Type == "generation" {
+			tree.Items[i].Status = "pending"
+			tree.Selected = tree.Items[i]
+		}
+	}
+	internal := observability.Observation{ID: "internal:prepare", Parent: tree.Selected.ID, Name: "Prepare context", Type: "span", Status: "completed", Started: tree.Selected.Started}
+	tree.Items = append(tree.Items, internal)
+	started := tree.Selected.Started
+	tree.ProviderTimings = []observability.ProviderTiming{{Attempt: "actual", Phase: "started", At: started}, {Attempt: "actual", Phase: "first_tool_call", At: started + 200000}, {Attempt: "actual", Phase: "first_text", At: started + 400000}}
+	legacyTextTTFT := int64(400)
+	p := &observability.TracePresentation{ReaderRevision: "sha256:" + strings.Repeat("a", 64), Tabs: []string{"overview", "context", "wire", "diff"}, TTFTMS: &legacyTextTTFT}
+	if r.onlyOverview {
+		p.Tabs = []string{"overview"}
+	}
+	for i, o := range tree.Items {
+		p.Rows = append(p.Rows, observability.TraceRow{Observation: o, Depth: i, HasChildren: o.ID == tree.Selected.ID, X: float64(i * 20), Width: 4})
+	}
+	return tree, p, nil
+}
+
+func TestVersionedTraceLayoutComposesWithCurrentTimelineAndPrimaryViews(t *testing.T) {
+	s := &Server{Inspector: &inspectionReader{}, Traces: legacyProjectedTraceReader{}}
+	v := &traceView{Run: "root-public", Node: "generation:g", Tab: "overview"}
+	if err := s.loadTrace(context.Background(), v); err != nil {
+		t.Fatal(err)
+	}
+	if v.HiddenInternal != 1 || len(v.Rows) != 2 || len(v.Tabs) != 2 || v.Tabs[0] != "overview" || v.Tabs[1] != "metadata" {
+		t.Fatal("legacy policy displaced current filtering or primary views", v.HiddenInternal, v.Rows, v.Tabs)
+	}
+	if v.Rows[1].HasChildren {
+		t.Fatal("filtered internal-only children left an empty expansion control")
+	}
+	if v.ReaderRevision == "" || v.TTFTMS == nil || *v.TTFTMS != 200 {
+		t.Fatal("reader reference or recorded first tool output lost", v.ReaderRevision, v.TTFTMS)
+	}
+	for _, row := range v.Rows {
+		if !row.Running || row.Width <= 4 {
+			t.Fatal("current live timeline lost old source rows", row)
+		}
+	}
+	if v.Rows[1].FirstOutput == nil || *v.Rows[1].FirstOutput != v.Tree.Selected.Started+200000 {
+		t.Fatal("first output annotation changed recorded evidence")
+	}
+	if err := s.loadTrace(context.Background(), v); err != nil || len(v.Rows) != 2 {
+		t.Fatal("reload duplicated projected rows", len(v.Rows), err)
+	}
+	s.Traces = legacyProjectedTraceReader{onlyOverview: true}
+	restricted := &traceView{Run: "root-public", Node: "generation:g", Tab: "context"}
+	if err := s.loadTrace(context.Background(), restricted); err != nil || restricted.Tab != "overview" || traceHasView(restricted, "context") {
+		t.Fatal("primary regrouping widened the old reader destinations", restricted.Tab, err)
 	}
 }

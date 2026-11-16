@@ -10,6 +10,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/tool"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 // RunFailure proves that the Run's terminal failure was committed. Interactive
@@ -75,6 +76,14 @@ func (l *agentLoop) run(ctx context.Context) error {
 	l.emit(r, "agent_start", "", "")
 	l.beginUIPreview(r)
 	defer func() { l.endUIPreview(r, "ui_preview_discarded", "") }()
+	if _, err = l.pluginHook(r, rsiplugin.PrepareRun, "", ""); err != nil {
+		return err
+	}
+	if r.Checkpoint.Step > 0 {
+		if _, err = l.pluginHook(r, rsiplugin.RunResumed, "", ""); err != nil {
+			return err
+		}
+	}
 	for {
 		if ctx.Err() != nil {
 			// Shutdown joins accepted work; it is not a business cancellation.
@@ -148,6 +157,11 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 		}
 		if err = l.options.Store.Checkpoint(l.work, l.claim, r.Version, cp); err != nil {
 			return false, err
+		}
+		for _, input := range inputs {
+			if _, err = l.pluginHook(r, rsiplugin.InputAccepted, "", input.Message.MessageID); err != nil {
+				return false, err
+			}
 		}
 		return false, nil
 	}
@@ -232,6 +246,11 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 				l.publishUIPreview(r, "ui_preview_remove", key, nil)
 			}
 		}()
+		var previewQueue *uiPreviewQueue
+		if visible && r.Kind == MainRole {
+			previewQueue = newUIPreviewQueue(callCtx, l.projectUIPreviewContext, func(key string, preview ui.Preview) { l.publishUIPreview(r, "ui_preview_update", key, &preview) })
+			defer previewQueue.stop()
+		}
 		value, callErr := generate(callCtx, generation.Request, func(e llm.GenerationEvent) {
 			if visible && r.Kind == MainRole && callCtx.Err() == nil && e.Kind == "ui_delta" && e.ToolCall != nil && e.ToolCall.Name == ui.ShowName {
 				key := generation.Request.GenerationID + ":" + e.ToolCall.ID
@@ -240,9 +259,7 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 						prefixes[key] += e.ToolCall.Arguments
 						if time.Since(lastPreview[key]) >= 25*time.Millisecond {
 							lastPreview[key] = time.Now()
-							if preview, ok := ui.ParsePreview(prefixes[key]); ok {
-								l.publishUIPreview(r, "ui_preview_update", key, &preview)
-							}
+							previewQueue.submit(key, prefixes[key])
 						}
 					}
 				}
@@ -253,6 +270,9 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 				l.publish(update)
 			}
 		})
+		if previewQueue != nil {
+			previewQueue.stop()
+		}
 		stopDiscard()
 		cancel()
 		if l.execution.Err() != nil {
@@ -292,6 +312,14 @@ func (l *agentLoop) modelTurn(r Run) (bool, error) {
 			return false, l.fail(latest, llm.NormalizeError(callErr.Error()).Error())
 		}
 		result = &value
+		if visible {
+			if _, err = l.pluginHook(r, rsiplugin.ModelStream, value.Text, generation.Request.GenerationID); err != nil {
+				return false, err
+			}
+		}
+	}
+	if _, err = l.pluginHook(r, rsiplugin.ModelResult, result.Text, generation.Request.GenerationID); err != nil {
+		return false, err
 	}
 	if plan := generation.Compaction; plan != nil {
 		if result.Clipped || len(result.ToolCalls) > 0 || strings.TrimSpace(result.Text) == "" || len(result.Text) > plan.MaxBytes {
@@ -376,6 +404,11 @@ func (l *agentLoop) finishTools(r Run, results []tool.Result) (bool, error) {
 		if err := applyToolLoads(&cp, r.Tools, cp.Result.ToolCalls[i].Name, result); err != nil {
 			return false, err
 		}
+		projected, err := l.projectTool(r, cp.Result.ToolCalls[i].ID, result)
+		if err != nil {
+			return false, err
+		}
+		result = projected
 		parts := conversation.Text(result.ModelText())
 		for _, ref := range result.ImageRefs {
 			parts = append(parts, conversation.ContentPart{Type: "image", ArtifactRef: ref})
@@ -427,6 +460,9 @@ func (l *agentLoop) replyTurn(r Run) (bool, error) {
 
 func (l *agentLoop) settleTurn(r Run) (bool, error) {
 	cp := r.Checkpoint
+	if _, err := l.pluginHook(r, rsiplugin.SuggestContinuation, "", ""); err != nil {
+		return false, err
+	}
 	done, err := l.options.Store.Complete(l.work, l.claim, r.Version)
 	if err != nil {
 		return false, err
@@ -499,6 +535,9 @@ func (l *agentLoop) wait(r Run, reason string) error {
 }
 
 func (l *agentLoop) fail(r Run, code string) error {
+	if _, err := l.pluginHook(r, rsiplugin.SuggestRecovery, "", code); err != nil {
+		return err
+	}
 	if code == "SPEND_AUTHORIZATION_DENIED" {
 		if err := l.drainTools(r); err != nil {
 			return err

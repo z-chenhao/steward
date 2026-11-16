@@ -15,6 +15,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/interaction/web"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/memory"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
 	"github.com/z-chenhao/assistant/internal/recall/embedding"
 )
 
@@ -26,14 +27,15 @@ type proof struct {
 	at                                             time.Time
 }
 type Manager struct {
-	mu       sync.Mutex
-	probing  sync.Mutex
-	active   config.Config
-	path     string
-	secrets  llm.SecretStore
-	proofs   map[string]proof
-	seenFile bool
-	states   map[string]string
+	Presentation PresentationReader
+	mu           sync.Mutex
+	probing      sync.Mutex
+	active       config.Config
+	path         string
+	secrets      llm.SecretStore
+	proofs       map[string]proof
+	seenFile     bool
+	states       map[string]string
 }
 
 func New(active config.Config, secrets llm.SecretStore) *Manager {
@@ -53,8 +55,22 @@ func known(id string) bool {
 	}
 	return false
 }
-func (m *Manager) view(c config.Config, id, revision string) web.Capability {
-	v := description(id, m.active.App.DataRoot)
+func (m *Manager) view(c config.Config, id, revision string, presentation *contract.Presentation) web.Capability {
+	v := web.Capability{ID: id, Title: id, State: "not_configured", PresentationUnavailable: presentation == nil}
+	var copy contract.Copy
+	if presentation != nil {
+		copy = presentation.Copy
+		for _, description := range presentation.Descriptions {
+			if description.ID == id {
+				v.Title = description.Title
+				v.Description = description.Description
+				v.Help = description.Help
+				v.Example = description.Example
+				v.ParentMemory = description.MemoryChild
+				break
+			}
+		}
+	}
 	v.Path = m.path
 	v.Revision = revision
 	v.Text = encode(resource(c, id))
@@ -70,12 +86,12 @@ func (m *Manager) view(c config.Config, id, revision string) web.Capability {
 		if !v.PendingRestart && m.states[id] != "" {
 			v.State = m.states[id]
 		}
-		v.Message = "Steward manages the default. You can choose custom settings or turn it off."
+		v.Message = copy.Automatic
 		if id == "computer" {
 			v.State, v.Message = macosvm.ManagedState(m.active.App.DataRoot + ".desktop")
 		}
 		if id == "memory" && v.State == "unavailable" {
-			v.Message = "The saved Memory key is unavailable in local credential files. Restore the original key before restarting. Existing keys are never replaced."
+			v.Message = copy.MemoryKeyUnavailable
 		}
 	}
 	if v.Configured && !c.Automatic(id) {
@@ -83,7 +99,7 @@ func (m *Manager) view(c config.Config, id, revision string) web.Capability {
 	}
 	if id == "execution" && c.Computer != nil {
 		v.State = "managed"
-		v.Message = "Files and commands use the Computer workspace. Open Computer to verify its connection."
+		v.Message = copy.ExecutionManaged
 	}
 	if p, ok := m.proofs[id]; ok && p.revision == revision && p.text == v.Text && time.Since(p.at) <= 5*time.Minute {
 		if v.Configured && !c.Automatic(id) {
@@ -92,6 +108,9 @@ func (m *Manager) view(c config.Config, id, revision string) web.Capability {
 		v.Message = p.message
 		v.TestedAt = p.at
 		v.Verified = p.state == "ready"
+	}
+	if presentation == nil && v.Message == "" {
+		v.Message = "Capability presentation unavailable."
 	}
 	return v
 }
@@ -106,9 +125,17 @@ func (m *Manager) List(ctx context.Context) ([]web.Capability, error) {
 	if e != nil {
 		return nil, e
 	}
+	presentation, _ := m.presentation(ctx)
+	ids := kinds
+	if presentation != nil {
+		ids = []string{}
+		for _, description := range presentation.Descriptions {
+			ids = append(ids, description.ID)
+		}
+	}
 	var views []web.Capability
-	for _, id := range kinds {
-		views = append(views, m.view(c, id, revision))
+	for _, id := range ids {
+		views = append(views, m.view(c, id, revision, presentation))
 	}
 	return views, nil
 }
@@ -126,17 +153,22 @@ func (m *Manager) Detail(ctx context.Context, id string) (web.Capability, error)
 	if e != nil {
 		return web.Capability{}, e
 	}
-	v := m.view(c, id, revision)
+	presentation, _ := m.presentation(ctx)
+	v := m.view(c, id, revision, presentation)
 	if p, ok := m.proofs[id]; ok && p.revision == revision && p.candidate != digest(raw) {
 		_, candidate, e := m.candidate(id, revision, p.raw)
 		if e != nil {
 			return v, e
 		}
-		v = m.view(candidate, id, revision)
+		v = m.view(candidate, id, revision, presentation)
 		v.Text = p.raw
 		v.Candidate = true
 		if time.Since(p.at) > 5*time.Minute {
-			v.Message = "Verification expired. Test this candidate again before saving."
+			if presentation != nil {
+				v.Message = presentation.Copy.VerificationExpired
+			} else {
+				v.Message = "Capability presentation unavailable."
+			}
 			v.TestedAt = p.at
 		}
 	}
@@ -156,7 +188,12 @@ func (m *Manager) Test(ctx context.Context, id, revision, text string) (web.Capa
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	state, message := m.probe(ctx, c, id)
+	presentation, e := m.presentation(ctx)
+	if e != nil {
+		return web.Capability{}, web.ErrCapabilityUnavailable
+	}
+	result := m.probe(ctx, c, id)
+	state, message := result.State, probeMessage(result, presentation.Copy)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	_, current, e := m.read()
@@ -168,7 +205,7 @@ func (m *Manager) Test(ctx context.Context, id, revision, text string) (web.Capa
 	}
 	canonical := encode(resource(c, id))
 	m.proofs[id] = proof{revision: revision, text: canonical, raw: text, candidate: digest(raw), state: state, message: message, at: time.Now().UTC()}
-	v := m.view(c, id, revision)
+	v := m.view(c, id, revision, presentation)
 	v.Text = text
 	v.Candidate = true
 	return v, nil

@@ -56,9 +56,10 @@ func (b Budget) Fits(in []llm.Message) bool {
 }
 
 type Preparation struct {
-	Messages      []llm.Message
-	Sources       []llm.Message
-	OmittedImages []string
+	SummaryInstructions string
+	Messages            []llm.Message
+	Sources             []llm.Message
+	OmittedImages       []string
 }
 
 // Prepare selects a working set without rewriting the source transcript.
@@ -157,7 +158,13 @@ const SummaryEvidenceMarker = "Evidence to summarize:\n"
 // SummaryRequest serializes evidence into one user payload, so historical tool
 // calls cannot execute and their original roles and sources remain explicit.
 func SummaryRequest(sources, anchors []llm.Message, budget, target int) ([]llm.Message, int, error) {
-	prefix := prompt.SummaryInstructions(target)
+	return SummaryRequestWithInstructions(sources, anchors, budget, prompt.SummaryInstructions(target))
+}
+
+// SummaryRequestWithInstructions applies versioned summary guidance inside the
+// Host-owned tool-free evidence envelope. Roles, anchors and budgets stay fixed.
+func SummaryRequestWithInstructions(sources, anchors []llm.Message, budget int, instructions string) ([]llm.Message, int, error) {
+	prefix := instructions
 	if len(anchors) > 0 {
 		raw, _ := json.Marshal(anchors)
 		prefix += "Protected task inputs and Host facts (also retained verbatim in the live context):\n" + string(raw) + "\n"

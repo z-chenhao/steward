@@ -16,15 +16,20 @@ import (
 const ToolName = "builtin__evidence_read"
 
 var ErrInvalid = errors.New("invalid evidence request")
+var ErrUnavailable = errors.New("evidence reader unavailable")
 
 const Schema = `{"type":"object","properties":{"kind":{"type":"string","enum":["conversation","task","artifact"]},"ref":{"type":"string","minLength":1,"maxLength":256,"description":"Ordinary object ID, with kind identifying its type. Use current without kind for the current input."},"offset":{"type":"integer","minimum":0,"maximum":1073741824},"limit":{"type":"integer","minimum":4,"maximum":4096},"links_offset":{"type":"integer","minimum":0,"maximum":1000000}},"required":["ref"],"additionalProperties":false}`
 
+const ownerSchema = `{"type":"object","properties":{"kind":{"type":"string","enum":["conversation","task","artifact"]},"ref":{"type":"string","minLength":1,"maxLength":256},"offset":{"type":"integer","minimum":0,"maximum":1073741824},"limit":{"type":"integer","minimum":4,"maximum":4096},"links_offset":{"type":"integer","minimum":0,"maximum":1000000},"page_revision":{"type":"string","minLength":71,"maxLength":71},"reader_revision":{"type":"string","minLength":71,"maxLength":71}},"required":["ref"],"additionalProperties":false}`
+
 type Request struct {
-	Kind        string `json:"kind,omitempty"`
-	Ref         string `json:"ref"`
-	Offset      int64  `json:"offset,omitempty"`
-	Limit       int    `json:"limit,omitempty"`
-	LinksOffset int    `json:"links_offset,omitempty"`
+	Kind           string `json:"kind,omitempty"`
+	Ref            string `json:"ref"`
+	Offset         int64  `json:"offset,omitempty"`
+	Limit          int    `json:"limit,omitempty"`
+	LinksOffset    int    `json:"links_offset,omitempty"`
+	ReaderRevision string `json:"reader_revision,omitempty"`
+	PageRevision   string `json:"page_revision,omitempty"`
 }
 
 func Parse(raw string) (Request, error) {
@@ -38,7 +43,11 @@ func ParseOwner(raw string) (Request, error) {
 
 func parse(raw string, owner bool) (Request, error) {
 	var q Request
-	if !tool.Validate(Schema, raw) || json.Unmarshal([]byte(raw), &q) != nil {
+	schema := Schema
+	if owner {
+		schema = ownerSchema
+	}
+	if !tool.Validate(schema, raw) || json.Unmarshal([]byte(raw), &q) != nil {
 		return q, ErrInvalid
 	}
 	if q.Kind != "" {
@@ -51,7 +60,34 @@ func parse(raw string, owner bool) (Request, error) {
 	if !validRef(q.Ref, owner) {
 		return q, ErrInvalid
 	}
+	if q.PageRevision != "" {
+		if !validRevision(q.PageRevision) {
+			return q, ErrInvalid
+		}
+	}
+	if q.ReaderRevision != "" {
+		if !strings.HasPrefix(q.Ref, "artifact:") || !strings.HasPrefix(q.ReaderRevision, "sha256:") {
+			return q, ErrInvalid
+		}
+		for _, c := range strings.TrimPrefix(q.ReaderRevision, "sha256:") {
+			if c < '0' || c > '9' && c < 'a' || c > 'f' {
+				return q, ErrInvalid
+			}
+		}
+	}
 	return q, nil
+}
+
+func validRevision(revision string) bool {
+	if len(revision) != 71 || !strings.HasPrefix(revision, "sha256:") {
+		return false
+	}
+	for _, c := range revision[7:] {
+		if c < '0' || c > '9' && c < 'a' || c > 'f' {
+			return false
+		}
+	}
+	return true
 }
 
 func ValidRef(ref string) bool {
@@ -94,6 +130,8 @@ type Page struct {
 	Ref             string    `json:"ref"`
 	Kind            string    `json:"kind"`
 	Representation  string    `json:"representation,omitempty"`
+	ReaderRevision  string    `json:"reader_revision,omitempty"`
+	PageRevision    string    `json:"page_revision,omitempty"`
 	Title           string    `json:"title,omitempty"`
 	Author          string    `json:"author,omitempty"`
 	OccurredAt      time.Time `json:"occurred_at"`

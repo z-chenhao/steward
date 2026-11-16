@@ -9,13 +9,19 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"sync/atomic"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/observability"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	_ "modernc.org/sqlite"
 )
 
-type Inspector struct{ db *sql.DB }
+type Inspector struct {
+	db      *sql.DB
+	guard   *sql.DB
+	plugins *atomic.Pointer[rsi.Catalog]
+}
 
 // Open creates a lazy pool: a failed observation read never blocks Runtime
 // startup or takes its writer slot. mode=ro and query_only enforce this boundary.
@@ -32,9 +38,24 @@ func Open(path string) (*Inspector, error) {
 	}
 	db.SetMaxOpenConns(2)
 	db.SetMaxIdleConns(2)
-	return &Inspector{db: db}, nil
+	// Source snapshots may occupy both reader connections. Revocation checks
+	// need a fresh snapshot, so they must not wait for their own source pool.
+	guard, err := sql.Open("sqlite", u.String())
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	guard.SetMaxOpenConns(2)
+	guard.SetMaxIdleConns(2)
+	return &Inspector{db: db, guard: guard, plugins: &atomic.Pointer[rsi.Catalog]{}}, nil
 }
-func (s *Inspector) Close() error { return s.db.Close() }
+func (s *Inspector) Close() error {
+	var err error
+	if s.guard != nil {
+		err = s.guard.Close()
+	}
+	return errors.Join(s.db.Close(), err)
+}
 
 const executionColumns = `r.run_id,CASE WHEN r.kind='main' THEN 'main' ELSE r.worker_position END,r.status,coalesce(r.wait_reason,''),coalesce(r.parent_run_id,''),coalesce(r.root_run_id,''),r.depth,coalesce(r.task_epoch,0),coalesce(t.task_ref,''),r.created_at,r.started_at,r.ended_at`
 const executionFrom = ` FROM run r LEFT JOIN task t ON t.task_id=r.task_id WHERE r.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)`

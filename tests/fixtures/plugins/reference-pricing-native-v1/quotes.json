@@ -1,0 +1,982 @@
+[
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 100000,
+        "output_micros_per_million": 500000,
+        "cache_read_micros_per_million": 10000,
+        "cache_write_micros_per_million": 125000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272000,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 100000,
+        "output_micros_per_million": 500000,
+        "cache_read_micros_per_million": 10000,
+        "cache_write_micros_per_million": 125000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272001,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 200000,
+        "output_micros_per_million": 750000,
+        "cache_read_micros_per_million": 20000,
+        "cache_write_micros_per_million": 250000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 100000,
+      "output_tokens": 0,
+      "cache_read_tokens": 172000,
+      "cache_write_tokens": 1
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 200000,
+        "output_micros_per_million": 750000,
+        "cache_read_micros_per_million": 20000,
+        "cache_write_micros_per_million": 250000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": -1,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272000,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272001,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 100000,
+      "output_tokens": 0,
+      "cache_read_tokens": 172000,
+      "cache_write_tokens": 1
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": -1,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 100000,
+        "output_micros_per_million": 500000,
+        "cache_read_micros_per_million": 10000,
+        "cache_write_micros_per_million": 125000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai-codex"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272000,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 100000,
+        "output_micros_per_million": 500000,
+        "cache_read_micros_per_million": 10000,
+        "cache_write_micros_per_million": 125000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai-codex"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272001,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 200000,
+        "output_micros_per_million": 750000,
+        "cache_read_micros_per_million": 20000,
+        "cache_write_micros_per_million": 250000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai-codex"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 100000,
+      "output_tokens": 0,
+      "cache_read_tokens": 172000,
+      "cache_write_tokens": 1
+    },
+    "quote": {
+      "Price": {
+        "model": "gpt-6-luna",
+        "version": "catalog-f1d176d7917f3547",
+        "input_micros_per_million": 200000,
+        "output_micros_per_million": 750000,
+        "cache_read_micros_per_million": 20000,
+        "cache_write_micros_per_million": 250000
+      },
+      "Currency": "USD",
+      "Source": "Bundled catalog (Pi AI 1.5.0) / openai-codex"
+    },
+    "known": true
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": -1,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272000,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 272001,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": 100000,
+      "output_tokens": 0,
+      "cache_read_tokens": 172000,
+      "cache_write_tokens": 1
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  },
+  {
+    "snapshot": {
+      "snapshot_id": "",
+      "profile_id": "",
+      "profile_version": 0,
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model",
+      "context_window": 0,
+      "max_output_tokens": 0,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": ""
+      },
+      "capabilities": {
+        "text_input": false,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      },
+      "created_at": "0001-01-01T00:00:00Z"
+    },
+    "usage": {
+      "input_tokens": -1,
+      "output_tokens": 0,
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "quote": {
+      "Price": {
+        "model": "",
+        "version": "",
+        "input_micros_per_million": 0,
+        "output_micros_per_million": 0,
+        "cache_read_micros_per_million": 0,
+        "cache_write_micros_per_million": 0
+      },
+      "Currency": "",
+      "Source": ""
+    },
+    "known": false
+  }
+]

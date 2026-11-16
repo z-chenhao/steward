@@ -16,6 +16,8 @@ type preparingEnvironment struct {
 	prepares int
 }
 
+func (*preparingEnvironment) WorkingDirectory() string { return "/Users/fixture/StewardWorkspace" }
+
 func (p *preparingEnvironment) Prepare(context.Context) error {
 	p.prepares++
 	if !p.ready {

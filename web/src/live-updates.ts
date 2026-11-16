@@ -1,4 +1,4 @@
-import {t} from './i18n';
+import {workbenchText as t,workbenchRegions as viewRegions,workbenchTiming,workbenchHeaders,workbenchResponse} from './workbench-client';
 import {createChatScroll} from './chat-scroll';
 import {z} from 'zod';
 import {enhanceProjections,releaseProjections,retainProjectionNodes} from './projections';
@@ -9,15 +9,6 @@ import {createUIPreview} from './intelligent-ui/preview';
 
 const snapshot=z.object({view:z.string(),before:z.number().int().nonnegative(),latest:z.number().int().nonnegative(),regions:z.record(z.string(),z.string())});
 const replyFrame=z.object({key:z.string().regex(/^[a-f0-9]{32}$/),state:z.enum(['draft','discarded','committed']),text:z.string().optional(),reset:z.boolean().optional()});
-function viewRegions(view:string):string[]|null {
- if(view==='/')return ['workspace-status','conversation-attention','conversation-messages','conversation-approvals'];
- if(view==='/tasks/attention')return ['workspace-status','tasks-attention'];
- if(view==='/tasks'||view==='/tasks/configurations')return ['workspace-status','ongoing-work'];
- if(view.startsWith('/tasks/executions/'))return ['workspace-status','execution-header','execution-progress','task-messages','execution-side'];
- if(view.startsWith('/tasks/'))return ['workspace-status','task-header','task-feedback','task-progress','task-decisions','task-messages','task-milestones'];
- if(view.startsWith('/settings/'))return ['workspace-status','signin-status'];
- return null;
-}
 
 function keepFeedbackDraft(form:HTMLFormElement,message:string){
  const answer=form.querySelector<HTMLTextAreaElement>('[name=answer]');
@@ -90,18 +81,21 @@ function regionPatcher(ids:readonly string[],scope:ParentNode=document){
 // An execution peek has its own read-only lifetime beside the live task list.
 // Reuse the committed region protocol without installing conversation/form handlers.
 export function watchExecutionDetail(root:HTMLElement,view:string){
- const regions=viewRegions(view)!.filter(id=>id!=='workspace-status');
+ const selected=viewRegions(view);if(!selected)return ()=>{};
+ const timing=workbenchTiming();if(!timing)return ()=>{};
+ const regions=selected.filter(id=>id!=='workspace-status');
  const patch=regionPatcher(regions,root);
  const status=document.createElement('p');status.className='field-help';status.setAttribute('role','status');status.hidden=true;root.append(status);
- let etag='',timer=0,delay=1000,stopped=false,request:AbortController|null=null;
+ let etag='',timer=0,delay=timing.poll_ms,stopped=false,request:AbortController|null=null;
  const pause=()=>{clearTimeout(timer);request?.abort();request=null};
  const refresh=async()=>{
   if(stopped||document.hidden)return;
   pause();const controller=new AbortController();request=controller;
-  const timeout=setTimeout(()=>controller.abort(),10000);
+  const timeout=setTimeout(()=>controller.abort(),timing.read_timeout_ms);
   try{
-   const response=await fetch('/api/updates?'+new URLSearchParams({view}),{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:etag?{'If-None-Match':etag}:{}});
+   const response=await fetch('/api/updates?'+new URLSearchParams({view}),{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:workbenchHeaders(etag)});
    if(stopped||request!==controller)return;
+   workbenchResponse(response);
    if(response.status===401||response.status===403||response.status===404){location.assign(view);return}
    if(response.status!==304){
     if(!response.ok)throw new Error('execution updates unavailable');
@@ -111,9 +105,9 @@ export function watchExecutionDetail(root:HTMLElement,view:string){
     for(const id of regions)patch(id,value.regions[id]);
     etag=response.headers.get('ETag')??'';
    }
-   delay=1000;status.hidden=true;
+   delay=timing.poll_ms;status.hidden=true;
   }catch{
-   if(!stopped&&request===controller&&!document.hidden){status.textContent=t('Execution updates are temporarily unavailable. Retrying…');status.hidden=false;delay=Math.min(delay*2,30000)}
+   if(!stopped&&request===controller&&!document.hidden){status.textContent=t('Execution updates are temporarily unavailable. Retrying…');status.hidden=false;delay=Math.min(delay*2,timing.max_poll_ms)}
   }finally{
    clearTimeout(timeout);
    if(request===controller){request=null;if(!stopped&&!document.hidden)timer=window.setTimeout(refresh,delay)}
@@ -136,7 +130,7 @@ function viewportAnchor(){
 export function startLiveUpdates(){
  const main=document.querySelector<HTMLElement>('main[data-live-view]');
  if(!main)return null;
- const view=main.dataset.liveView??'';const regionSet=viewRegions(view);if(!regionSet)return null;const regions:readonly string[]=regionSet;
+ const view=main.dataset.liveView??'';const regionSet=viewRegions(view),selectedTiming=workbenchTiming();if(!regionSet||!selectedTiming)return null;const timing=selectedTiming;const regions:readonly string[]=regionSet;
  const taskQuery=new URLSearchParams(location.search);
  const patch=regionPatcher(regions);
  const thread=view==='/'?document.querySelector<HTMLElement>('.thread'):null;
@@ -149,7 +143,7 @@ export function startLiveUpdates(){
  const draftNode=draft?.querySelector<HTMLElement>('[data-draft-text]');
  let draftText='';
  let before=Number(main.dataset.liveBefore??0),latest=Number(main.dataset.liveLatest??0);
- let etag='',timer=0,generation=0,delay=1000,stopped=false,follow=false,pendingTarget='';
+ let etag='',timer=0,generation=0,delay=timing.poll_ms,stopped=false,follow=false,pendingTarget='';
  let request:AbortController|null=null;
  let replies:EventSource|null=null,draftKey='',committing=false;
  const uiNode=document.getElementById('conversation-ui-preview');
@@ -192,7 +186,7 @@ export function startLiveUpdates(){
   if(!feedback)return;
   const signin=document.createElement('a');signin.href='/';signin.target='_blank';signin.rel='noreferrer';signin.textContent=t('Sign in');
   const retry=document.createElement('button');retry.type='button';retry.textContent=t('Retry updates');
-  retry.addEventListener('click',()=>{stopped=false;delay=1000;void refresh()});
+  retry.addEventListener('click',()=>{stopped=false;delay=timing.poll_ms;void refresh()});
   feedback.append(signin,document.createTextNode(' · '),retry);
  };
  const showJump=()=>{if(jump)jump.hidden=false};
@@ -224,14 +218,15 @@ export function startLiveUpdates(){
   startReplies();
   clearTimeout(timer);request?.abort();
   const current=++generation,controller=new AbortController();request=controller;
-  const timeout=setTimeout(()=>controller.abort(),10000);
+  const timeout=setTimeout(()=>controller.abort(),timing.read_timeout_ms);
   try{
    const query=new URLSearchParams({view});if(before)query.set('before',String(before));
    if(view==='/tasks'||view.startsWith('/tasks/')){for(const key of ['q','cursor','history','feedback_before','needs_me']){const value=taskQuery.get(key);if(value)query.set(key,value)}const taskView=taskQuery.get('view');if(taskView)query.set('task_view',taskView)}
-   const response=await fetch('/api/updates?'+query,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:etag?{'If-None-Match':etag}:{}});
+   const response=await fetch('/api/updates?'+query,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:workbenchHeaders(etag)});
    if(current!==generation)return;
+   workbenchResponse(response);
    if(response.status===401||response.status===403){accessLost();return}
-   if(response.status===304){if(follow)finishFollow();delay=1000;say('');return}
+   if(response.status===304){if(follow)finishFollow();delay=timing.poll_ms;say('');return}
    if(!response.ok)throw new Error('updates unavailable');
    const value=snapshot.parse(await response.json());
    if(current!==generation)return;
@@ -258,10 +253,10 @@ export function startLiveUpdates(){
     if(anchor?.node.isConnected)window.scrollBy(0,anchor.node.getBoundingClientRect().top-anchor.top);
     if(view==='/'&&(value.latest>latest||before!==0))showJump();
    }
-   latest=value.latest;etag=response.headers.get('ETag')??'';delay=1000;say('');
+   latest=value.latest;etag=response.headers.get('ETag')??'';delay=timing.poll_ms;say('');
   }catch{
    if(current===generation&&!stopped&&document.visibilityState==='visible'){
-    say('Connection lost. Reconnecting… Your draft is kept.');delay=Math.min(delay*2,30000);
+    say('Connection lost. Reconnecting… Your draft is kept.');delay=Math.min(delay*2,timing.max_poll_ms);
    }
   }finally{
    clearTimeout(timeout);

@@ -11,6 +11,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/skill"
 	"github.com/z-chenhao/assistant/internal/tool"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 // ReviewExperience is a trusted local Reviewer operation, never an ordinary
@@ -36,6 +37,21 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 		}
 		return map[string]any{"candidates": items}, rows.Err()
 	}
+	originalProcedure := q.Procedure
+	policy := experiencePolicy{}
+	if q.Operation == "propose" {
+		var err error
+		policy, err = r.prepareExperiencePolicy(ctx, q.Reason)
+		if err != nil {
+			return nil, err
+		}
+		if policy.Introduction != "" {
+			q.Procedure = policy.Introduction + "\n\n" + originalProcedure
+		}
+		if !q.Valid() {
+			return nil, agent.ErrConflict
+		}
+	}
 	result := map[string]any{}
 	e := r.write(ctx, func(tx *sql.Tx) error {
 		var owner string
@@ -43,6 +59,9 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 			return e
 		}
 		if q.Operation == "propose" {
+			if err := experiencePolicyFence(ctx, tx, policy); err != nil {
+				return err
+			}
 			sourceUser, sourceFailure := false, false
 			for _, ref := range q.SourceRefs {
 				var n int
@@ -80,6 +99,17 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 			now := time.Now().UnixMicro()
 			refs, _ := encoded(q.SourceRefs)
 			hash := digest(q.Procedure)
+			if policy.Managed {
+				var err error
+				hash, err = rsiplugin.Digest("steward.experience-method/1", struct {
+					Procedure    string `json:"procedure"`
+					Revision     string `json:"policy_revision"`
+					RequiredRuns int    `json:"required_runs"`
+				}{q.Procedure, policy.Revision, policy.RequiredRuns})
+				if err != nil {
+					return err
+				}
+			}
 			if _, e := tx.ExecContext(ctx, `INSERT INTO skill_candidate VALUES(?,?,?,?,?,?,?,?, 'candidate',?,?,1) ON CONFLICT(agent_id,name,method_hash) DO NOTHING`, id, owner, q.Name, q.Description, q.Procedure, q.Reason, refs, hash, now, now); e != nil {
 				return e
 			}
@@ -93,6 +123,13 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 			if previousDescription != q.Description || previousReason != q.Reason || previousRefs != refs {
 				return agent.ErrConflict
 			}
+			var revision any
+			if policy.Managed {
+				revision = policy.Revision
+			}
+			if _, err := tx.ExecContext(ctx, `INSERT INTO experience_policy_binding(candidate_id,managed,graph_revision,required_runs,introduction,original_procedure) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM experience_policy_binding WHERE candidate_id=?)`, id, policy.Managed, revision, policy.RequiredRuns, policy.Introduction, originalProcedure, id); err != nil {
+				return err
+			}
 			result = map[string]any{"candidate_ref": "experience:" + id, "status": q.Operation, "version": q.Version}
 			return runEvent(ctx, tx, id, "skill.candidate", q.Version)
 		}
@@ -105,6 +142,12 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 		if q.Version != version {
 			return agent.ErrConflict
 		}
+		var binding experiencePolicy
+		var revision sql.NullString
+		if err := tx.QueryRowContext(ctx, `SELECT managed,graph_revision,required_runs,introduction FROM experience_policy_binding WHERE candidate_id=?`, id).Scan(&binding.Managed, &revision, &binding.RequiredRuns, &binding.Introduction); err != nil {
+			return err
+		}
+		binding.Revision = revision.String
 		next := status
 		switch q.Operation {
 		case "verify":
@@ -132,15 +175,24 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 			if e := tx.QueryRowContext(ctx, `SELECT count(DISTINCT run_id) FROM skill_verification WHERE candidate_id=? AND method_hash=?`, id, hash).Scan(&count); e != nil {
 				return e
 			}
-			needed := 2
-			if reason != "success" {
-				needed = 1
-			}
+			needed := binding.RequiredRuns
 			if count >= needed {
 				next = "verified"
 			}
 		case "promote":
+			if binding.Managed {
+				if err := experiencePolicyFence(ctx, tx, binding); err != nil {
+					return err
+				}
+			}
 			if status != "verified" {
+				return agent.ErrConflict
+			}
+			var other bool
+			if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM skill_candidate WHERE agent_id=? AND name=? AND candidate_id!=? AND status='promoted')`, owner, name, id).Scan(&other); err != nil {
+				return err
+			}
+			if other {
 				return agent.ErrConflict
 			}
 			if e := skill.Publish(ctx, c, id, name, description, procedure); e != nil {
@@ -172,5 +224,8 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 		result = map[string]any{"candidate_ref": q.CandidateRef, "status": next, "version": version + 1}
 		return runEvent(ctx, tx, id, "skill."+next, version+1)
 	})
+	if errors.Is(e, errExperienceUnavailable) {
+		return nil, errExperienceUnavailable
+	}
 	return result, e
 }

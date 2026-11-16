@@ -16,6 +16,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/interaction"
 	"github.com/z-chenhao/assistant/internal/interaction/feishu"
 	"github.com/z-chenhao/assistant/internal/interaction/web"
+	"github.com/z-chenhao/assistant/internal/plugin/intelligentui/contract"
 )
 
 func (a *App) BindChannel(ctx context.Context, c, s, d string, enabled bool, v int64) (interaction.Binding, error) {
@@ -55,6 +56,11 @@ func (a *App) WebStatus(ctx context.Context) (web.Status, error) {
 	return web.Status{Readiness: d.Readiness, Status: status, ConfigVersion: d.ConfigVersion, ActiveModelProfileID: d.ActiveModelProfileID}, err
 }
 func (a *App) ImportChannelArtifact(ctx context.Context, e interaction.InboundEvent, key string, input artifact.Input, src io.Reader) (string, error) {
+	if a.prepareArtifactPlugins != nil {
+		if err := a.prepareArtifactPlugins(ctx); err != nil {
+			return "", err
+		}
+	}
 	return a.store.ImportChannelArtifact(ctx, e, key, input, src)
 }
 func (a *App) WebProjection(ctx context.Context, m conversation.Message) (json.RawMessage, error) {
@@ -83,7 +89,7 @@ func (a *App) WebProjection(ctx context.Context, m conversation.Message) (json.R
 			continue
 		}
 		if found {
-			if ui.Restore(c, content) != nil {
+			if a.store.RestoreWebForm(ctx, m, c, content) != nil {
 				c.Disabled = true
 			}
 		} else {
@@ -94,18 +100,44 @@ func (a *App) WebProjection(ctx context.Context, m conversation.Message) (json.R
 	if !changed {
 		return raw, nil
 	}
-	if len(bubbles) > 0 {
-		return json.Marshal(struct {
-			ui.Spec
-			Bubbles []ui.Spec `json:"bubbles"`
-		}{spec, bubbles})
+	// Private App-to-Web display data. Never part of the frozen component or
+	// the client projection: Web uses it only for escaped native HTML.
+	formDisplays := map[string]ui.FormView{}
+	for _, c := range spec.Components {
+		if c.Name == "steward.form" && c.ViewRef != "" && c.FormID != "" && c.FormView != nil {
+			formDisplays[c.FormID] = *c.FormView
+		}
 	}
-	return json.Marshal(spec)
+	attachDisplayData := func(target *ui.Spec) {
+		for _, c := range target.Components {
+			if c.ActionManaged && c.WidgetRef != "" && c.ActionView != nil {
+				if target.ActionViews == nil {
+					target.ActionViews = map[string]contract.ActionView{}
+				}
+				target.ActionViews[c.WidgetRef] = *c.ActionView
+			}
+			if c.MeetingManaged && c.FormID != "" && c.MeetingView != nil {
+				if target.MeetingViews == nil {
+					target.MeetingViews = map[string]contract.MeetingView{}
+				}
+				target.MeetingViews[c.FormID] = *c.MeetingView
+			}
+		}
+	}
+	attachDisplayData(&spec)
+	for i := range bubbles {
+		attachDisplayData(&bubbles[i])
+	}
+	return json.Marshal(struct {
+		ui.Spec
+		Bubbles      []ui.Spec              `json:"bubbles,omitempty"`
+		FormDisplays map[string]ui.FormView `json:"form_displays,omitempty"`
+	}{spec, bubbles, formDisplays})
 }
 func (a *App) ServeWeb(ctx context.Context, listener net.Listener, cfg web.Config) error {
-	s := web.Server{Apps: a.connectedApps, Workers: a.store.Inspector(), Computer: a, Capabilities: a.capabilitySettings, Config: cfg, Core: a, Tasks: a.store.TaskReader(), Feedbacks: a, Schedules: a, Inspector: a.store.Inspector(), Memory: a, Contexts: a.store.Inspector(), Traces: a.store.Inspector(), Models: a.Models(), Control: a.control, Accounts: a.accounts, Secrets: a.control.Secrets, AccountCatalog: a.AccountCatalog}
+	s := web.Server{Apps: a.connectedApps, Logos: a.readAppsLogos, Interface: a.readAppsInterface, Workers: a.store.Inspector(), Computer: a, Capabilities: a.capabilitySettings, CapabilityForms: a.readCapabilityForm, Config: cfg, Core: a, Tasks: a.store.TaskReader(), Feedbacks: a, Schedules: a, Inspector: a.store.Inspector(), Memory: a, Contexts: a.store.Inspector(), Traces: a.store.Inspector(), Models: a.Models(), Control: a.control, Accounts: a.accounts, Secrets: a.control.Secrets, AccountCatalog: a.AccountCatalog, ModelMenu: a.readModelMenu, ModelPicker: a.readModelPicker, WebWorkbench: a.readWebWorkbench, ModelSettings: a.readModelSettings, ModelConnectionPolicy: a.readModelConnection}
 	if a.feishu != nil {
-		s.Callback = feishu.Handler{Client: *a.feishu, Core: a, Wake: func() {
+		s.Callback = feishu.Handler{Client: *a.feishu, Core: a, ProjectCard: a.readFeishuCard, Wake: func() {
 			if s.Wake != nil {
 				s.Wake()
 			}
@@ -138,7 +170,7 @@ func (a *App) deliverChannels(ctx context.Context) error {
 			if a.feishu == nil {
 				continue
 			}
-			adapter = feishu.Adapter{Client: *a.feishu, Store: a.store, Artifacts: a}
+			adapter = feishu.Adapter{Client: *a.feishu, Store: a.store, Artifacts: a, ProjectCard: a.readFeishuCard}
 		}
 		if err := (delivery.Service{Store: a.store.Deliveries(), History: a.history, Adapter: adapter, Channel: b.Channel, Destination: b.Destination, Policy: a.deliveryPolicy, Boundary: a.testBoundary}).Drain(ctx); err != nil {
 			return err

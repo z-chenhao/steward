@@ -1,0 +1,77 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.apps-accounts",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-071"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 10000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.apps-connect-intent/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "alias": {
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "count",
+          "alias"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "new",
+              "pending",
+              "alias_required",
+              "conflict"
+            ]
+          },
+          "alias": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "row": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ]
+}

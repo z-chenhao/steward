@@ -27,7 +27,10 @@ def readback(h):
         'state': {'events': 'SELECT * FROM memory_mutation ORDER BY sequence',
                   'privacy': 'SELECT * FROM memory_privacy',
                   'compaction': 'SELECT * FROM context_compaction ORDER BY created_at',
-                  'candidates': 'SELECT * FROM skill_candidate ORDER BY created_at'},
+                  'candidates': 'SELECT * FROM skill_candidate ORDER BY created_at',
+                  'curator_bindings': 'SELECT event_id,managed,graph_revision FROM memory_policy_binding ORDER BY event_id',
+                  'experience_bindings': 'SELECT * FROM experience_policy_binding ORDER BY candidate_id',
+                  'private_generations': "SELECT generation_id,event_id,status,request_sealed LIKE 'sealed:v1:%' AS encrypted FROM memory_generation ORDER BY created_at"},
         'memory': {'records': 'SELECT * FROM memory_record ORDER BY created_at,memory_id',
                    'evidence': 'SELECT * FROM memory_evidence ORDER BY source_type,source_ref',
                    'receipts': 'SELECT * FROM memory_receipt ORDER BY event_id'},
@@ -91,6 +94,22 @@ def run(binary, failure_evidence=None):
                           '  model: semantic-fixture-v1\n  dimensions: 5\n')
             # Doctor: same activated profile, explicit local Fakes, no online account.
             require(h.command('status')['agent_ingress_enabled'], 'doctor: no selected model')
+            package=binary.parent/'plugins/memory-curator'
+            require((package/'steward.plugin.json').is_file(),'distributed memory curator missing; run make build')
+            installed=h.command('plugin','install',str(package))
+            learned=h.command('plugin','install',str(binary.parent/'plugins/experience-learning'))
+            graph=h.command('plugin','prepare',text=json.dumps(dict(protocol='steward-rsi-plugins/0.1',bindings=[dict(instance_id='memory-curator',package_digest=installed['digest'],config={},state_namespace='memory-curator',state_version=1),dict(instance_id='experience-learning',package_digest=learned['digest'],config={},state_namespace='experience-learning',state_version=1)])))
+            policy=json.loads((Path(__file__).resolve().parents[1]/'fixtures/plugins/memory-curator-policy.json').read_text())
+            experience_policy=json.loads((Path(__file__).resolve().parents[1]/'fixtures/plugins/experience-learning-policy.json').read_text())
+            policy['allowed_contracts']+=experience_policy['allowed_contracts']
+            policy['cases']+=experience_policy['cases']
+            h.command('plugin','policy',text=json.dumps(policy))
+            h.command('plugin','propose',text=json.dumps(dict(candidate_id='curator-system',baseline='',target=graph['revision'],policy_id=policy['id'],goal='Version automatic extraction and Dreaming without exposing private source data to the method package')))
+            decision=h.command('plugin','verify','curator-system')
+            h.command('plugin','activate',text=json.dumps(dict(operation_id='curator-system',expected_graph_revision='',target_graph_revision=graph['revision'],decision_ref=decision['decision_ref'])))
+            report['managed_curator']=dict(graph_revision=graph['revision'],contract='steward.memory-curation-policy/1',source_inputs=False)
+            report['managed_experience']=dict(graph_revision=graph['revision'],contract='steward.experience-policy/1',source_inputs=False)
+
             scenarios = [('health', 'My health report: I have a diagnosed kidney stone condition'),
                          ('goals', 'I might explore independent development, but have not decided'),
                          ('learning', 'I am practicing English for travel')]
@@ -100,6 +119,9 @@ def run(binary, failure_evidence=None):
                 h.command('chat', 'work')
                 work(h)
                 snapshot = readback(h)
+                managed={row['event_id']:row for row in snapshot['state']['curator_bindings'] if row['managed']}
+                private=snapshot['state']['private_generations']
+                require(private and all(row['event_id'] in managed and managed[row['event_id']]['graph_revision']==graph['revision'] and row['encrypted'] for row in private), name+': private work bypassed pinned method package or encryption')
                 records = snapshot['memory']['records']
                 require(records and records[-1]['tier'] == 'recall', name + ': noisy report promoted to Core')
                 deliveries = len(h.command('delivery', 'list'))
@@ -356,6 +378,8 @@ def run(binary, failure_evidence=None):
                                 procedure='1. Read AGENTS.md and reproduce the missing CLI flag.\n2. Add the flag using the existing parser.\n3. Run go test -race ./... and inspect compatibility tests.',
                                 reason='success', source_refs=['run:' + inv['run_id'] for inv in tests])
                 candidate = h.command('skill', 'manage', text=json.dumps(proposal))
+                bound=next(row for row in readback(h)['state']['experience_bindings'] if row['candidate_id']==candidate['candidate_ref'].removeprefix('experience:'))
+                require(bound['managed'] and bound['graph_revision']==graph['revision'] and bound['required_runs']==2 and bound['introduction']=='' and bound['original_procedure']==proposal['procedure'], 'Reviewer bypassed frozen independent recipe or lost original proposal')
                 request = dict(candidate_ref=candidate['candidate_ref'], version=candidate['version'])
                 denied = h.command('skill', 'manage', text=json.dumps(dict(request, operation='promote')), ok=False)
                 require(denied.returncode != 0, 'unverified experience promoted')

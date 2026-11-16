@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {chromium} from './node_modules/playwright-core/index.mjs';
+const[url,out]=process.argv.slice(2);await mkdir(out,{recursive:true});
+const browser=await chromium.launch({headless:true,...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});let page;
+try{
+ const context=await browser.newContext({viewport:{width:1400,height:900},reducedMotion:'reduce'});await context.request.post(url+'/session',{form:{token:'private-token-at-least-24-bytes'},maxRedirects:0});page=await context.newPage();page.setDefaultTimeout(12000);const requests=[];page.on('request',request=>requests.push(request.url()));await page.goto(url+'/fixture');
+ const form=page.locator('#root .native-input-form');await form.getByRole('textbox',{name:'Notes',exact:true}).waitFor();assert.equal(await form.getByRole('textbox',{name:'Notes',exact:true}).inputValue(),'Original readonly <script>window.formPreviewProbe=1</script>');assert.equal(await form.evaluate(node=>Boolean(node.closest('[inert]'))),true);assert.equal(await form.getByRole('textbox',{name:'Notes',exact:true}).isDisabled(),true);assert.equal(await form.getByRole('checkbox',{name:'Confirm',exact:true}).isDisabled(),true);assert.equal(await page.locator('#root iframe').count(),0);
+ await form.evaluate(node=>{node.requestSubmit();node.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))});await form.getByRole('button',{name:'Send',exact:true}).click({force:true});assert.equal(await page.evaluate(()=>window.formPreviewProbe),undefined);
+ const checks=[];for(const width of[1400,390])for(const theme of['light','dark']){
+  await page.setViewportSize({width,height:900});await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await page.locator('body').evaluate(()=>document.fonts.ready);
+  const style=await form.locator('h3').evaluate(node=>({size:getComputedStyle(node).fontSize,font:getComputedStyle(node).fontFamily}));assert.equal(style.size,'14px');assert.ok(style.font.includes('Inter'));await page.locator('#root').screenshot({path:out+'/preview-'+width+'-'+theme+'.png'});checks.push({width,theme,style});
+ }
+ await page.evaluate(async()=>preview.receive(await(await fetch('/fixture-update')).json()));await form.getByText('Updated form',{exact:true}).waitFor();assert.equal(await form.getByRole('textbox',{name:'Notes',exact:true}).inputValue(),'Updated readonly');assert.equal(await form.getByRole('checkbox',{name:'Confirm',exact:true}).isChecked(),true);
+ await page.evaluate(async()=>preview.receive(await(await fetch('/fixture-missing')).json()));assert.equal(await page.locator('#root form').count(),0,'missing managed display never takes legacy preview');
+ await page.evaluate(async()=>preview.receive(await(await fetch('/fixture-discard')).json()));assert.equal(await page.locator('#root').innerHTML(),'');assert.equal(requests.some(value=>value.includes('/api/ui/')||value.includes('/ui/form')),false,'static preview acquires no state, display-read or ingress grant');
+ await writeFile(out+'/report.json',JSON.stringify({scope:'Actual preview lifecycle/React/static controls with accepted view fixture; not full App preview preparation',staticDataOnly:true,inertAndDisabled:true,syntheticSubmitHasNoIngress:true,noStateOrReadRequests:true,revisionReplacesOriginalValues:true,missingManagedNeverUsesNative:true,discardRemovesDisplay:true,checks},null,2));await context.close();
+}catch(error){if(page){await page.screenshot({path:out+'/failure.png'});await writeFile(out+'/failure.txt',await page.locator('body').innerText())}throw error}finally{await browser.close()}

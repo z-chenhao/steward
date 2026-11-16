@@ -593,3 +593,329 @@ standard Tool errors, without raw paths, SSH diagnostics or credentials.
 私有 operator 预览读取现有 ready instance，不调用 Ensure/Restore 或发送输入。macosvm 使用 get_desktop_state 与独立 steward-web-preview Driver session，关闭 accessibility tree；不接触模型持有的 handles、AX revision、截图 revision 或持久化 UseState。Host 读取实例，截帧，再复核 ready phase/ComputerID/epoch/native identity；发生切换或取消就丢弃该帧。并发预览串行且有请求期限；不在网络操作期间持有数据库事务。仅通过已认证 Web 连接返回 PNG，private/no-store，不写 Artifact 或新增回放事实。
 
 操作进度仅从配置 Agent 的已提交 Computer discover/bind/invoke 元数据取最近20条，保留机器状态和时间，不返回参数、结果、句柄或凭据。执行记录由只读 Inspector 查询，预览本身不伪装为 Agent 操作。此机制不建立新的 Computer 生命周期，也不稳定多用户直播或远程输入协议。
+
+
+## 版本化观察方法（私有实验接入）
+
+真实消费者是 Root／Child 的 Code Mode 私有 Computer bridge，仍经原 ToolExecutor 的 discover／bind／invoke。`computer-use` 的 `steward.computer-observation/1` 独立计算 AX 全量／增量窗口，Host 从原始快照重建完整结果；候选只收到授权的前后 AX 文本及 diff/full 条件，不收到 Native ID、handle、revision、element token、截图、凭据或任意 Driver。默认算法与原连续行差分相同，独立版本可改用 full 或包含更多上下文的完整替换，不能藏起真实变化或编写观察正文。
+
+```mermaid
+sequenceDiagram
+    participant C as 原 Code Mode / ToolExecutor
+    participant H as Host / Guardian
+    participant D as 同一 Computer Driver
+    participant P as 冻结版本观察插件
+    C->>H: 原已接纳调用 / Run 与 Code claim
+    H->>H: 冻结图与迁移边界；检查后才 Ensure
+    H->>D: 原 Surface 的 AX / 截图观察
+    D-->>H: 原始文本 / 元素 / 图像 / geometry
+    H->>P: 授权前后文本 + full/diff 条件
+    P-->>H: full 或连续替换行窗口
+    H->>H: 独立证明替换后等于原始新快照
+    H->>H: 重检 lease / Forget / stop / quarantine
+    H-->>C: 原观察回执 + Artifact 原子接纳后引用可用
+```
+
+句柄与 revision 签发、元素／截图新鲜度、完整原文、Computer epoch／ExecutionID lease、具体动作审批、原动作参数、never/unknown、Artifact 授权及 checkpoint/disposal 是领域必要机制，仍由 Host 强制。差分算法属于可变表达政策，已从受管路径移出；不以安全为名要求候选采用默认最小差分。闭合的行窗口结构与原文重建是必要完整性校验，不暴露内部 UseState／Driver，也不引入通用动作计划或数据库端口。
+
+原始 AX 每份不超过 128 KiB；前后文本封装为一个有界只读输入，经过现有分块通道处理 JSON 转义后的大数据，不为了两个文本新增 SDK 多输入机制。纯调用没有第二份 RSI effect ledger，不持有 writer；版本由原 Run 的不可变图固定，正式观察正文和 Artifact 仍随原 Tool 回执保存。原 revision 只在同一事务成功提交后生效；返回或 Artifact 提交前撤权，不能获得新证据或可操作引用。Guardian 禁止新的业务分派，不禁止原 Host 的可信资源收尾。
+
+兼容入口仅为 `UseRuntime.projectObservation` 的 nil 方法分支和 `legacyLineDiff`：消费者是未冻结该受管服务的历史 Run，以及明确无分发包的嵌入式载体。激活后缺包／停用不能回退；历史原 Tool／Artifact 回执不重新解释。待这些保留执行与明确兼容载体均无依赖，且兼容迁移与引用清点完成后删除该分支和旧算法；不保留第二套受管默认算法。
+
+观察、等待与说明资源属于默认 Computer 包的业务服务；下面的选区、匹配、参数及展示服务共同版本化。公开稳定化、任意 IO、候选签发权限和通用 effect executor 不在此边界内；真实 GUI／Lume 兼容须由平台 Live 验证。
+
+
+### 等待配方与实际 deadline
+
+`steward.computer-wait-recipe/1` 仅接收 Host 数值边界：默认等待不超过 10 秒，轮询间隔为 100–1000 ms。默认包返回 1000／100 ms，独立版本可更改默认时限及更慢的观察频率。Host 在 waitForChange 原调用进入 Ensure／执行前取得并校验配方，不在实际等待 deadline 内启动插件；插件不收到用户时限、revision、Surface 或 AX 文本。显式用户 timeoutMs 仍由 Host 在原 1–10000 ms 范围内直接决定实际 deadline，候选的默认值不能覆盖它。
+
+原固定循环继续使用同一 Driver／baseline，维持 sinceRevision 校验、原上下文取消、超时后的有界观察摘要及成功后原引用提交。每次读取与提交仍受原 Run／Code／Computer lease 和 Guardian 约束；数值配方无需获取 Computer 内容权限。只保留未冻结该服务 Run 的原 1000／100 ms native 默认分支，受管路径不先计算一套 native 配方再覆盖。该兼容分支与 legacyLineDiff 使用相同的保留／清理条件。
+
+拒绝把用户 deadline 的裁定交给候选，也不为纯等待增加第二份 effect ledger、通用调度器或超时配置语言。默认配方和轮询是业务变化轴，deadline、取消、原始事实和引用有效性是必要机制。
+
+
+### 说明资源与提交授权
+
+实际消费者是 Surface 的 documentation() 与 browser capability 的 documentation()；它们继续返回原 Tool 字符串，不改变 CUA 方法语法或授予权限。私有 `steward.computer-documentation/1` 只接收 core/browser 枚举，返回至多 16 KiB UTF-8 文本；默认资源位于功能包，候选可以独立修订说明，但不能据此声明新的 Driver、权限、重放方式或方法。Owner 的独立静态样例验证当前说明，版本切换不重写已冻结 Run 或旧 Tool 回执。
+
+```mermaid
+flowchart LR
+    A[原 Surface / Browser 文档请求] --> H[Host 检查 Run / Code / Computer lease]
+    H --> P[冻结版本的说明资源]
+    P --> B[Host 字节限额与 UTF-8 校验]
+    B --> C[原 Tool 事务再次检查撤权]
+    C --> R[原字符串回执；不更新观察状态]
+```
+
+说明修订属于可变业务；读取与提交授权是必要机制。内部 DocumentationReceipt 只携带原 lease／instance，在原事务中重检 Forget、Guardian 和 Computer 归属，不进入候选协议或模型消息、不建立另一份 effect ledger、不改变 AX／截图引用。不能仅在 RPC 返回前检查授权；Stop 或 Forget 发生在返回与 Tool commit 之间时仍须拒绝。
+
+旧默认导出已移除，`documentation_legacy.go` 仅保留 facade-v1 原文本；唯一消费者是明确未冻结说明服务的 Run／未打包载体分支。受管路径没有 native 回退。删除条件是这些保留执行和明确载体均无依赖且完成快照迁移；这份保留不是第二套新业务默认。未开放文件挂载、任意文档路径、UseState／Driver 或通用资源加载器；后续资源贡献仍由 F-070 单独完成。
+
+
+### 原生选区算法与固定输入原语
+
+实际消费者是原 `Surface.selectText(ref, text)` 的 macOS AX 文本字段／文本区路径。私有 `steward.computer-text-selection/1` 独立选择光标算法：输入只有原授权值的前 256 个 ASCII 字节、完整长度和批准的原文片段，输出 start/end 锚点、至多 256 步的带符号移动及选区扩展；不接收 Native ID、窗口、元素 token、revision、数据库或任意键盘／Driver 接口。浏览器路径和其他输入方法仍按各自原入口处理，不据此宣称全部动作已迁移。
+
+```mermaid
+sequenceDiagram
+    participant A as 原 selectText 审批
+    participant H as Host / Guardian
+    participant P as 冻结版本选区算法
+    participant D as 固定原生输入解释器
+    A->>H: 原参数 / handle / AX revision 已冻结
+    H->>H: 校验当前元素、ASCII 与原文定位
+    H->>P: 可选择前缀 + 总长度 + 原文片段
+    P-->>H: 起终锚点 / 有界移动 / 扩展
+    H->>H: 符号执行并证明原来的确切选区
+    H->>H: 重检执行权 / Guardian，再使旧引用失效
+    H->>D: 仅同一目标的合法封闭方案
+    D-->>A: 原 Tool 回执；不确定效果不重放
+```
+
+新增服务的包版本为 `1.0.1`，不覆盖先前 `1.0.0` 的不可变包；旧三服务组合的 Run 保持原 native 选区边界。默认算法维持从开头向右定位，独立实现可以从结尾向左定位或反向扩展。Host 依据完整原值复核最终选区的位置和字节，不能仅比较选中文本相等；重叠匹配仍保持原 first occurrence 语义。完整文本可以很长，只传可选择前缀，不以新插件输入限额缩小原动作支持范围。ASCII、无 CR、文本角色、唯一的非重叠计数、选择终点在前 256 字节及 256 步输入预算均保持原契约。
+
+原抽象动作在审批前已固定；此处只允许 Host 能独立证明满足同一原文选区的实现变化，不允许换目标、注入文本、任意快捷键或替换批准动作。固定解释器仅产生 Cmd-Up/Down、Left/Right、Shift-Left/Right，并在每次输入前通过进程内 `SelectionDispatch.BeforeInput` 重检原 Computer／Code／Run lease 和 Guardian；该函数由 Host 提供，不进入候选、磁盘或 RPC。任一原语不确定后停止；若已有输入，后续 Host 检查发生暂时基础设施故障也保留 unknown，并携带原 cause，不能降为普通可重试错误。当前确切撤权仍由最终 fence／watcher 优先裁定。沿原 never/unknown Tool 规则处理。符号校验不是任意应用的实际 GUI 成功证明；原回执继续为 unverifiable，真实 Driver／应用行为仍需对应平台验收。默认算法没有据此更改为未经实际 GUI 验证的新版策略。
+
+必要机制是精确批准意图、原文／范围／预算、身份／新鲜度、撤权及效果恢复；定位和扩展算法属于可变业务。接口保持领域私有实验级，未增设通用动作计划、任意 IO 或 SDK 重试机制。拒绝候选直接输出原生键串，也不让候选在审批后扩大动作语义。更一般的动作替换若不能独立证明等价，仍必须先冻结具体计划再批准，不能沿用此处的纯算法入口。
+
+`selection_start`／`selection_length` 中间字段和 Driver 内旧固定步进算法、不可达 `selectText` switch 分支已删除。只有 `UseRuntime.selection` 的显式 native 分支保留 facade-v1 原算法，消费者为未冻结此服务的历史 Run／未打包载体；受管服务缺包／停用不可回退。待这些保留消费者均无依赖并完成引用清点后删除该分支。算法结果无持久副作用或第二份调用账本；已执行原 Tool 的未知效果不会因为纯算法可重算而被重发。
+
+
+## 清单排序与对象匹配（私有实验接入）
+
+实际消费者是 Code Mode `cua.getState/list*` 与 `getApp/getBrowser/getTab` 的原嵌套 Tool。默认保持 Driver 原顺序和原精确名称／URL 匹配；独立版本可以按名称排序或采用大小写不敏感匹配。原返回字段、缺失／歧义结果、windowId 优先级、显式 browser 筛选、原运行版本和已绑定引用均需保留。包从四服务 `1.0.1` 增加到六服务 `1.0.2`，不覆盖历史包。
+
+```mermaid
+flowchart LR
+    A[原 Tool 与冻结 Run] --> H[Host：执行权、Computer 租约]
+    H --> D[Driver：取得一份原始清单]
+    D --> F[Host：原 scope 筛选与匿名位置]
+    F --> P[插件：清单排序／分批匹配]
+    P --> V[Host：完整排列／唯一候选与精确 ID 约束]
+    V --> R[重建原字段／固化原对象句柄]
+    R --> C[同事务复查租约与 Guardian 后提交回执]
+    C --> E[后续动作按原句柄单独审批]
+```
+
+| 领域必需机制：Host 保留 | 当前可替换业务：插件持有 |
+| --- | --- |
+| 原方法到资源种类、selector 字段优先级和显式 browser 范围；Driver 原始身份与 Native 数据 | `steward.computer-inventory-order/1`：依据名称／URL 返回匿名位置的完整排列 |
+| 清单成员、字段和值完整；位置无遗漏、重复、越界；公共输出原 512 KiB 限额 | `steward.computer-target-match/1`：依据原 selector、名称／URL 和 ID 相等事实返回匹配位置 |
+| 原清单精确 ID 不得重定向；重复精确 ID 不得擅选；最终单一匹配、句柄与原对象固化 | 名称匹配算法与清单排序规则；不产生最终对象、令牌或身份 |
+| 原 Run／Code／Computer epoch／lease、隐私与 Guardian，原 Tool 回执事务及原动作审批／unknown 不重放 | 无状态纯计算；没有 Driver、凭据、数据库或效果回调 |
+
+清单排序仅接收原范围内名称／URL，返回后 Host 从原 Target 重建所有公开字段。候选不能通过删行、改名或造 ID 改变事实。对象匹配接收同一快照的批次，每批至多 512 条、通常不超过 512 KiB；长单条仍通过既有有界输入描述符传输，不重新查询可能变化的 Driver。selector 也走该描述符，避免 JSON 转义扩大内联 schema 输入。跨批结果保持原位置，两个匹配仍为歧义，不接受任意首条；一旦已歧义无需继续释放剩余标签。
+
+原 Driver 可返回 12 MiB 清单，而纯服务输入上限为 8 MiB；不能简单拒绝大清单或只取前页。每条名称／URL 只披露至多 `max(256, 4 × selector 字节数)` 的 UTF-8 完整前缀，并携带 complete 标记。原精确匹配和 Unicode EqualFold 所需的完整字符串均在这个范围内；超长无关标签不匹配其截断前缀。此限制是当前窄数据契约，不是可配置匹配语言；需要其他全文政策时，必须另行证明必要的披露与无损兼容，不预置通用查询接口。
+
+名称选择属于绑定前业务政策；后续审批面对已经固化的原对象。已知精确 ID 则属于身份约束：Host 仅传 IDMatch 布尔值，最终结果不得指向另一 ID，即使候选通过所有者机械验收。Native ID、PID、窗口内部标识、handle、lease 与 epoch 不交给插件；公共 selector 的原字节保持不变。`TargetReceipt` 是不序列化的进程内完成凭据；清单披露与新绑定提交时再次核对原执行和 ready 实例，新绑定还须存在于原持久状态，迟到 Forget／Stop／Quarantine 或 Idle 均拒绝接纳。createBrowserTab 仍使用原精确动作审批；效果发生后丢失接纳权，原 never-replay 账本保留 unknown，不能再次创建。
+
+已删除受管路径内原匹配循环及无语义 inventory 代理。`targets_legacy.go:nativeTargetMatchV1` 仅服务未冻结这两项服务的历史 Run（包括旧三／四服务包）与明确无分发包载体；排序 nil 分支仅保留原 Driver 顺序。待保留执行与明确兼容载体均无依赖、引用清点完成后删除这些入口。缺包／停用／方法失败不得进入它们。原参数规范化留在 Host，因为它解释已经发布的 CUA 协议与资源范围；不在 Host 保留第二套名称策略。
+
+接口维持仓库内部实验级，不公开 Target／UseState／Driver，不新增通用动作 DSL、插件签发身份或任意过滤器；这些属于未获实际需求支持的复杂度。拒绝把名称匹配完全固定在 Host（无法独立迭代）、让候选返回最终 ref（可伪造事实）、全量上传 Native 清单（扩大权限）及将已有绑定重新按名称解析（改变后续批准对象）。其余参数与展示政策由下面的同包服务持有；固定生命周期与身份边界见本文默认组合说明。
+
+
+## 审批前固化动作参数（私有实验接入）
+
+真实消费者是原 `launchApp`、`createBrowserTab` 与普通 Surface 的 click／scroll／drag、值／选区／次级动作、文字／粘贴／按键及 Tab 导航。插件持有参数解析、非安全性参数诊断和缺省点击／滚动选项；Host 保留原已接纳请求中的显式值、资源身份、引用有效性、边界、审批和原效果账本。默认包保持旧参数含义；独立版本可以改变省略的滚动距离等政策，不能替换调用者显式提供的文字、URL、应用／浏览器身份或数值。
+
+```mermaid
+sequenceDiagram
+    participant T as 原 ToolExecutor
+    participant H as Host
+    participant P as 冻结版本插件
+    participant A as 所有者审批
+    participant D as 固定 Driver
+    T->>H: 已接纳请求，尚未 Start
+    H->>P: 受限原参数；去掉句柄／元素／revision／坐标
+    P-->>H: 封闭、强类型动作参数
+    H->>H: 复核显式意图与边界，原子保存完整计划
+    H->>A: 原请求／原 hash ＋ 已固化选项
+    A-->>T: 原审批接口，允许或拒绝
+    T->>H: 执行相同调用
+    H->>H: 读取原完整计划；复查租约／Guardian／原引用
+    H->>D: 原目标、批准参数、固定输入原语
+    D-->>T: 原 Tool 回执或 unknown
+```
+
+`steward.computer-action-parameters/1` 是同一 Computer 包的第七项私有服务，自 `1.0.3` 提供。输入仅为真实方法、native／tab 类型和有界参数描述符；Host 隐去参数槽中的资源引用与坐标，不发送 Native 数据、句柄或数据库。输出是封闭的 `ActionParameters`：仅当前真实操作需要的字符串、点击次数／按键、方向／距离及已知失败码；没有任意 method、目标、命令或效果回调。点击次数限定 1／2、方向限定四向、距离在原 0–10000 范围内且非零；原文字长度、显式值和多余输出字段在 Host 复核。此复杂度属于现有公开 facade、精确授权与无损兼容所需；不泛化动作语言或任意参数映射。
+
+[schema65](../../internal/agent/sqlite/migrations/065_computer_action_plan.sql) 只保存完整选择：原 invocation／request hash、原冻结 graph、方法／surface、参数 hash 与正文。纯计算中断不创建 pending 效果记录；保存失败可重新计算并原子接纳。并发准备只允许第一个完整计划胜出，审批前后都不能替换或复活计划。之后执行仅读取原计划，不再调用该参数服务；即使实现再次运行会给出不同默认值，也不能改变本次批准内容。未开始的审批仍使用原身份、hash、期限和决定 API，已开始动作仍按原 ToolInvocation 恢复为 unknown，不能因参数可重算而重发。
+
+审批控制投影增加可选 `action_parameters` JSON 字符串，原 arguments 与 frozen hash 保持不变。Web 沿原字段布局展示解析后的点击／滚动选项；CLI 返回完整已固化正文，终端／飞书的原审批通知补充短选项，不重复追加完整文字／URL。显示选项来自同一不可变计划；不增加第二套批准动作、执行按钮或私有内部版本信息。手机表单按钮沿共享尺寸规则达到 44px，无脚本使用原表单。Forget 单向清空计划正文，保留 hash 和关联身份用于审计；不重写历史模型请求、旧审批或已发生效果。
+
+原生 pressKey 的 `+` 拆分也归插件：计划中的 `KeyRecipe` 必须无损拼回原批准字符串，各片段不得夹带另一分隔符，保留旧空片段等原支持范围。Host 传入不序列化的 `KeyDispatch`，固定 Driver 只能向原窗口／session 发送一个 press_key 或 hotkey，发送前再次检查执行权；结果不确定沿原 unknown 不重放。插件不能签发执行回调或任意原语，Tab 的原键名字符串仍按原浏览器协议使用。
+
+已移除受管 UseRuntime 内的旧参数解析分支和 native Driver 内的键名拆分分支。`action_parameters_legacy.go:nativeActionParametersV1` 仅服务未冻结新参数契约的历史 Run（包括三／四／六服务包）与明确未分发载体；它保留原 facade-v1 含义，待这些执行／载体均无依赖、引用清点完成后删除。新 Run 已采用服务后，停用、缺包或计算失败不得回退；历史已经开始的动作只走原账本，不为恢复重新生成计划。迁移不回填新服务、不重写旧请求／审批，也不把一条参数服务计为完整 Computer 迁移。
+
+开放范围仍为仓库内部实验接口；公共控制投影只暴露所有者作决定所需的原请求及解析选项。拒绝把 SDK `Call` 的 pending 行当准备锁、在批准后重算默认值、把资源引用交给参数方法、用任意 map／脚本驱动 Driver，以及静默丢弃旧执行。传输／浏览器政策属于下面的同包服务；Child 与恢复仍使用原图。真实 GUI／Lume／Linux 证明不由受控 peer 代替。
+
+
+### Playwright 参数的私有实验接入
+
+实际消费者是既有 `Playwright.locator` 的 count／textContent／click／fill／waitFor／download／upload 与 waitForURL，经同一 Code Mode／ToolExecutor 调用。`steward.computer-playwright-parameters/1` 自 `1.0.4` 提供，包含在当前默认 `1.0.7` 包中，不替换历史七服务包。它沿用审批前完整 Computer 计划：只计算公开 CSS 选择器、原填充值／URL 和超时。Host 按真实方法投影一个有界描述符，排除文件／Artifact 引用、路径、句柄、tabId、element token、坐标与导航身份；没有新增 schema、效果账本或 SDK 权限。
+
+```mermaid
+sequenceDiagram
+    participant T as 原 ToolExecutor
+    participant H as Host
+    participant P as 冻结参数插件
+    participant D as 固定浏览器 Driver
+    T->>H: 原 Playwright 参数
+    H->>P: 方法与必要的原业务字段
+    P-->>H: 封闭参数与缺省超时
+    H->>H: 证明显式意图未改；原子固化完整计划
+    H-->>T: 写动作沿原审批；读动作沿原接纳
+    T->>H: 原调用执行或审批恢复
+    H->>H: 只读原计划；重检能力页面与文件授权
+    H->>D: 原页面、原导航、原字段与批准超时
+    D-->>T: 原回执或 unknown
+```
+
+缺省超时 3000ms 属于可替换政策；独立版本可在 1–10000ms 内更改。显式 timeoutMs、选择器、填充值与 URL 必须逐值保留，不能借缺省适配重写原输入。Host 只接纳当前方法需要的封闭字段与整数边界，真实 CSS-only／URL 许可、原文档与节点身份、导航新鲜度、FileChooser 的原文件授权、原审批与 never／unknown 效果恢复是领域必要机制，仍在固定 Host／Driver。新增未知字段不会进入 Driver；业务方法不能指定目标、任意浏览器原语或传输路径。每个读动作也先固化，重试不能悄悄改动同一次等待预算。
+
+UseRuntime 受管路径已移除原参数 map 透传，改为从原计划组装封闭字段，上传的文件注册仍从原请求单独校验。原透传只在未冻结此服务的历史 Run（包含实际 `1.0.3` 七服务包）和明确未打包载体的具名注释边界保留，待这些执行／载体清点无依赖后删除；它不是受管失败回退。固定浏览器程序的 3000ms 缺省只为历史及直接 Driver 消费者保留，受管调用始终传入原固化超时。Stop／Quarantine／Forget、完整计划失败接纳及隐私擦除复用原机制；审批页及原渠道通知显示同一固化超时，保持原 hash 和表单。
+
+接口仍为仓库内 private／experimental，只开放实际变动轴；没有稳定公开内部 Capture／UseState、通用 options 容器、DOM 脚本、任意 RPC 或浏览器工作流 DSL。拒绝把选择器解析／目标资源权交给候选，也不在批准后再次计算。该服务仅负责 Playwright capability 的参数适配；其他同包服务及固定资源的边界须分别验证。
+
+
+### 文件导出展示的私有实验接入
+
+实际消费者是原 `cua.files.exportArtifact`，沿原 discover bridge／ToolExecutor／Artifact staging 返回文件。`steward.computer-transfer-presentation/1` 自 `1.0.5` 提供，属于当前默认 `1.0.7` 包的十一项服务之一。没有新增 schema 或效果账本。
+
+```mermaid
+sequenceDiagram
+    participant T as 原导出调用
+    participant H as Host
+    participant P as 冻结展示插件
+    participant A as 原文件与 Artifact staging
+    T->>H: 路径与可选名称／媒体类型
+    H->>P: 仅显式名称／媒体类型
+    P-->>H: 展示字段或沿用源名称
+    H->>H: 复核显式意图与 Artifact 约束
+    H->>H: 从原路径解析源名称；固化完整计划
+    H-->>T: 原 hash 审批展示具体名称／媒体类型
+    T->>H: 批准后同一调用或真实 claim 恢复
+    H->>H: 原文件授权、计划与租约复核
+    H->>A: 原路径读取；原字节与批准元数据原子提交
+    A-->>T: 原 Artifact 回执或 unknown
+```
+
+可变业务仅为缺省名称与媒体类型：默认包要求沿用源名称并返回 application/octet-stream，独立版本可为缺省名选择另一个合法字面量。显式字符串必须逐值保留。候选不接收路径、路径 basename、ArtifactRef、Computer／文件授权、原始字节或 IO 回调；`name_from_source` 只要求 Host 从原路径派生展示名称，不能签发或替换文件。Host 在原 schema65 完整计划事务前解析具体名称，所以审批与执行看到同一完整值；执行不再调用方法重算。
+
+名称／媒体类型默认值是实际业务政策。原文件注册、跨 Run／Task 作用域、import 的新路径身份分配、overwrite 成员关系、路径规范化、字节限额、原审批／never／unknown、Artifact 原子发布和撤权是领域必要机制。Artifact 元数据合法性只由所属 `artifact.Input.Validate` 维护，staging 与计划接纳共用它；原显式非法输入仍保留原字符串，在原 staging 验证中拒绝，插件不能把非法默认值说成可信输出。它是内部的实际双消费者验证方法，不是公开的通用 schema／文件系统能力。
+
+受管 UseRuntime 已移除原名称／MIME fallback；只保留给真实旧八服务及更早 Run、明确未打包载体的注释兼容边界，待这些执行／引用清点无依赖后删除。原 Artifact SQLite 私有重复校验函数已移除，调用者改用所属域的同一校验器。失活／缺包／方法错误不会恢复 native 展示。Owner 机械验收即使认可 `../escape` 这类候选默认名，Host 也会在审批／IO 前拒绝。默认名称变化不改原文件路径或字节，批准一次导出不能取得另一 Run 的文件授权。
+
+接口为仓库内 private／experimental；只对现有导出展示开放，不给候选命名磁盘对象、选择 MIME sniffing 算法、修改 ArtifactRefs／存储、自动上传或改动恢复 intent。拒绝让插件读取 basename 来间接传递文件资源 token，也拒绝用第二个 pending 调用记录充当准备锁。UI 沿原审批字段展示已固化的 Name／Media type，CLI／原渠道通知保留原 hash。固定资源指纹和恢复 intent 由 Host 强制；Child 与旧引用保留原组合。
+
+### 浏览器上传展示与固定资源（私有实验接入）
+
+实际消费者是既有 Root／Child Code Mode 的 `pw.locator(selector).upload(file)`。自 `1.0.6` 提供的第十项 `steward.computer-browser-upload/1` 决定上传文件的缺省显示名称／MIME、原选择器与超时；上传 API 仍只有原 `file`，没有增加路径、驱动或脚本参数。当前 `1.0.7` 十一服务包随标准十九包组合分发。
+
+```mermaid
+sequenceDiagram
+    participant R as 原 Run／Code 调用
+    participant H as Host
+    participant P as 冻结的上传方法
+    participant A as 原审批
+    participant D as 固定 FileChooser 原语
+    R->>H: 原 capability、文件授权、选择器
+    H->>H: 校验原图绑定的固定资源
+    H->>P: 仅选择器／显式超时描述符
+    P-->>H: 源名称标记或文字名、MIME、参数
+    H->>H: 解析原 basename、验证显式意图、固化完整计划
+    H->>A: 原 hash 与具体名称／MIME
+    A-->>H: 批准原调用
+    H->>H: 复核原文件范围、claim／epoch、导航
+    H->>D: 原文件与已批准参数
+    D-->>H: 原字节输入或原 unknown 终态
+```
+
+| 领域必需机制 | 可替换业务方法 |
+| --- | --- |
+| 原 capability／导航／文件授权、显式选择器及超时、claim／epoch／Guardian | 省略超时的默认值、名称来源或文字名、MIME 默认值 |
+| Host 按原路径解析 basename，完整计划在原审批前一次提交；原 Tool effect／unknown 不重放 | 纯 Go 方法返回封闭参数，无目标、路径、ArtifactRef、字节或原 basename |
+| 单一固定 FileChooser：原文档内 CSS 等待／点击、原授权字节、原输入上限与同文档检查 | 不向候选开放 page.evaluate、任意 Guest RPC、文件系统、上传回调或命名磁盘对象 |
+
+原 `browser.mjs` 的字节参与旧 `UseResourceHash`，不能原地改写其上传分支。新固定 `browser_upload_v1.mjs` 和传输 helper 组成独立资源；私有组合配置 `browser_upload_driver` 固定内容摘要，原 Run 图保留它。消费方只接受 Host 自持的确切资源，配置不能注册程序；丢失或未知摘要在审批／Ensure 前失败。运行时同样从原图取资源，不使用活动图或共享 Provider 的可变选择。现阶段只有一个实际新原语与既有 facade-v1 程序，没有建设通用 Driver registry；未来修改已被执行引用的固定原语时，须保留实际旧版本字节和消费者。
+
+审批前使用原 queued／waiting 接纳及其 request／父调用／claim fence；实际执行仍使用原 running builtin 校验，不能为准备阶段放宽该条件。第十项存在时优先选择它，一次纯服务调用生成完整上传参数，仍复用 schema65 的 Computer 计划，不增加 pending 调用或数据库 schema。执行只读原计划。缺失具体元数据、驱动不可用或方法失败均不能进入原生上传。
+
+固定原语复核 helper 的确切内容摘要和固定 Playwright 版本，保留原相对路径／O_NOFOLLOW、8 MiB 输入、CSS-only 与原文档等待语义。点击完成后原文档消失，不再向新文档交付字节，结果保留 unknown；取消／传输歧义沿原 never 重放规则处理。FileChooser 名称与 Artifact 名称属于不同协议：保留原 512 字节传输路径能表达的名称（包括超过 255 UTF-8 字节的中文名），不套用 Artifact 命名上限。MIME 仍是有界合法媒体类型，名称不能成为路径或命令。
+
+明确旧九服务 `1.0.5` 及更早的保留 Run、旧引用和未打包载体使用原上传程序与默认值；新服务的受管路径已移除该选择。旧程序还提供当前浏览器 inventory、动作与 live selection 的固定原语；历史展示分支在旧执行／引用无依赖后删除，固定原语只能在替代资源和引用迁移均验收后删除。回退兼容的第十项版本保留原 Run；移除已迁移服务会阻止新工作，不能借旧图缺服务静默恢复 native。
+
+本接口与配置仍为仓库内 private／experimental。合成包验收不等于原生资源可用性，消费方的确切资源校验必须独立存在；真实原语与完整 CLI 分别验证，不把受控 SSH peer 当真实 Guest GUI／Lume 证明。未开放公共 Capture／UseState、通用资源 API、任意工作流或自动部署。固定资源、live selection 与默认组合的完整边界见本文末节。
+
+
+## 浏览器观察投影与原文快照：私有实验接入
+
+当前消费者是 Root／Child Code Mode 的 Tab 观察、变化等待和 capability 导航读取。需要让标签来源优先级、正文／值裁剪和展示顺序独立换版，同时保持原文字节含义、元素身份、引用接纳、截图和历史请求。`steward.computer-browser-projection/1` 是第十一项 private／experimental 服务，默认包为 `1.0.7`；Go SDK 权限与 schema65 不变。
+
+```mermaid
+flowchart LR
+  A[原 Run 固定资源] --> B[只读原文档快照]
+  B --> C[Host 保留原文与 DOM 身份]
+  C --> D[仅长度与匿名行事实]
+  D --> E[插件选择来源／长度／顺序]
+  E --> F[Host 原文重建与引用接纳]
+  C --> F
+```
+
+| 所属 | 具体内容 |
+| --- | --- |
+| 插件政策 | aria／innerText／placeholder／role 优先级，各原文前缀长度，完整匿名行排列；默认保持原优先级和原长度。 |
+| Host 必需机制 | 原文档／原 Tab 身份、原 backend node 与 CSS 引用、可见性及既有支持元素范围、密码／隐藏输入排除、截图与导航新鲜度。 |
+| 既有披露／资源边界 | 最多500元素、正文16384／候选标签256／值4096个 UTF-16 单元；可选择更短展示，不在本接口扩大采集范围。 |
+| Host 来源证明 | 每个原索引恰好出现一次，来源字段和前缀必须属于同一原行；不接纳候选文本、索引签发或缺失值伪造。 |
+| 原效果与隐私 | 原租约取消、Forget／Guardian、Tool 回执和 Artifact 原子接纳不变；纯选择不新增 pending／效果账本。 |
+
+固定快照原语返回独立 `source.version=1` 的 UTF-16LE 证据；它不决定标签优先级或实际展示裁剪。Host 只向新服务发送各字段的单元数量，不披露未选中的候选文字、路径、原生标识、token、截图或 IO 回调。得到来源方案后，以原行重建原 `[index] role label = value` 协议；role、value 与操作引用仍属于原采集行，展示重排不重编元素索引。既有 AX full／diff 服务仍只处理已授权展示文本，与原隐私 fence 一起保留。
+
+UTF-16LE 是领域必需的保真，不是通用二进制协议：JavaScript 孤立代理项及截断 emoji 的半个代理项不能经普通 Go JSON string 提前变为替代字符。Host 的字段引用解释器按 JavaScript JSON.stringify 拼写重建引号、控制字符、成对及孤立代理项；正文保持原外层 JSON 解码语义。它不选择第二套标签政策，也不提供通用模板／文本指令语言。
+
+`browser_snapshot_driver` 与原上传资源字段并存于原组合配置，只接受 Host 自持的确切内容摘要。资源对象是调用内的单一 Snapshot 端口，不修改共享 Provider，不从活动图或候选数据加载程序。读取前固定文档，节点引用建立后再次比对同文档有界来源；同文档节点替换须得到新 backend identity，导航／来源变化拒绝旧快照。密码和隐藏输入按实际 input 类型额外排除，不能由 `[role=button]` 选择器绕过；旧已冻结程序保持原字节，不能用原资源摘要原地换实现。
+
+所有实际观察入口共用 `UseRuntime.capture`，受管调用不再直接执行旧浏览器呈现。`Provider.Observe` 的原 facade-v1 浏览器分支仅服务真实十服务 `1.0.6` 及更早的保留 Run、明确未打包载体；旧程序的 inventory／动作／live selection 仍是当前受管服务调用的固定原语。历史展示分支在这些执行／载体无依赖且完成引用清点后删除；当前固定原语只能在替代资源和引用迁移均验收后删除；新服务缺包、资源或来源版本不能进入它。测试中的独立政策候选保留当前其他服务，真实历史包则保留原服务集合，避免通过删除已接纳服务伪装政策升级。
+
+拒绝把原格式字符串解析回 DOM 来源、把未完成的4096字符观察值当完整 live selection 文本、给候选任意 JS／evaluate／RPC、共享可变 Driver 选择或通用资源 registry。当前读取上限和闭合来源字段足够支持实际展示变化，未泛化更大 DOM 采集、内容驱动标签算法或公开稳定 schema。live selection、资源准备与 Child／引用兼容的边界见下节；固定原语的真实 Host Chromium 回归不等于真实 Guest GUI／Lume 兼容证明。
+
+
+## 默认组合与固定信任边界
+
+当前真实消费者是正常启动的 Main、Task Root／Child、原审批恢复与已发布 Computer 引用。`make build`、安装与打包分发十九个独立业务包，包含 `computer-use@1.0.7` 的十一项服务；新安装使用 Host 自持的六十个 Computer 样例与其他包样例验证同一完整组合，再一次性激活。验收样例位于 `internal/rsi/builtin/computer-policy.json`，独立于候选代码；SQL 回归使用同一所有者文件，不维护第二份默认政策。
+
+```mermaid
+flowchart LR
+    S[十九包完整分发] --> H[Host 验证并原子选择]
+    H --> R[Root 固定原图]
+    R --> C[Child 继承原图]
+    R --> P[Computer 十一服务：可变业务]
+    C --> P
+    P --> V[Host 证明来源、显式意图与原审批]
+    V --> D[固定 Driver：原资源与原对象]
+    D --> A[原事务／回执／unknown 不重放]
+    G[Guardian／Forget／lease] --> V
+    G --> A
+```
+
+### 机制与政策的分类
+
+| 必须保持的机制及证据 | 已开放的独立变化轴 | 不增加的推测复杂度 |
+| --- | --- | --- |
+| 原 AX／DOM 事实与 UTF-16 来源证明、原索引／token／导航；真实 Chromium 与来源回归 | full／diff、标签来源、裁剪、行顺序、等待默认值与说明 | 任意 JS、DOM 查询 DSL、内容与 IO 回调 |
+| live selection 在原文档、原节点读取**完整当前值**，证明唯一非重叠目标并调用固定 setSelectionRange；真实浏览器回归覆盖 UTF-16、超过 8 MiB 原值与远处重复 | 原生 AX 选区的有界光标方案；动作参数及按键分解 | 为移动原文证明而新增全文流、通用搜索服务或插件输入上限 |
+| `nativeTarget` 将原 PID 连到唯一原窗口，是身份校验；最终句柄必须来自原清单 | 清单排列与名称／URL 匹配 | 候选签发 Native ID、句柄或目标 |
+| Manager 在原 checkpoint 持久提交后 Destroy，恢复使用原 checkpoint ID 与同一实例 fence；原生命周期回归 | 业务调用组合使用同一可信生命周期 | 让候选决定丢弃检查点或重放 unknown 的生命周期 DSL |
+| Config.Validate 约束固定签名镜像／runtime／Driver tuple；共享准备的两小时存活期独立于单个 Run，凭据归 Host；恢复按原保存 manifest 的顺序执行 | 原图固定 Host 已知上传／快照资源摘要；参数、导出／上传展示政策 | 候选注册任意镜像／签名／endpoint，通用 provisioning registry，重排已保存恢复 intent |
+
+以上固定项分别承担来源证明、精确批准意图、身份、耐久恢复和已验证资源兼容，属于领域必要复杂度；它们并未留下第二套可替换业务默认。现阶段只有一个受信任资源 tuple，没有实际独立 provisioning 消费者，不为每个常量创建服务。未来出现实际资源策略变化时，应先证明需求与兼容，再开放最小接缝；不能由候选绕过已有信任指纹。
+
+### 选择、兼容与清理
+
+Host 只在从未选择且未停机的安装初始化；已有选择、停用和 Guardian stop 均不自动补包、重选或复活。完整分发缺任何必需包时启动失败，不接受部分默认组合或静默 native 兜底。明确无分发目录的嵌入式载体保留具名兼容边界，系统 native 对照使用同一 host 字节的独立未打包副本。已有自定义图需显式按正常验收／激活流程升级，不自动修改所有者政策。
+
+当前受管路径已删除旧业务选择、参数透传和重复默认；`*_legacy.go`、旧说明、旧浏览器展示／上传分支仅服务实际 `1.0.0`–`1.0.6` 历史图及明确未打包载体。删除须先清点保留执行、待审批动作和旧引用；当前仍被调用的固定浏览器原语继续按原内容摘要保留。接口仍为仓库内 private／experimental，默认分发不等于公开稳定 SDK、运行中换版、自动发布或自动自进化。
+
+Child 的实际回归在 Root 冻结后切换新政策并退役原包，再接纳 Child，直接证明其使用原十一服务、原来源与原引用，且不收到 Parent 私有消息。实际恢复回归在 release／wake／claim 后直接执行原 capability，无额外 select／reload 或 SQL 修复。默认 `computer-plugins` 系统门禁通过正常启动组合执行全部十五个 CLI／Node／SSH 场景，并核对十九包与原固定资源；同一 host 的未打包对照保护历史行为。真实 Guest GUI／Lume／Linux 仍须对应平台 Live 验证，受控 peer 不替代该证明。

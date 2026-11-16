@@ -86,3 +86,13 @@ func IncludeIntelligentUI(defs []tool.Definition) ([]tool.Definition, error) {
 	}
 	return out, nil
 }
+
+// IntelligentUISummary validates the reserved built-in name without broadening
+// the user catalog's naming rules. Text comes from the sealed owning package.
+func IntelligentUISummary(raw []byte) (Summary, error) {
+	front, err := parseFrontmatter("intelligent_ui", raw)
+	if err != nil {
+		return Summary{}, err
+	}
+	return Summary{Name: front.Name, Description: front.Description, Version: sum(raw)}, nil
+}

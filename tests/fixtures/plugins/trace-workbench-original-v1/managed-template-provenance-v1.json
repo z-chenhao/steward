@@ -1,0 +1,17 @@
+{
+  "accepted_source": "trace65-page-version-source.json",
+  "source_sha256": "541fd0639d93a17520a54405c719ef3c0cbbbeec6bb088a03dddca4248df8004",
+  "files": [
+    {
+      "original": "internal/interaction/web/templates/traces.html",
+      "sha256": "f5677154fd0dc8680aa738da3ff4c8d93c5343c58be4b8576d8a79b56abae62a",
+      "fixture": "managed-traces.html.txt"
+    },
+    {
+      "original": "internal/interaction/web/templates/observation-detail.html",
+      "sha256": "1405ce822315cdede43c405b0e72d4668f059b4b7d8368276522c05db44713bc",
+      "fixture": "managed-observation-detail.html.txt"
+    }
+  ],
+  "scope": "Exact previously accepted managed templates, captured before template ownership; expectations are not candidate output."
+}

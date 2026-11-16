@@ -33,10 +33,23 @@ func TestFixturePlansExcludeRecallAndAttachmentHints(t *testing.T) {
 func TestChildFixtureReadsOrdinaryArtifactIDs(t *testing.T) {
 	result, err := childrenReply(llm.GenerationRequest{Messages: []llm.Message{
 		{Role: "system", Text: "general Worker executing"},
+		{Role: "user", Origin: "runtime", Text: "Runtime execution_environment: own cwd"},
 		{Role: "user", Text: "Read child artifact\nExplicit artifact IDs: [\"input\"]"},
 	}})
 	if err != nil || len(result.ToolCalls) != 1 || result.ToolCalls[0].Name != artifacttools.Manage || !strings.Contains(result.ToolCalls[0].Arguments, `"artifactRef":"input"`) {
 		t.Fatal("Child fixture did not consume the model-visible artifact ID", result, err)
+	}
+}
+
+func TestWorkerFailureFixtureSupportsCurrentAndFrozenRoles(t *testing.T) {
+	for _, role := range []string{"You are a Root Worker running inside Steward.", "You are a Subagent Worker running inside Steward.", "general Worker executing a delegated Task"} {
+		_, err := tasksReply(llm.GenerationRequest{Messages: []llm.Message{{Role: "system", Text: role}, {Role: "user", Text: "Task anchor: unavailable\nFail worker: report unavailable."}}})
+		if err != llm.ModelNotFound {
+			t.Fatalf("Worker failure was routed as Main: %q: %v", role, err)
+		}
+	}
+	if workerMessage(llm.Message{Role: "user", Text: "You are a Root Worker"}) {
+		t.Fatal("user text changed fixture role")
 	}
 }
 

@@ -22,6 +22,8 @@
 
 **需求**：用户能上传、保存、搜索、下载交付物，引用具有访问边界。
 
+**插件迁移边界**：`artifact-workbench` 的搜索／读取及 Run 内默认产物元数据、回执／保留期已接通真实 Tool；配置请求随 Run 冻结并由 Child 继承，外部效果前固定完整配方。所有者保存、渠道／代码报告、清理选择与不可变附件类型也已接通；无需模型即可执行所有者操作。该功能业务已完成私有插件迁移；标准三十包组合、真实渠道类型、PR 报告与原二十九包 Run／Child／引用兼容已纳入验收。原生搜索／读取及产物配方仅供明确历史执行，停用已迁移服务不静默回退；切换同时清理被替代实现，兼容消费者与删除条件见[所属设计](../designs/artifacts-media.md#artifact-插件边界)。
+
 **当前实现**：Artifact 存储、哈希校验、发布选择、Task 引用与渠道文件入口已实现。新 Run 的工具结果、附件提示与 Code Mode 使用普通文件对象 ID；读取、OCR、发布和委派按所属操作解析 ID，内部授权及旧冻结回执不变。
 
 **边界与剩余工作**：保存文件不等于理解内容；发布仅选择当前 Run 最终输出，不授予外部发送权限。
@@ -34,7 +36,7 @@
 
 **需求**：用户上传图片后，选定视觉模型能实际收到授权图片内容；纯文本模型也能显式识别图片文字并保留来源。
 
-**当前实现**：Web 上传和 CLI `chat send-parts` 的显式用户图片进入冻结的 ImageRefs 投影；已启用图片能力的选定模型会在实际供应商请求中收到授权缩图；ChatGPT 账户按认证目录默认启用，自定义兼容端点经过视觉 Probe。Main/Worker 默认获得 `builtin__image_ocr`，可用本地 Tesseract 提取授权图片中的文字、词框和引擎置信分数，完整结果保存为关联原图的 Artifact。
+**当前实现**：Web 上传和 CLI `chat send-parts` 的显式用户图片进入冻结的 ImageRefs 投影；已启用图片能力的选定模型会在实际供应商请求中收到授权缩图；ChatGPT 账户按认证目录默认启用，自定义兼容端点经过视觉 Probe。Main/Worker 默认获得 `builtin__image_ocr`，可由独立版本化 OCR 插件制定识别策略并处理本地 Tesseract 结果，提取授权图片中的文字、词框和引擎置信分数，完整结果保存为关联原图的 Artifact。
 
 **边界**：支持 PNG/JPEG，单图最多 8 MiB、约 3355 万像素（32 × 1024²）。工作集最多保留 8 张不同图片，激进上下文重试最多 4 张；省略的像素保留引用与说明。文本模型保留引用并明确说明未看到图片，不读取或发送像素。格式不支持、图片损坏或越界在供应商调用前失败，不把文件名当作图像理解。真实模型的理解质量独立评测。
 
@@ -46,7 +48,7 @@
 
 **需求**：用户交付音视频或文档后，Agent 能获取适合任务的内容和来源。
 
-**当前实现**：上传普通 DOCX 并随消息提交原文件引用后，Main 可显式调用 `builtin__evidence_read({kind:"artifact",ref,offset,limit})`。正文段落与表格单元格按文件顺序返回。每页保留原 Artifact ref，原文件可继续打开。页面的 `representation: "docx_text"` 表示偏移与总长度按提取后的 UTF-8 文本字节计；用 `next_offset` 继续。
+**当前实现**：DOCX 解析已接入独立 Go 插件，保留原有工具与文件引用。标准构建／安装分发该包，首次运行按独立用例验证初始组合；已有自定义组合由所有者显式纳入，历史执行继续原解释器。上传普通 DOCX 并随消息提交原文件引用后，Main 可显式调用 `builtin__evidence_read({kind:"artifact",ref,offset,limit})`。正文段落与表格单元格按文件顺序返回。每页保留原 Artifact ref，原文件可继续打开。页面的 `representation: "docx_text"` 表示偏移与总长度按提取后的 UTF-8 文本字节计；用 `next_offset` 继续。本地操作者同时携带返回的 `reader_revision`，可在换版或停用后继续同一已验收解释器的分页；停机／隔离仍会拒绝。Main 的解释器已按 Run 固定，无需选择字段。
 
 **边界与剩余工作**：仅接受标准 DOCX MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。音视频转写、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
 
@@ -81,6 +83,8 @@ steward doctor
 结果标记 `method: "ocr"`，包含 `source_ref`、原图尺寸、文字、词框与 `document_ref`。坐标以原图左上角为原点，单位为像素；`confidence` 是 0–100 引擎分数，不是正确率概率。模型预览最多 2048 字节文字、16 个词框，完整 JSON 可用 Artifact 工具按范围读取。识别最多保留 4096 个词和 128 KiB 文字，截断会标记 `truncated`；空白图可成功返回空文字。
 
 OCR 能提供截图中的文字证据，不能证明布局、颜色、图表关系或场景理解。处理原图，沿用 8 MiB/32 × 1024² 像素限制；调用总期限为 30 秒。没有自动发布、向用户发送文件或写入长期 Memory。文字会作为普通 Tool 结果进入当前模型上下文，依旧属于不可信的图片内容。
+
+标准分发初次启动为 DOCX／OCR 验证并选择初始组合；已有选择不自动扩写。首次选择 OCR 服务后，新 Run／Child 固定插件版本；停用后新工作明确不可用，不复活原生路径，历史 Run 保留旧解释器。插件可独立升级／回退，原图、完整结果 Artifact、工具名及 Direct／Code Mode 协议不变。
 
 引擎及语言包身份随新 Run 冻结。安装、升级或变更语言目录后重启并建立新 Run；旧冻结调用不会换引擎继续执行。升级前完成 Main 与需保留的旧 Run，Worker Task 可暂停后由新 Main append 接续。已经提交的结果复用原始文字与 Artifact，不重新识别。
 
@@ -149,3 +153,6 @@ provides scoped file transfer. Those paths have separate proof limits.
 ## 实现与验证依据
 
 代码入口、最新架构与取舍见 [技术方案](../designs/artifacts-media.md)；已有检查、未覆盖场景和验收方法见 [测试方案](../test-plans/artifacts-media.md)。
+
+
+Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。

@@ -57,10 +57,7 @@ func TestAutomationThresholdCrossingsAndCancel(t *testing.T) {
 	id := createAutomation(t, r, now, &threshold)
 	price := int64(0)
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
-		worker := false
-		for _, m := range req.Messages {
-			worker = worker || strings.Contains(m.Text, "general Worker executing")
-		}
+		worker := isRoot(req)
 		last := req.Messages[len(req.Messages)-1]
 		if worker && last.Role != "tool" {
 			return llm.GenerationResult{ToolCalls: []llm.ToolCall{{ID: "price", Name: automation.ObserveName, Arguments: fmtValue(price)}, {ID: "second-source", Name: automation.ObserveName, Arguments: fmtValue(price)}}}, nil

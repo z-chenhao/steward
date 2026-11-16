@@ -1,0 +1,83 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,realpath,readFile,writeFile,copyFile,rm,symlink} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createServer} from 'node:http';
+import {createHash} from 'node:crypto';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {chromium} from 'playwright-core';
+import {waitForDevToolsPort} from './readiness.mjs';
+const exec=promisify(execFile);
+const source=await readFile(new URL('../internal/computer/macosvm/browser_upload_v1.mjs',import.meta.url),'utf8');
+const legacy=await readFile(new URL('../internal/computer/macosvm/browser.mjs',import.meta.url),'utf8');
+const helperBytes=await readFile(new URL('../internal/computer/macosvm/transfer.py',import.meta.url));
+const helperHash=createHash('sha256').update(helperBytes).digest('hex');
+
+test('fixed upload resource: approved metadata, exact original bytes, legacy defaults and document fences',{timeout:60000},async()=>{
+ const root=await realpath(await mkdtemp(join(tmpdir(),'steward-upload-')));
+ const pkg=resolve(fileURLToPath(new URL('.',import.meta.url)),'node_modules/playwright-core');
+ const module=join(root,'playwright/index.mjs');
+ const helper=join(root,'playwright/steward-transfer.py');
+ const transfer=join(root,'StewardTransfer');
+ const original=Buffer.concat([Buffer.from('original bytes:'),Buffer.from([0,1,255])]);
+ const server=createServer((req,res)=>res.end('<button id="upload" onclick="window.clicks++;document.querySelector(\'#file\').click()">Upload</button><input id="file" type="file"><script>window.clicks=0</script>'));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const url=`http://127.0.0.1:${server.address().port}`;
+ let context;
+ try{
+  await mkdir(join(root,'playwright'));
+  for(const file of ['index.mjs','package.json'])await symlink(join(pkg,file),join(root,'playwright',file));
+  await copyFile(new URL('../internal/computer/macosvm/transfer.py',import.meta.url),helper);
+  await mkdir(join(transfer,'imports'),{recursive:true,mode:0o700});
+  await writeFile(join(transfer,'imports/private-source-token.bin'),original);
+  context=await chromium.launchPersistentContext(join(root,'profile'),{headless:true,args:['--remote-debugging-address=127.0.0.1','--remote-debugging-port=0']});
+  const port=await waitForDevToolsPort(join(root,'profile'));
+  const page=context.pages()[0];
+  await page.goto(url);
+  const call=async(program,method,args,onLog)=>{
+   const child=exec(process.execPath,['--input-type=module','-e',program,JSON.stringify({method,args,module,port,root:transfer,helper_sha256:helperHash})],{timeout:16000,maxBuffer:12<<20,env:{...process.env,...(onLog?{DEBUG:'pw:api'}:{})}});
+   if(onLog)child.child.stderr.on('data',onLog);
+   return JSON.parse((await child).stdout);
+  };
+  const inventory=await call(legacy,'inventory',{});
+  const tabId=inventory.tabs[0].id;
+  const observe=()=>call(legacy,'observe',{tabId});
+  const navigation=(await observe()).navigation;
+  const args={tabId,selector:'#upload',expectedNavigation:navigation,timeoutMs:3000,path:'imports/private-source-token.bin',name:'approved-name.txt',mediaType:'text/plain'};
+  const uploaded=await call(source,'playwright.upload',args);assert.equal(uploaded.effect,'dispatched',JSON.stringify(uploaded));
+  const selected=await page.locator('#file').evaluate(async el=>({name:el.files[0].name,type:el.files[0].type,bytes:[...new Uint8Array(await el.files[0].arrayBuffer())]}));
+  assert.deepEqual(selected,{name:'approved-name.txt',type:'text/plain',bytes:[...original]});
+  const longName='长'.repeat(100)+'.txt';
+  assert.equal((await call(source,'playwright.upload',{...args,name:longName})).effect,'dispatched');
+  assert.equal(await page.locator('#file').evaluate(el=>el.files[0].name),longName,'FileChooser names preserve the published filename domain, independently of Artifact limits');
+  assert.equal((await call(legacy,'playwright.upload',args)).effect,'dispatched');
+  const historical=await page.locator('#file').evaluate(el=>({name:el.files[0].name,type:el.files[0].type}));
+  assert.deepEqual(historical,{name:'private-source-token.bin',type:'application/octet-stream'},'frozen facade-v1 still owns the original presentation');
+  const clicks=await page.evaluate(()=>window.clicks);
+  await writeFile(helper,Buffer.concat([helperBytes,Buffer.from('\n# changed') ]));
+  assert.equal((await call(source,'playwright.upload',args)).error,'PERMISSION_DENIED');
+  assert.equal(await page.evaluate(()=>window.clicks),clicks,'changed helper ran before exact resource validation');
+  await writeFile(helper,helperBytes);
+  await page.goto(url+'/replacement');
+  assert.equal((await call(source,'playwright.upload',args)).error,'STALE_SURFACE_HANDLE');
+  assert.equal(await page.locator('#file').evaluate(el=>el.files.length),0);
+
+  const bound=(await observe()).navigation;
+  await page.locator('#upload').evaluate(el=>el.disabled=true);
+  let reached;
+  const boundary=new Promise(resolve=>{reached=resolve;});
+  const pending=call(source,'playwright.upload',{...args,expectedNavigation:bound,timeoutMs:5000},log=>{if(log.includes('element is not enabled'))reached();});
+  await Promise.race([boundary,pending.then(value=>assert.fail('did not reach actionability wait: '+JSON.stringify(value)))]);
+  await page.goto(url+'/next');
+  assert.equal((await pending).error,'STALE_SURFACE_HANDLE');
+  assert.equal(await page.evaluate(()=>window.clicks),0,'click crossed the original document');
+  assert.equal(await page.locator('#file').evaluate(el=>el.files.length),0,'bytes crossed the original document');
+ }finally{
+  if(context)await context.close();
+  await new Promise(resolve=>server.close(resolve));
+  await rm(root,{recursive:true,force:true,maxRetries:3,retryDelay:100});
+ }
+});

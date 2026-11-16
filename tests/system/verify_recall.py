@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Memory/Conversation Launch, Doctor, Drive, Evidence and Cleanup through CLI."""
 import argparse
+import base64
 from contextlib import closing
 import json
 import html
@@ -124,6 +125,22 @@ class Harness(MainHarness):
                                f'  endpoint: http://127.0.0.1:{embeddings.server.server_port}/v1\n'
                                '  model: semantic-fixture-v1\n  dimensions: 5\n')
 
+    def setup(self, model="fixture-model", metadata=None):
+        profile=super().setup(model,metadata)
+        package=self.binary.parent/'plugins/recall'
+        require((package/'steward.plugin.json').is_file(),'distributed recall plugin missing; run make build')
+        installed=self.command('plugin','install',str(package))
+        graph=self.command('plugin','prepare',text=json.dumps(dict(protocol='steward-rsi-plugins/0.1',bindings=[dict(instance_id='recall',package_digest=installed['digest'],config={},state_namespace='recall',state_version=1)])))
+        def case(contract,facts,expected):
+            return dict(instance_id='recall',contract=contract,input=dict(input_id='facts'),inputs=[dict(id='facts',data=base64.b64encode(json.dumps(facts).encode()).decode())],expected=expected)
+        cases=[case('steward.recall-selection/1',dict(query='tea',evidence_first=True,excerpt_bytes=1400,candidates=[dict(content='tea original evidence',layer='',source_type='conversation',relevance=1,score=1,quotes=[])]),dict(entries=[dict(index=0,offset=0,length=21,evidence=[])])),
+               case('steward.recall-query/1',dict(latest='show the result',previous='tea preference',answer='chai evidence'),dict(query='show the result\nRecent conversation:\ntea preference\nchai evidence'))]
+        self.command('plugin','policy',text=json.dumps(dict(id='recall-system-policy',allowed_contracts=['steward.recall-selection/1','steward.recall-query/1'],allowed_requests=['input.read'],allowed_hooks=[],cases=cases)))
+        self.command('plugin','propose',text=json.dumps(dict(candidate_id='recall-system',baseline='',target=graph['revision'],policy_id='recall-system-policy',goal='Migrate real automatic and accepted tool recall without widening source scope')))
+        decision=self.command('plugin','verify','recall-system')
+        self.command('plugin','activate',text=json.dumps(dict(operation_id='recall-system',expected_graph_revision='',target_graph_revision=graph['revision'],decision_ref=decision['decision_ref'])))
+        return profile
+
     def args(self, *args):
         return super().args('-config', str(self.config), *args)
 
@@ -143,6 +160,10 @@ class Harness(MainHarness):
         with closing(sqlite3.connect(root / 'state.db')) as db, db:
             db.row_factory = sqlite3.Row
             result['recall'] = [dict(r) for r in db.execute('SELECT * FROM run_recall ORDER BY run_id,step_index')]
+            result['plugin_reads']=[dict(r) for r in db.execute('SELECT run_id,operation_id,sealed,key_ref,payload IS NOT NULL AS retained FROM recall_candidate_snapshot ORDER BY run_id,operation_id')]
+            result['plugin_calls']=[dict(r) for r in db.execute("SELECT run_id,operation_id,result_json IS NOT NULL AS completed FROM rsi_call WHERE instance_id='recall' ORDER BY run_id,operation_id")]
+            for payload, in db.execute("SELECT payload FROM recall_candidate_snapshot WHERE sealed=0 AND payload IS NOT NULL"):
+                require(all(row['hit']['source_type'] != 'memory' for row in json.loads(payload)['candidates']), 'memory candidates persisted in plain text')
             result['children'] = [dict(r) for r in db.execute("SELECT run_id,parent_run_id,worker_position,checkpoint_json FROM run WHERE kind='worker' ORDER BY created_at")]
             result['preparations'] = [dict(r) for r in db.execute('SELECT run_id,step_index,provenance_json FROM context_compaction ORDER BY run_id,step_index')]
         for name in ('memory', 'conversation'):
@@ -258,10 +279,14 @@ def verify(value):
     for c in value['children']:
         cp = json.loads(c['checkpoint_json'])
         if c['worker_position'] == 'child':
-            task_index = next((i for i, m in enumerate(cp['messages']) if m['type'] == 'user'), None)
+            task_index = next((i for i, m in enumerate(cp['messages'])
+                               if m['type'] == 'user' and m.get('origin') != 'runtime'
+                               and m.get('source', {}).get('kind') == 'task'), None)
             require(task_index is not None, 'Child missing explicit task')
             base = cp['messages'][:task_index + 1]
-            require(all(m['type'] == 'system' for m in base[:-1])
+            require(all(m['type'] == 'system' or
+                        (m.get('origin') == 'runtime' and m.get('source', {}).get('kind') == 'execution_environment'
+                         and m['source'].get('protected')) for m in base[:-1])
                     and base[-1]['source']['kind'] == 'task' and base[-1]['source']['protected']
                     and base[-1]['content'][0]['text'].startswith('Retrieve tea context independently'), 'parent context copied')
             require(not any('Task anchor:' in json.dumps(m) or 'personal assistant' in json.dumps(m) for m in base), 'Child inherited identity/history')
@@ -426,7 +451,7 @@ def concurrent_append_case(binary, root, failure_evidence=None):
 def run(binary, failure_evidence=None):
     report = dict(version=1, scope='STEWARD-22 read-only hybrid recall and frozen context; Curator/manage/compaction and full SC-08 remain STEWARD-23', scenarios=[])
     with tempfile.TemporaryDirectory(prefix='steward-recall-') as directory:
-        for name in ('ordinary', 'kill-restart', 'embedding-failure', 'multipart', 'multipart-prior'):
+        for name in ('ordinary', 'kill-restart', 'candidate-kill-restart', 'embedding-failure', 'multipart', 'multipart-prior'):
             root = Path(directory) / name
             root.mkdir()
             embeddings = Embeddings()
@@ -454,14 +479,16 @@ def run(binary, failure_evidence=None):
                     before = h.snapshot()
                     require(not before['recall'] and not before['generations'], 'failed recall partially accepted')
                     embeddings.fail = False
-                elif name == 'kill-restart':
-                    child = h.hold('after_recall_commit')
+                elif name in ('kill-restart','candidate-kill-restart'):
+                    child = h.hold('after_recall_candidates_commit' if name=='candidate-kill-restart' else 'after_recall_commit')
                     child.send_signal(signal.SIGKILL)
                     child.communicate(timeout=10)
                     before = h.snapshot()
-                    require(len(before['recall']) == 1 and not before['generations'], 'wrong kill boundary')
+                    require(len(before['recall']) == (0 if name=='candidate-kill-restart' else 1) and not before['generations'], 'wrong kill boundary')
                     # Change corpus after the turn was frozen; restart must reuse it.
-                    frozen = before['recall'][0]
+                    frozen = before['recall'][0] if before['recall'] else None
+                    if name=='candidate-kill-restart':
+                        require(before['plugin_reads'] and all(row['sealed'] for row in before['plugin_reads']), 'candidate boundary did not freeze encrypted sources before recall result')
                     with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'memory.db')) as db, db:
                         db.execute('INSERT INTO memory_record(memory_id,user_id,scope_type,scope_id,tier,content,source_refs,created_at) VALUES(?,?,?,?,?,?,?,?)',
                                    ('after-freeze', 'local', 'agent', agent, 'recall',
@@ -474,6 +501,8 @@ def run(binary, failure_evidence=None):
                 value = h.snapshot()
                 verify(value)
                 generation_counts = verify_complete_workflow(value)
+                require(value['plugin_reads'] and all(row['completed'] for row in value['plugin_calls']), 'real Recall bypassed independent package or left an unknown call')
+                require(any(row['operation_id'].startswith('recall-tool:') for row in value['plugin_reads']) and any(row['operation_id'].startswith('recall-auto:') for row in value['plugin_reads']), 'automatic or accepted native search bypassed package')
                 multipart_evidence = None
                 if multipart:
                     document = next(d for d in value['conversation_index'] if d['ref'] == 'conversation:multipart')
@@ -491,6 +520,10 @@ def run(binary, failure_evidence=None):
                     same = next(r for r in value['recall'] if r['run_id'] == receipt['run_id'] and r['step_index'] == 0)
                     require(same == frozen, 'restart changed frozen recall')
                     require('NEW_AFTER_FREEZE' not in same['hits_json'] and any('NEW_AFTER_FREEZE' in r['hits_json'] for r in value['recall'] if r['run_id'] != same['run_id']), 'new logical input did not retrieve the updated corpus')
+                if name=='candidate-kill-restart':
+                    same=next(r for r in value['recall'] if r['run_id']==receipt['run_id'] and r['step_index']==0)
+                    require('NEW_AFTER_FREEZE' not in same['hits_json'], 'candidate recovery reread changed corpus')
+                    require([row for row in value['plugin_reads'] if row['run_id']==receipt['run_id'] and row['operation_id'].startswith('recall-auto:0:')]==before['plugin_reads'], 'staged candidate identity changed across process restart')
                 stage = 'idempotent-drain'
                 h.command('chat', 'work')
                 require(h.snapshot() == value, 'repeated drain changed terminal state')
@@ -499,7 +532,7 @@ def run(binary, failure_evidence=None):
                                                 scheduling=scheduling,
                                                 multipart=multipart_evidence,
                                                 generation_counts=generation_counts,
-                                                before=before if name in ('kill-restart', 'embedding-failure') else None))
+                                                before=before if name in ('kill-restart','candidate-kill-restart', 'embedding-failure') else None))
             except Exception:
                 if failure_evidence is not None:
                     failure_evidence.parent.mkdir(parents=True, exist_ok=True)

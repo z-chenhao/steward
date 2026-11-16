@@ -1,0 +1,9 @@
+{
+  "source": "/private/var/folders/_h/65wkv4dn2m51ch2p4y9tpjm40000gn/T/steward-apps-settings-mok8jnv0/source",
+  "files": {
+    "intent.go.txt": "54af68f03fed7eebd63999df26ca0973dd5576266f2ac59f062295139bafa0b9",
+    "steward.plugin.json": "ebff5014c2f773a1868222e98a880a6934a1b03c2f02dd44a126e94a5c40768c"
+  },
+  "retention": "Exact pre-settings six-method graph/direct/default23 and captured pre-opt-in settings request. Delete with consumers.",
+  "not_a_full_old_release_compiler_claim": true
+}

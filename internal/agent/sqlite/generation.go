@@ -16,6 +16,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"github.com/z-chenhao/assistant/internal/tool/codemode"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 func (r *Runs) Generation(ctx context.Context, c agent.RunClaim, run agent.Run) (agent.Generation, error) {
@@ -54,6 +55,9 @@ func (r *Runs) Generation(ctx context.Context, c agent.RunClaim, run agent.Run) 
 		request.Tools = nil
 		request.OutputLimitBytes = compaction.MaxBytes
 	}
+	if err := r.pluginModel(ctx, c, run, &request); err != nil {
+		return agent.Generation{}, err
+	}
 	// Compaction is threshold-based; this final bound rejects an irreducible turn.
 	wire, _ := encoded(request.Messages)
 	inputBytes := len(wire)
@@ -63,10 +67,17 @@ func (r *Runs) Generation(ctx context.Context, c agent.RunClaim, run agent.Run) 
 	if int64(inputBytes) > run.Snapshot.ContextWindow*3 {
 		return agent.Generation{}, llm.ContextLengthExceeded
 	}
+	pricePlan, err := r.prepareReferenceRates(ctx, c, request, run.Checkpoint.Step)
+	if err != nil {
+		return agent.Generation{}, err
+	}
 	var gen agent.Generation
 	err = r.write(ctx, func(tx *sql.Tx) error {
 		gen = agent.Generation{Compaction: compaction}
 		if err := fence(ctx, tx, c); err != nil {
+			return err
+		}
+		if err := r.pluginDispatchFence(ctx, tx, run.ID); err != nil {
 			return err
 		}
 		if run.Kind == "worker" {
@@ -88,8 +99,11 @@ func (r *Runs) Generation(ctx context.Context, c agent.RunClaim, run agent.Run) 
 				return err
 			}
 			hash = digest(raw)
-			_, err = tx.ExecContext(ctx, `INSERT INTO model_generation(generation_id,run_id,step_index,request_json,request_hash,owner_token,status,created_at) VALUES(?,?,?,?,?,?,'pending',?)`, request.GenerationID, run.ID, run.Checkpoint.Step, raw, hash, owner.token, time.Now().UnixMicro())
+			_, err = tx.ExecContext(ctx, `INSERT INTO model_generation(generation_id,run_id,step_index,request_json,request_hash,owner_token,status,created_at,reference_rates_managed) VALUES(?,?,?,?,?,?,'pending',?,?)`, request.GenerationID, run.ID, run.Checkpoint.Step, raw, hash, owner.token, time.Now().UnixMicro(), pricePlan != nil)
 			if err != nil {
+				return err
+			}
+			if err = acceptReferenceRates(ctx, tx, request.GenerationID, pricePlan); err != nil {
 				return err
 			}
 			if err = runEvent(ctx, tx, run.ID, "model_generation.accepted", run.Checkpoint.Step+1); err != nil {
@@ -237,6 +251,20 @@ func (s *Store) AcceptGeneration(ctx context.Context, tx *sql.Tx, request llm.Ge
 }
 
 func (r *Runs) PrepareReply(ctx context.Context, c agent.RunClaim, run agent.Run) (bool, error) {
+	if run.Checkpoint.Result != nil && r.plugins != nil {
+		out, err := r.PluginHook(ctx, c, rsiplugin.HookInput{Stage: rsiplugin.PrepareReply, Execution: rsiplugin.Execution{RunID: run.ID, Role: string(run.Kind), Step: run.Checkpoint.Step}, Text: run.Checkpoint.Result.Text, Reference: run.Checkpoint.ExchangeID})
+		if err != nil {
+			return false, err
+		}
+		if out.Reject {
+			return false, tool.ErrApprovalDenied
+		}
+		if out.Text != nil {
+			value := *run.Checkpoint.Result
+			value.Text = *out.Text
+			run.Checkpoint.Result = &value
+		}
+	}
 	if run.Kind == "worker" {
 		return r.prepareWorkerReply(ctx, c, run)
 	}
@@ -273,25 +301,26 @@ func (r *Runs) PrepareReply(ctx context.Context, c agent.RunClaim, run agent.Run
 		if _, err := tx.ExecContext(ctx, `UPDATE ui_widget AS w SET message_id=? WHERE run_id=? AND message_id IS NULL AND invocation_id IN (SELECT invocation_id FROM tool_invocation WHERE status='succeeded') AND `+activeUIWidget, messageID, run.ID); err != nil {
 			return err
 		}
-		rows, err := tx.QueryContext(ctx, `SELECT document_json FROM ui_widget w JOIN tool_invocation i USING(invocation_id) WHERE message_id=? ORDER BY `+uiSectionOrder, messageID)
+		rows, err := tx.QueryContext(ctx, `SELECT `+uiStoredColumns+` FROM ui_widget w JOIN tool_invocation i USING(invocation_id) WHERE message_id=? ORDER BY `+uiSectionOrder, messageID)
 		if err != nil {
 			return err
 		}
 		var alternatives []conversation.ContentPart
 		narrated := false
 		for rows.Next() {
-			var rawWidget string
-			if err = rows.Scan(&rawWidget); err != nil {
+			var rawWidget, receipt string
+			var managed bool
+			if err = rows.Scan(&rawWidget, &managed, &receipt); err != nil {
 				rows.Close()
 				return err
 			}
-			widget, ok := ui.StoredWidget(rawWidget)
-			if !ok {
+			widget, readable, decodeErr := storedUI(rawWidget, managed, receipt)
+			if decodeErr != nil {
 				rows.Close()
 				return agent.ErrStorage
 			}
 			narrated = narrated || widget.Text != ""
-			alternatives = append(alternatives, conversation.ContentPart{Type: "text", Text: widget.Readable()})
+			alternatives = append(alternatives, conversation.ContentPart{Type: "text", Text: readable})
 		}
 		err = rows.Err()
 		rows.Close()
@@ -310,11 +339,11 @@ func (r *Runs) PrepareReply(ctx context.Context, c agent.RunClaim, run agent.Run
 		for _, ref := range refs {
 			// The selected resource was authorized by publish. Read only its immutable
 			// semantic type here; media bytes never enter the Conversation intent.
-			var media string
-			if err = tx.QueryRowContext(ctx, `SELECT media_type FROM artifact WHERE artifact_ref=?`, ref).Scan(&media); err != nil {
+			var descriptor artifact.Descriptor
+			if err = tx.QueryRowContext(ctx, `SELECT media_type,coalesce(method_graph,''),coalesce(semantic_kind,'') FROM artifact WHERE artifact_ref=?`, ref).Scan(&descriptor.MediaType, &descriptor.MethodGraph, &descriptor.SemanticKind); err != nil {
 				return err
 			}
-			message.Content = append(message.Content, conversation.ContentPart{Type: artifact.ContentType(media), ArtifactRef: ref})
+			message.Content = append(message.Content, conversation.ContentPart{Type: descriptor.ContentType(), ArtifactRef: ref})
 		}
 		raw, _ := encoded(message)
 		if _, err := tx.ExecContext(ctx, `INSERT INTO main_reply VALUES(?,?,?,?)`, run.Checkpoint.ExchangeID, run.ID, messageID, deliveryID); err != nil {

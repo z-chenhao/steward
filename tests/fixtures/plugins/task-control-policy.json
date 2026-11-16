@@ -1,0 +1,54 @@
+{
+  "id": "task-system-policy",
+  "allowed_contracts": [
+    "steward.task-discovery/1",
+    "steward.task-label/1"
+  ],
+  "allowed_requests": [
+    "input.read"
+  ],
+  "allowed_hooks": [],
+  "cases": [
+    {
+      "instance_id": "task-control",
+      "contract": "steward.task-discovery/1",
+      "input": {
+        "input_id": "facts"
+      },
+      "inputs": [
+        {
+          "id": "facts",
+          "data": "eyJxdWVyeSI6IiIsImxpbWl0IjoyLCJjYW5kaWRhdGVzIjpbeyJ0ZXh0IjoicmV0YWluZWQgb3JpZ2luYWwiLCJzdGF0dXMiOiJwYXVzZWQiLCJ1cGRhdGVkX2F0IjoiMjAyNi0wMS0wMSJ9LHsidGV4dCI6ImN1cnJlbnQgdGFyZ2V0Iiwic3RhdHVzIjoiYWN0aXZlIiwidXBkYXRlZF9hdCI6IjIwMjYtMDEtMDEifV19"
+        }
+      ],
+      "expected": {
+        "indices": [
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "instance_id": "task-control",
+      "contract": "steward.task-label/1",
+      "input": {
+        "text": "default   task\nbrief",
+        "explicit": false
+      },
+      "expected": {
+        "title": "default task brief"
+      }
+    },
+    {
+      "instance_id": "task-control",
+      "contract": "steward.task-label/1",
+      "input": {
+        "text": "Chosen title",
+        "explicit": true
+      },
+      "expected": {
+        "title": "Chosen title"
+      }
+    }
+  ]
+}

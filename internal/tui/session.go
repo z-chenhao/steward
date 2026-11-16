@@ -15,9 +15,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/conversation"
-	"github.com/z-chenhao/assistant/internal/delivery"
-	"github.com/z-chenhao/assistant/internal/delivery/ui"
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
+	terminalcontract "github.com/z-chenhao/assistant/internal/plugin/terminalinterface/contract"
 	"github.com/z-chenhao/assistant/internal/task"
 )
 
@@ -37,6 +38,8 @@ type Accounts interface {
 	Logout(context.Context, string) (bool, error)
 }
 type Session struct {
+	Interface        func(context.Context, terminalcontract.Query) (terminalcontract.Result, bool, error)
+	ConnectionPolicy func(context.Context, contract.ConnectionFacts) (contract.ConnectionDefaults, bool, error)
 	DecideApproval   func(context.Context, string, string, string) error
 	Messages         func(context.Context) ([]conversation.Message, error)
 	State            State
@@ -98,6 +101,9 @@ func (s Session) Run(ctx context.Context, input io.ReadCloser, out io.Writer) (r
 		close(lines)
 	}()
 	u := terminal{Session: s, lines: lines, out: out}
+	if err := u.prepareView(ctx); err != nil {
+		return err
+	}
 	work, cancelWork := context.WithCancel(ctx)
 	u.work = work
 	defer func() {
@@ -106,12 +112,12 @@ func (s Session) Run(ctx context.Context, input io.ReadCloser, out io.Writer) (r
 			<-u.workDone
 		}
 	}()
-	u.print("Steward — /setup /models /test ID /select ID /login [ACCOUNT_ID] /logout ACCOUNT_ID /history /status /approve ID HASH /deny ID HASH /quit")
+	u.print(u.words().Help)
 	d, err := s.State.Diagnostics(ctx)
 	if err != nil {
 		return err
 	}
-	u.print("State: " + d.Readiness)
+	u.print(fmt.Sprintf(u.words().State, d.Readiness))
 	u.readiness = d.Readiness
 	if d.Readiness == agent.SetupRequired {
 		u.report(u.setup(ctx))
@@ -127,7 +133,7 @@ func (s Session) Run(ctx context.Context, input io.ReadCloser, out io.Writer) (r
 		u.report(u.history(ctx))
 	}
 	for ctx.Err() == nil {
-		line, err := u.read(ctx, "You> ")
+		line, err := u.read(ctx, u.words().InputPrompt)
 		if errors.Is(err, io.EOF) {
 			return nil
 		}
@@ -149,12 +155,12 @@ func (s Session) Run(ctx context.Context, input io.ReadCloser, out io.Writer) (r
 			return err
 		}
 		if !d.AgentIngressEnabled {
-			u.print("State: " + d.Readiness + ". Use /setup to repair the connection; history remains available.")
+			u.print(fmt.Sprintf(u.words().Repair, d.Readiness))
 			continue
 		}
 		_, err = s.actor().Submit(ctx, uuid.Must(uuid.NewV7()).String(), line)
 		if err == nil {
-			u.print("Steward: busy")
+			u.print(u.words().Busy)
 			u.startDrain()
 		}
 		u.report(err)
@@ -163,6 +169,8 @@ func (s Session) Run(ctx context.Context, input io.ReadCloser, out io.Writer) (r
 }
 
 type terminal struct {
+	view             *terminalcontract.Copy
+	interfaceManaged bool
 	Session
 	lines              <-chan inputEvent
 	out                io.Writer
@@ -237,7 +245,7 @@ func (u *terminal) read(ctx context.Context, prompt string) (string, error) {
 				u.drainAgain = false
 				u.startDrain()
 			} else {
-				u.print("Steward: idle")
+				u.print(u.words().Idle)
 			}
 			fmt.Fprint(u.out, prompt)
 		case event, ok := <-u.lines:
@@ -250,7 +258,7 @@ func (u *terminal) read(ctx context.Context, prompt string) (string, error) {
 			case inputRedraw:
 				fmt.Fprint(u.out, "\r\x1b[2K", prompt, plain(event.text))
 			case inputRejected:
-				u.print("Input rejected: " + event.err.Error())
+				u.print(fmt.Sprintf(u.words().InputRejected, event.err.Error()))
 				fmt.Fprint(u.out, prompt)
 			case inputLine:
 				return strings.TrimSpace(event.text), nil
@@ -259,7 +267,7 @@ func (u *terminal) read(ctx context.Context, prompt string) (string, error) {
 	}
 }
 func (u *terminal) ask(ctx context.Context, prompt string) (string, error) {
-	line, err := u.read(ctx, prompt+" (/cancel to cancel)> ")
+	line, err := u.read(ctx, fmt.Sprintf(u.words().Ask, prompt))
 	if line == "/cancel" {
 		return "", errCancelled
 	}
@@ -270,38 +278,38 @@ func (u *terminal) report(err error) {
 		return
 	}
 	if errors.Is(err, errCancelled) {
-		u.print("Setup cancelled. Active model unchanged.")
+		u.print(u.words().Cancelled)
 		return
 	}
 	var test *testFailure
 	if errors.As(err, &test) {
 		u.report(test.cause)
-		u.print("Profile retained. Retry with /test " + test.id + "; after it passes, use /select " + test.id + ". Use /setup to change settings.")
+		u.print(fmt.Sprintf(u.words().Retained, test.id, test.id))
 		return
 	}
 	if errors.Is(err, llm.ErrNoBridge) {
-		u.print("Provider Bridge is not configured. Check the connection settings.")
+		u.print(u.words().BridgeMissing)
 		return
 	}
 	var probe *llm.ProbeError
 	if errors.As(err, &probe) {
 		// ProbeError contains fixed Host stage names and normalized codes only.
-		u.print("Connection test failed: " + probe.Error())
+		u.print(fmt.Sprintf(u.words().ProbeFailed, probe.Error()))
 		if probe.Timeout > 0 {
-			u.print("The model did not finish this check in time. Check server load and model readiness, then retry explicitly.")
+			u.print(u.words().ProbeTimeout)
 		} else if errors.Is(err, llm.ModelIncompatible) {
-			u.print("This model must support streaming, Tool calls and Tool results. Check the server's API and chat template.")
+			u.print(u.words().ProbeIncompatible)
 		}
 		return
 	}
 	// Do not render arbitrary error strings, HTTP bodies, endpoints or input.
 	for _, known := range []error{llm.AuthRequired, llm.ModelIncompatible, llm.ProviderUnavailable, llm.RateLimited, llm.GenerationCancelled, llm.ErrConflict, llm.ErrUnverified, llm.ErrSecretStore, llm.ErrSecretCleanup} {
 		if errors.Is(err, known) {
-			u.print("Operation failed: " + known.Error())
+			u.print(fmt.Sprintf(u.words().KnownFailure, known.Error()))
 			return
 		}
 	}
-	u.print("Operation failed. Check the connection and model settings, then retry explicitly.")
+	u.print(u.words().UnknownFailure)
 }
 func (u *terminal) history(ctx context.Context) error {
 	read := u.State.History
@@ -323,15 +331,13 @@ func (u *terminal) history(ctx context.Context) error {
 			if p.Type == "text" {
 				text := p.Text
 				if m.Role == "assistant" {
-					part := m
-					part.Content = []conversation.ContentPart{p}
-					text = ui.Compose(delivery.Envelope{Message: part}).Fallback
+					text = strings.TrimSpace(p.Text)
 				}
-				u.print(m.Role + ": " + text)
+				u.print(fmt.Sprintf(u.words().Message, m.Role, text))
 			} else if p.ArtifactRef != "" {
-				u.print(m.Role + " attachment: " + p.ArtifactRef)
+				u.print(fmt.Sprintf(u.words().Attachment, m.Role, p.ArtifactRef))
 			} else {
-				u.print(m.Role + ": [" + p.Type + "]")
+				u.print(fmt.Sprintf(u.words().OtherPart, m.Role, p.Type))
 			}
 		}
 		u.seenMessages[m.MessageID] = true
@@ -341,20 +347,23 @@ func (u *terminal) history(ctx context.Context) error {
 func (u *terminal) authEvent(e llm.AuthEvent) {
 	switch e.Kind {
 	case "open_url":
-		u.print("Open this private login URL in your browser (Ctrl-C cancels login): " + e.URL)
+		u.print(fmt.Sprintf(u.words().LoginURL, e.URL))
 	case "device_code":
-		u.print("Login code: " + e.DeviceCode)
+		u.print(fmt.Sprintf(u.words().LoginCode, e.DeviceCode))
 	case "progress":
-		u.print("Login in progress…")
+		u.print(u.words().LoginProgress)
 	case "choose_workspace":
 		for _, choice := range e.Choices {
-			u.print("Workspace: " + choice)
+			u.print(fmt.Sprintf(u.words().Workspace, choice))
 		}
 	case "input_required":
-		u.print("Complete the login prompt in your browser.")
+		u.print(u.words().LoginRequired)
 	}
 }
 func (u *terminal) command(ctx context.Context, line string) error {
+	if err := u.prepareView(ctx); err != nil {
+		return err
+	}
 	args := strings.Fields(line)
 	switch {
 	case len(args) == 3 && (args[0] == "/approve" || args[0] == "/deny"):
@@ -368,7 +377,7 @@ func (u *terminal) command(ctx context.Context, line string) error {
 		if err := u.DecideApproval(ctx, args[1], args[2], decision); err != nil {
 			return err
 		}
-		u.print("Approval decision saved.")
+		u.print(u.words().ApprovalSaved)
 		u.startDrain()
 		return nil
 	case line == "/setup":
@@ -379,7 +388,7 @@ func (u *terminal) command(ctx context.Context, line string) error {
 	case line == "/status":
 		d, err := u.State.Diagnostics(ctx)
 		if err == nil {
-			u.print("State: " + d.Readiness)
+			u.print(fmt.Sprintf(u.words().State, d.Readiness))
 			if activity, ok := u.State.(interface {
 				Activity(context.Context) ([]task.Summary, error)
 			}); ok {
@@ -388,7 +397,7 @@ func (u *terminal) command(ctx context.Context, line string) error {
 					return readErr
 				}
 				for _, item := range items {
-					u.print(item.Title + ": " + item.Status + " " + item.ProgressSummary)
+					u.print(fmt.Sprintf(u.words().Task, item.Title, item.Status, item.ProgressSummary))
 				}
 			}
 		}
@@ -399,37 +408,37 @@ func (u *terminal) command(ctx context.Context, line string) error {
 			return err
 		}
 		for _, p := range profiles {
-			u.print(p.ProfileID + " " + p.ModelID + " " + p.Status)
+			u.print(fmt.Sprintf(u.words().Profile, p.ProfileID, p.ModelID, p.Status))
 		}
 		return nil
 	case len(args) == 2 && args[0] == "/test":
 		err := u.testModel(ctx, args[1])
 		if err == nil {
-			u.print("Probe passed.")
-			u.print("Activate with /select " + args[1])
+			u.print(u.words().ProbePassed)
+			u.print(fmt.Sprintf(u.words().ActivateCommand, args[1]))
 		}
 		return err
 	case len(args) == 2 && args[0] == "/select":
 		return u.selectModel(ctx, args[1])
 	case len(args) <= 2 && args[0] == "/login":
-		u.print("Check your credential storage settings and try again.")
+		u.print(u.words().CredentialStorage)
 		id := ""
 		if len(args) == 2 {
 			id = args[1]
 		}
 		a, err := u.Accounts.Login(ctx, id, u.authEvent)
 		if err == nil {
-			u.print("Account connected: " + a.ConnectionID)
+			u.print(fmt.Sprintf(u.words().AccountConnected, a.ConnectionID))
 		}
 		return err
 	case len(args) == 2 && args[0] == "/logout":
 		_, err := u.Accounts.Logout(ctx, args[1])
 		if err == nil {
-			u.print("Account logged out.")
+			u.print(u.words().AccountLoggedOut)
 		}
 		return err
 	default:
-		u.print("Unknown command. Use /setup /models /test ID /select ID /login [ACCOUNT_ID] /logout ACCOUNT_ID /history /status /approve ID HASH /deny ID HASH /quit")
+		u.print(u.words().UnknownCommand)
 		return nil
 	}
 }
@@ -442,8 +451,8 @@ func (u *terminal) selectModel(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	u.print("Privacy: requests and Tool schemas go to the selected provider or local endpoint. localhost is the Go Host. Credentials stay in SecretStore. Steward never switches providers automatically.")
-	answer, err := u.ask(ctx, "Activate "+plain(p.ModelID)+" via "+p.ProviderKind+"? Type yes")
+	u.print(u.words().Privacy)
+	answer, err := u.ask(ctx, fmt.Sprintf(u.words().Activate, plain(p.ModelID), p.ProviderKind))
 	if err != nil {
 		return err
 	}
@@ -458,28 +467,55 @@ func (u *terminal) selectModel(ctx context.Context, id string) error {
 			return err
 		}
 	}
-	u.print("Model selected. New Runs use this model.")
+	u.print(u.words().Selected)
 	return nil
 }
 func (u *terminal) setup(ctx context.Context) error {
-	u.print("Choose model connection\n  1. Local / OpenAI-compatible endpoint\n  2. OpenAI — Sign in with ChatGPT")
-	u.print("Local endpoints do not require ChatGPT login. Use /cancel to leave setup.")
-	choice, err := u.ask(ctx, "Connection [1/2]")
+	if err := u.prepareView(ctx); err != nil {
+		return err
+	}
+	u.print(u.words().ConnectionMenu)
+	u.print(u.words().LocalHelp)
+	choice, err := u.ask(ctx, u.words().ConnectionPrompt)
 	if err != nil {
 		return err
 	}
-	p := llm.ProfileInput{ProviderKind: "openai_compatible", WireAPI: "openai_completions", ContextWindow: 128000, MaxOutputTokens: 16384, Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true, ImageInput: true}}
+	if choice != "1" && choice != "2" {
+		return errCancelled
+	}
+	facts := contract.ConnectionFacts{Preset: contract.TerminalSetup, AccountBacked: choice == "2"}
+	var defaults contract.ConnectionDefaults
+	managed := false
+	if u.ConnectionPolicy != nil {
+		defaults, managed, err = u.ConnectionPolicy(ctx, facts)
+		if err != nil {
+			return err
+		}
+	}
+	if !managed {
+		defaults = legacyv1.Connection(facts)
+	}
+	// The policy proposes a visible default before the user chooses a credential
+	// destination. Explicit endpoint input below always remains authoritative.
+	identity := llm.ProfileInput{Name: "setup", ModelID: "setup", ProviderKind: "openai_compatible", Endpoint: defaults.EndpointDefault, WireAPI: defaults.WireAPI, ContextWindow: defaults.ContextWindow, MaxOutputTokens: defaults.MaxOutputTokens, Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true, ImageInput: defaults.ImageInput}}
+	if defaults.TokenLimit < 1 || identity.ValidateActivation() != nil || plain(defaults.EndpointDefault) != defaults.EndpointDefault || defaults.EndpointOverride != "" {
+		return llm.ErrConflict
+	}
+	if choice == "2" && defaults.WireAPI != "openai_responses" {
+		return llm.ErrConflict
+	}
+	p := llm.ProfileInput{ProviderKind: "openai_compatible", WireAPI: defaults.WireAPI, ContextWindow: defaults.ContextWindow, MaxOutputTokens: defaults.MaxOutputTokens, Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true, ImageInput: defaults.ImageInput}}
 	var catalog []llm.CatalogModel
 	switch choice {
 	case "1":
-		p.Endpoint, err = u.ask(ctx, "Endpoint URL [http://127.0.0.1:8000/v1]")
+		p.Endpoint, err = u.ask(ctx, fmt.Sprintf(u.words().Endpoint, defaults.EndpointDefault))
 		if err != nil {
 			return err
 		}
 		if p.Endpoint == "" {
-			p.Endpoint = "http://127.0.0.1:8000/v1"
+			p.Endpoint = defaults.EndpointDefault
 		}
-		keyEnv, err := u.ask(ctx, "API key environment variable name [blank for no key; never paste a key]")
+		keyEnv, err := u.ask(ctx, u.words().KeyEnvironment)
 		if err != nil {
 			return err
 		}
@@ -492,12 +528,12 @@ func (u *terminal) setup(ctx context.Context) error {
 		}
 		catalog, err = u.Discover(ctx, p.Endpoint, p.AuthConnectionID)
 		if err != nil {
-			u.print("Catalog unavailable. Enter a model ID manually; Probe is still required.")
+			u.print(u.words().CatalogUnavailable)
 		}
 	case "2":
-		u.print("Check your credential storage settings and try again.")
-		p.ProviderKind, p.WireAPI = "openai_account", "openai_responses"
-		id, err := u.ask(ctx, "Account ID [blank for new ChatGPT login]")
+		u.print(u.words().CredentialStorage)
+		p.ProviderKind = "openai_account"
+		id, err := u.ask(ctx, u.words().AccountPrompt)
 		if err != nil {
 			return err
 		}
@@ -506,7 +542,7 @@ func (u *terminal) setup(ctx context.Context) error {
 			return err
 		}
 		p.AuthConnectionID = a.ConnectionID
-		u.print("Account connected: " + a.ConnectionID)
+		u.print(fmt.Sprintf(u.words().AccountConnected, a.ConnectionID))
 		catalog, err = u.AccountCatalog(ctx, a.ConnectionID)
 		if err != nil {
 			return err
@@ -539,13 +575,13 @@ func (u *terminal) setup(ctx context.Context) error {
 			name  string
 			value *int64
 			max   int64
-		}{{"Context tokens", &p.ContextWindow, 1048576}, {"Max output tokens", &p.MaxOutputTokens, 1048576}} {
+		}{{u.words().ContextTokens, &p.ContextWindow, defaults.TokenLimit}, {u.words().OutputTokens, &p.MaxOutputTokens, defaults.TokenLimit}} {
 			max := setting.max
 			if setting.value == &p.MaxOutputTokens {
 				max = min(max, p.ContextWindow)
 			}
 			for {
-				text, err := u.ask(ctx, fmt.Sprintf("%s [%d]", setting.name, min(*setting.value, max)))
+				text, err := u.ask(ctx, fmt.Sprintf(u.words().TokenPrompt, setting.name, min(*setting.value, max)))
 				if err != nil {
 					return err
 				}
@@ -554,7 +590,7 @@ func (u *terminal) setup(ctx context.Context) error {
 				}
 				n, err := strconv.ParseInt(text, 10, 64)
 				if err != nil || n < 1 || n > max {
-					u.print(fmt.Sprintf("Enter a whole number from 1 to %d.", max))
+					u.print(fmt.Sprintf(u.words().TokenInvalid, max))
 					continue
 				}
 				*setting.value = n
@@ -569,20 +605,20 @@ func (u *terminal) setup(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	u.print("Profile saved: " + profile.ProfileID)
+	u.print(fmt.Sprintf(u.words().ProfileSaved, profile.ProfileID))
 	if p.ProviderKind != "openai_account" {
 		if err = u.testModel(ctx, profile.ProfileID); err != nil {
 			return err
 		}
-		u.print("Probe passed: text, streaming, Tool calls, continuation, cancellation and clipping. Additional modalities and reasoning settings are unverified.")
+		u.print(u.words().ProbeCapabilities)
 	}
 	return u.selectModel(ctx, profile.ProfileID)
 }
 
 func (u *terminal) testModel(ctx context.Context, id string) error {
-	u.print(fmt.Sprintf("Testing connection and Agent capabilities… Each check allows up to %s; cold local models may need time to load. Ctrl-C exits.", llm.ProbeStepTimeout))
+	u.print(fmt.Sprintf(u.words().Testing, llm.ProbeStepTimeout))
 	_, err := u.Control.TestWithProgress(ctx, id, func(stage llm.ProbeStage) {
-		u.print("Checking " + stage.String() + "…")
+		u.print(fmt.Sprintf(u.words().Checking, stage.String()))
 	})
 	if ctx.Err() != nil {
 		return ctx.Err()
@@ -602,33 +638,42 @@ func (e *testFailure) Error() string { return "connection test failed" }
 func (e *testFailure) Unwrap() error { return e.cause }
 
 func (u *terminal) chooseModel(ctx context.Context, catalog []llm.CatalogModel, manual bool) (string, error) {
-	for i, model := range catalog {
-		u.print(fmt.Sprintf("  %d. Model: %s", i+1, model.ModelID))
+	if err := u.prepareView(ctx); err != nil {
+		return "", err
 	}
-	prompt := "Model ID or number"
+	for i, model := range catalog {
+		u.print(fmt.Sprintf(u.words().Model, i+1, model.ModelID))
+	}
+	prompt := u.words().ModelPrompt
 	if len(catalog) == 1 {
-		prompt += " [Enter for " + plain(catalog[0].ModelID) + "]"
+		prompt += fmt.Sprintf(u.words().SingleModel, plain(catalog[0].ModelID))
 	}
 	for {
 		value, err := u.ask(ctx, prompt)
 		if err != nil {
 			return "", err
 		}
-		if value == "" && len(catalog) == 1 {
-			return catalog[0].ModelID, nil
-		}
-		for _, model := range catalog {
+		facts := terminalcontract.ChoiceFacts{Count: len(catalog), Empty: value == "", Exact: -1, Number: -1, Manual: manual}
+		for i, model := range catalog {
 			if value == model.ModelID {
-				return value, nil
+				facts.Exact = i
+				break
 			}
 		}
 		if n, err := strconv.Atoi(value); err == nil && n >= 1 && n <= len(catalog) {
-			return catalog[n-1].ModelID, nil
+			facts.Number = n - 1
 		}
-		if manual && value != "" {
+		choice, err := u.choose(ctx, facts)
+		if err != nil {
+			return "", err
+		}
+		switch choice.Kind {
+		case "index":
+			return catalog[choice.Index].ModelID, nil
+		case "manual":
 			return value, nil
 		}
-		u.print("Choose a listed model by number or ID.")
+		u.print(u.words().ChooseListed)
 	}
 }
 
@@ -643,7 +688,7 @@ func (u *terminal) refreshReadiness(ctx context.Context) error {
 		return nil
 	}
 	u.readiness = diagnostics.Readiness
-	u.print("\nState: " + diagnostics.Readiness)
+	u.print(fmt.Sprintf(u.words().RecoveredState, diagnostics.Readiness))
 	if diagnostics.AgentIngressEnabled {
 		u.startDrain()
 	}

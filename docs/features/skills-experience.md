@@ -36,6 +36,8 @@ Main 和 Worker 可发现可用方法，再按需读取正文和资源；Main �
 
 **边界与剩余工作**：接入纠正/结果事件与可信 Reviewer；当前验证证据限于经审批的 bash 精确测试命令，需明确其他方法的证据标准。
 
+**与插件自进化的关系**：本项负责方法经验学习；[F-070／F-072](plugins-evolution.md) 分别负责功能插件托管及候选验证、审计、激活与回退。现有 Reviewer 不代表插件可自行修改、验收或部署，也不替代独立 Guardian。
+
 **验收目标**：从真实纠正或执行结果自动形成候选、按证据验证并可再次调用；普通 Worker 仍不能随意改 Skill。
 
 ## 如何使用
@@ -77,3 +79,7 @@ quality of the written method; model-quality review remains a release check.
 ## 实现与验证依据
 
 代码入口、最新架构与取舍见 [技术方案](../designs/skills-experience.md)；已有检查、未覆盖场景和验收方法见 [测试方案](../test-plans/skills-experience.md)。
+
+方法库发现／资源入口已迁入独立策略包，冻结文件与权限仍归 Host；设计边界见[插件设计](../designs/plugins-evolution.md#已提取的方法库边界)。相关回归为 `TestSkillPlugin*`、`make test-prompts` 与 `capabilities` 实际分发包场景。经验 Reviewer 的原始证据、验证和晋升不因此开放给普通插件。
+
+经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。F-023 的自动触发／编排仍待实现。

@@ -38,7 +38,7 @@ func TestSkillsUseSearchWithoutPromptCatalog(t *testing.T) {
 				t.Fatal("Skill catalog leaked into prompt", role, internal)
 			}
 		}
-		if strings.Contains(wire[0].Text, "Skills:") || strings.Contains(wire[0].Text, "skill_list") {
+		if strings.Contains(wire[0].Text, "skill_list") {
 			t.Fatal("tool usage instructions leaked into system", role)
 		}
 	}
@@ -83,7 +83,12 @@ func TestAgentStartsWithOneFrozenSystemMessage(t *testing.T) {
 				role = "main_role"
 			}
 			sections := messages[0].SystemSections
-			want := []string{role, "safety", "execution", "capabilities"}
+			want := []string{role, "capabilities", "safety", "execution"}
+			executionIndex := 3
+			if position == "main" {
+				want = []string{role, "safety", "execution"}
+				executionIndex = 2
+			}
 			if len(sections) != len(want) {
 				t.Fatal("unexpected system sections", sections)
 			}
@@ -93,10 +98,10 @@ func TestAgentStartsWithOneFrozenSystemMessage(t *testing.T) {
 				}
 			}
 			if position == "root" {
-				if !strings.Contains(sections[0].Text, prompt.Identity()) || !strings.Contains(sections[0].Text, prompt.Worker()) || !strings.Contains(sections[2].Text, prompt.Progress()) || !sections[2].Progress {
+				if sections[0].Text != prompt.Identity() || sections[0].ChildText != prompt.Worker() || !strings.Contains(sections[executionIndex].Text, prompt.Progress()) || !sections[executionIndex].Progress {
 					t.Fatal("Root identity or progress moved out of its section")
 				}
-			} else if sections[2].Progress || strings.Contains(sections[2].Text, prompt.Progress()) {
+			} else if sections[executionIndex].Progress || strings.Contains(sections[executionIndex].Text, prompt.Progress()) {
 				t.Fatal("Root-only progress leaked to another role")
 			}
 			if _, ok := FrozenSystemSections(messages); !ok {

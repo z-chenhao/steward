@@ -105,7 +105,7 @@ func TestExecutionDetailPrioritizesDeliveryAndRefreshesRunFacts(t *testing.T) {
 	}
 }
 
-func TestTaskPageCountMatchesRenderedRows(t *testing.T) {
+func TestLegacyWorkbenchV1PageCountMatchesRenderedRows(t *testing.T) {
 	v := &taskView{
 		Configurations: true,
 		Scheduled:      []task.ScheduledWork{{}},
@@ -115,11 +115,11 @@ func TestTaskPageCountMatchesRenderedRows(t *testing.T) {
 		}},
 		Executions: task.ExecutionList{Items: []task.Execution{{}, {}, {}}},
 	}
-	if taskPageCount(v) != 2 {
+	if legacyWorkbenchPageCountV1(v) != 2 {
 		t.Fatal("configuration count includes a hidden scheduled entry")
 	}
 	v.Configurations = false
-	if taskPageCount(v) != 3 {
+	if legacyWorkbenchPageCountV1(v) != 3 {
 		t.Fatal("execution count included configurations")
 	}
 }

@@ -1,0 +1,97 @@
+{
+  "live": [
+    {
+      "kind": "conversation",
+      "slots": [
+        "workspace-status",
+        "conversation-attention",
+        "conversation-messages",
+        "conversation-approvals"
+      ]
+    },
+    {
+      "kind": "attention",
+      "slots": [
+        "workspace-status",
+        "tasks-attention"
+      ]
+    },
+    {
+      "kind": "tasks",
+      "slots": [
+        "workspace-status",
+        "ongoing-work"
+      ]
+    },
+    {
+      "kind": "configurations",
+      "slots": [
+        "workspace-status",
+        "ongoing-work"
+      ]
+    },
+    {
+      "kind": "execution",
+      "slots": [
+        "workspace-status",
+        "execution-header",
+        "execution-progress",
+        "task-messages",
+        "execution-side"
+      ]
+    },
+    {
+      "kind": "task",
+      "slots": [
+        "workspace-status",
+        "task-header",
+        "task-feedback",
+        "task-progress",
+        "task-decisions",
+        "task-messages",
+        "task-milestones"
+      ]
+    },
+    {
+      "kind": "settings",
+      "slots": [
+        "workspace-status",
+        "signin-status"
+      ]
+    }
+  ],
+  "page_live": [
+    "conversation",
+    "tasks",
+    "task",
+    "attention",
+    "settings"
+  ],
+  "poll_ms": 1000,
+  "max_poll_ms": 30000,
+  "read_timeout_ms": 10000,
+  "execution_sheet": true,
+  "row_open": true,
+  "history": [
+    {
+      "kind": "instruction",
+      "key": "Request updated"
+    },
+    {
+      "kind": "completed",
+      "key": "Work round completed"
+    },
+    {
+      "kind": "failed",
+      "key": "Work attempt failed"
+    },
+    {
+      "kind": "needs_input",
+      "key": "Input requested"
+    },
+    {
+      "kind": "unknown",
+      "key": "Outcome unconfirmed"
+    }
+  ]
+}

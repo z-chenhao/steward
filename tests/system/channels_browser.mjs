@@ -1,7 +1,7 @@
 import {selectValue,selectParts} from './channels_controls.mjs';
 // Maintained Web UI driver: one real browser, no app-specific mock DOM.
 import {uiInteractions} from './channels_ui_interactions.mjs';
-import {modelConnections,composerModelLoading} from './channels_models.mjs';
+import {modelConnections,composerModelLoading,modelPluginPolicy} from './channels_models.mjs';
 import {capabilitySetup,capabilityDefaults,settingsAccount,pageTransitions,taskNavigation,settingsConsistency} from './channels_capabilities.mjs';
 import {sendFeedback} from './channels_sending.mjs';
 import {memoryInspection} from './channels_memory.mjs';
@@ -56,7 +56,11 @@ try{
  if(phase==='intelligent-ui')page.setDefaultTimeout(12000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  page.on('console',message=>{if(['error','warning'].includes(message.type())){diagnostics.push(message.text().slice(0,512));if(diagnostics.length>32)diagnostics.shift()}});
- const remote=[];page.on('request',r=>{if(new URL(r.url()).origin!==new URL(url).origin)remote.push(r.url())});
+ const remote=[];
+ // Opaque local Blob Workers do not contact another service. Keep actual
+ // foreign origins (and other ambient URL schemes) in the failure evidence.
+ const recordRemote=request=>{const target=new URL(request.url());if(target.protocol==='blob:'&&target.origin==='null')return;if(target.origin!==new URL(url).origin)remote.push(request.url())};
+ page.on('request',recordRemote);
  await page.goto(url);
  await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);
  await page.getByRole('button',{name:'Open workspace'}).click();
@@ -92,7 +96,9 @@ try{
  if(!await canvas.evaluate(node=>node.isConnected))throw Error('greeting replaced the complete-frame canvas');
  await page.getByRole('link',{name:'Steward home',exact:true}).hover();
  await assertAvatarSize('after hover');
- if(phase==='composer-models'){
+ if(phase==='model-picker-version'){
+  const {modelPickerVersion}=await import('./channels_models.mjs');await modelPickerVersion(page,context,url,evidence);
+ }else if(phase==='composer-models'){
   await composerModelLoading(page,context,url,evidence);
  }else if(phase==='preferences'){
   await preferences(page,context,browser,url,evidence);
@@ -273,7 +279,7 @@ try{
   if(!await original.evaluate(node=>node.isConnected&&node.value==='Keep my conversation draft.')||await page.locator('.composer input[type=file]').evaluate(node=>node.files?.[0]?.name)!=='kept.txt')throw Error('attention navigation lost original conversation draft/file');
   await writeFile(evidence+'/attention-browser.json',JSON.stringify({questionPosts:posts,keptDraft:true,keptAttachment:true,staleReviewRejected:true,keyboard:true,language:'zh-CN',width:390},null,2));
   await stale.close();await work.close();
- }else if(phase==='send-feedback'){await sendFeedback(page,context,url,evidence)}else if(phase==='model-connections'){await modelConnections(page,context,url,evidence)}else if(phase==='settings-consistency'){await settingsConsistency(page,context,url,evidence)}else if(phase==='page-transitions'){await pageTransitions(page,context,url,evidence)}else if(phase==='capability-defaults'){await capabilityDefaults(page,context,url,evidence)}else if(phase==='settings-account'){await settingsAccount(page,context,url,evidence)}else if(phase==='capability-setup'){await capabilitySetup(page,context,url,evidence)}else{
+ }else if(phase==='send-feedback'){await sendFeedback(page,context,url,evidence)}else if(phase==='model-connections'){await modelConnections(page,context,url,evidence)}else if(phase==='model-plugin-policy'){await modelPluginPolicy(page,context,url,evidence)}else if(phase==='settings-consistency'){await settingsConsistency(page,context,url,evidence)}else if(phase==='page-transitions'){await pageTransitions(page,context,url,evidence)}else if(phase==='capability-defaults'){await capabilityDefaults(page,context,url,evidence)}else if(phase==='settings-account'){await settingsAccount(page,context,url,evidence)}else if(phase==='capability-setup'){await capabilitySetup(page,context,url,evidence)}else{
  if(phase==='setup'){
   await page.evaluate(()=>document.fonts.ready);
   await page.setViewportSize({width:320,height:740});
@@ -467,15 +473,18 @@ try{
   await page.screenshot({path:evidence+'/empty-to-live-execution.png',animations:'disabled',fullPage:true});
   await sheet.getByRole('button',{name:'Close details',exact:true}).click();await page.waitForURL(url+'/tasks');
  }
- if(phase==='native-trace'){
+ if(['native-trace','native-trace-list','native-trace-detail','native-trace-execution'].includes(phase)){
   const facts=JSON.parse(process.env.STEWARD_NATIVE_TRACE_FACTS);
   await page.getByRole('link',{name:'Developer',exact:false}).click();
   await page.getByRole('heading',{name:'Tracing',exact:true}).waitFor();
-  await traceList(page,context,browser,url,evidence,facts);
+  if(phase==='native-trace-list'||phase==='native-trace-detail')await traceList(page,context,browser,url,evidence,facts,phase==='native-trace-list'?'list':'detail');
+  if(phase==='native-trace'){
   await page.setViewportSize({width:720,height:980});
   await page.waitForFunction(()=>document.querySelector('.obs-filter-rail')?.open===false);
   await page.getByRole('button',{name:'Filters',exact:true}).click();
   await page.getByRole('radio',{name:'Root Worker',exact:true}).check();await page.waitForURL(target=>target.searchParams.get('role')==='root');
+  await page.waitForFunction(()=>document.querySelector('.obs-filter-rail')?.open===false);
+  await page.getByRole('button',{name:'Filters',exact:true}).click();
   await page.getByRole('radio',{name:'All agents',exact:true}).check();await page.waitForURL(target=>!target.searchParams.get('role'));
   await page.setViewportSize({width:1400,height:980});
   await page.locator('[data-execution-id="'+facts.main+'"]').locator('a.trace-open').click();
@@ -490,6 +499,8 @@ try{
   if(!await page.locator('.frozen-content').innerText().then(text=>text.length>40))throw Error('system prompt missing from unified context');
   await page.screenshot({path:evidence+'/trace-prompt.png',fullPage:true});
   await page.getByRole('link',{name:'Input / Output',exact:true}).click();
+  await page.locator('.obs-detail-tabs a[aria-current="page"]').filter({hasText:/^Input \/ Output$/}).waitFor();
+  await page.locator('.obs-io-input').waitFor();
   await page.screenshot({path:evidence+'/trace-overview.png',fullPage:true});
   await page.locator('#observability-workbench').screenshot({path:evidence+'/trace-workbench.png'});
   const treeScroll=await page.locator('.obs-tree-pane').evaluate(node=>{node.scrollTop=60;return node.scrollTop});
@@ -517,6 +528,8 @@ try{
   await page.setViewportSize({width:1400,height:980});
   const plain=await browser.newContext({javaScriptEnabled:false});
   try{await plain.addCookies(await context.cookies());const fallback=await plain.newPage();await fallback.goto(page.url());await fallback.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();if(!await fallback.locator('.obs-tree .observation-node').count())throw new Error('trace requires JavaScript')}finally{await plain.close()}
+  }
+  if(phase==='native-trace-execution'){
   await page.locator('.app-sidebar').getByRole('link',{name:'Tasks',exact:true}).click();
   await executionDetails(page,context,browser,url,evidence,facts);
   await page.locator('.execution-metadata > summary').click();
@@ -525,7 +538,7 @@ try{
   if(await page.locator('.primary-settings svg').innerHTML()===await page.locator('.task-configuration h2>svg').innerHTML())throw Error('Settings and task configuration reuse one icon');
   await page.screenshot({path:evidence+'/task-result.png',fullPage:true});
   await taskNavigation(page,url,evidence);
-
+  }
  }
  if(phase==='inspection'){
   const facts=JSON.parse(process.env.STEWARD_INSPECTION_FACTS);
@@ -1045,8 +1058,8 @@ try{
    await page.evaluate(()=>addEventListener('message',event=>{if(event.data?.previewExecuted&&Array.from(document.querySelectorAll('#conversation-ui-preview iframe')).some(frame=>frame.contentWindow===event.source))window.recordPreviewExecution()}));
    const preview=page.locator('#conversation-ui-preview');
    await preview.locator('[data-ui-preview]').first().waitFor();
-   await preview.locator('td').filter({hasText:/^A$/}).waitFor();
-   const rows=await preview.locator('tbody tr').count();
+   const tablePreview=preview.frameLocator('iframe[title="Table preview"]');await tablePreview.locator('td').filter({hasText:/^A$/}).waitFor();
+   const rows=await tablePreview.locator('tbody tr').count();
    if(rows!==(phase.endsWith('direct')?1:2))throw Error('preview fabricated or lost complete rows: '+rows);
    const frame=page.frameLocator('#conversation-ui-preview iframe[title="Streaming visual"]');
    await frame.locator('#preview-text').getByText('Script stays off',{exact:true}).waitFor();
@@ -1079,7 +1092,7 @@ try{
     if(await page.evaluate(()=>scrollY)!==0)throw Error('drawing growth moved the reader away from the top');
     await writeFile(evidence+'/preview-after.png',await preview.screenshot());
    }
-   const button=preview.locator('button').first();await button.evaluate(node=>node.focus());
+   const button=tablePreview.locator('button').first();await button.evaluate(node=>node.focus());
    if(await button.evaluate(node=>document.activeElement===node))throw Error('preview controls accepted focus');
    for(const theme of ['light','dark'])for(const width of [1400,390]){
     await page.setViewportSize({width,height:980});
@@ -1094,7 +1107,7 @@ try{
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('preview overflowed the viewport');
    }
    await page.reload();await preview.locator('[data-ui-preview]').first().waitFor();
-   await preview.locator('td').filter({hasText:/^A$/}).waitFor();
+   await tablePreview.locator('td').filter({hasText:/^A$/}).waitFor();
    if(executed)throw Error('generated script ran during preview');
    await page.evaluate(()=>window.handoffPreviewFrame=document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]'));
    let releaseFinal;const heldFinal=new Promise(resolve=>{releaseFinal=resolve});
@@ -1130,9 +1143,13 @@ try{
   const activate=async button=>{await button.hover();await button.click()};
   const ordered=page.locator('.message.assistant.message-split').first();
   const sectionOrder=await ordered.locator(':scope > .message-bubble').evaluateAll(nodes=>nodes.map(n=>n.textContent));
-  if(!sectionOrder[0]?.includes('First, compare the exact values.')||!sectionOrder[1]?.includes('Comparison')||!sectionOrder[2]?.includes('Next, explore a value with the calculator.')||!await ordered.locator(':scope > .message-bubble').nth(3).locator('iframe[title="Calculator"]').count())throw Error('public paragraphs did not retain their visual section order');
+  if(!sectionOrder[0]?.includes('First, compare the exact values.')||!await ordered.locator(':scope > .message-bubble').nth(1).locator('iframe[data-table-view="true"]').count()||!sectionOrder[2]?.includes('Next, explore a value with the calculator.')||!await ordered.locator(':scope > .message-bubble').nth(3).locator('iframe[title="Calculator"]').count())throw Error('public paragraphs did not retain their visual section order');
   await ordered.locator('strong').getByText('调用与回传：',{exact:true}).waitFor();
-  await page.getByRole('columnheader',{name:'Option',exact:true}).waitFor();
+  // The owning Table now renders in its managed frame; its position and
+  // actual header remain required, not a title substring in the parent DOM.
+  const comparison=ordered.locator(':scope > .message-bubble').nth(1).frameLocator('iframe[data-table-view="true"]');
+  await comparison.locator('caption').getByText('Comparison',{exact:true}).waitFor();
+  await comparison.getByRole('columnheader',{name:'Option',exact:true}).waitFor();
   if(await page.locator('.message .intelligent-widget').count()!==6)throw Error('custom UI widgets missing');
   // Generated markup can appear while the Host still covers its frame with
   // the loading overlay. Wait for saved-state hydration before real clicks.
@@ -1193,6 +1210,9 @@ try{
      // from the preceding viewport width.
      await frame.locator('svg').first().evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
      if(await frame.locator('body').evaluate(()=>document.documentElement.scrollWidth>innerWidth+2))throw Error(title+' overflows its narrow frame');
+     // Parent and iframe resize notifications can span more than two frames.
+     // Observe the final readable geometry without forcing a redraw or changing data.
+     await frame.locator('svg').first().evaluate(()=>new Promise(resolve=>{const deadline=performance.now()+5000;const ready=()=>{const labels=Array.from(document.querySelectorAll('svg text')).filter(node=>node.getBoundingClientRect().width>0);if(labels.every(node=>node.getBoundingClientRect().height>=11)||performance.now()>=deadline)resolve();else requestAnimationFrame(ready)};ready()}));
      const labels=await frame.locator('svg text').evaluateAll(nodes=>nodes.filter(node=>node.getBoundingClientRect().width>0).map(node=>{const box=node.getBoundingClientRect();return {text:node.textContent,height:box.height,font:getComputedStyle(node).fontSize,svg:node.ownerSVGElement.getAttribute('viewBox'),width:node.ownerSVGElement.getBoundingClientRect().width}}));
      if(labels.some(label=>label.height<11))throw Error(title+' scales labels below readable size: '+JSON.stringify(labels));
      if(title==='Answer architecture'){
@@ -1277,12 +1297,12 @@ try{
  }
  if(phase==='rich-replies'){
   const grouped=page.locator('.message.assistant.message-split').first(),bubbles=grouped.locator(':scope > .message-bubble');
-  if(await bubbles.count()!==2||await bubbles.nth(0).locator('.answer-table').count()!==1||await bubbles.nth(1).locator('.answer-table').count())throw Error('Intelligent UI must occupy the first bubble before the final reply bubble');
+  if(await bubbles.count()!==2||await bubbles.nth(0).locator('iframe[title="Table view"]').count()!==1||await bubbles.nth(1).locator('iframe[title="Table view"]').count())throw Error('Intelligent UI must occupy the first bubble before the final reply bubble');
   const groupBox=await grouped.boundingBox(),uiBox=await bubbles.first().boundingBox();
   if(uiBox.width<groupBox.width*.85)throw Error('Intelligent UI collapsed to its minimum content width');
-  await page.locator('[data-renderer="native"] .answer-table').waitFor();
-  if(await page.locator('.answer-table tbody tr').count()!==2||await page.locator('.answer-table img,.answer-table script').count())throw Error('generated table lost data or interpreted markup');
-  if(!(await page.locator('.answer-table').innerText()).includes('<img src=x onerror='))throw Error('generated table changed literal cells');
+  const tableContent=page.frameLocator('iframe[title="Table view"]');await tableContent.locator('.answer-table').waitFor();
+  if(await tableContent.locator('.answer-table tbody tr').count()!==2||await tableContent.locator('.answer-table img,.answer-table script').count())throw Error('generated table lost data or interpreted markup');
+  if(!(await tableContent.locator('.answer-table').innerText()).includes('<img src=x onerror='))throw Error('generated table changed literal cells');
   for(const name of ['Table','barChart','pieChart','plan_visualization','scheduleTime'])await page.locator('[data-openintelligentui="'+name+'"]').first().waitFor();
   await page.locator('[data-openintelligentui=barChart] .recharts-bar-rectangle').first().waitFor();await page.locator('[data-openintelligentui=pieChart] .recharts-sector').first().waitFor();
   if(await page.locator('[data-openintelligentui=barChart] .recharts-bar-rectangle').count()!==2||!await page.locator('[data-openintelligentui=pieChart] .recharts-sector').count())throw Error('upstream native chart data did not render');
@@ -1323,10 +1343,14 @@ try{
    const after=await actions.boundingBox();if(Math.abs(after.y-before.y)>1)throw Error('Computer and Worker moved with the document');
    await page.screenshot({path:evidence+'/markdown-'+theme+'.png',fullPage:true});
   }
-  await page.locator('[data-renderer="native"] .answer-table').waitFor();
-  if(await page.locator('.answer-table tbody tr').count()!==2)throw new Error('native table lost rows');
-  if(await page.locator('.answer-table img, .answer-table script').count())throw new Error('table interpreted executable markup');
-  if(!await page.locator('.answer-table').innerText().then(t=>t.includes('<img src=x onerror=')))throw new Error('table changed semantic cell text');
+  // This fixture inserts an original projection without view_ref, not an
+  // accepted managed Table receipt. Its published pre-1.14 consumer is inline;
+  // the rich-replies phase above still requires the real managed iframe.
+  if(await page.locator('iframe[title="Table view"]').count())throw Error('historical Table fixture acquired a managed reference');
+  const tableContent=page;await tableContent.locator('.answer-table').waitFor();
+  if(await tableContent.locator('.answer-table tbody tr').count()!==2)throw new Error('native table lost rows');
+  if(await tableContent.locator('.answer-table img, .answer-table script').count())throw new Error('table interpreted executable markup');
+  if(!await tableContent.locator('.answer-table').innerText().then(t=>t.includes('<img src=x onerror=')))throw new Error('table changed semantic cell text');
   for(const text of ['Processed: Retain this semantic answer.','Processed: Retain this answer when table rendering fails.','Processed: Keep the original text for an empty projection.','Processed: Keep the original text for an unknown version.']){
    if(!await page.getByText(text,{exact:true}).isVisible())throw new Error('missing semantic fallback: '+text);
   }
@@ -1345,7 +1369,7 @@ try{
  const mobile=await page.context().newPage();
  try{
   mobile.on('pageerror',e=>errors.push(e.message));
-  mobile.on('request',r=>{if(new URL(r.url()).origin!==new URL(url).origin)remote.push(r.url())});
+  mobile.on('request',recordRemote);
   await mobile.setViewportSize({width:390,height:844});
   await mobile.goto(url);
   await mobile.waitForFunction(()=>document.querySelector('.composer textarea')?.getAttribute('class')?.includes('resize-none'));

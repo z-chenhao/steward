@@ -25,13 +25,13 @@ func TestClientSelectsProjectAuthConfigWithoutExposingCredentials(t *testing.T) 
 	}))
 	defer peer.Close()
 	c := Client{Secrets: secrets{}, KeyRef: "env:TEST", Endpoint: peer.URL}
-	if id, err := c.AuthConfig(context.Background(), "gmail", ""); err != nil || id != "ac_new" {
-		t.Fatal(id, err)
+	if selection, err := c.FindAuthConfigLegacyV1(context.Background(), "gmail", ""); err != nil || selection.ID != "ac_new" {
+		t.Fatal(selection.ID, err)
 	}
-	if id, err := c.AuthConfig(context.Background(), "gmail", "ac_override"); err != nil || id != "ac_override" {
-		t.Fatal(id, err)
+	if selection, err := c.FindAuthConfigLegacyV1(context.Background(), "gmail", "ac_override"); err != nil || selection.ID != "ac_override" {
+		t.Fatal(selection.ID, err)
 	}
-	if _, err := c.AuthConfig(context.Background(), "gmail", "ac_wrong"); err == nil {
+	if _, err := c.FindAuthConfigLegacyV1(context.Background(), "gmail", "ac_wrong"); err == nil {
 		t.Fatal("wrong toolkit auth config accepted")
 	}
 }
@@ -49,10 +49,10 @@ func TestClientAuthConfigPaginationAndScopedKeyFallback(t *testing.T) {
 	}))
 	defer peer.Close()
 	c := Client{Secrets: secrets{}, KeyRef: "env:TEST", Endpoint: peer.URL}
-	if id, err := c.AuthConfig(context.Background(), "gmail", ""); err != nil || id != "ac_page2" {
-		t.Fatal(id, err)
+	if selection, err := c.FindAuthConfigLegacyV1(context.Background(), "gmail", ""); err != nil || selection.ID != "ac_page2" {
+		t.Fatal(selection.ID, err)
 	}
-	if id, err := c.AuthConfig(context.Background(), "slack", ""); err != nil || id != "" {
-		t.Fatal("scoped key lost managed sign-in", id, err)
+	if selection, err := c.FindAuthConfigLegacyV1(context.Background(), "slack", ""); err != nil || selection.ID != "" {
+		t.Fatal("scoped key lost managed sign-in", selection.ID, err)
 	}
 }

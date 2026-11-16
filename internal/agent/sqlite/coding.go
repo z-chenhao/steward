@@ -34,7 +34,10 @@ func (r *Runs) bindTaskCode(ctx context.Context, tx *sql.Tx, id string) error {
 	cfg := *r.localEnvironment
 	location := coding.Location(r.host.codeRoot, id)
 	_, err = tx.ExecContext(ctx, `INSERT INTO task_code_environment(task_id,scope_hash,source_path,directory,baseline_path,status) VALUES(?,?,?,?,?,'pending')`, id, environment.ResourceHash(cfg), cfg.RepositorySource, location.Directory, location.Baseline)
-	return err
+	if err != nil {
+		return err
+	}
+	return r.bindCodeImportPolicy(ctx, tx, id, environment.ResourceHash(cfg))
 }
 
 func (r *Runs) prepareTaskCode(ctx context.Context, c agent.RunClaim, run agent.Run) error {
@@ -77,7 +80,15 @@ func (r *Runs) prepareTaskCode(ctx context.Context, c agent.RunClaim, run agent.
 				cancel()
 				return
 			case <-ticker.C:
-				if err := r.write(live, func(tx *sql.Tx) error { return fence(live, tx, c) }); err != nil {
+				if err := r.write(live, func(tx *sql.Tx) error {
+					if err := fence(live, tx, c); err != nil {
+						return err
+					}
+					if err := r.pluginDispatchFence(live, tx, c.RunID()); err != nil {
+						return err
+					}
+					return codeImportPolicyFence(live, tx, id)
+				}); err != nil {
 					if live.Err() == nil {
 						fenceErr = err
 					}
@@ -87,19 +98,32 @@ func (r *Runs) prepareTaskCode(ctx context.Context, c agent.RunClaim, run agent.
 			}
 		}
 	}()
+	limits, methodErr := r.prepareCodeImportPolicy(live, c, id, scope)
+	if methodErr != nil {
+		cancel()
+		<-done
+		if fenceErr != nil {
+			return fenceErr
+		}
+		var failure llm.ProviderError
+		if errors.As(methodErr, &failure) {
+			return r.failCodeRun(ctx, c, run.Version, failure)
+		}
+		return methodErr
+	}
 	w := existing
 	var prepareErr error
 	if status == "ready" {
 		prepareErr = coding.Validate(live, existing)
 	} else {
-		w, prepareErr = coding.Prepare(live, r.host.codeRoot, source, id, scope, func(point string) {
+		w, prepareErr = coding.PrepareWithLimits(live, r.host.codeRoot, source, id, scope, func(point string) {
 			r.host.boundary(point)
 			select {
 			case <-tool.ShutdownSignal(ctx):
 				cancel()
 			default:
 			}
-		})
+		}, limits)
 	}
 	interrupted := live.Err()
 	cancel()
@@ -129,6 +153,12 @@ func (r *Runs) prepareTaskCode(ctx context.Context, c agent.RunClaim, run agent.
 		if err := fence(context.WithoutCancel(ctx), tx, c); err != nil {
 			return err
 		}
+		if err := r.pluginDispatchFence(context.WithoutCancel(ctx), tx, c.RunID()); err != nil {
+			return err
+		}
+		if err := codeImportPolicyFence(context.WithoutCancel(ctx), tx, id); err != nil {
+			return err
+		}
 		_, err := tx.ExecContext(context.WithoutCancel(ctx), `UPDATE task_code_environment SET status=?,baseline_hash=?,error_code=? WHERE task_id=? AND status!='ready'`, state, w.BaselineHash, code, id)
 		return err
 	})
@@ -153,24 +183,38 @@ const codeReportTask = ` FROM task_code_environment e JOIN task t USING(task_id)
  AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)`
 
 func (s *Store) CodeReport(ctx context.Context, ref string, withDiff bool) (coding.Report, error) {
+	report, _, err := s.codeReport(ctx, ref, withDiff)
+	return report, err
+}
+
+func (s *Store) codeReport(ctx context.Context, ref string, withDiff bool) (coding.Report, codeReportMethod, error) {
+	var method codeReportMethod
 	var out coding.Report
 	var taskID string
 	err := s.db.QueryRowContext(ctx, `SELECT t.task_id,t.task_ref,e.directory,e.baseline_path,e.baseline_hash,e.status,e.error_code`+codeReportTask, ref).Scan(&taskID, &out.TaskRef, &out.Directory, &out.Baseline, &out.BaselineHash, &out.Status, &out.ErrorCode)
 	if err == sql.ErrNoRows {
-		return coding.Report{}, agent.ErrNotFound
+		return coding.Report{}, method, agent.ErrNotFound
 	}
 	if err != nil {
-		return coding.Report{}, agent.ErrStorage
+		return coding.Report{}, method, agent.ErrStorage
 	}
 	location := coding.Location(s.codeRoot, taskID)
 	if out.Directory != location.Directory || out.Baseline != location.Baseline {
-		return coding.Report{}, coding.ErrInvalid
+		return coding.Report{}, method, coding.ErrInvalid
+	}
+	method, err = s.prepareCodeReportMethod(ctx, ref, taskID)
+	if err != nil {
+		return coding.Report{}, method, err
+	}
+	direction := "ASC"
+	if method.Recipe.Order == "recent" {
+		direction = "DESC"
 	}
 	out.Commands = []coding.Command{}
 	rows, err := s.db.QueryContext(ctx, `SELECT i.arguments_json,i.status,i.attempt_count,i.created_at,coalesce(i.result_json,'null'),coalesce(i.error_json,'null') FROM tool_invocation i JOIN run r USING(run_id) JOIN task_code_environment e USING(task_id) JOIN capability_snapshot c ON c.snapshot_id=r.capability_snapshot_id
- WHERE r.task_id=? AND EXISTS(SELECT 1 FROM json_each(c.tools_json) j WHERE json_extract(j.value,'$.name')=i.tool_name AND json_extract(j.value,'$.resource_hash')=e.scope_hash) AND i.tool_name='builtin__bash' ORDER BY i.created_at,i.invocation_id LIMIT 257`, taskID)
+ WHERE r.task_id=? AND EXISTS(SELECT 1 FROM json_each(c.tools_json) j WHERE json_extract(j.value,'$.name')=i.tool_name AND json_extract(j.value,'$.resource_hash')=e.scope_hash) AND i.tool_name='builtin__bash' ORDER BY i.created_at `+direction+`,i.invocation_id `+direction+` LIMIT ?`, taskID, method.Recipe.Commands+1)
 	if err != nil {
-		return coding.Report{}, agent.ErrStorage
+		return coding.Report{}, method, agent.ErrStorage
 	}
 	total := 0
 	for rows.Next() {
@@ -178,10 +222,10 @@ func (s *Store) CodeReport(ctx context.Context, ref string, withDiff bool) (codi
 		var command coding.Command
 		if err = rows.Scan(&args, &command.Status, &command.Attempts, &command.AcceptedAt, &raw, &failure); err != nil {
 			rows.Close()
-			return coding.Report{}, agent.ErrStorage
+			return coding.Report{}, method, agent.ErrStorage
 		}
 		total += len(args) + len(raw) + len(failure)
-		if len(out.Commands) == 256 || total > 4<<20 {
+		if len(out.Commands) == method.Recipe.Commands || total > method.Recipe.CommandBytes {
 			out.CommandsTruncated = true
 			break
 		}
@@ -190,7 +234,7 @@ func (s *Store) CodeReport(ctx context.Context, ref string, withDiff bool) (codi
 		}
 		if json.Unmarshal([]byte(args), &input) != nil {
 			rows.Close()
-			return coding.Report{}, agent.ErrStorage
+			return coding.Report{}, method, agent.ErrStorage
 		}
 		command.Command = input.Command
 		command.Result = json.RawMessage(raw)
@@ -200,28 +244,29 @@ func (s *Store) CodeReport(ctx context.Context, ref string, withDiff bool) (codi
 	err = rows.Err()
 	rows.Close()
 	if err != nil {
-		return coding.Report{}, agent.ErrStorage
+		return coding.Report{}, method, agent.ErrStorage
 	}
 	if withDiff {
 		if out.Status != "ready" {
-			return coding.Report{}, coding.ErrInvalid
+			return coding.Report{}, method, coding.ErrInvalid
 		}
-		diff, err := coding.Review(ctx, out.Workspace)
+		diff, err := coding.ReviewWithPatchLimit(ctx, out.Workspace, method.Recipe.PatchBytes)
 		if err != nil {
-			return coding.Report{}, err
+			return coding.Report{}, method, err
 		}
 		out.Diff = &diff
 	}
 	s.boundary("before_code_report_return")
-	var currentID string
-	err = s.db.QueryRowContext(ctx, `SELECT t.task_id`+codeReportTask, ref).Scan(&currentID)
-	if err == sql.ErrNoRows || err == nil && currentID != taskID {
-		return coding.Report{}, agent.ErrNotFound
-	}
+	read, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
 	if err != nil {
-		return coding.Report{}, agent.ErrStorage
+		return coding.Report{}, method, err
 	}
-	return out, nil
+	err = codeReportMethodFence(ctx, read, method)
+	read.Rollback()
+	if err != nil {
+		return coding.Report{}, method, err
+	}
+	return out, method, nil
 }
 
 // SaveCodeReport stages the bounded snapshot outside SQL and rechecks Task and
@@ -231,7 +276,7 @@ func (s *Store) SaveCodeReport(ctx context.Context, ref string) (artifact.Descri
 }
 
 func (s *Store) saveCodeReport(ctx context.Context, ref string, handoff *codePRHandoff) (artifact.Descriptor, error) {
-	report, err := s.CodeReport(ctx, ref, true)
+	report, method, err := s.codeReport(ctx, ref, true)
 	if err != nil {
 		return artifact.Descriptor{}, err
 	}
@@ -247,7 +292,11 @@ func (s *Store) saveCodeReport(ctx context.Context, ref string, handoff *codePRH
 		return artifact.Descriptor{}, artifact.ErrLimit
 	}
 	artifacts := s.Artifacts()
-	staged, err := artifacts.Stage(ctx, artifact.Input{Name: "code-review.json", MediaType: "application/json"}, bytes.NewReader(raw))
+	input, err := s.PrepareArtifactInput(ctx, artifact.Input{Name: "code-review.json", MediaType: "application/json"})
+	if err != nil {
+		return artifact.Descriptor{}, err
+	}
+	staged, err := artifacts.Stage(ctx, input, bytes.NewReader(raw))
 	if err != nil {
 		return artifact.Descriptor{}, err
 	}
@@ -272,9 +321,18 @@ func (s *Store) saveCodeReport(ctx context.Context, ref string, handoff *codePRH
 				return agent.ErrConflict
 			}
 		}
+		if err := codeReportMethodFence(ctx, tx, method); err != nil {
+			return err
+		}
 		artifactRef, err := artifacts.CommitTx(ctx, tx, scope, staged, "")
 		if err != nil {
 			return err
+		}
+		if method.Managed {
+			recipe, _ := json.Marshal(method.Recipe)
+			if _, err = tx.ExecContext(ctx, `INSERT INTO code_report_method_binding(artifact_ref,graph_revision,driver_hash,recipe_json) VALUES(?,?,?,?)`, artifactRef, method.Revision, coding.DriverFingerprint(), string(recipe)); err != nil {
+				return err
+			}
 		}
 		out, err = artifacts.DescribeTx(ctx, tx, scope, artifactRef, true)
 		return err

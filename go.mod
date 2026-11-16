@@ -4,6 +4,7 @@ go 1.26.10
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.16.2
+	github.com/evanw/esbuild v0.28.2
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-isatty v0.0.24
 	github.com/nats-io/nats-server/v2 v2.15.2

@@ -66,7 +66,7 @@ flowchart TD
 
 Automatic reference costs serve the existing Trace list and metrics consumers:
 operators should not need a price entry for every common model. The private
-`llm/pricing` adapter reuses the bundled, attributed model catalog. Exact chat
+`reference-pricing` managed plugin reuses the bundled, attributed model catalog. Exact chat
 model ID and endpoint hash select a quote; unknown proxies never inherit prices
 from a model name alone. Account subscriptions use the catalog's subscription
 model reference rates, explicitly disclosed as API estimates rather than bills.
@@ -82,13 +82,38 @@ reprice after upgrades or replay; old calls are not backfilled. Trace totals
 prefer configured settlements, otherwise estimates, aggregate separately per
 currency and disclose estimated/partial coverage. Unknown usage is not zero.
 
-The estimator is a private consumer-owned seam between catalog policy and
-acceptance persistence, not a public model/profile API. Existing model snapshots,
-reservations and monetary approval contracts remain unchanged. Catalog estimates
-are observational and do not authorize or consume monetary headroom. This
-separation is required for subscription/custom billing semantics; adding live
-price synchronization, a pricing configuration UI, invoice reconciliation or
-retroactive valuation would be speculative and is deliberately deferred.
+The pricing seam is private and experimental. Before a new generation is admitted,
+Host requests a typed base/tier rate table using only the frozen provider kind,
+endpoint hash, wire API and model ID. Main/Root/Child and nested Web model calls
+use the same path. No prompt, usage, URL, credential, database or network access
+is exposed. The original Run graph selects the producer; a current selection
+cannot replace it. Catalog matching, aliases, ambiguity handling, decimal rates,
+source/version and long-context thresholds belong to the plugin.
+
+Migration 081 atomically stores the bounded rate table (or known-unknown /
+unavailable outcome) beside the admitted generation, with its original graph.
+A per-generation immutable marker distinguishes migrated receipts from explicit
+historical generations; missing managed data cannot restore a native estimate.
+No producer runs in a SQLite writer. At usage acceptance Host only applies the
+admitted numeric tiers to real token buckets, checks integer arithmetic and
+writes the original immutable estimate. The receipt is necessary for pending
+request/cold recovery and version provenance, not a general policy cache.
+
+Unavailable, invalid or unlisted reference rates leave the estimate unavailable;
+they never become zero or a native fallback. Ordinary work and explicit monetary
+consent remain independent. Guardian stop/quarantine and execution/privacy fences
+still apply. Pending generations reuse their admitted table without a producer;
+withdrawal does not reinterpret accepted prices or original references.
+
+The old implementation moved to `internal/llm/pricing/legacyv1`; its only consumers
+are explicit pre-service graph/Run snapshots, generations admitted before this boundary, and
+explicit never-managed embeddings. `ConfigureLegacyReferenceEstimator` names
+that boundary. Remove it with its remaining historical consumers; it is not a
+second current default. New managed requests always record the managed result,
+including unavailable outcomes. No live price synchronization, pricing UI,
+invoice reconciliation, retroactive valuation, public pricing SDK or arbitrary
+quote workflow is introduced. The Host's spend snapshot, manual override,
+reservation and monetary approval contracts remain unchanged.
 
 Use an explicitly configured account monetary boundary and provider/model price
 version. Token counts remain accounting and safety observations. They never

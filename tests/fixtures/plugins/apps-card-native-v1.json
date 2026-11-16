@@ -1,0 +1,6146 @@
+[
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 0,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 1,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 2,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 3,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 4,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 5,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 6,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 7,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 8,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 9,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 10,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 11,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 12,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 13,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "55316f91905fa784ff9219a5172510fa92103c19754007eb3f79ef67f3c7a43d",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8ccbdbf0d57db994517524c0d1486240bf4120e84be6a77996b49d42ded04f3a",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a5dcd768752371518a99bc49fbae4f4af73a76422d85bfa2c9872281bbcaf495",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2165cfc6f3ee1b1f3dca8bfb0215e3a45e8864c869fc78eba55fe8add0694108",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "8bf874d66b4c9000930fc23f3e1aee9b954b17705ffce793f00a1b3a6191df77",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "cdb5052bdaf1e040e67bc3d2ee467f261a2b3eed012d0ba33c9451008bef7bc1",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d0021e804fb72a1a388b63ed5ed7f02ac9fc2144a0a2155e459f5288b0a0eacf",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 14,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "16439d85153955b086d7f7145d1870a722d07f4c3f5e559a9a8bf4de2a17678c",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eeb6bb8caa7210b9081bb973fc5f750a8e5818ea5a891afb4f23ef9252942b34",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8efafde29621eb020dc11c2be8d6a8839e8488147a599d89db11a17d3db31c2b",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9490d0f87d76160740115b800cffc4dab576f2d4a5dba1c73dfb704dc5b3fbea",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "94550dc860c6ba57feb808a8555ad3c2610200055652dcb8ec382cba2128d2d8",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c8cfe2f9bd1a17881267e69b4a4d9178ec26b2d7d858c8563c62984290471008",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "c71ff74006492bc104d7c7e471f4eaf750be0e98a89ae903d40e252fde110451",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6993a1544a818ee6a0f4c745af3499c74a97f00be5cb900fdcc41c09423e61dd",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 15,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ce823dad5811d8138c4c1b68dedbc37c99f268ead5d2aaa106e5e9dca6a32a0d",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 16,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 17,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 18,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 19,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 20,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 21,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 22,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 23,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 24,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 25,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 26,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 27,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 28,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 29,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d4f4c67aa7a81aac4c3cd90bc08c45b68272210c462d2e988d54a69742306b3f",
+      "Bytes": 1162
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b96987e3411d4231b5c8d41caefaf6e3906e035d8d78f7eea5580e034c5408d1",
+      "Bytes": 1286
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5d84dafdac3ee2cacbaaac4ce3d5695816a39a45321d5ef6fb1dfd4bab873d4d",
+      "Bytes": 1261
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "248cc33808ba3aab9903af44a8360b1cd85bcacb29c7393e378c17c437640881",
+      "Bytes": 1385
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "7af340732c4ba91b4c26b6170e07390195eff2cf47415a7f073bc81002c57dab",
+      "Bytes": 1106
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e3b3b74b3171f55c4c2988685e19077965cb4cd8f0c2d21d84e9d679aa7b5aa9",
+      "Bytes": 1230
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "b5dd6a830a5713b418e9f50d9d979a38576e248a34f9b36a90c92a5072de0925",
+      "Bytes": 1138
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 30,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f6834b4943c783238ba6a10ce377aba15f2e7b87a30e1cd6833dc1dc27c8a851",
+      "Bytes": 1262
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9b4f0be912eb03e71716eb1aa0c3f44f3e3ea515fdb45f1405f6ad13e30020c3",
+      "Bytes": 983
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2867997a2d2c1f16ac66dbb49d26725f55831a654edb77b4788a06b24d97e1a2",
+      "Bytes": 1107
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "94ab3e481fa7ecd5b2cbb96153b3ec915df02a44d3a56981de95f62066f44b57",
+      "Bytes": 1082
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8e3d023c44a08a3f112726ec84f9dbf14024943fb2a3d7f5470dc0e30ce02e20",
+      "Bytes": 1206
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "4820f5665e73db58912459ac4f17478a70add1e04eb25fa704b39f280265b0c6",
+      "Bytes": 927
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f9ebd6fdacd31f409f2e91750e6cd46c441cc576c14dbdf4642f53caa3c3df00",
+      "Bytes": 1051
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "eac9f82e01457b791ae90b2e71a076c8a54379747b7d41782901145c0a3ab48c",
+      "Bytes": 939
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Flags": 31,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8a91c6e667f4c532d1e21e33e4301eb0c7c46c00be7daf4d39c37efe9a843a85",
+      "Bytes": 1063
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 0,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 1,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 2,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 3,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 4,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 5,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 6,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 7,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 8,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 9,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 10,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 11,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 12,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 13,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "9487a7a55e7cdd71d8102d72a35473e002861fba1efad5b7a55678e4eb6ae511",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ea8def0ef4f4f2f139f7e4aeaca5ea4ce749d5adf2f5cadc1d560e06ffd22ba9",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "2483bb036a6d9425fff3b819027cd5578f0405eee2f60c9e87b8f3bc71a86631",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8cc9e5c5235482b331460cc7b9c1800ddbeae6a20e3286f95015a4cb6bba70a8",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "bba7f8cea8adb68816f07fac4b4afd25910b5dd2e5c9bd2c64f059f4cd492f7a",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "8f641480bc60d8c81ef4312ae92f1e62cbd410437720fb33178851b201105b46",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "c0cd26348e17ead19d09e850b23e63eb10c0fc307bd6eee4976b31a8807faa62",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 14,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "f305678a693c92cf6c6a038f27d3d700cce192234ae2b472bea950eafb2829dc",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "28a6f3ee3a598fe8541e75703175603171d38d512da7a6f0e0fe8ec1fd6407ea",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "da228c33d03ee421dc0bf5f3bd6a0743406fffab7103736acba45381a680cd40",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "43532185405055e7d50b3c4fdb932d3cc28ad3e133cc549794a20d55a0649745",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ac4c542b5cde952bedcd4e6451948e5968b35537a1fb57ef63d2ae24ee979a94",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "e73be2d8c2836df2151730c99561fc7a2d0dd9cf13f542dfef54021b45571f56",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "2bd7eee2a1e7f495fa0f5ae30e672920f99fc6deea140a4681df9ec3450c5d3b",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "04b73dd28c0c15cc4f96297ce571e0e53bfa851f7f7d8f8fac278e7afc8e9a44",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 15,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "e5ca01ef3d33a0b445e48423bddee4221981b22e2d299ad8215b1da63bd5926d",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 16,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 17,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 18,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 19,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 20,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 21,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 22,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 23,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 24,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 25,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 26,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 27,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 28,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 29,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "a8700b987e7ec48d038d7a2489e18e657ff3c12111924d9ac34a7018b4e2bfa4",
+      "Bytes": 1164
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "b3a5f60dcc0556170b52cfe5df5f29df8f8f1a4fabe768018aa4ba668af88464",
+      "Bytes": 1288
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "d8a22c8eec5cd34458d0e2697f02d0f582005490e0cc505f2a7f2fc7b7c3659f",
+      "Bytes": 1263
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "dd6da6294b0d7f1217d86437a3fa7ffc474da59d9f38dbf4dcef97b90342143a",
+      "Bytes": 1387
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "65f692000539ae527d10b60b962509c6f5e8ebac4358c741640bbdb9720254d6",
+      "Bytes": 1108
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "572ec16f25c3592ad0d770df6e56ba121320d47d033ce053335a151397e7f36e",
+      "Bytes": 1232
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "3224bc2c49ebce594176f9f5dd8e1acc671ee7ed17f4a6e8aab7894a9bfe3aad",
+      "Bytes": 1143
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 30,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "3d36b589549d8c788cd4cecc7066d545e5c210719eeb480e2a56be488a0694e7",
+      "Bytes": 1267
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 0,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "6b7004139f823aa4c81369492df66b3a5c3fa97ca600c2835fea4ade5d876b7b",
+      "Bytes": 990
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 0,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "802f942b217674f0790f9f3336b515232ef149ff015a52a354d9e9c4046cbb9c",
+      "Bytes": 1114
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 1,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "cfe77d4aab712c1cac4a352291ee6bf3f46569d5766e905976369e652bae33ef",
+      "Bytes": 1089
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 1,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "a3b868774b2082a13d29bb25e264c7023d0887a2607ba264b8ae2623c9045a32",
+      "Bytes": 1213
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 2,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "5231d9c9e93185cf081a5bf49994cf7d7bda2736463692c8a6461005150bec4b",
+      "Bytes": 934
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 2,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "ab256dff2da2f00773a08307a7e647639857639b5a38eb535c8ff912b7785e79",
+      "Bytes": 1058
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 3,
+      "IconMode": 0
+    },
+    "Expected": {
+      "SHA256": "f5d1cc9c3acb962edeb86373c575628de162cf6d74e26397d3b241a243c5561d",
+      "Bytes": 949
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Flags": 31,
+      "TextMode": 3,
+      "IconMode": 1
+    },
+    "Expected": {
+      "SHA256": "82cac40e9fb1925f489710ca2d369b445aa268f3f2ec052c85bfc48b89d39870",
+      "Bytes": 1073
+    }
+  }
+]

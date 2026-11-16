@@ -2,8 +2,11 @@ package web
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
 	"strings"
 	"testing"
 )
@@ -32,8 +35,17 @@ func TestCapabilityStatusDistinguishesConfigurationFromConnectionProof(t *testin
 				t.Run(fmt.Sprintf("%s/%s/verified=%t", tc.name, language, verified), func(t *testing.T) {
 					v := tc.capability
 					v.Verified = verified
+					projection := capabilityforms.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
+					var copy []contract.Translation
+					if err := json.Unmarshal([]byte(projection.Copy.Source), &copy); err != nil {
+						t.Fatal(err)
+					}
+					view, err := compileCapabilityView(projection.View.Source, language, copy)
+					if err != nil {
+						t.Fatal(err)
+					}
 					var out bytes.Buffer
-					if err := localizedLayout(language).ExecuteTemplate(&out, "capability-status", v); err != nil {
+					if err := view.ExecuteTemplate(&out, "capability-status", capabilityViewRecordOf(v)); err != nil {
 						t.Fatal(err)
 					}
 					var label struct {

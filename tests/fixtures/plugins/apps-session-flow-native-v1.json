@@ -1,0 +1,1438 @@
+[
+  {
+    "Name": "pending",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://connect.composio.dev/link/original\",\"connected_account_id\":\"account_original\",\"link_token\":\"excluded\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "",
+      "ContinueError": "",
+      "Connections": [
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original Name",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_original"
+      },
+      "TTLSeconds": 600,
+      "Saves": 1,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "app-host",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://app.composio.dev/link/original\",\"connected_account_id\":\"account_original\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "",
+      "ContinueError": "",
+      "Connections": [
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original Name",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://app.composio.dev/link/original",
+        "connected_account_id": "account_original"
+      },
+      "TTLSeconds": 600,
+      "Saves": 1,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "public",
+    "Toolkit": "{\"slug\":\"example\",\"name\":\"Original Name\",\"no_auth\":true}",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        }
+      ],
+      "Error": "",
+      "ContinueError": "denied",
+      "Connections": [
+        {
+          "public": true,
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original Name",
+          "alias": "work",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 1,
+      "Changed": 1
+    }
+  },
+  {
+    "Name": "public-save-conflict",
+    "Toolkit": "{\"slug\":\"example\",\"name\":\"Original Name\",\"no_auth\":true}",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": true,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        }
+      ],
+      "Error": "conflict",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 1,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "public-callback-error",
+    "Toolkit": "{\"slug\":\"example\",\"name\":\"Original Name\",\"no_auth\":true}",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": true,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        }
+      ],
+      "Error": "callback",
+      "ContinueError": "denied",
+      "Connections": [
+        {
+          "public": true,
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original Name",
+          "alias": "work",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 1,
+      "Changed": 1
+    }
+  },
+  {
+    "Name": "toolkit-mismatch",
+    "Toolkit": "{\"slug\":\"foreign\",\"name\":\"Foreign\"}",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "invalid-session",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"bad/id\"}",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "missing-session",
+    "Toolkit": "",
+    "Session": "{}",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "session-malformed",
+    "Toolkit": "",
+    "Session": "not json",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "session-502",
+    "Toolkit": "",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 502,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "session-408",
+    "Toolkit": "",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 408,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "session-401",
+    "Toolkit": "",
+    "Session": "",
+    "Link": "",
+    "SessionStatus": 401,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-502",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 502,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-401",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "",
+    "SessionStatus": 0,
+    "LinkStatus": 401,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-malformed",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "not json",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-wrong-host",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://connect.composio.dev.evil.test/link/x\",\"connected_account_id\":\"account_original\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-http",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"http://app.composio.dev/link/x\",\"connected_account_id\":\"account_original\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-userinfo",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://user@app.composio.dev/link/x\",\"connected_account_id\":\"account_original\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-port",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://app.composio.dev:123/link/x\",\"connected_account_id\":\"account_original\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "link-invalid-account",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://app.composio.dev/link/x\",\"connected_account_id\":\"bad/id\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": false,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "unavailable",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 0,
+      "Changed": 0
+    }
+  },
+  {
+    "Name": "pending-save-conflict",
+    "Toolkit": "",
+    "Session": "{\"session_id\":\"session_original\"}",
+    "Link": "{\"redirect_url\":\"https://connect.composio.dev/link/original\",\"connected_account_id\":\"account_original\",\"link_token\":\"excluded\"}",
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "SaveFail": true,
+    "ChangedFail": false,
+    "Expected": {
+      "Requests": [
+        {
+          "Method": "GET",
+          "Path": "/toolkits/example",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "Path": "/auth_configs/ac_original",
+          "Query": "",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session",
+          "Query": "",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner_original",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "Path": "/tool_router/session/session_original/link",
+          "Query": "",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "Error": "conflict",
+      "ContinueError": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "Saves": 1,
+      "Changed": 0
+    }
+  }
+]

@@ -95,7 +95,20 @@ func (r *Runs) StartChildRun(ctx context.Context, tx *sql.Tx, c agent.RunClaim, 
 			return artifactFailure(e), nil
 		}
 	}
-	res, err := tx.ExecContext(ctx, `UPDATE run_tree SET descendants=descendants+1,version=version+1 WHERE root_run_id=? AND descendants<max_descendants AND ?>=0 AND ?<=max_depth`, rootID, depth, depth+1)
+	var managed bool
+	if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM rsi_run b,json_each(b.managed_services_json) s WHERE b.run_id=? AND s.value='steward.delegation-policy/1')`, c.RunID()).Scan(&managed); err != nil {
+		return tool.Result{}, err
+	}
+	if managed {
+		var available bool
+		if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM delegation_policy_binding WHERE root_run_id=? AND available=1)`, rootID).Scan(&available); err != nil {
+			return tool.Result{}, err
+		}
+		if !available {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
+	}
+	res, err := tx.ExecContext(ctx, `UPDATE run_tree SET descendants=descendants+1,version=version+1 WHERE root_run_id=? AND descendants<max_descendants AND ?>=0 AND ?<=max_depth AND descendants<coalesce((SELECT descendants FROM delegation_policy_binding WHERE root_run_id=?),max_descendants) AND ?<=coalesce((SELECT depth FROM delegation_policy_binding WHERE root_run_id=?),max_depth)`, rootID, depth, depth+1, rootID, depth+1, rootID)
 	if err != nil {
 		return tool.Result{}, err
 	}
@@ -122,7 +135,7 @@ func (r *Runs) StartChildRun(ctx context.Context, tx *sql.Tx, c agent.RunClaim, 
 	if _, valid := agent.FrozenSystemSections(parent.Messages); !valid {
 		return tool.Result{}, llm.ModelIncompatible
 	}
-	cp, _ := encoded(agent.Checkpoint{ContextVersion: parent.ContextVersion, ContextReady: true, Phase: "model", Messages: agent.InitialContext(agent.ContextOptions{Position: "child", Tools: specs, Task: req.Task, ArtifactRefs: req.ArtifactRefs, ParentSystem: parent.Messages})})
+	cp, _ := encoded(agent.Checkpoint{ContextVersion: parent.ContextVersion, Phase: "model", Messages: agent.InitialContext(agent.ContextOptions{Position: "child", Tools: specs, Task: req.Task, ArtifactRefs: req.ArtifactRefs, ParentSystem: parent.Messages})})
 	if _, err = tx.ExecContext(ctx, `INSERT INTO run(run_id,agent_id,conversation_id,task_id,parent_run_id,root_run_id,kind,worker_position,status,task_epoch,depth,capability_snapshot_id,model_snapshot_id,checkpoint_json,history_boundary,created_at,updated_at,version) VALUES(?,?,?,?,?,?,'worker','child','queued',?,?,?,?,?,0,?,?,1)`, id, agentID, conv, taskID, c.RunID(), rootID, epoch, depth+1, capID, modelID, cp, now, now); err != nil {
 		return tool.Result{}, err
 	}

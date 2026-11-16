@@ -161,7 +161,8 @@ func TestRecallInputKeepsChronologyAndEscapesHistoricalMessages(t *testing.T) {
 	}
 }
 
-func TestRecallFrozenPerTurnAndFenced(t *testing.T) {
+func TestRecallFrozenPerTurnAndFenced(t *testing.T) { testRecallFrozenPerTurn(t, false) }
+func testRecallFrozenPerTurn(t *testing.T, managed bool) {
 	ctx := context.Background()
 	s, r, h, a, _ := loopFixture(t)
 	m, e := memorysqlite.Open(ctx, filepath.Dir(s.path))
@@ -178,6 +179,10 @@ func TestRecallFrozenPerTurnAndFenced(t *testing.T) {
 	r.registry = registry
 	a.Registry = registry
 	r.ConfigureRecall(recall.Service{Memory: m, Conversation: h})
+	if managed {
+		installRecallPlugin(t, s, r)
+		recallTestVault(t, r)
+	}
 	if e = m.Apply(ctx, memory.Record{ID: "prior-tea", UserID: "local", ScopeType: "user", ScopeID: "local", Tier: "recall", Content: "tea PRIOR_EVIDENCE", SourceRefs: []memory.SourceRef{{Type: "conversation", Ref: "conversation:prior-tea"}}, CreatedAt: time.Now().Add(-time.Hour)}); e != nil {
 		t.Fatal(e)
 	}

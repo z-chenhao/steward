@@ -1,0 +1,5 @@
+{{define "app-sidebar-atom-begin-entry"}}<a href="{{.URL}}" data-app-open="{{.Slug}}">{{end}}
+{{define "app-sidebar-atom-icon"}}{{template "app-icon" .}}{{end}}
+{{define "app-sidebar-atom-name"}}<span>{{.Name}}</span>{{end}}
+{{define "app-sidebar-atom-pending"}}{{if .Pending}}<span class="app-pending-dot" aria-label="{{tr "Awaiting authorization"}}"></span>{{end}}{{end}}
+{{define "app-sidebar-atom-end-entry"}}</a>{{end}}

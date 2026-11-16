@@ -1,0 +1,13 @@
+{
+  "source": "apps62 accepted source36100eaa946a7e2910cbf5f9e6aeec1a6e0b4f9691c0f59c3cc0d1867446355b",
+  "files": {
+    "auth_config.go.txt": "1afe4f347752efd85e3f9b1b4a52b1e41c0f2937bf1f2c6195241820bd9c6f2d",
+    "reconnect.go.txt": "5debb37be963e4dd375bfd385461dcbb9c71f68fdf2f3dd552780a95e579fa73",
+    "settings.go.txt": "23ec0698a7b41fcc8dab1ec3fea2411cbb65242b9bad4febfb4fec2e898ec2d8",
+    "account_close.go.txt": "f3a5d181696e1f4f361f7cec9e6ecf05bc0c3605afff7e218ed23e89dd7be74f",
+    "intent.go.txt": "685565fd5cbce0b93a9879cb846c1155d11ea0b33376a7c709e646fadbae7633",
+    "session_flow.go.txt": "b73060a3d17c0bccbed2122988786bcac0c53c93c408a3de84bea7907556ae93",
+    "account_check.go.txt": "0c2dc1c6d513c2a6b1b308bd47a5cd795610d7ee6c77d0861e490e2354cd5a83",
+    "manifest.json": "14469a06dca65b9fc12be070c7633e73fb978752682d3dd99992e6775e7b4eb7"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "method": "Executed original terminal.setup with real line input, captured ProfileInput and output before migration; stopped at AddProfile boundary",
+  "source": "internal/tui/session.go",
+  "source_sha256": "4bc4a05db4fa7617b5278f1f59d6d382f471a0155690126f1a8cc139de7b7e49",
+  "capture_sha256": "f1cd2ced8c7a32724337d5aefe9cef41136ca60ca3e3c8b18bb8425a83cd85dc",
+  "fixture_sha256": "4f939002fee1578d02af5d0a8a8231fc6a308c88d93220d85d035604fe71b3ea",
+  "cases": 4
+}

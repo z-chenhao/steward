@@ -29,6 +29,9 @@ func (s Inspector) ObservationBody(ctx context.Context, q observability.BodyQuer
 		return observability.Body{}, err
 	}
 	defer tx.Rollback()
+	return s.observationBody(ctx, tx, q)
+}
+func (s Inspector) observationBody(ctx context.Context, tx *sql.Tx, q observability.BodyQuery) (observability.Body, error) {
 	o, err := selectedObservation(ctx, tx, q.ObservationQuery)
 	if err != nil {
 		return observability.Body{}, err

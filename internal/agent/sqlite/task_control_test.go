@@ -22,7 +22,7 @@ func controlFixture(t *testing.T, root func(llm.GenerationRequest) (llm.Generati
 	return controlPolicyFixture(t, root, "")
 }
 
-func controlPolicyFixture(t *testing.T, root func(llm.GenerationRequest) (llm.GenerationResult, error), policy string) (*Store, *Runs, agent.Actor) {
+func controlPolicyFixture(t *testing.T, root func(llm.GenerationRequest) (llm.GenerationResult, error), policy string, managed ...bool) (*Store, *Runs, agent.Actor) {
 	t.Helper()
 	s, r, a, p := taskFixture(t)
 	defs := []tool.Definition{agent.AgentToolDefinition()}
@@ -35,6 +35,9 @@ func controlPolicyFixture(t *testing.T, root func(llm.GenerationRequest) (llm.Ge
 		t.Fatal(err)
 	}
 	r.registry, a.Registry = registry, registry
+	if len(managed) > 0 && managed[0] {
+		installTaskPlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if isRoot(req) {
 			if root != nil {
@@ -165,8 +168,8 @@ func TestTaskControlPauseFencesLateWritesAndContinueNewRoot(t *testing.T) {
 	}
 }
 
-func testTaskControlPauseFencing(t *testing.T, policy string) {
-	s, r, a := controlPolicyFixture(t, nil, policy)
+func testTaskControlPauseFencing(t *testing.T, policy string, managed ...bool) {
+	s, r, a := controlPolicyFixture(t, nil, policy, managed...)
 	ctx := context.Background()
 	controlMain(t, r, a, "create", "create")
 	c := rootClaim(t, s, r)
@@ -730,5 +733,11 @@ func TestTaskControlPauseCancelsSafeToolBeforeNextStep(t *testing.T) {
 	}
 	if scalar(t, s, `SELECT count(*) FROM run r JOIN run_claim c USING(run_id) WHERE r.run_id=? AND r.kind='main' AND r.status='completed' AND c.epoch=1 AND c.token IS NULL`, pause.RunID) != 1 || scalar(t, s, `SELECT count(*) FROM task WHERE status='paused' AND task_epoch=2`) != 1 || scalar(t, s, `SELECT count(*) FROM run WHERE kind='worker' AND status='cancelled' AND error_code='task_paused'`) != 1 || scalar(t, s, `SELECT count(*) FROM run_claim WHERE token IS NOT NULL`) != 0 {
 		t.Fatal("Actor did not own and settle the pause Main/Root exactly once")
+	}
+}
+
+func TestTaskPluginPauseFencesLateWritesAndContinuesOriginalTask(t *testing.T) {
+	for _, policy := range []string{"once", "ongoing"} {
+		t.Run(policy, func(t *testing.T) { testTaskControlPauseFencing(t, policy, true) })
 	}
 }

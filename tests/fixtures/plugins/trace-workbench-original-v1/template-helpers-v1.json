@@ -1,0 +1,1992 @@
+{
+  "columns": [
+    "Trace ID",
+    "Created time",
+    "Type",
+    "Status",
+    "Output",
+    "Wall time",
+    "TTFT",
+    "Model",
+    "Tokens",
+    "Model cost"
+  ],
+  "statuses": [
+    "queued",
+    "running",
+    "waiting",
+    "completed",
+    "failed",
+    "cancelled"
+  ],
+  "labels": [
+    {
+      "family": "providerTimingLabel",
+      "input": "started",
+      "output": "HTTP request sent"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "headers",
+      "output": "Response headers received"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "error",
+      "output": "HTTP request failed"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "first_body",
+      "output": "First response data"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "first_text",
+      "output": "First model text"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "first_tool_call",
+      "output": "First model tool call"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "stream_terminal",
+      "output": "Provider stream terminal event"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "header_timeout",
+      "output": "Response headers timed out"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "stream_idle_timeout",
+      "output": "Response stream idle timeout"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "generation_deadline",
+      "output": "Generation time limit reached"
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "",
+      "output": ""
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "unknown",
+      "output": ""
+    },
+    {
+      "family": "providerTimingLabel",
+      "input": "FIRST_TEXT",
+      "output": ""
+    },
+    {
+      "family": "runRole",
+      "input": "main",
+      "output": "Main"
+    },
+    {
+      "family": "runRole",
+      "input": "root",
+      "output": "Root Worker"
+    },
+    {
+      "family": "runRole",
+      "input": "child",
+      "output": "Child Worker"
+    },
+    {
+      "family": "runRole",
+      "input": "",
+      "output": "Execution"
+    },
+    {
+      "family": "runRole",
+      "input": "unknown",
+      "output": "Execution"
+    },
+    {
+      "family": "runRole",
+      "input": "Main",
+      "output": "Execution"
+    },
+    {
+      "family": "observationRole",
+      "input": "Main",
+      "output": "main"
+    },
+    {
+      "family": "observationRole",
+      "input": "Root Worker",
+      "output": "root"
+    },
+    {
+      "family": "observationRole",
+      "input": "Child Worker",
+      "output": "child"
+    },
+    {
+      "family": "observationRole",
+      "input": "",
+      "output": ""
+    },
+    {
+      "family": "observationRole",
+      "input": "unknown",
+      "output": ""
+    },
+    {
+      "family": "observationRole",
+      "input": "main",
+      "output": ""
+    },
+    {
+      "family": "observationRole",
+      "input": "Root Worker ",
+      "output": ""
+    },
+    {
+      "family": "tabLabel",
+      "input": "overview",
+      "output": "Input / Output"
+    },
+    {
+      "family": "tabLabel",
+      "input": "metadata",
+      "output": "Details"
+    },
+    {
+      "family": "tabLabel",
+      "input": "context",
+      "output": "Context"
+    },
+    {
+      "family": "tabLabel",
+      "input": "wire",
+      "output": "Requests"
+    },
+    {
+      "family": "tabLabel",
+      "input": "diff",
+      "output": "Compare"
+    },
+    {
+      "family": "tabLabel",
+      "input": "",
+      "output": ""
+    },
+    {
+      "family": "tabLabel",
+      "input": "unknown",
+      "output": "unknown"
+    },
+    {
+      "family": "tabLabel",
+      "input": "Overview",
+      "output": "Overview"
+    },
+    {
+      "family": "observationParent",
+      "input": "agent:run:one",
+      "output": "run:one"
+    },
+    {
+      "family": "observationParent",
+      "input": "agent:",
+      "output": ""
+    },
+    {
+      "family": "observationParent",
+      "input": "run:one",
+      "output": "run:one"
+    },
+    {
+      "family": "observationParent",
+      "input": "",
+      "output": ""
+    },
+    {
+      "family": "observationParent",
+      "input": "agent:agent:two",
+      "output": "agent:two"
+    },
+    {
+      "family": "observationParent",
+      "input": "Agent:one",
+      "output": "Agent:one"
+    },
+    {
+      "family": "observationParent",
+      "input": " agent:one",
+      "output": " agent:one"
+    },
+    {
+      "family": "observationParent",
+      "input": "工具:one",
+      "output": "工具:one"
+    }
+  ],
+  "kinds": [
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "agent"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "agent"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "agent"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "agent"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "agent"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "agent",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "agent"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "generation"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "generation"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "generation"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "generation"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "generation"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "generation",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "generation"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "tool"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "tool"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "tool"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "tool"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "tool"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "tool",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "tool"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "wait"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "wait"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "span"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "wait"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "wait"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "span",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "span"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "http",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "retriever"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "retriever"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "retriever"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "retriever"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "retriever"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "retriever",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "retriever"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "unknown"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "unknown"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "unknown"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "unknown"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "unknown"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "unknown",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "unknown"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "Provider HTTP",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": "http"
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": ""
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": ""
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "Main",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": ""
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "approval wait"
+      },
+      "output": ""
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": "observed wait"
+      },
+      "output": ""
+    },
+    {
+      "input": {
+        "id": "",
+        "type": "",
+        "name": "misc",
+        "run_id": "",
+        "key": "",
+        "status": "",
+        "started_at_us": 0,
+        "timing": ""
+      },
+      "output": ""
+    }
+  ],
+  "titles": [
+    {
+      "input": {
+        "run_id": "",
+        "role": "main",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "main",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "main",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\n",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "main",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " Incoming \u003ctag\u003e \u0026 中文 ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": " Incoming \u003ctag\u003e \u0026 中文 "
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "main",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "原始文本",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "原始文本"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "main",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\t",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "root",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "root",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "root",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\n",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "root",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " Incoming \u003ctag\u003e \u0026 中文 ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "root",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "原始文本",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "root",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\t",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "child",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "child",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "child",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\n",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "child",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " Incoming \u003ctag\u003e \u0026 中文 ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "child",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "原始文本",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "child",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\t",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "unknown",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "unknown",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "unknown",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\n",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "unknown",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": " Incoming \u003ctag\u003e \u0026 中文 ",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "unknown",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "原始文本",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    },
+    {
+      "input": {
+        "run_id": "",
+        "role": "unknown",
+        "status": "",
+        "depth": 0,
+        "created_at": "",
+        "session_id": "",
+        "title": "Task \u003ctag\u003e \u0026 中文",
+        "model": "",
+        "input_preview": "\t",
+        "output_preview": "",
+        "metrics": {
+          "generations": 0,
+          "known_usage": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "costs": null,
+          "unpriced": 0
+        }
+      },
+      "output": "Task \u003ctag\u003e \u0026 中文"
+    }
+  ],
+  "geometry": [
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 0,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 0,
+      "height": 0,
+      "offset": 100,
+      "x": 0,
+      "width": 333.3333333333333
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 0,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 0,
+      "height": 0,
+      "offset": 100,
+      "x": 333.3333333333333,
+      "width": 333.3333333333333
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 0,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 0,
+      "height": 0,
+      "offset": 100,
+      "x": 666.6666666666666,
+      "width": 333.33333333333337
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 1,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 2,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 1,
+      "height": 50,
+      "offset": 50,
+      "x": 0,
+      "width": 333.3333333333333
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 1,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 2,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 0,
+      "height": 0,
+      "offset": 100,
+      "x": 333.3333333333333,
+      "width": 333.3333333333333
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 1,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 0,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 2,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 2,
+      "height": 100,
+      "offset": 0,
+      "x": 666.6666666666666,
+      "width": 333.33333333333337
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 7,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 3,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 7,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 7,
+      "height": 100,
+      "offset": 0,
+      "x": 0,
+      "width": 333.3333333333333
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 7,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 3,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 7,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 3,
+      "height": 42.857142857142854,
+      "offset": 57.142857142857146,
+      "x": 333.3333333333333,
+      "width": 333.3333333333333
+    },
+    {
+      "buckets": [
+        {
+          "at": "2026-10-29T01:00:00Z",
+          "count": 7,
+          "until": "2026-10-29T01:00:20Z"
+        },
+        {
+          "at": "2026-10-29T01:00:20Z",
+          "count": 3,
+          "until": "2026-10-29T01:00:40Z"
+        },
+        {
+          "at": "2026-10-29T01:00:40Z",
+          "count": 7,
+          "until": "2026-10-29T01:01:00Z"
+        }
+      ],
+      "count": 7,
+      "height": 100,
+      "offset": 0,
+      "x": 666.6666666666666,
+      "width": 333.33333333333337
+    }
+  ]
+}

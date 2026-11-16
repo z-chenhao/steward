@@ -1,0 +1,14 @@
+[
+  {
+    "current": "",
+    "action": "activate"
+  },
+  {
+    "current": "target",
+    "action": "activate"
+  },
+  {
+    "current": "other",
+    "action": "probe"
+  }
+]

@@ -67,14 +67,12 @@ func (r *Runs) evidenceLinks(ctx context.Context, a evidenceAccess, q evidence.R
 	if err != nil {
 		return err
 	}
-	if len(candidates) > 20 {
-		next := q.LinksOffset + 20
-		if next > 1000000 {
-			return artifact.ErrLimit
-		}
-		page.NextLinksOffset = &next
-		candidates = candidates[:20]
+	take, next, err := r.evidenceLinkWindow(ctx, a, q, len(candidates))
+	if err != nil {
+		return err
 	}
+	page.NextLinksOffset = next
+	candidates = candidates[:take]
 	for _, link := range candidates {
 		if a.githubScope != "" && link.Relation == "github_observation" {
 			// The final state snapshot rechecks these associations together.

@@ -2,139 +2,68 @@ package web
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
 	"net/http/httptest"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
 	"strings"
-	"sync"
 	"testing"
-	"time"
 
-	"github.com/z-chenhao/assistant/internal/agent/sqlite"
-	"github.com/z-chenhao/assistant/internal/connectedapps"
-	"github.com/z-chenhao/assistant/internal/connector/composio"
-	"github.com/z-chenhao/assistant/internal/interaction"
-	"github.com/z-chenhao/assistant/internal/llm/memory"
+	"github.com/z-chenhao/assistant/internal/plugin/appsinterface/contract"
 )
 
-// The maintained browser gate opts in after Playwright installation. Ordinary
-// Go control-plane tests need neither a browser nor a live external account.
-func TestAppsBrowserConnectionLifecycle(t *testing.T) {
-	if os.Getenv("STEWARD_TEST_APP_BROWSER") != "1" {
-		t.Skip("run by make test-browser")
+func TestAppsBrowserSourceHasOpaqueCSPAndEscapesProgram(t *testing.T) {
+	r := httptest.NewRequest("GET", "/api/apps/browser?interface_revision=original", nil)
+	w := httptest.NewRecorder()
+	renderAppBrowser(w, r, `onmessage=()=>{const attack="</script><script>location='/apps/configure'</script>"}`)
+	if w.Code != 200 {
+		t.Fatal(w.Code)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancel()
-	store, err := sqlite.Open(ctx, t.TempDir())
-	if err != nil {
-		t.Fatal(err)
+	csp := w.Header().Get("Content-Security-Policy")
+	for _, part := range []string{"sandbox allow-scripts", "default-src 'none'", "worker-src blob:", "connect-src 'none'", "form-action 'none'", "frame-ancestors 'self'"} {
+		if !strings.Contains(csp, part) {
+			t.Fatal(csp)
+		}
 	}
-	defer store.Close()
-	s := languageServer()
-	s.Core.(*updatesCore).Core = &notificationCore{preference: interaction.Preference{Channel: "auto"}}
-	s.Models = settingsModels{}
-	s.Capabilities = settingsLayoutCapabilities{}
-	s.Tasks = workspaceReader{}
-	s.Schedules = &scheduleServiceFixture{}
-	var mu sync.Mutex
-	status := map[string]string{}
-	creations := 0
-	secrets := memory.New()
-	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		mu.Lock()
-		defer mu.Unlock()
-		if r.URL.Path == "/test/configure-project" {
-			if err := secrets.Put(r.Context(), connectedapps.DefaultKeyRef, []byte("browser-test-project")); err != nil {
-				t.Error(err)
-			}
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		if r.URL.Path == "/test/activate" {
-			status[r.URL.Query().Get("id")] = "ACTIVE"
-			w.WriteHeader(204)
-			return
-		}
-		if r.URL.Path == "/test/expire" {
-			status[r.URL.Query().Get("id")] = "EXPIRED"
-			w.WriteHeader(204)
-			return
-		}
-		if r.URL.Path == "/test/count" {
-			_ = json.NewEncoder(w).Encode(map[string]int{"created": creations})
-			return
-		}
-		switch r.URL.Path {
-		case "/toolkits":
-			_, _ = w.Write([]byte(`{"items":[{"slug":"gmail","name":"Gmail","meta":{"description":"Connect your mail account."}}]}`))
-		case "/toolkits/gmail":
-			_, _ = w.Write([]byte(`{"slug":"gmail","name":"Gmail"}`))
-		case "/auth_configs":
-			_, _ = w.Write([]byte(`{"items":[]}`))
-		case "/tool_router/session":
-			_, _ = w.Write([]byte(`{"session_id":"trs_browser"}`))
-		case "/tool_router/session/trs_browser/link":
-			creations++
-			id := "ca_" + strconv.Itoa(creations)
-			status[id] = "INITIALIZING"
-			_ = json.NewEncoder(w).Encode(map[string]string{"redirect_url": "https://app.composio.dev/link/" + id, "connected_account_id": id})
-		default:
-			if strings.HasPrefix(r.URL.Path, "/connected_accounts/") {
-				id := strings.TrimPrefix(r.URL.Path, "/connected_accounts/")
-				if strings.HasSuffix(id, "/revoke") {
-					id = strings.TrimSuffix(id, "/revoke")
-					status[id] = "REVOKED"
-					_ = json.NewEncoder(w).Encode(map[string]any{"connected_account": map[string]string{"id": id, "status": "REVOKED"}})
-					return
-				}
-				if r.Method == "DELETE" {
-					delete(status, id)
-					w.WriteHeader(204)
-					return
-				}
-				state, _ := store.LoadApps(r.Context())
-				_ = json.NewEncoder(w).Encode(map[string]any{"id": id, "user_id": state.UserID, "status": status[id], "toolkit": map[string]string{"slug": "gmail"}, "data": map[string]string{"access_token": "never-expose"}})
-				return
-			}
-			t.Error("unexpected broker request", r.Method, r.URL)
-			http.NotFound(w, r)
-		}
-	}))
-	defer peer.Close()
-	s.Apps = &connectedapps.Service{Store: store, Secrets: secrets, Client: composio.Client{Endpoint: peer.URL}}
-	server := httptest.NewServer(s)
-	defer server.Close()
-	script, err := filepath.Abs("../../../tests/system/apps_connections_browser.mjs")
-	if err != nil {
-		t.Fatal(err)
+	if strings.Contains(csp, "allow-same-origin") || strings.Contains(csp, "allow-popups") || strings.Contains(csp, "unsafe-inline") {
+		t.Fatal(csp)
 	}
-	dir := os.Getenv("STEWARD_APP_BROWSER_EVIDENCE")
-	if dir == "" {
-		dir = t.TempDir()
+	body := w.Body.String()
+	if strings.Count(body, "<script ") != 1 || strings.Count(body, "</script>") != 1 || !strings.Contains(body, `event.source!==parent`) || !strings.Contains(body, `new Worker(url)`) {
+		t.Fatal(body)
 	}
-	cmd := exec.CommandContext(ctx, "node", script, server.URL, peer.URL, dir)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		t.Fatalf("browser flow: %v\n%s", err, output)
+	r.Header.Set("Sec-Fetch-Dest", "document")
+	w = httptest.NewRecorder()
+	renderAppBrowser(w, r, "candidate")
+	if !strings.HasPrefix(w.Header().Get("Content-Type"), "text/plain") || strings.Contains(w.Body.String(), "candidate") {
+		t.Fatal(w.Body.String())
 	}
 }
 
-// Read-only domain peer; rendering and Select enhancement use the real server.
-type settingsLayoutCapabilities struct{}
-
-func (settingsLayoutCapabilities) List(context.Context) ([]Capability, error) {
-	return []Capability{{ID: "memory", Title: "Memory", State: "Enabled", Automatic: true}}, nil
-}
-func (settingsLayoutCapabilities) Detail(ctx context.Context, _ string) (Capability, error) {
-	items, err := (settingsLayoutCapabilities{}).List(ctx)
-	return items[0], err
-}
-func (settingsLayoutCapabilities) Test(context.Context, string, string, string) (Capability, error) {
-	return Capability{}, ErrCapabilityUnavailable
-}
-func (settingsLayoutCapabilities) Save(context.Context, string, string, string) error {
-	return ErrCapabilityUnavailable
+func TestAppsBrowserRequiresExactSelectedReferenceAndCannotUseNative(t *testing.T) {
+	var selected string
+	s := &Server{Interface: func(_ context.Context, reference, locale string) (AppInterfacePolicy, error) {
+		selected = reference
+		return AppInterfacePolicy{revision: reference, browserView: &contract.BrowserView{Worker: "onmessage=()=>{}", CSS: ".app-tile{}"}}, nil
+	}}
+	for _, path := range []string{"/api/apps/browser", "/api/apps/browser?interface_revision=", "/api/apps/browser?interface_revision=one&interface_revision=two", "/api/apps/browser?interface_revision=one&action=disconnect", "/api/apps/browser?interface_revision=one&format=css&format=css", "/api/apps/browser?interface_revision=one&format=unknown", "/api/apps/browser?interface_revision=one&format=css&extra=1"} {
+		w := httptest.NewRecorder()
+		s.appBrowser(w, httptest.NewRequest("GET", path, nil))
+		if w.Code != 400 {
+			t.Fatalf("%s: %d", path, w.Code)
+		}
+	}
+	w := httptest.NewRecorder()
+	s.appBrowser(w, httptest.NewRequest("GET", "/api/apps/browser?interface_revision=frozen", nil))
+	if w.Code != 200 || selected != "frozen" {
+		t.Fatal(w.Code, selected)
+	}
+	w = httptest.NewRecorder()
+	s.appBrowser(w, httptest.NewRequest("GET", "/api/apps/browser?interface_revision=frozen&format=css", nil))
+	if w.Code != 200 || !strings.HasPrefix(w.Header().Get("Content-Type"), "text/css") || w.Body.String() != ".app-tile{}" {
+		t.Fatal("style route changed frozen source", w.Code, w.Body.String())
+	}
+	s.Interface = nil
+	w = httptest.NewRecorder()
+	s.appBrowser(w, httptest.NewRequest("GET", "/api/apps/browser?interface_revision=frozen", nil))
+	if w.Code != 503 {
+		t.Fatal(w.Code)
+	}
 }

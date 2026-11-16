@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/z-chenhao/assistant/internal/connector/exa"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"github.com/z-chenhao/assistant/internal/webcontent"
@@ -57,12 +56,12 @@ func TestSearchPolicyAndEvidence(t *testing.T) {
 		})
 	}
 	for _, e := range []error{llm.AuthRequired, llm.GenerationCancelled, llm.InvalidProviderResponse, errors.New("BUDGET_APPROVAL_REQUIRED")} {
-		if fallbackAllowed(e) {
+		if SourceFallbackAllowed(e) {
 			t.Fatal(e)
 		}
 	}
 	for _, e := range []error{llm.ModelIncompatible, llm.ProviderUnavailable, llm.RateLimited} {
-		if !fallbackAllowed(e) {
+		if !SourceFallbackAllowed(e) {
 			t.Fatal(e)
 		}
 	}
@@ -113,9 +112,9 @@ func TestLivePublicWebAccess(t *testing.T) {
 	if e != nil || !strings.Contains(page.Text, "ip=") {
 		t.Fatalf("live public text fetch: %v", e)
 	}
-	text, sources, e := exa.Search(context.Background(), "site:go.dev Go programming language", 5, nil)
-	if e != nil || len(sources) == 0 {
-		t.Fatalf("Exa live search sources=%d bytes=%d error=%v", len(sources), len(text), e)
+	facts, e := ReadSource(context.Background(), Config{SourceOrder: []string{"exa"}}, "exa", SearchQuery{Query: "site:go.dev Go programming language", NumResults: 5}, nil, nil, nil)
+	if e != nil || len(facts.Sources) == 0 {
+		t.Fatalf("Exa live search sources=%d bytes=%d error=%v", len(facts.Sources), len(facts.Text), e)
 	}
-	t.Logf("public text fetch and Exa live search passed (%d sources)", len(sources))
+	t.Logf("public text fetch and Exa live search passed (%d sources)", len(facts.Sources))
 }

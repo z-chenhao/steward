@@ -1,0 +1,713 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.computer-use",
+  "version": "1.0.8",
+  "feature_ids": [
+    "F-027"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.computer-observation/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "diff_allowed": {
+            "type": "boolean"
+          },
+          "full": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "diff_allowed",
+          "full"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "full",
+              "diff"
+            ]
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 131073
+          },
+          "removed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 131073
+          },
+          "added": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 131073
+          }
+        },
+        "required": [
+          "mode",
+          "start",
+          "removed",
+          "added"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-wait-recipe/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ceilings": {
+            "type": "object",
+            "properties": {
+              "timeout_ms": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "min_poll_ms": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 1000
+              },
+              "max_poll_ms": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "timeout_ms",
+              "min_poll_ms",
+              "max_poll_ms"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ceilings"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "poll_ms": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "timeout_ms",
+          "poll_ms"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-documentation/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "core",
+              "browser"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16384
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-text-selection/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "wanted": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "prefix",
+          "length",
+          "wanted"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "anchor": {
+            "type": "string",
+            "enum": [
+              "start",
+              "end"
+            ]
+          },
+          "move": {
+            "type": "integer",
+            "minimum": -256,
+            "maximum": 256
+          },
+          "extend": {
+            "type": "integer",
+            "minimum": -256,
+            "maximum": 256
+          }
+        },
+        "required": [
+          "anchor",
+          "move",
+          "extend"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-inventory-order/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "apps",
+              "windows",
+              "browsers",
+              "tabs"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "indices": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxItems": 65536
+          }
+        },
+        "required": [
+          "indices"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-target-match/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "apps",
+              "windows",
+              "browsers",
+              "tabs"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "indices": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxItems": 65536
+          }
+        },
+        "required": [
+          "indices"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-action-parameters/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "",
+              "native",
+              "tab"
+            ]
+          }
+        },
+        "required": [
+          "method",
+          "surface"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "button": {
+            "type": "string",
+            "enum": [
+              "",
+              "left",
+              "right"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "",
+              "up",
+              "down",
+              "left",
+              "right"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "app": {
+            "type": "string"
+          },
+          "browser": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "failure": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT",
+              "NOT_FOUND"
+            ]
+          },
+          "key_input": {
+            "type": "object",
+            "properties": {
+              "keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "maxItems": 16385
+              }
+            },
+            "required": [
+              "keys"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-playwright-parameters/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "playwright.count",
+              "playwright.textContent",
+              "playwright.click",
+              "playwright.fill",
+              "playwright.waitForSelector",
+              "playwright.waitForURL",
+              "playwright.download",
+              "playwright.upload"
+            ]
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "tab",
+              "native"
+            ]
+          }
+        },
+        "required": [
+          "method",
+          "surface"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "failure": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT",
+              "NOT_FOUND"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-transfer-presentation/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "exportArtifact"
+            ]
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          }
+        },
+        "required": [
+          "method",
+          "surface"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "name_from_source": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "media_type": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "failure": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT",
+              "NOT_FOUND"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-browser-upload/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "playwright.upload"
+            ]
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "tab",
+              "native"
+            ]
+          }
+        },
+        "required": [
+          "method",
+          "surface"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "failure": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT",
+              "NOT_FOUND"
+            ]
+          },
+          "name_from_source": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "media_type": {
+            "type": "string",
+            "maxLength": 16384
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.computer-browser-projection/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "body_units": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16384
+          },
+          "rows": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "type": "object",
+              "properties": {
+                "role_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 131072
+                },
+                "aria_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 256
+                },
+                "inner_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 256
+                },
+                "placeholder_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 256
+                },
+                "value_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4096
+                }
+              },
+              "required": [
+                "role_units",
+                "aria_units",
+                "inner_units",
+                "placeholder_units"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "body_units",
+          "rows"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "body_units": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16384
+          },
+          "rows": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 499
+                },
+                "label": {
+                  "type": "string",
+                  "enum": [
+                    "aria",
+                    "inner",
+                    "placeholder",
+                    "role"
+                  ]
+                },
+                "label_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 256
+                },
+                "value_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4096
+                }
+              },
+              "required": [
+                "index",
+                "label",
+                "label_units"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "body_units",
+          "rows"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "browser_upload_driver": {
+        "type": "string",
+        "minLength": 64,
+        "maxLength": 64
+      },
+      "browser_snapshot_driver": {
+        "type": "string",
+        "minLength": 64,
+        "maxLength": 64
+      }
+    },
+    "required": [
+      "browser_upload_driver",
+      "browser_snapshot_driver"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ]
+}

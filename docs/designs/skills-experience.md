@@ -134,3 +134,7 @@ context-budget assertions run unchanged before that selection.
 ## 当前设计取舍
 
 Skill 是方法库，Memory 是用户事实，两者分开。Skill 目录保存在冻结的 Host metadata 中；摘要按需搜索，内容按需读取，保留匹配、版本及相对资源约束。经验审核生命周期不授予普通 Main/Worker Skill 管理或写入权限。
+
+方法库发现／资源入口已迁入独立策略包，冻结文件与权限仍归 Host；设计边界见[插件设计](../designs/plugins-evolution.md#已提取的方法库边界)。相关回归为 `TestSkillPlugin*`、`make test-prompts` 与 `capabilities` 实际分发包场景。经验 Reviewer 的原始证据、验证和晋升不因此开放给普通插件。
+
+经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。F-023 的自动触发／编排仍待实现。

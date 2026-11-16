@@ -1,0 +1,24 @@
+[
+  {
+    "Name": "redaction-expansion",
+    "SourceBodyBytes": 1048638,
+    "DecodedNameBytes": 10485760,
+    "DecodedNameRunes": 10485760,
+    "NameSHA256": "27aa8c4f129e960427d6ecd0ba43af4f029af39767c893e09b81cd2b4a968080",
+    "Expected": [
+      0,
+      1
+    ]
+  },
+  {
+    "Name": "invalid-utf8-expansion",
+    "SourceBodyBytes": 3145790,
+    "DecodedNameBytes": 9437184,
+    "DecodedNameRunes": 3145728,
+    "NameSHA256": "8fc559b3a816f23aec12231af8e2c755f33e9be535ffe022ab2a3edb070423e2",
+    "Expected": [
+      1,
+      0
+    ]
+  }
+]

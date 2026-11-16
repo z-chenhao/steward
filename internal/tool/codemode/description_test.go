@@ -7,6 +7,26 @@ import (
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
+func TestConnectedAppNamespacesKeepExactAccountBoundary(t *testing.T) {
+	for _, test := range []struct {
+		tool, namespace string
+		matches         bool
+	}{
+		{"mcp__apps__b__personal__search_tools", "apps__b__personal", true},
+		{"mcp__apps__b__personal__execute", "mcp__apps__b__personal", true},
+		{"mcp__apps__b__personal__execute", "apps__b__work", false},
+		{"mcp__apps__b__personal__execute", "apps", false},
+		{"mcp__apps__b____execute", "apps__b__", false},
+		{"mcp__apps__b__personal__execute__other", "apps__b__personal", false},
+		{"mcp__apps__read", "apps", true},
+		{"mcp__fixture__read", "fixture", true},
+	} {
+		if got := NamespaceMatches(test.tool, test.namespace); got != test.matches {
+			t.Errorf("namespace %q matched %q: %v, want %v", test.namespace, test.tool, got, test.matches)
+		}
+	}
+}
+
 func TestDescriptionIncludesSchemaDeclarationsAndInstructions(t *testing.T) {
 	spec := tool.Spec{Name: "builtin__agent_run", Description: "Create one Child, never a Task.", InputSchema: `{"type":"object","properties":{"task":{"type":"string"},"artifactRefs":{"type":"array","items":{"type":"string"}}},"required":["task"],"additionalProperties":false}`}
 	spec.ModelInputSchema = `{"type":"object","description":"Compact direct declaration"}`

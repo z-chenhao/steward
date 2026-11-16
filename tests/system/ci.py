@@ -11,7 +11,7 @@ from verify_channels import CHANNEL_GROUPS
 # Keep the public local Make targets intact. CI partitions their existing work
 # across isolated runners rather than rebuilding a shared, mutable worktree.
 SOFTWARE = {
-    'go': 'make test-prompts test-go',
+    'go': 'make test-prompts test-go test-tool-discovery',
     'connected-apps': 'make test-connected-apps',
     'provider': 'npm test --prefix provider-bridge',
     'frontend': 'npm run check --prefix web\nnpm test --prefix web\nnpm test --prefix runtime/javascript',
@@ -20,16 +20,16 @@ SOFTWARE = {
 }
 SYSTEM = {
     'main-tasks': ('main', 'tasks', 'children'),
-    'tools-provider': ('tools', 'artifacts', 'code-recovery', 'local-provider', 'account'),
-    'startup-ui': ('startup', 'intelligent-ui', 'ui-interactions'),
+    'tools-provider': ('tools', 'artifacts', 'code-recovery', 'local-provider', 'account', 'model-menu-plugins', 'feishu-plugins'),
+    'startup-ui': ('startup', 'intelligent-ui', 'ui-interactions', 'capability-form-plugins'),
 }
 MEMORY_GATES = ('memory-maintenance', 'recall')
 CAPABILITIES = ('task-code-environments', 'task-code-recovery', 'tool-loading', 'main-business')
-RACE = "go test -race ./internal/agent ./internal/agent/sqlite ./internal/interaction/web ./internal/llm/bridge ./internal/app ./internal/llm/secret -run 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*)' -count=1"
+RACE = "go test -race ./internal/agent ./internal/agent/sqlite ./internal/config/setup ./internal/interaction/web ./internal/interaction/feishu ./internal/llm/bridge ./internal/app ./internal/llm/secret ./internal/tui -run 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*|.*ModelMenu.*|Capability.*|Guided.*|FeishuStatus.*|FeedbackProjection.*|FeedbackUnavailableProjection.*|DeliveryProjection.*|FrozenDelivery.*|ManagedCard.*|CardPresentation.*|TerminalInterface.*|ModelPicker.*|ModelConnection.*|ModelSettings.*|SettingsDraft.*)' -count=1"
 
 
 def plan(kind):
-    names = SOFTWARE if kind == 'software' else (*SYSTEM, *('channels-' + group for group in CHANNEL_GROUPS), 'capabilities-race', 'memory-context')
+    names = SOFTWARE if kind == 'software' else (*SYSTEM, *('channels-' + group for group in CHANNEL_GROUPS), 'capabilities-race', 'memory-context', 'computer-plugins', 'web-plugins', 'mcp-plugins', 'connected-apps-plugins', 'tool-discovery-plugins', 'github-plugins', 'artifact-plugins')
     return dict(include=[dict(lane=name,
         frontend=str(name in ('frontend', 'browser-infra', 'lint')).lower(),
         browser=str(name in ('browser-infra', 'lint', 'tools-provider', 'startup-ui') or name.startswith('channels-')).lower())
@@ -45,11 +45,27 @@ def command(lane):
     if lane.startswith('channels-') and lane.removeprefix('channels-') in CHANNEL_GROUPS:
         group = lane.removeprefix('channels-')
         return f'make build\npython3 tests/system/verify_channels.py --group {group} --binary bin/steward --evidence evidence/{lane}/report.json'
+    if lane == 'computer-plugins':
+        return 'make build\npython3 tests/system/runner.py --gate computer-plugins --binary bin/steward --evidence evidence/e2e-computer-plugins'
+    if lane == 'web-plugins':
+        return 'make build\npython3 tests/system/runner.py --gate web-plugins --binary bin/steward --evidence evidence/e2e-web-plugins'
+    if lane == 'mcp-plugins':
+        return ("go test -race -p 1 -timeout=15m ./internal/tool/mcp/... ./internal/plugin/mcpbridge/... ./internal/agent/sqlite -run '^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)' -count=1\n"
+                'make build\npython3 tests/system/runner.py --gate mcp-plugins --binary bin/steward --evidence evidence/e2e-mcp-plugins')
+    if lane == 'connected-apps-plugins':
+        return 'make build\npython3 tests/system/runner.py --gate connected-apps-plugins --binary bin/steward --evidence evidence/e2e-connected-apps-plugins'
+    if lane == 'tool-discovery-plugins':
+        return 'make build\npython3 tests/system/runner.py --gate tool-discovery-plugins --binary bin/steward --evidence evidence/e2e-tool-discovery-plugins'
+    if lane == 'github-plugins':
+        return 'make test-github-plugins\npython3 tests/system/runner.py --gate github-plugins --binary bin/steward --evidence evidence/e2e-github-plugins'
+    if lane == 'artifact-plugins':
+        return 'make test-artifact-plugins\npython3 tests/system/runner.py --gate artifact-plugins --binary bin/steward --evidence evidence/e2e-artifact-plugins'
     if lane == 'memory-context':
         gates = ' '.join('--gate ' + gate for gate in MEMORY_GATES)
         return f'make test-memory build\npython3 tests/system/runner.py {gates} --binary bin/steward --evidence evidence/e2e-{lane}'
     if lane == 'capabilities-race':
-        commands = ['make build', 'make test-web-access', RACE]
+        commands = ['make build', 'make test-web-access', RACE,
+                    "go test -race ./internal/observability/sqlite ./internal/rsi -run '^TestTrace(ManagedHistoryWithoutCatalog|ColdMissingCatalog|PartialActivationSchema)' -count=1"]
         commands.extend(f'python3 tests/system/verify_capabilities.py --binary bin/steward --scenario {scenario} --evidence evidence/{scenario}.json'
                         for scenario in CAPABILITIES)
         return '\n'.join(commands)

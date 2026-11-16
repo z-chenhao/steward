@@ -32,7 +32,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/llm/account"
 	"github.com/z-chenhao/assistant/internal/llm/bridge"
 	"github.com/z-chenhao/assistant/internal/llm/fake"
-	"github.com/z-chenhao/assistant/internal/llm/pricing"
+	pricing "github.com/z-chenhao/assistant/internal/llm/pricing/legacyv1"
 	"github.com/z-chenhao/assistant/internal/llm/secret"
 	llmsqlite "github.com/z-chenhao/assistant/internal/llm/sqlite"
 	"github.com/z-chenhao/assistant/internal/maintenance"
@@ -42,6 +42,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/observer/github"
 	"github.com/z-chenhao/assistant/internal/operations"
 	"github.com/z-chenhao/assistant/internal/recall/embedding"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/skill"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
@@ -54,6 +55,9 @@ type App struct {
 	capabilitySettings      *configsetup.Manager
 	core                    atomic.Pointer[runtimeCore]
 	prepareCore             func(context.Context) error
+	prepareGitHubPlugins    func(context.Context) error
+	prepareArtifactPlugins  func(context.Context) error
+	prepareFeaturePlugins   func(context.Context) error
 	eventsRequired          atomic.Bool
 	eventsReady             atomic.Bool
 	runtimeWake             chan struct{}
@@ -191,11 +195,19 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 		_ = t.Close()
 		return nil, err
 	}
-	store.Artifacts().Policy = cfg.Artifact
-	store.ConfigureCostEstimator(pricing.New())
+	store.Artifacts().Policy = cfg.Artifact.LegacyPolicy()
+	store.Artifacts().RetentionDays = cfg.Artifact.RetentionDays
+	store.Artifacts().CleanupBatch = cfg.Artifact.CleanupBatch
+	store.ConfigureLegacyReferenceEstimator(pricing.New())
 	a := &App{capabilitySettings: configsetup.New(cfg, secrets), rootLock: lock, store: store, telemetry: t, artifacts: store.Artifacts(), skillConfig: cfg.Skills}
 	cfg = a.capabilitySettings.PrepareDefaults(ctx)
 	a.skillConfig = cfg.Skills
+	if fixture == "" || fixture == "computer" {
+		store.ConfigureArtifactHost(a.Plugins().Catalog)
+		a.prepareArtifactPlugins = func(ctx context.Context) error { return a.prepareBuiltinPlugins(ctx, cfg) }
+		a.prepareFeaturePlugins = func(ctx context.Context) error { return a.prepareBuiltinPlugins(ctx, cfg) }
+	}
+	a.capabilitySettings.Presentation = a.readCapabilityPresentation
 	a.history, err = conversationsqlite.Open(ctx, cfg.App.DataRoot)
 	if err != nil {
 		_ = store.Close()
@@ -244,9 +256,17 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 	}
 	a.control = llm.Control{Store: store.Models(), Secrets: secrets}
 	a.connectedApps = &connectedapps.Service{Store: store, Secrets: secrets}
+	a.connectedApps.ReadEditorial = a.readAppsEditorial
+	a.connectedApps.ReadAccountPolicies = a.readAppsAccountPolicies
+	a.connectedApps.ReadAccountClose = a.readAppsAccountClose
+	a.connectedApps.ReadSettings = a.readAppsSettings
+	a.connectedApps.ReadInventory = a.readAppsAccountInventory
 	a.connectedApps.Changed = a.refreshConnectedApps
 	if cfg.GitHub != nil {
-		a.github = &github.Service{Config: *cfg.GitHub, Store: store, Client: github.Client{Secrets: secrets}}
+		a.github = &github.Service{Config: *cfg.GitHub, Store: store, Client: github.Client{Secrets: secrets}, ReadStep: store.ReadGitHubStep}
+		// A source poll is execution, even through OpenControl. It prepares only
+		// the verified feature composition, not models/Skills/runtime/scope.
+		a.prepareGitHubPlugins = func(ctx context.Context) error { return a.prepareBuiltinPlugins(ctx, cfg) }
 	}
 	accountSecrets := secrets
 	if _, production := secrets.(secret.Files); production {
@@ -289,6 +309,7 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 		}
 	}
 	startup.Logger.Info("startup stage", "stage", "provider_ready")
+	store.Inspector().ConfigureTracePlugins(rsi.NewCatalog(cfg.App.DataRoot))
 	projection := store.Runs(a.history, nil)
 	projection.ConfigureScheduler(cfg.Scheduler)
 	a.core.Store(&runtimeCore{runs: projection})
@@ -464,7 +485,7 @@ func (a *App) History(ctx context.Context) ([]conversation.Message, error) {
 }
 
 func (a *App) Terminal() tui.Session {
-	return tui.Session{State: a, Models: a.Models(), Accounts: a.accounts, DecideApproval: a.DecideApproval,
+	return tui.Session{Interface: a.terminalInterfaceReader(a.Plugins), ConnectionPolicy: a.readModelConnection, State: a, Models: a.Models(), Accounts: a.accounts, DecideApproval: a.DecideApproval,
 		Messages: a.TerminalHistory, Control: a.control, CurrentActor: func() agent.Actor { return a.Actor(nil) }, AwaitRuntime: a.WaitForRuntime, Discover: a.Discover,
 		AccountCatalog: a.AccountCatalog, LoginEnvironment: a.LoginEnvironment}
 }

@@ -4,6 +4,6 @@
  <p class="approval-action">{{tr (toolLabel .Tool)}}</p>
  <dl class="approval-fields">{{range .Fields}}<div><dt>{{tr .Name}}</dt><dd>{{.Value}}</dd></div>{{end}}</dl>
  <details class="technical-details"><summary>{{tr "Exact action details"}}</summary><p><code>{{.Tool}}</code></p><pre>{{.Raw}}</pre></details>
- {{if .Pending}}<form action="/approval" method="post"><input type="hidden" name="return_to" value="{{.ReturnTo}}"><input type="hidden" name="approval_id" value="{{.ID}}"><input type="hidden" name="hash" value="{{.Hash}}"><button name="decision" value="approved">{{tr "Approve"}}</button><button class="secondary" name="decision" value="denied">{{tr "Decline"}}</button></form>{{else}}{{end}}
+ {{if .Pending}}<form action="/approval" method="post"><input type="hidden" name="return_to" value="{{.ReturnTo}}"><input type="hidden" name="approval_id" value="{{.ID}}"><input type="hidden" name="hash" value="{{.Hash}}"><button class="control-form-action" name="decision" value="approved">{{tr "Approve"}}</button><button class="secondary control-form-action" name="decision" value="denied">{{tr "Decline"}}</button></form>{{else}}{{end}}
 </section>
 {{end}}

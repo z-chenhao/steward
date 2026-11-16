@@ -14,6 +14,7 @@ import (
 	computerfake "github.com/z-chenhao/assistant/internal/computer/fake"
 	"github.com/z-chenhao/assistant/internal/computer/macosvm"
 	"github.com/z-chenhao/assistant/internal/config"
+	configsetup "github.com/z-chenhao/assistant/internal/config/setup"
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
 	"github.com/z-chenhao/assistant/internal/evidence"
 	"github.com/z-chenhao/assistant/internal/llm"
@@ -23,6 +24,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/plugin/webaccess"
 	"github.com/z-chenhao/assistant/internal/recall"
 	"github.com/z-chenhao/assistant/internal/recall/embedding"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/skill"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
@@ -46,6 +48,17 @@ func (a *App) prepareRuntime(ctx context.Context, cfg config.Config, fixture str
 		return err
 	}
 	runs := a.store.Runs(a.history, registry)
+	runs.ConfigurePlugins(rsi.NewCatalog(cfg.App.DataRoot))
+	if err = runs.ConfigureSkillLibrary(); err != nil {
+		return err
+	}
+	configuredMemoryKey := ""
+	if cfg.Memory != nil {
+		configuredMemoryKey = cfg.Memory.EncryptionKeyRef
+	}
+	runs.ConfigureRecallSnapshotVault(func(ctx context.Context, ref string) (memory.Vault, error) {
+		return configsetup.RecallSnapshotVault(ctx, cfg.App.DataRoot, secrets, configuredMemoryKey, ref)
+	})
 	runs.ConfigureWebAccess(webAccessConfig(cfg), a.provider, secrets)
 	if cfg.Feishu != nil {
 		runs.ConfigureFeishuReviewWorkspace(cfg.Feishu.WorkspaceURL)
@@ -95,6 +108,11 @@ func (a *App) prepareRuntime(ctx context.Context, cfg config.Config, fixture str
 	runs.ConfigureRecentTasks(time.Duration(cfg.Tasks.RecentDays)*24*time.Hour, cfg.Tasks.RecentLimit)
 	if a.testAutomationClock != nil {
 		runs.SetTestAutomationClock(*a.testAutomationClock)
+	}
+	if fixture == "" || fixture == "computer" {
+		if err := a.prepareBuiltinPlugins(ctx, cfg); err != nil {
+			return err
+		}
 	}
 	a.core.Store(&runtimeCore{runs: runs, registry: registry})
 	return nil

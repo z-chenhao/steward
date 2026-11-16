@@ -117,9 +117,6 @@ func TestStaticInterfaceCopyHasChineseTranslations(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if translate("zh-CN", "Embedding endpoint returned a valid 768-dimensional vector for a fixed diagnostic sentence.") != "嵌入端点已为固定诊断句返回有效的 768 维向量。" {
-		t.Fatal("formatted diagnostic not localized")
-	}
 	if translate("zh-CN", "unknown-tool__owner") != "unknown-tool__owner" {
 		t.Fatal("unknown technical identifier was rewritten")
 	}

@@ -57,11 +57,11 @@ func TestClientCataloguePaginationAndHostedLinkProtocol(t *testing.T) {
 	}))
 	defer peer.Close()
 	c := Client{Endpoint: peer.URL, KeyRef: "env:TEST", Secrets: secrets{}}
-	result, err := c.Catalog(context.Background(), "calendar", "productivity", "page-2")
+	result, err := c.CatalogLegacyV1(context.Background(), "calendar", "productivity", "page-2")
 	if err != nil || result.NextCursor != "page-3" || result.Total != 1700 || len(result.Items) != 1 || result.Items[0].Meta.Logo != "https://logos.composio.dev/api/googlecalendar" {
 		t.Fatal(result, err)
 	}
-	link, err := c.Connect(context.Background(), "owner", "gmail", "work", "ac_custom")
+	link, err := c.ConnectLegacyV1(context.Background(), "owner", "gmail", "work", "ac_custom")
 	if err != nil || link.AccountID != "ca_work" || count.Load() != 3 {
 		t.Fatal(link, err, count.Load())
 	}
@@ -76,7 +76,7 @@ func TestClientRejectsRedirectsAndInvalidLinksWithoutLeakingCredentials(t *testi
 	}))
 	defer peer.Close()
 	c := Client{Endpoint: peer.URL, Secrets: secrets{}, KeyRef: "env:TEST"}
-	_, err := c.Catalog(context.Background(), "", "", "")
+	_, err := c.CatalogLegacyV1(context.Background(), "", "", "")
 	if err == nil || strings.Contains(err.Error(), "project-key-private") || leaked.Load() != 0 {
 		t.Fatal(err, leaked.Load())
 	}
@@ -91,7 +91,7 @@ func TestClientRejectsRedirectsAndInvalidLinksWithoutLeakingCredentials(t *testi
 			}))
 			defer p.Close()
 			c.Endpoint = p.URL
-			if _, err := c.Connect(context.Background(), "owner", "gmail", "work", ""); err == nil {
+			if _, err := c.ConnectLegacyV1(context.Background(), "owner", "gmail", "work", ""); err == nil {
 				t.Fatal("unsafe authorization link")
 			}
 		})
@@ -178,7 +178,7 @@ func TestClientBoundsResponsesAndCancellation(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := c.Catalog(ctx, "", "", ""); err == nil {
+	if _, err := c.CatalogLegacyV1(ctx, "", "", ""); err == nil {
 		t.Fatal("ignored cancellation")
 	}
 }

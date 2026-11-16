@@ -1,0 +1,2360 @@
+[
+  {
+    "name": "all-fields",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"owner@example.test\",\"extras\":\"[\\\"meal\\\",\\\"bag\\\"]\",\"mode\":\"train\",\"notes\":\"line one\\nline two\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "canonical-order",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"meal\",\"bag\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"owner@example.test\",\"extras\":\"[\\\"meal\\\",\\\"bag\\\"]\",\"mode\":\"train\",\"notes\":\"line one\\nline two\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "line-feed",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\nline two"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"owner@example.test\",\"extras\":\"[\\\"meal\\\",\\\"bag\\\"]\",\"mode\":\"train\",\"notes\":\"line one\\nline two\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "number-range",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "6",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "number-not-finite",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "NaN",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "invalid-date",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-02-29",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "invalid-email",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "Display \u003cowner@example.test\u003e",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "unknown-option",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "plane",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "duplicate-options",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"meal\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "required-boolean",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "false",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "unknown-field",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two",
+        "other": "forged"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "nul",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "a\u0000b"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "too-long",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "required-blank",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": " ",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "optional-omitted",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "city": "杭州",
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "mode": "train"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: \n",
+        "Mode: train\n",
+        "Extras: []\n",
+        "Notes: \n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"\",\"extras\":\"[]\",\"mode\":\"train\",\"notes\":\"\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "required-missing",
+    "input": {
+      "operation": "answer",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "values": {
+        "confirm": "true",
+        "count": "2",
+        "date": "2026-11-14",
+        "email": "owner@example.test",
+        "extras": "[\"bag\",\"meal\"]",
+        "mode": "train",
+        "notes": "line one\r\nline two"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "meeting-0",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "0"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Meeting time preference for Interview: 2026-11-16 at 10:00 (45 min). This selects a preferred time; it does not book a meeting."
+      ],
+      "response": "0",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "meeting-1",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "1"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Meeting time preference for Interview: 2026-11-17 at 11:00 (45 min). This selects a preferred time; it does not book a meeting."
+      ],
+      "response": "1",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "meeting-decline",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "decline"
+      }
+    },
+    "expected": {
+      "parts": [
+        "Meeting time preference for Interview: none of the proposed times work. Please suggest alternatives."
+      ],
+      "response": "decline",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "meeting--1",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "-1"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "meeting-2",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "2"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "meeting-01",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "01"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "meeting-unknown",
+    "input": {
+      "operation": "answer",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "values": {
+        "choice": "unknown"
+      }
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "name": "all-fields-restore",
+    "input": {
+      "operation": "restore",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"owner@example.test\",\"extras\":\"[\\\"meal\\\",\\\"bag\\\"]\",\"mode\":\"train\",\"notes\":\"line one\\nline two\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "canonical-order-restore",
+    "input": {
+      "operation": "restore",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"owner@example.test\",\"extras\":\"[\\\"meal\\\",\\\"bag\\\"]\",\"mode\":\"train\",\"notes\":\"line one\\nline two\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "line-feed-restore",
+    "input": {
+      "operation": "restore",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"owner@example.test\",\"extras\":\"[\\\"meal\\\",\\\"bag\\\"]\",\"mode\":\"train\",\"notes\":\"line one\\nline two\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "optional-omitted-restore",
+    "input": {
+      "operation": "restore",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: \n",
+        "Mode: train\n",
+        "Extras: []\n",
+        "Notes: \n",
+        "Confirmed: true\n"
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Response to: Trip\n",
+        "City: 杭州\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: \n",
+        "Mode: train\n",
+        "Extras: []\n",
+        "Notes: \n",
+        "Confirmed: true\n"
+      ],
+      "response": "{\"city\":\"杭州\",\"confirm\":\"true\",\"count\":\"2\",\"date\":\"2026-11-14\",\"email\":\"\",\"extras\":\"[]\",\"mode\":\"train\",\"notes\":\"\"}",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "meeting-0-restore",
+    "input": {
+      "operation": "restore",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "parts": [
+        "Meeting time preference for Interview: 2026-11-16 at 10:00 (45 min). This selects a preferred time; it does not book a meeting."
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Meeting time preference for Interview: 2026-11-16 at 10:00 (45 min). This selects a preferred time; it does not book a meeting."
+      ],
+      "response": "0",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "meeting-1-restore",
+    "input": {
+      "operation": "restore",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "parts": [
+        "Meeting time preference for Interview: 2026-11-17 at 11:00 (45 min). This selects a preferred time; it does not book a meeting."
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Meeting time preference for Interview: 2026-11-17 at 11:00 (45 min). This selects a preferred time; it does not book a meeting."
+      ],
+      "response": "1",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "meeting-decline-restore",
+    "input": {
+      "operation": "restore",
+      "name": "scheduleTime",
+      "props": {
+        "reasonForScheduling": "Interview",
+        "meetingDuration": 45,
+        "timeSlots": [
+          {
+            "date": "2026-11-16",
+            "time": "10:00"
+          },
+          {
+            "date": "2026-11-17",
+            "time": "11:00"
+          }
+        ]
+      },
+      "parts": [
+        "Meeting time preference for Interview: none of the proposed times work. Please suggest alternatives."
+      ]
+    },
+    "expected": {
+      "parts": [
+        "Meeting time preference for Interview: none of the proposed times work. Please suggest alternatives."
+      ],
+      "response": "decline",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "restore-wrong-label",
+    "input": {
+      "operation": "restore",
+      "name": "steward.form",
+      "props": {
+        "title": "Trip",
+        "fields": [
+          {
+            "name": "city",
+            "label": "City",
+            "type": "text",
+            "required": true
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "count",
+            "label": "Count",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email"
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "train",
+                "label": "Train"
+              },
+              {
+                "value": "bus",
+                "label": "Bus"
+              }
+            ]
+          },
+          {
+            "name": "extras",
+            "label": "Extras",
+            "type": "multiselect",
+            "options": [
+              {
+                "value": "meal",
+                "label": "Meal"
+              },
+              {
+                "value": "bag",
+                "label": "Bag"
+              }
+            ]
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "type": "textarea"
+          },
+          {
+            "name": "confirm",
+            "label": "Confirmed",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "parts": [
+        "Response to: Trip\n",
+        "Other: forged\n",
+        "Date: 2026-11-14\n",
+        "Count: 2\n",
+        "Email: owner@example.test\n",
+        "Mode: train\n",
+        "Extras: [\"meal\",\"bag\"]\n",
+        "Notes: line one\nline two\n",
+        "Confirmed: true\n"
+      ]
+    },
+    "expected": {
+      "parts": [],
+      "response": "",
+      "error_code": "CONFLICT"
+    }
+  }
+]

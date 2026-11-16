@@ -31,6 +31,10 @@ type schema struct {
 	MinItems    *int              `json:"minItems"`
 }
 
+// SchemaSupported checks the same bounded vocabulary used at tool admission.
+// Plugin registration uses it before accepting executable service contracts.
+func SchemaSupported(raw string) bool { _, ok := parseSchema(raw); return ok }
+
 func parseSchema(raw string) (schema, bool) {
 	var s schema
 	d := json.NewDecoder(strings.NewReader(raw))
@@ -113,7 +117,14 @@ func uniqueJSON(d *json.Decoder, depth int) bool {
 	return e == nil && ((delim == '{' && end == json.Delim('}')) || (delim == '[' && end == json.Delim(']')))
 }
 func Validate(schemaJSON, raw string) bool {
-	if len(raw) > 65536 {
+	return ValidateBounded(schemaJSON, raw, 65536)
+}
+
+// ValidateBounded applies the same strict schema semantics to a caller-owned
+// byte budget. Tool arguments retain Validate's 64 KiB limit; bounded service
+// results can carry larger documents without enlarging tool admission.
+func ValidateBounded(schemaJSON, raw string, maxBytes int) bool {
+	if maxBytes <= 0 || len(raw) > maxBytes {
 		return false
 	}
 	s, ok := parseSchema(schemaJSON)

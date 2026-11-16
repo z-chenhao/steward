@@ -1,0 +1,44 @@
+// Package contract owns the private experimental diagnostic layout seam.
+// It contains authorized metadata, never a domain database or model payload.
+package contract
+
+const PluginID = "steward.trace-inspector"
+const Contract = "steward.trace-layout/1"
+
+type Request struct {
+	InputID string `json:"input_id"`
+}
+type Observation struct {
+	ID      string `json:"id"`
+	Parent  string `json:"parent"`
+	Started int64  `json:"started"`
+	Ended   *int64 `json:"ended,omitempty"`
+}
+type Timing struct {
+	Attempt string `json:"attempt"`
+	Phase   string `json:"phase"`
+	At      int64  `json:"at"`
+}
+type Facts struct {
+	Started      int64         `json:"started"`
+	Ended        *int64        `json:"ended,omitempty"`
+	Now          int64         `json:"now"`
+	SelectedType string        `json:"selected_type"`
+	SelectedName string        `json:"selected_name"`
+	Items        []Observation `json:"items"`
+	Timings      []Timing      `json:"timings"`
+}
+type Node struct {
+	ID            string  `json:"id"`
+	Depth         int     `json:"depth"`
+	ParentOutside bool    `json:"parent_outside"`
+	HasChildren   bool    `json:"has_children"`
+	Guides        []bool  `json:"guides"`
+	X             float64 `json:"x"`
+	Width         float64 `json:"width"`
+}
+type Layout struct {
+	Nodes  []Node   `json:"nodes"`
+	TTFTMS *int64   `json:"ttft_ms,omitempty"`
+	Tabs   []string `json:"tabs"`
+}

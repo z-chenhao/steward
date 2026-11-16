@@ -1,0 +1,294 @@
+[
+  {
+    "id": "original-default-policy",
+    "kind": "defaults",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "orphan_objects": 0
+  },
+  {
+    "id": "inline-boundary",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
+    ],
+    "receipt": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "overflow-one-byte",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
+    ],
+    "receipt": "Saved artifact.",
+    "objects": [
+      {
+        "name": "tool-output.txt",
+        "media_type": "text/plain",
+        "bytes": 1025,
+        "hash": "c6d8e9905300876046729949cc95c2385221270d389176f7234fe7ac00c4e430",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      }
+    ],
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "unicode-overflow",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      "5L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ45L2g8J+ZgnjkvaDwn5mCeOS9oPCfmYJ4"
+    ],
+    "receipt": "Saved artifact.",
+    "objects": [
+      {
+        "name": "tool-output.txt",
+        "media_type": "text/plain",
+        "bytes": 4800,
+        "hash": "5b2d795942b4d846dfcb63558510aab2a017c39b441f259051dfb6ad889175ce",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      }
+    ],
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "explicit-empty",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      ""
+    ],
+    "receipt": "Saved artifact.",
+    "objects": [
+      {
+        "name": "empty.bin",
+        "media_type": "application/octet-stream",
+        "bytes": 0,
+        "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      }
+    ],
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "explicit-binary",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      "AP8BgA0K"
+    ],
+    "receipt": "Saved artifact.",
+    "objects": [
+      {
+        "name": "原件.bin",
+        "media_type": "application/octet-stream",
+        "bytes": 6,
+        "hash": "37a6b9c37dd5855326f8891fc0d4daf62843fbbced74f32e0c5cb9c342474f10",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      }
+    ],
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "explicit-json-receipt",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      "eyJyZWFkeSI6dHJ1ZX0="
+    ],
+    "receipt": "{\"file_id\":\"@output\",\"status\":\"ready\"}",
+    "objects": [
+      {
+        "name": "receipt.json",
+        "media_type": "application/json",
+        "bytes": 14,
+        "hash": "b342fc286d0216cc212e0d7ba234894e2e7283ddf14f959adf0fe7fd5924308a",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      }
+    ],
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "two-attachments",
+    "kind": "output",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "source_bodies": [
+      "b25l",
+      "5LqM5Y+3"
+    ],
+    "receipt": "two outputs ready",
+    "objects": [
+      {
+        "name": "one.txt",
+        "media_type": "text/plain",
+        "bytes": 3,
+        "hash": "7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      },
+      {
+        "name": "two.txt",
+        "media_type": "text/plain",
+        "bytes": 6,
+        "hash": "7ff535254a228329d2960ecf9f1a6b2c281bcb5ab601acf96a338d5032111cb8",
+        "retention_seconds": 2592000,
+        "visibility": "run"
+      }
+    ],
+    "replay_exact": true,
+    "orphan_objects": 0
+  },
+  {
+    "id": "dry-default",
+    "kind": "cleanup",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 100
+    },
+    "eligible": [
+      "oldest-expired",
+      "newer-expired"
+    ],
+    "orphan_objects": 0,
+    "dry_run": true
+  },
+  {
+    "id": "dry-one",
+    "kind": "cleanup",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 1
+    },
+    "eligible": [
+      "oldest-expired"
+    ],
+    "orphan_objects": 0,
+    "dry_run": true
+  },
+  {
+    "id": "apply-one",
+    "kind": "cleanup",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 1
+    },
+    "eligible": [
+      "oldest-expired"
+    ],
+    "deleted": [
+      "oldest-expired"
+    ],
+    "orphan_objects": 1
+  },
+  {
+    "id": "dry-after-first",
+    "kind": "cleanup",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 1
+    },
+    "eligible": [
+      "newer-expired"
+    ],
+    "deleted": [
+      "oldest-expired"
+    ],
+    "orphan_objects": 0,
+    "dry_run": true
+  },
+  {
+    "id": "apply-second",
+    "kind": "cleanup",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 1
+    },
+    "eligible": [
+      "newer-expired"
+    ],
+    "deleted": [
+      "newer-expired",
+      "oldest-expired"
+    ],
+    "orphan_objects": 1
+  },
+  {
+    "id": "dry-completed",
+    "kind": "cleanup",
+    "policy": {
+      "RetentionDays": 30,
+      "QuotaBytes": 1073741824,
+      "MaxBytes": 67108864,
+      "CleanupBatch": 1
+    },
+    "deleted": [
+      "newer-expired",
+      "oldest-expired"
+    ],
+    "orphan_objects": 0,
+    "dry_run": true
+  }
+]

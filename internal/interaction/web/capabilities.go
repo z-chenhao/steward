@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"errors"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
 	"io"
 	"net/http"
 	"strings"
@@ -18,6 +19,8 @@ type CapabilitySettings interface {
 	Save(context.Context, string, string, string) error
 }
 type Capability struct {
+	View, Copy                                                                  *contract.Asset
+	PresentationUnavailable                                                     bool
 	Automatic                                                                   bool
 	ParentMemory                                                                bool
 	Checked                                                                     bool
@@ -46,11 +49,14 @@ func (s *Server) loadCapabilities(ctx context.Context, r *http.Request, p *page)
 		p.Capabilities, err = s.Capabilities.List(ctx)
 		visible := p.Capabilities[:0]
 		for _, v := range p.Capabilities {
-			if v.ID != "embedding" {
+			if !v.ParentMemory {
 				visible = append(visible, v)
 			}
 		}
 		p.Capabilities = visible
+		view := Capability{ID: "memory"}
+		s.prepareCapabilityForm(ctx, &view)
+		p.CapabilityView = &capabilityViewAssets{view.View, view.Copy}
 		return err
 	}
 	id := strings.TrimPrefix(r.URL.Path, "/settings/capabilities/")
@@ -74,11 +80,11 @@ func (s *Server) loadCapabilities(ctx context.Context, r *http.Request, p *page)
 			err = ErrCapabilityInvalid
 		}
 	}
-	v.ParentMemory = id == "embedding"
 	v.Checked = r.URL.Query().Get("checked") == "1"
-	prepareCapabilityForm(&v)
+	s.prepareCapabilityForm(ctx, &v)
 	v.Advanced = r.URL.Query().Get("editor") == "advanced"
 	p.Capability = &v
+	p.CapabilityView = &capabilityViewAssets{v.View, v.Copy}
 	return err
 }
 func (s *Server) capabilityAction(w http.ResponseWriter, r *http.Request) error {
@@ -119,19 +125,17 @@ func (s *Server) capabilityAction(w http.ResponseWriter, r *http.Request) error 
 		// The persisted document is an implementation detail, never round-tripped
 		// through the user-facing form. Test/Save still enforce its revision.
 		text = p.Capability.Text
-		guided, err = postedCapabilityForm(id, r.PostForm)
-		if err == nil && id == "mcp" && editCapabilityRows(guided, r.FormValue("action")) {
-			if strings.HasPrefix(r.FormValue("action"), "remove-") {
-				// Removal is a real edit. Persist a complete remaining form rather
-				// than reporting an unsaved row deletion as the new baseline.
-				if _, e := guidedCapabilityText(id, text, guided); e == nil {
-					r.PostForm.Set("action", "apply")
-					r.Form.Set("action", "apply")
-				} else {
-					guided.Error = e.Error()
-				}
-			}
-			if r.FormValue("action") != "apply" {
+		projection, projectErr := s.projectCapabilityForm(r.Context(), formRequest("submit", *p.Capability, r.FormValue("action"), r.PostForm))
+		guided, err = projection.Form, projectErr
+		if projection.View != nil && projection.Copy != nil {
+			p.CapabilityView = &capabilityViewAssets{projection.View, projection.Copy}
+		}
+		if guided == nil {
+			guided = &capabilityForm{Available: false}
+		}
+		if err == nil {
+			text = projection.Text
+			if projection.Draft {
 				p.Capability.Form = guided
 				p.Capability.Revision = r.FormValue("revision")
 				p.Capability.Verified = false
@@ -143,13 +147,36 @@ func (s *Server) capabilityAction(w http.ResponseWriter, r *http.Request) error 
 				s.render(w, r, p)
 				return nil
 			}
+			if projection.Action != r.FormValue("action") {
+				r.PostForm.Set("action", projection.Action)
+				r.Form.Set("action", projection.Action)
+			}
 		}
-		if err == nil {
-			text, err = guidedCapabilityText(id, text, guided)
+
+	}
+	if guided == nil && err == nil {
+		candidate := *p.Capability
+		candidate.Text = text
+		s.prepareCapabilityForm(r.Context(), &candidate)
+		p.Capability.Form = candidate.Form
+		if candidate.View != nil && candidate.Copy != nil {
+			p.CapabilityView = &capabilityViewAssets{candidate.View, candidate.Copy}
 		}
 	}
 	status := http.StatusConflict
 	var probeMessage string
+	if err == nil {
+		preview := p
+		record := *p.Capability
+		if guided != nil {
+			record.Form = guided
+		}
+		preview.Capability = &record
+		if _, viewErr := renderCapabilityView(preview, r); viewErr != nil {
+			err = ErrCapabilityUnavailable
+			status = http.StatusUnprocessableEntity
+		}
+	}
 	location := capabilityURL(id)
 	if guided == nil {
 		location += "?editor=advanced"
@@ -206,7 +233,6 @@ func (s *Server) capabilityAction(w http.ResponseWriter, r *http.Request) error 
 		p.Capability.TestedAt = time.Time{}
 		p.Capability.Candidate = true
 		p.Capability.Text = text
-		prepareCapabilityForm(p.Capability)
 		p.Capability.Advanced = guided == nil
 		if guided != nil {
 			p.Capability.Form = guided

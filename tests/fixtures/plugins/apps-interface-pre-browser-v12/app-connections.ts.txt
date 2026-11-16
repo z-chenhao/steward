@@ -1,0 +1,213 @@
+import {t} from './i18n';
+import {managedAppInterface} from './app-interface';
+import {nativeAppInterface} from './app-interface-legacy';
+import {confirmSettingsAction} from './settings-controls';
+
+interface AppReply {
+ accounts_html?:string;
+ sidebar_html?:string;
+ authorization_url?:string;
+ authorization_expires?:string;
+ connection_id?:string;
+ error?:string;
+ code?:string;
+ revision?:string;
+ presentation_unavailable?:string;
+}
+interface PendingLink {url:string;expires:number}
+
+function authorizationURL(raw:string):string|null{
+ try{
+  const url=new URL(raw);
+  return url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&['app.composio.dev','connect.composio.dev'].includes(url.hostname)?url.href:null;
+ }catch{return null}
+}
+
+// Native forms remain the fallback. OAuth URLs live only in this page's memory;
+// no credentials or pending links enter browser storage or navigation queries.
+export function enhanceAppConnections(){
+ const root=document.querySelector<HTMLElement>('[data-apps]');
+ const accounts=root?.querySelector<HTMLElement>('#app-accounts');
+ const feedback=root?.querySelector<HTMLElement>('[data-app-feedback]');
+ if(!root||!accounts||!feedback)return;
+ const presentation = root.dataset.appInterfaceMode === 'managed' ? managedAppInterface(root.dataset.appInterfaceProfile) : root.dataset.appInterfaceMode === undefined || root.dataset.appInterfaceMode === 'native' ? nativeAppInterface() : null;
+ if(!presentation)return;
+ const policy=presentation.browser,messages=policy.messages;
+ const profileText=(text:string)=>root.dataset.appInterfaceLocalized==='true'?text:t(text);
+ const interfaceRevision=root.dataset.appInterfaceRevision??'';
+
+ const dialog=root.querySelector<HTMLDialogElement>('[data-app-dialog]');
+ const dialogBody=dialog?.querySelector<HTMLElement>('[data-app-dialog-body]');
+ let detailGeneration=0,opener:HTMLElement|null=null;
+ const category=root.querySelector<HTMLFormElement>('[data-app-category-form]');
+ category?.querySelector('select')?.addEventListener('change',()=>category.requestSubmit());
+ const links=new Map<string,PendingLink>();
+ const timers=new Map<string,ReturnType<typeof setTimeout>>();
+ const deadlines=new Map<string,number>();
+ const inFlight=new Set<string>();
+ const lifetime=new AbortController();
+ let stopped=false,busy=false;
+ let generation=0,revision=Number(root.dataset.appRevision??0);
+ const say=(message:string,error=false)=>{for(const area of [feedback,...root.querySelectorAll<HTMLElement>('[data-app-detail-feedback]')]){area.textContent=profileText(message);area.hidden=false;area.classList.toggle('error',error)}};
+ const row=(id:string)=>Array.from(accounts.querySelectorAll<HTMLElement>('[data-app-account]')).find(item=>item.dataset.appAccount===id);
+ const remember=()=>{
+  for(const item of accounts.querySelectorAll<HTMLElement>('[data-app-account]')){
+   const anchor=item.querySelector<HTMLAnchorElement>('[data-app-auth-link]');
+   if(anchor&&!links.has(item.dataset.appAccount!)){
+    const url=authorizationURL(anchor.href),expires=Number(anchor.dataset.appExpires);
+    if(url&&expires>Date.now())links.set(item.dataset.appAccount!,{url,expires});
+   }
+  }
+ };
+ const synchronize=()=>{
+  remember();
+  for(const img of document.querySelectorAll<HTMLImageElement>('.app-logo img'))if(img.complete&&img.naturalWidth===0)img.dataset.logoFailed='';
+  for(const [id,link] of links){
+   const item=row(id);
+   if(!item||item.dataset.appState!=='pending'||link.expires<=Date.now()){links.delete(id);continue}
+   const area=item.querySelector<HTMLElement>('[data-app-authorization]');
+   if(area){
+    const anchor=document.createElement('a');anchor.href=link.url;anchor.target='_blank';anchor.rel='noopener noreferrer';anchor.className='button secondary';anchor.textContent=profileText(messages.open_authorization);anchor.dataset.appAuthLink='';anchor.dataset.appExpires=String(link.expires);area.replaceChildren(anchor);
+   }
+  }
+  const all=Array.from(accounts.querySelectorAll<HTMLElement>('[data-app-account]'));
+  for(const tile of root.querySelectorAll<HTMLElement>('[data-app-tile]')){
+   const managed=all.some(item=>item.dataset.appSlug===tile.dataset.appTile);
+   const plan=presentation.cards[managed?16:0];
+   for(const action of tile.querySelectorAll<HTMLElement>('[data-app-manage]'))action.hidden=plan.manage_hidden;
+   for(const action of tile.querySelectorAll<HTMLElement>('[data-app-quick],[data-app-add]'))action.hidden=plan.add_hidden;
+  }
+  for(const detail of root.querySelectorAll<HTMLElement>('[data-app-detail]')){
+   const matching=all.filter(item=>item.dataset.appSlug===detail.dataset.appDetail);
+   let activeKind=0;for(const item of matching){const kind=item.dataset.appState==='active'?(item.dataset.appPublic==='true'?2:1):0;activeKind=policy.active_fold[activeKind*3+kind]}
+   const bits=(detail.dataset.appSuggested==='true'?1:0)|(detail.dataset.appNoAuth==='true'?2:0)|(activeKind?4:0)|(activeKind===2?8:0)|(matching.length?16:0)|(detail.dataset.requireAlias==='true'?32:0);
+   const plan=presentation.cards[bits];
+   const target=detail.querySelector<HTMLElement>('[data-app-detail-accounts]');
+   if(target){
+    const focused=document.activeElement;
+    const focusedRow=focused?.closest<HTMLElement>('[data-app-account]')?.dataset.appAccount;
+    const action=focused instanceof HTMLButtonElement?focused.value:null;
+    target.replaceChildren(...matching.map(item=>item.cloneNode(true)));
+    if(focusedRow&&action)for(const button of target.querySelectorAll<HTMLButtonElement>('button'))if(button.value===action&&button.closest<HTMLElement>('[data-app-account]')?.dataset.appAccount===focusedRow)button.focus();
+   }
+   const empty=detail.querySelector<HTMLElement>('[data-app-no-accounts]');if(empty)empty.hidden=plan.empty_hidden;
+   const first=detail.querySelector<HTMLElement>('[data-app-first]');if(first)first.hidden=plan.first_hidden;
+   const extra=detail.querySelector<HTMLElement>('[data-app-add-account]');if(extra)extra.hidden=plan.additional_hidden;
+  }
+ };
+ const openDetails=async(slug:string,source?:HTMLElement)=>{
+  if(!dialog||!dialogBody)return;
+  const request=++detailGeneration;
+  const response=await fetch('/api/apps/detail?app='+encodeURIComponent(slug)+(interfaceRevision?'&interface_revision='+encodeURIComponent(interfaceRevision):''),{signal:AbortSignal.any([lifetime.signal,AbortSignal.timeout(policy.detail_timeout_ms)]),cache:'no-store'});
+  if(!response.ok)throw new Error(profileText(messages.details_failed));
+  const html=await response.text();if(stopped||request!==detailGeneration)return;
+  dialogBody.innerHTML=html;const title=dialogBody.querySelector('h2');if(title)title.id='app-dialog-title';synchronize();
+  if(!feedback.hidden){const area=dialogBody.querySelector<HTMLElement>('[data-app-detail-feedback]');if(area){area.textContent=feedback.textContent;area.hidden=false;area.classList.toggle('error',feedback.classList.contains('error'))}}
+  if(!dialog.open){opener=source??document.activeElement as HTMLElement;dialog.showModal()}
+ };
+ dialog?.addEventListener('close',()=>{detailGeneration++;const target=opener?.getClientRects().length?opener:opener?.closest('[data-app-tile]')?.querySelector<HTMLElement>('[data-app-manage]');target?.focus()});
+ root.querySelector('[data-app-close]')?.addEventListener('click',()=>dialog?.close());
+ const send=async(body:URLSearchParams):Promise<AppReply>=>{
+  if(interfaceRevision)body.set('interface_revision',interfaceRevision);
+  const response=await fetch('/apps/configure',{method:'POST',body,headers:{Accept:'application/json'},signal:AbortSignal.any([lifetime.signal,AbortSignal.timeout(policy.action_timeout_ms)]),cache:'no-store'});
+  const result:AppReply=await response.json();
+  if(!response.ok){const error=new Error(result.error||profileText(messages.connection_unknown));Object.assign(error,{code:result.code});throw error}
+  return result;
+ };
+ const apply=(result:AppReply)=>{
+  const incoming=Number(result.revision??revision);if(incoming<revision)return;
+  revision=incoming;
+  if(result.authorization_url&&result.connection_id){
+   const url=authorizationURL(result.authorization_url),expires=Number(result.authorization_expires);
+   if(url&&expires>Date.now())links.set(result.connection_id,{url,expires});
+  }
+  if(result.sidebar_html!==undefined){const sidebar=document.querySelector('#apps-sidebar');if(sidebar)sidebar.innerHTML=result.sidebar_html}
+  if(result.accounts_html!==undefined){accounts.innerHTML=result.accounts_html;synchronize()}
+ };
+ const stopPresentation=()=>{stopped=true;lifetime.abort();for(const timer of timers.values())clearTimeout(timer);timers.clear();accounts.replaceChildren();for(const target of root.querySelectorAll('[data-app-detail-accounts]'))target.replaceChildren();document.querySelector('#apps-sidebar')?.replaceChildren();for(const button of root.querySelectorAll<HTMLButtonElement>('[data-app-action] button'))button.disabled=true};
+ const acceptedWithoutPresentation=(result:AppReply,popup?:Window|null)=>{
+  stopPresentation();
+  say(t('The account action was accepted. App presentation is unavailable. Restore the plugin before continuing.'));
+  const url=result.authorization_url?authorizationURL(result.authorization_url):null;
+  if(url){if(popup&&!popup.closed){popup.location.replace(url)}const anchor=document.createElement('a');anchor.href=url;anchor.target='_blank';anchor.rel='noopener noreferrer';anchor.className='button secondary';anchor.textContent=t('Open authorization page');feedback.append(anchor)}
+ };
+ const schedule=(id:string)=>{
+  if(stopped||timers.has(id)||inFlight.has(id)||row(id)?.dataset.appState!=='pending')return;
+  const deadline=deadlines.get(id)??Date.now()+policy.poll_window_ms;deadlines.set(id,deadline);
+  if(Date.now()>=deadline){say(messages.poll_paused);return}
+  timers.set(id,setTimeout(async()=>{
+   timers.delete(id);inFlight.add(id);
+   const acceptedGeneration=generation;
+   try{
+    const result=await send(new URLSearchParams({action:'check',connection:id,automatic:'1'}));
+    if(stopped||acceptedGeneration!==generation)return;
+    if(result.presentation_unavailable==='true'){acceptedWithoutPresentation(result);return}
+    apply(result);
+    const status=row(id)?.dataset.appState;
+    const statusClass=status==='active'?1:status==='pending'?2:status==='expired'?3:status==='disconnected'?4:0;
+    const notice=policy.poll_notices[statusClass];if(notice.text)say(notice.text,notice.error);
+   }catch(error){
+    if(error instanceof Error&&(error as Error&{code?:string}).code==='presentation_unavailable'){stopPresentation();say(t('App presentation is unavailable. Reload after the owner restores the plugin.'),true);return}
+    if(!stopped&&acceptedGeneration===generation)say(messages.poll_failed,true);
+   }finally{inFlight.delete(id);if(!stopped)schedule(id)}
+  },policy.poll_interval_ms));
+ };
+ const watch=()=>{for(const item of accounts.querySelectorAll<HTMLElement>('[data-app-state="pending"]'))schedule(item.dataset.appAccount!)};
+ root.addEventListener('submit',event=>{
+  const form=event.target;if(!(form instanceof HTMLFormElement)||!form.hasAttribute('data-app-action'))return;
+  event.preventDefault();if(stopped||busy)return;
+  const button=(event as SubmitEvent).submitter;
+  const body=new URLSearchParams();for(const [name,value] of new FormData(form))if(typeof value==='string')body.append(name,value);
+  if(button instanceof HTMLButtonElement&&button.name)body.set(button.name,button.value);
+  const action=body.get('action');
+  if(action==='disconnect'&&confirmSettingsAction(form,button instanceof HTMLElement?button:null))return;
+  generation++;
+  // Reserve the tab synchronously while this click still has user activation.
+  const popup=policy.popup_actions.includes(action??'')?window.open('about:blank','_blank'):null;
+  if(popup)popup.opener=null;
+  const controls=Array.from(root.querySelectorAll<HTMLButtonElement>('[data-app-action] button'));
+  const previous=controls.map(item=>item.disabled);controls.forEach(item=>item.disabled=true);
+  busy=true;form.setAttribute('aria-busy','true');
+  void(async()=>{
+   let opened=false;
+   try{
+    const result=await send(body);if(stopped)return;
+    if(result.presentation_unavailable==='true'){acceptedWithoutPresentation(result,popup);opened=Boolean(result.authorization_url);return}
+    apply(result);
+    if(result.authorization_url){
+     const url=authorizationURL(result.authorization_url);if(!url)throw new Error(profileText(messages.authorization_failed));
+     if(popup&&!popup.closed){popup.location.replace(url);opened=true;say(messages.authorization_opened)}
+     else say(messages.popup_blocked);
+    }else {const index=['connect','continue','reconnect','check','disconnect'].indexOf(action??'');say(policy.success_notices[Math.max(0,index)]);}
+    watch();
+    if(policy.open_details_after_authorization&&result.authorization_url&&!dialog?.open&&!root.querySelector('.app-detail-page')){
+     const slug=body.get('toolkit')||row(result.connection_id??'')?.dataset.appSlug;
+     if(slug)await openDetails(slug,button instanceof HTMLElement?button:undefined);
+    }
+   }catch(error){
+    if(stopped)return;
+    say(error instanceof Error?error.message:messages.connection_unknown,true);
+    if(policy.reveal_alias&&error instanceof Error&&(error as Error&{code?:string}).code==='alias_required'){
+     form.dataset.requireAlias='true';
+     const slug=body.get('toolkit');if(slug){try{await openDetails(slug)}catch{say(messages.details_failed,true);return}const extra=dialogBody?.querySelector<HTMLDetailsElement>('[data-app-add-account]');if(extra){extra.closest<HTMLElement>('[data-app-detail]')!.dataset.requireAlias='true';extra.hidden=false;extra.open=true;extra.querySelector<HTMLInputElement>('input[name=alias]')?.focus()}}
+    }
+   }finally{
+    if(!opened&&popup&&!popup.closed)popup.close();
+    controls.forEach((item,index)=>item.disabled=stopped||previous[index]);busy=false;form.removeAttribute('aria-busy');
+    if(!stopped)synchronize();
+   }
+  })();
+ });
+ document.addEventListener('click',event=>{
+  const source=(event.target as Element).closest<HTMLAnchorElement>('[data-app-open]');
+  if(source&&dialog&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&event.button===0){event.preventDefault();void openDetails(source.dataset.appOpen!,source).catch(()=>location.assign(source.href));return}
+  const anchor=(event.target as Element).closest<HTMLAnchorElement>('[data-app-auth-link]');
+  if(!anchor)return;
+  if(Number(anchor.dataset.appExpires)<=Date.now()){event.preventDefault();say(messages.link_expired,true)}
+ });
+ document.addEventListener('error',event=>{const img=event.target;if(img instanceof HTMLImageElement&&img.closest('.app-logo'))img.dataset.logoFailed=''},true);
+ const start=()=>{stopped=false;synchronize();watch()};
+ window.addEventListener('pagehide',()=>{stopped=true;lifetime.abort();for(const timer of timers.values())clearTimeout(timer);timers.clear()});
+ window.addEventListener('pageshow',event=>{if(event.persisted)location.reload()});
+ start();root.dataset.appsReady='';
+}

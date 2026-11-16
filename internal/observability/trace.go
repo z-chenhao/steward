@@ -4,12 +4,13 @@ package observability
 // A session groups related traces; it never changes domain Run ancestry.
 type TraceQuery struct {
 	ExecutionQuery
-	Session string
-	Search  string
+	Session        string
+	Search         string
+	ReaderRevision string
 }
 
 func (q TraceQuery) Validate() error {
-	if len(q.Session) > 128 || len(q.Search) > 200 {
+	if len(q.Session) > 128 || len(q.Search) > 200 || !ValidReaderRevision(q.ReaderRevision) {
 		return ErrInvalid
 	}
 	return q.ExecutionQuery.Validate()
@@ -57,10 +58,11 @@ type TraceBucket struct {
 
 type ObservationQuery struct {
 	RunID, Cursor, Selected string
+	ReaderRevision          string
 }
 
 func (q ObservationQuery) Validate() error {
-	if q.RunID == "" || len(q.RunID) > 128 || len(q.Cursor) > 512 || len(q.Selected) > 300 {
+	if q.RunID == "" || len(q.RunID) > 128 || len(q.Cursor) > 512 || len(q.Selected) > 300 || !ValidReaderRevision(q.ReaderRevision) {
 		return ErrInvalid
 	}
 	return nil
@@ -143,4 +145,21 @@ type GenerationDetails struct {
 	Parameters      string  `json:"parameters_json"`
 	MaxOutputTokens int64   `json:"max_output_tokens"`
 	Metrics         Metrics `json:"metrics"`
+}
+
+// Reader revisions pin an already activated, read-only display policy. Source
+// authorization remains independent of the chosen interpretation version.
+func ValidReaderRevision(raw string) bool {
+	if raw == "" {
+		return true
+	}
+	if len(raw) != 71 || raw[:7] != "sha256:" {
+		return false
+	}
+	for _, c := range raw[7:] {
+		if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'f') {
+			return false
+		}
+	}
+	return true
 }

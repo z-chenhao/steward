@@ -1,0 +1,37 @@
+{
+  "id": "shell-system-owner",
+  "allowed_contracts": [
+    "steward.shell-limits/1"
+  ],
+  "cases": [
+    {
+      "instance_id": "shell-tools",
+      "contract": "steward.shell-limits/1",
+      "input": {
+        "ceilings": {
+          "timeout_seconds": 120,
+          "output_bytes": 48000
+        }
+      },
+      "expected": {
+        "timeout_seconds": 60,
+        "output_bytes": 48000
+      }
+    },
+    {
+      "instance_id": "shell-tools",
+      "contract": "steward.shell-limits/1",
+      "input": {
+        "ceilings": {
+          "timeout_seconds": 120,
+          "output_bytes": 48000
+        },
+        "requested_timeout": 5
+      },
+      "expected": {
+        "timeout_seconds": 5,
+        "output_bytes": 48000
+      }
+    }
+  ]
+}

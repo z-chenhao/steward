@@ -15,7 +15,7 @@ func approvalReply(r llm.GenerationRequest) llm.GenerationResult {
 	user := ""
 	inputRef := ""
 	for _, m := range r.Messages {
-		root = root || strings.Contains(m.Text, "general Worker executing")
+		root = root || workerMessage(m)
 		followup = followup || contextSummary(m).TaskUpdate || m.Origin == "runtime" && strings.HasPrefix(m.Text, "Runtime task update")
 		if m.Role == "user" && m.Origin == "" {
 			user, _, _ = strings.Cut(m.Text, "\n\n<recall_memory>")

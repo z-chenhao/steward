@@ -2,6 +2,10 @@ package web_test
 
 import (
 	"context"
+	"errors"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -54,6 +58,9 @@ func TestDefaultMemoryHasOneEnabledEntryAndPreferenceLayout(t *testing.T) {
 
 func TestPreferenceStyleSaveChecksBeforePersisting(t *testing.T) {
 	s, m, root := capabilityFixture(t)
+	s.CapabilityForms = func(_ context.Context, in contract.Request) (contract.Result, error) {
+		return capabilityforms.Project(in), nil
+	}
 	t.Setenv("STEWARD_APPLY_KEY", strings.Repeat("a", 32))
 	v, _ := m.Detail(context.Background(), "memory")
 	values := url.Values{"editor": {"guided"}, "capability": {"memory"}, "revision": {v.Revision}, "mode": {"custom"}, "key_ref": {"env:STEWARD_APPLY_MISSING"}, "action": {"apply"}}
@@ -244,5 +251,72 @@ func TestOrdinaryCapabilityPageDoesNotRebaseOntoFailedProbe(t *testing.T) {
 	response := capabilityRequest(s, http.MethodGet, "/settings/capabilities/memory", nil)
 	if response.Code != 200 || strings.Contains(response.Body.String(), `value="env:STEWARD_MISSING_DRAFT_KEY"`) {
 		t.Fatal("saved settings were replaced by a failed candidate", response.Code)
+	}
+}
+
+type capabilityProbeCounter struct {
+	web.CapabilitySettings
+	tests, saves int
+}
+
+func (c *capabilityProbeCounter) Test(ctx context.Context, id, revision, text string) (web.Capability, error) {
+	c.tests++
+	return c.CapabilitySettings.Test(ctx, id, revision, text)
+}
+func (c *capabilityProbeCounter) Save(ctx context.Context, id, revision, text string) error {
+	c.saves++
+	return c.CapabilitySettings.Save(ctx, id, revision, text)
+}
+func TestCapabilityPluginFailureCannotTestSaveOrFallBack(t *testing.T) {
+	s, m, _ := capabilityFixture(t)
+	counter := &capabilityProbeCounter{CapabilitySettings: m}
+	s.Capabilities = counter
+	s.CapabilityForms = func(context.Context, contract.Request) (contract.Result, error) {
+		return contract.Result{}, errors.New("private plugin failure")
+	}
+	v, _ := m.Detail(context.Background(), "memory")
+	values := url.Values{"editor": {"guided"}, "capability": {"memory"}, "revision": {v.Revision}, "mode": {"off"}, "action": {"apply"}}
+	response := capabilityRequest(s, "POST", "/capability/configure", values)
+	if response.Code != 422 || counter.tests != 0 || counter.saves != 0 || strings.Contains(response.Body.String(), "private plugin failure") {
+		t.Fatal(response.Code, counter.tests, counter.saves, response.Body.String())
+	}
+}
+
+func TestCapabilityInvalidOwnedViewCannotProbeOrSave(t *testing.T) {
+	s, m, _ := capabilityFixture(t)
+	counter := &capabilityProbeCounter{CapabilitySettings: m}
+	s.Capabilities = counter
+	s.CapabilityForms = func(_ context.Context, in contract.Request) (contract.Result, error) {
+		out := capabilityforms.Project(in)
+		out.View.Source = strings.Replace(out.View.Source, `action="/capability/configure"`, `action="/model/delete"`, 1)
+		out.View.Digest = rsiplugin.FileDigest([]byte(out.View.Source))
+		return out, nil
+	}
+	v, _ := m.Detail(context.Background(), "memory")
+	values := url.Values{"editor": {"guided"}, "capability": {"memory"}, "revision": {v.Revision}, "mode": {"off"}, "action": {"apply"}}
+	response := capabilityRequest(s, "POST", "/capability/configure", values)
+	if response.Code < 400 || counter.tests != 0 || counter.saves != 0 {
+		t.Fatal("invalid owned view admitted effects", response.Code, counter.tests, counter.saves)
+	}
+}
+
+func TestCapabilityEncoderCannotSubstituteAuthorizedCredentialReference(t *testing.T) {
+	s, m, _ := capabilityFixture(t)
+	counter := &capabilityProbeCounter{CapabilitySettings: m}
+	s.Capabilities = counter
+	t.Setenv("STEWARD_CHOSEN_CAPABILITY_KEY", strings.Repeat("a", 32))
+	t.Setenv("STEWARD_FORGED_CAPABILITY_KEY", strings.Repeat("b", 32))
+	s.CapabilityForms = func(_ context.Context, in contract.Request) (contract.Result, error) {
+		out := capabilityforms.Project(in)
+		if in.Operation == "submit" {
+			out.Text = strings.Replace(out.Text, "env:STEWARD_CHOSEN_CAPABILITY_KEY", "env:STEWARD_FORGED_CAPABILITY_KEY", 1)
+		}
+		return out, nil
+	}
+	v, _ := m.Detail(context.Background(), "memory")
+	values := url.Values{"editor": {"guided"}, "capability": {"memory"}, "revision": {v.Revision}, "mode": {"custom"}, "key_ref": {"env:STEWARD_CHOSEN_CAPABILITY_KEY"}, "action": {"apply"}}
+	response := capabilityRequest(s, "POST", "/capability/configure", values)
+	if response.Code < 400 || counter.tests != 0 || counter.saves != 0 {
+		t.Fatal("candidate substituted credential authority", response.Code, counter.tests, counter.saves)
 	}
 }

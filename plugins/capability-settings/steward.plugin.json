@@ -1,0 +1,566 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.capability-settings",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-030"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.capability-form/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "prepare",
+              "submit"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "enum": [
+              "memory",
+              "embedding",
+              "skills",
+              "execution",
+              "computer",
+              "mcp"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "default_key_ref": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "Name",
+                "Value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "with_view": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation",
+          "id",
+          "text",
+          "default_key_ref",
+          "action",
+          "values"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "form": {
+            "type": "object",
+            "properties": {
+              "Mode": {
+                "type": "string"
+              },
+              "Available": {
+                "type": "boolean"
+              },
+              "Enabled": {
+                "type": "boolean"
+              },
+              "Error": {
+                "type": "string"
+              },
+              "Memory": {
+                "type": "object",
+                "properties": {
+                  "KeyRef": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "KeyRef"
+                ],
+                "additionalProperties": false
+              },
+              "Embedding": {
+                "type": "object",
+                "properties": {
+                  "Endpoint": {
+                    "type": "string"
+                  },
+                  "Model": {
+                    "type": "string"
+                  },
+                  "Dimensions": {
+                    "type": "string"
+                  },
+                  "KeyRef": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Endpoint",
+                  "Model",
+                  "Dimensions",
+                  "KeyRef"
+                ],
+                "additionalProperties": false
+              },
+              "Skills": {
+                "type": "object",
+                "properties": {
+                  "Root": {
+                    "type": "string"
+                  },
+                  "Scope": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Root",
+                  "Scope"
+                ],
+                "additionalProperties": false
+              },
+              "Execution": {
+                "type": "object",
+                "properties": {
+                  "Root": {
+                    "type": "string"
+                  },
+                  "Toolchains": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Root",
+                  "Toolchains"
+                ],
+                "additionalProperties": false
+              },
+              "Computer": {
+                "type": "object",
+                "properties": {
+                  "Root": {
+                    "type": "string"
+                  },
+                  "Endpoint": {
+                    "type": "string"
+                  },
+                  "ProviderVersion": {
+                    "type": "string"
+                  },
+                  "GuestBuild": {
+                    "type": "string"
+                  },
+                  "DriverVersion": {
+                    "type": "string"
+                  },
+                  "DriverSHA256": {
+                    "type": "string"
+                  },
+                  "DriverTeam": {
+                    "type": "string"
+                  },
+                  "DriverBundle": {
+                    "type": "string"
+                  },
+                  "Architecture": {
+                    "type": "string"
+                  },
+                  "User": {
+                    "type": "string"
+                  },
+                  "Port": {
+                    "type": "string"
+                  },
+                  "PasswordRef": {
+                    "type": "string"
+                  },
+                  "HostKey": {
+                    "type": "string"
+                  },
+                  "Node": {
+                    "type": "string"
+                  },
+                  "Script": {
+                    "type": "string"
+                  },
+                  "ManifestVersion": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Root",
+                  "Endpoint",
+                  "ProviderVersion",
+                  "GuestBuild",
+                  "DriverVersion",
+                  "DriverSHA256",
+                  "DriverTeam",
+                  "DriverBundle",
+                  "Architecture",
+                  "User",
+                  "Port",
+                  "PasswordRef",
+                  "HostKey",
+                  "Node",
+                  "Script",
+                  "ManifestVersion"
+                ],
+                "additionalProperties": false
+              },
+              "Providers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "Original": {
+                      "type": "string"
+                    },
+                    "Name": {
+                      "type": "string"
+                    },
+                    "Command": {
+                      "type": "string"
+                    },
+                    "Directory": {
+                      "type": "string"
+                    },
+                    "Args": {
+                      "type": "string"
+                    },
+                    "Tools": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Name": {
+                            "type": "string"
+                          },
+                          "Permission": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Name",
+                          "Permission"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "Original",
+                    "Name",
+                    "Command",
+                    "Directory",
+                    "Args"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "Mode",
+              "Available",
+              "Enabled",
+              "Error",
+              "Memory",
+              "Embedding",
+              "Skills",
+              "Execution",
+              "Computer"
+            ],
+            "additionalProperties": false
+          },
+          "text": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "draft": {
+            "type": "boolean"
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "invalid",
+              "validation"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "view": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "copy": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "text",
+          "action",
+          "draft",
+          "error_code",
+          "message"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.capability-presentation/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "root": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "root"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "descriptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ID": {
+                  "type": "string"
+                },
+                "Title": {
+                  "type": "string"
+                },
+                "Description": {
+                  "type": "string"
+                },
+                "Help": {
+                  "type": "string"
+                },
+                "Example": {
+                  "type": "string"
+                },
+                "MemoryChild": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "ID",
+                "Title",
+                "Description",
+                "Help",
+                "Example",
+                "MemoryChild"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "copy": {
+            "type": "object",
+            "properties": {
+              "Automatic": {
+                "type": "string"
+              },
+              "MemoryKeyUnavailable": {
+                "type": "string"
+              },
+              "ExecutionManaged": {
+                "type": "string"
+              },
+              "VerificationExpired": {
+                "type": "string"
+              },
+              "ProbeAutomatic": {
+                "type": "string"
+              },
+              "ProbeExecutionConflict": {
+                "type": "string"
+              },
+              "ProbeDisabled": {
+                "type": "string"
+              },
+              "ProbeMemoryFailed": {
+                "type": "string"
+              },
+              "ProbeMemoryReady": {
+                "type": "string"
+              },
+              "ProbeEmbeddingFailed": {
+                "type": "string"
+              },
+              "ProbeEmbeddingReady": {
+                "type": "string"
+              },
+              "ProbeSkillsFailed": {
+                "type": "string"
+              },
+              "ProbeSkillsReady": {
+                "type": "string"
+              },
+              "ProbeMCPFailed": {
+                "type": "string"
+              },
+              "ProbeMCPReady": {
+                "type": "string"
+              },
+              "ProbeExecutionFailed": {
+                "type": "string"
+              },
+              "ProbeExecutionInvalid": {
+                "type": "string"
+              },
+              "ProbeExecutionReady": {
+                "type": "string"
+              },
+              "ProbeJavaScriptMissing": {
+                "type": "string"
+              },
+              "ProbeJavaScriptFailed": {
+                "type": "string"
+              },
+              "ProbeComputerStoreFailed": {
+                "type": "string"
+              },
+              "ProbeComputerFailed": {
+                "type": "string"
+              },
+              "ProbeComputerReady": {
+                "type": "string"
+              },
+              "ProbeUnknown": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "Automatic",
+              "MemoryKeyUnavailable",
+              "ExecutionManaged",
+              "VerificationExpired",
+              "ProbeAutomatic",
+              "ProbeExecutionConflict",
+              "ProbeDisabled",
+              "ProbeMemoryFailed",
+              "ProbeMemoryReady",
+              "ProbeEmbeddingFailed",
+              "ProbeEmbeddingReady",
+              "ProbeSkillsFailed",
+              "ProbeSkillsReady",
+              "ProbeMCPFailed",
+              "ProbeMCPReady",
+              "ProbeExecutionFailed",
+              "ProbeExecutionInvalid",
+              "ProbeExecutionReady",
+              "ProbeJavaScriptMissing",
+              "ProbeJavaScriptFailed",
+              "ProbeComputerStoreFailed",
+              "ProbeComputerFailed",
+              "ProbeComputerReady",
+              "ProbeUnknown"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "descriptions",
+          "copy"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [],
+  "resources": [
+    {
+      "name": "capability-settings-page",
+      "kind": "view",
+      "path": "view/capabilities.html"
+    },
+    {
+      "name": "capability-settings-copy",
+      "kind": "view",
+      "path": "view/copy.json"
+    }
+  ]
+}

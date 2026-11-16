@@ -1,0 +1,23 @@
+{
+  "meeting": [
+    {
+      "component": 0,
+      "title": "讨论",
+      "slots": [
+        {
+          "choice": 0,
+          "date": "2026-11-14",
+          "time": "10:00",
+          "duration": "30 min"
+        }
+      ],
+      "decline_label": "None of these work",
+      "selected_title": "Time Selected",
+      "declined_title": "No Time Selected",
+      "saving_label": "Saving selection…",
+      "select_error": "Your selection was not confirmed. Retry the same time.",
+      "decline_error": "Your selection was not confirmed. Retry the same choice.",
+      "saved_label": "Time preference saved."
+    }
+  ]
+}

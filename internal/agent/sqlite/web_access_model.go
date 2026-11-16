@@ -22,7 +22,15 @@ func (t *tools) webModelGeneration(ctx context.Context, inv tool.Invocation, run
 			return llm.GenerationResult{}, llm.ModelIncompatible
 		}
 		req.WebSearch = &llm.WebSearchRequest{InvocationID: inv.ID, Query: m.Query.Query, DomainFilter: m.Query.DomainFilter, RecencyFilter: m.Query.RecencyFilter, NumResults: m.Query.NumResults}
-		req.Messages = webaccess.SearchMessages(*m.Query)
+		if len(m.Messages) > 0 {
+			if len(m.Messages) != 2 || m.Messages[0].Role != "system" || m.Messages[1].Role != "user" || m.Messages[1].Text != m.Query.Query || len(m.Messages[0].Text) > 8192 || m.Messages[0].Text == "" {
+				return llm.GenerationResult{}, llm.ModelIncompatible
+			}
+			req.Messages = m.Messages
+		} else {
+			// Original pre-instruction snapshots retain their published method.
+			req.Messages = webaccess.LegacySearchMessagesV2(*m.Query)
+		}
 	case "page_answer", "summary":
 		if len(m.Messages) != 2 || m.Messages[0].Role != "system" || m.Messages[1].Role != "user" {
 			return llm.GenerationResult{}, llm.ModelIncompatible
@@ -38,9 +46,13 @@ func (t *tools) webModelGeneration(ctx context.Context, inv tool.Invocation, run
 	if int64(len(encodedMessages)) > run.Snapshot.ContextWindow*3 {
 		return llm.GenerationResult{}, llm.ContextLengthExceeded
 	}
+	pricePlan, err := t.runs.prepareReferenceRates(ctx, t.claim, req, 0)
+	if err != nil {
+		return llm.GenerationResult{}, err
+	}
 	var cached *llm.GenerationResult
 	var admission error
-	err := t.runs.write(ctx, func(tx *sql.Tx) error {
+	err = t.runs.write(ctx, func(tx *sql.Tx) error {
 		_, name, acceptedArgs, e := t.acceptedBuiltin(ctx, tx, inv)
 		if e != nil {
 			return e
@@ -86,7 +98,15 @@ func (t *tools) webModelGeneration(ctx context.Context, inv tool.Invocation, run
 			return agent.ErrClaimLost
 		}
 		req.OwnerToken = owner.token
-		if _, e = tx.ExecContext(ctx, `INSERT INTO model_generation(generation_id,run_id,step_index,request_json,request_hash,owner_token,status,created_at) VALUES(?,?,?,?,?,?,'pending',?)`, req.GenerationID, run.ID, step, raw, digest(raw), owner.token, time.Now().UnixMicro()); e != nil {
+		if _, e = tx.ExecContext(ctx, `INSERT INTO model_generation(generation_id,run_id,step_index,request_json,request_hash,owner_token,status,created_at,reference_rates_managed) VALUES(?,?,?,?,?,?,'pending',?,?)`, req.GenerationID, run.ID, step, raw, digest(raw), owner.token, time.Now().UnixMicro(), pricePlan != nil); e != nil {
+			return e
+		}
+		if pricePlan != nil {
+			if e = t.runs.pluginDispatchFence(ctx, tx, run.ID); e != nil {
+				return e
+			}
+		}
+		if e = acceptReferenceRates(ctx, tx, req.GenerationID, pricePlan); e != nil {
 			return e
 		}
 		waiting, denied, e := t.runs.gateSpend(ctx, tx, req)

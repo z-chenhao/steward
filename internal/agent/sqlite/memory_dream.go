@@ -27,8 +27,20 @@ func (r *Runs) scheduleDream(ctx context.Context) (bool, error) {
 	if _, ok := r.memory.(memory.Documents); !ok {
 		return false, nil
 	}
+	recipe, revision, enabled, err := r.dreamSchedulePolicy(ctx)
+	if err != nil {
+		return false, err
+	}
+	if !enabled {
+		return false, nil
+	}
 	queued := false
-	err := r.write(ctx, func(tx *sql.Tx) error {
+	err = r.write(ctx, func(tx *sql.Tx) error {
+		if revision != "" {
+			if err := currentDreamPolicy(ctx, tx, revision); err != nil {
+				return err
+			}
+		}
 		var owner string
 		if e := tx.QueryRowContext(ctx, `SELECT agent_id FROM agent_config WHERE singleton=1`).Scan(&owner); e != nil {
 			return e
@@ -52,7 +64,7 @@ func (r *Runs) scheduleDream(ctx context.Context) (bool, error) {
 			oldest = workerOldest
 		}
 		staleKey := ""
-		if count+pendingWorkers == 0 || count+pendingWorkers < 8 && offset == 0 && workerOffset == 0 && time.Now().UnixMicro()-oldest < int64(5*time.Minute/time.Microsecond) {
+		if count+pendingWorkers == 0 || count+pendingWorkers < int64(recipe.MinChanges) && offset == 0 && workerOffset == 0 && time.Now().UnixMicro()-oldest < int64(recipe.MaxWaitSeconds)*int64(time.Second/time.Microsecond) {
 			reader, ok := r.memory.(interface {
 				StaleInjectedKey(context.Context, recall.Scope, int64) (string, error)
 			})

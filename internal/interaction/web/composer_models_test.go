@@ -12,6 +12,8 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/llm/account"
+	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
 )
 
 type pickerModels struct {
@@ -118,6 +120,9 @@ func TestComposerModelsBrowserLoadingAndRefresh(t *testing.T) {
 		t.Skip("run by make test-browser")
 	}
 	s := languageServer()
+	s.ModelMenu = func(_ context.Context, f contract.Facts) (contract.Projection, bool, error) {
+		return owner.ProjectMenu(f), true, nil
+	}
 	s.Models = pickerModels{profiles: []llm.Profile{
 		{ProfileID: "one", Version: 1, ProfileInput: llm.ProfileInput{ProviderKind: "openai_account", AuthConnectionID: "owned", ModelID: "gpt-5.6-luna"}},
 		{ProfileID: "two", Version: 1, ProfileInput: llm.ProfileInput{ProviderKind: "openai_account", AuthConnectionID: "owned", ModelID: "gpt-6-luna"}},

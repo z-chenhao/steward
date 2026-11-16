@@ -1,0 +1,26 @@
+[
+  {
+    "key": "Model",
+    "value": "模型"
+  },
+  {
+    "key": "Choose model",
+    "value": "选择模型"
+  },
+  {
+    "key": "Loading models…",
+    "value": "正在加载模型…"
+  },
+  {
+    "key": "Some account models are unavailable. Try again.",
+    "value": "部分账户模型暂不可用，请重试。"
+  },
+  {
+    "key": "The account model list is unavailable.",
+    "value": "账户模型列表暂不可用。"
+  },
+  {
+    "key": "Model selection failed. Try again.",
+    "value": "模型切换失败，请重试。"
+  }
+]

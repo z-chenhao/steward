@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -170,6 +171,7 @@ type appsPeer struct {
 	drift       atomic.Bool
 	wrongUser   atomic.Bool
 	disabled    atomic.Bool
+	response    atomic.Pointer[string]
 	tool        composio.Tool
 }
 
@@ -251,6 +253,10 @@ func newAppsPeer(t *testing.T, s *Store) *appsPeer {
 			}
 			if p.broken.Load() {
 				http.Error(w, "uncertain", http.StatusBadGateway)
+				return
+			}
+			if response := p.response.Load(); response != nil {
+				_, _ = io.WriteString(w, *response)
 				return
 			}
 			_, _ = w.Write([]byte(`{"successful":true,"data":{"message_id":"message-1"},"log_id":"log-1"}`))

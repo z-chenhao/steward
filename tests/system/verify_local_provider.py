@@ -142,7 +142,7 @@ def verify(binary, script):
             task_history = command("chat", "history")
             require(task_history[-1]["content"][0]["text"] == "Main Task follow-up through Pi.", "actual Pi Task follow-up missing")
             task_requests = [r["body"] for r in server.requests[task_start:] if r.get("body")]
-            roots = [r for r in task_requests if any("general Worker executing" in str(m.get("content", "")) for m in r["messages"])]
+            roots = [r for r in task_requests if any(m.get("role") == "system" and any(marker in str(m.get("content", "")) for marker in ("You are a Root Worker", "You are a Subagent Worker", "general Worker executing")) for m in r["messages"])]
             require(roots and all(not any(t["function"]["name"].startswith("builtin__task_") or t["function"]["name"] == "builtin__memory_manage" for t in r["tools"]) for r in roots), "Root Task or Memory control exposed on actual Pi wire")
             require(all({t["function"]["name"] for t in r["tools"]} == WORKER_DIRECT for r in roots), "Root model bypasses Code Mode")
             require(all("actual local conversation" not in json.dumps(r["messages"]) for r in roots), "Root inherited Main Conversation")
@@ -294,7 +294,7 @@ def verify_user_images(binary, script, evidence):
                         h.env['STEWARD_TEST_PICTURE']=base64.b64encode(picture).decode()
                         h.env['STEWARD_TEST_VISION']='yes' if mode=='vision' else 'no'
                         h.start()
-                        h.wait_state(lambda status:status['readiness']=='ready','image runtime readiness',lambda _:h.http('/api/status'))
+                        h.wait_runtime_ready('image runtime readiness')
                         h.browser(evidence.parent/('user-image-'+mode),'image');h.stop()
                     else:
                         run=h.processes.run if h.processes is not None else subprocess.run

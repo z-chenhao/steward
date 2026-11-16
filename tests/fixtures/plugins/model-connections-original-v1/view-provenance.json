@@ -1,0 +1,10 @@
+{
+  "source": "Original model-list/model-new/model-detail/signin templates before managed rendering",
+  "sha256": "13261212dc8581dfb21430e2ce2e239aa12f8db519a3faef6e74330e784e44a2",
+  "templates": [
+    "model-list.html",
+    "model-new.html",
+    "model-detail.html",
+    "signin.html"
+  ]
+}

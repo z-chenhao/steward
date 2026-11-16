@@ -1,0 +1,2466 @@
+[
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "332ae22a411909236813c770e6295c79b9efccc957569105346acaec3db0be7b",
+      "Bytes": 5045
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "68682d4f496609184513234287568a6ab81dce770c9e0ded606fa13d76bc6d5b",
+      "Bytes": 4732
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "332ae22a411909236813c770e6295c79b9efccc957569105346acaec3db0be7b",
+      "Bytes": 5045
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "68682d4f496609184513234287568a6ab81dce770c9e0ded606fa13d76bc6d5b",
+      "Bytes": 4732
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "c3aff413dfc70587dd6127cd76b4ce078925a9d550de357ab0ba1b6a450c1eae",
+      "Bytes": 3593
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "37cdc04506e430864bd5527eb48248043de20d0420e582a17e9e7011c696865e",
+      "Bytes": 3280
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "c3aff413dfc70587dd6127cd76b4ce078925a9d550de357ab0ba1b6a450c1eae",
+      "Bytes": 3593
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "37cdc04506e430864bd5527eb48248043de20d0420e582a17e9e7011c696865e",
+      "Bytes": 3280
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "e5e0842f32fed962e76176e9f21f5c668840579c177f4857ce3432b295cf93fb",
+      "Bytes": 5763
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "d91879e6474d784e5191bf5e995b48dde4224ec81473441e533c07ae7d2cc543",
+      "Bytes": 5450
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "e5e0842f32fed962e76176e9f21f5c668840579c177f4857ce3432b295cf93fb",
+      "Bytes": 5763
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "d91879e6474d784e5191bf5e995b48dde4224ec81473441e533c07ae7d2cc543",
+      "Bytes": 5450
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "1a408ac87c7f7132b08c03ead1876f7bebb8744c8d04cc5016a75ab080de7102",
+      "Bytes": 4311
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "ba1eb9ed89eec91cb104e9ace9ed465dba001d33e9bdb4acce84499a6a5fe3a2",
+      "Bytes": 3998
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "1a408ac87c7f7132b08c03ead1876f7bebb8744c8d04cc5016a75ab080de7102",
+      "Bytes": 4311
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "ba1eb9ed89eec91cb104e9ace9ed465dba001d33e9bdb4acce84499a6a5fe3a2",
+      "Bytes": 3998
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "dcf7c73298f4fdc9ae9e796e38f3763f3278a67f17a5a3a8d970c861424a1506",
+      "Bytes": 5045
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "a7ae8c6f3e0d964a5f1c9f6ecf0a2d98d6c9e4ab6d2181e74c81ee3f86d74374",
+      "Bytes": 4732
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "dcf7c73298f4fdc9ae9e796e38f3763f3278a67f17a5a3a8d970c861424a1506",
+      "Bytes": 5045
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "a7ae8c6f3e0d964a5f1c9f6ecf0a2d98d6c9e4ab6d2181e74c81ee3f86d74374",
+      "Bytes": 4732
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "9496b92a29903a0a798895b04786f31de8940343b5609f76e88b8142ee8bd912",
+      "Bytes": 3593
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "ebde0fecdcba4bf7b5a1f10d7f408e7bf7cd4d868c895193cc4fc6603938e210",
+      "Bytes": 3280
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "9496b92a29903a0a798895b04786f31de8940343b5609f76e88b8142ee8bd912",
+      "Bytes": 3593
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "ebde0fecdcba4bf7b5a1f10d7f408e7bf7cd4d868c895193cc4fc6603938e210",
+      "Bytes": 3280
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "8bf9cd00a83e6f2a4d47663aa3d703b5e062d1e3d36c8a2c6cc7439cf55432b9",
+      "Bytes": 5763
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "6de9dbbfff79eb1a6b0cffe5a3d30eb2526da2e168ed47e58ac7fd85c6012e0e",
+      "Bytes": 5450
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "8bf9cd00a83e6f2a4d47663aa3d703b5e062d1e3d36c8a2c6cc7439cf55432b9",
+      "Bytes": 5763
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "6de9dbbfff79eb1a6b0cffe5a3d30eb2526da2e168ed47e58ac7fd85c6012e0e",
+      "Bytes": 5450
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "d69343fd62b3fc9627e835c8f623225246fd46dc238621d477772de2d2021745",
+      "Bytes": 4311
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "f3278c93b8cb7560d0486f57215b6b42f9246640182d684742c682f0d3af0bea",
+      "Bytes": 3998
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "d69343fd62b3fc9627e835c8f623225246fd46dc238621d477772de2d2021745",
+      "Bytes": 4311
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "f3278c93b8cb7560d0486f57215b6b42f9246640182d684742c682f0d3af0bea",
+      "Bytes": 3998
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "f8aa809237f417250710310ce32a20f30ba31483bb9d7d24ad04afa853b6e0dc",
+      "Bytes": 4475
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "7688e7722df287832223dd4382881c0e09292d2324b28a2ef9519eea131daa1e",
+      "Bytes": 4162
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "f8aa809237f417250710310ce32a20f30ba31483bb9d7d24ad04afa853b6e0dc",
+      "Bytes": 4475
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "7688e7722df287832223dd4382881c0e09292d2324b28a2ef9519eea131daa1e",
+      "Bytes": 4162
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "249572b7a08d0e7e825b7c83c6422a2fdc627d99f73d71086639095339f1bf1d",
+      "Bytes": 3023
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "77ca260b7860d6b9812577ca4729e140fb574f6a3598cbb27ab965d82910cd2d",
+      "Bytes": 2710
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "249572b7a08d0e7e825b7c83c6422a2fdc627d99f73d71086639095339f1bf1d",
+      "Bytes": 3023
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "77ca260b7860d6b9812577ca4729e140fb574f6a3598cbb27ab965d82910cd2d",
+      "Bytes": 2710
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "4820f65c7de57408251d0bfaa53f0fdd47ef826ef5a6960cb9e472de0f41eaf5",
+      "Bytes": 5150
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "ebe49b2e9a1f845bd490fd9481caa0a0d49e8d2d2b88066f36603c2eb8b3f743",
+      "Bytes": 4837
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "4820f65c7de57408251d0bfaa53f0fdd47ef826ef5a6960cb9e472de0f41eaf5",
+      "Bytes": 5150
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "ebe49b2e9a1f845bd490fd9481caa0a0d49e8d2d2b88066f36603c2eb8b3f743",
+      "Bytes": 4837
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "3be5ab4fc02454def99463ed1b6a54aed7a3971b2fb702c002aaec7c80b7ee20",
+      "Bytes": 3698
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "df931851ab2d5e9d69777ecc226803bd11b7899d7263611ac500b216808e7675",
+      "Bytes": 3385
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "3be5ab4fc02454def99463ed1b6a54aed7a3971b2fb702c002aaec7c80b7ee20",
+      "Bytes": 3698
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "df931851ab2d5e9d69777ecc226803bd11b7899d7263611ac500b216808e7675",
+      "Bytes": 3385
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "bf45bded54d97bfc8c28d990de9cc2063808849004d72c1da79587c0a671c596",
+      "Bytes": 5104
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "d374a44e412363de4012fcede2d7a9049d98f99148d5eba41d3c299d91d9502f",
+      "Bytes": 4791
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "bf45bded54d97bfc8c28d990de9cc2063808849004d72c1da79587c0a671c596",
+      "Bytes": 5104
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "d374a44e412363de4012fcede2d7a9049d98f99148d5eba41d3c299d91d9502f",
+      "Bytes": 4791
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "eca246c17c4e5cdc94a9f72c7c1dd715821454b5e189c29593b8a1af7762acab",
+      "Bytes": 3652
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "95a7279d180fe62adc296327454492e67f4f847394a8c7266fdaa3225139d9fd",
+      "Bytes": 3339
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "eca246c17c4e5cdc94a9f72c7c1dd715821454b5e189c29593b8a1af7762acab",
+      "Bytes": 3652
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "95a7279d180fe62adc296327454492e67f4f847394a8c7266fdaa3225139d9fd",
+      "Bytes": 3339
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "f25e3892809788697144da75d6ecf68cbd23be47a528047b37de23388d554bb9",
+      "Bytes": 5822
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "866b07d3752b6deaddb146cdeb9e89aa3bf56f5cd20f86a1f2b26f2cd5a073b3",
+      "Bytes": 5509
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "f25e3892809788697144da75d6ecf68cbd23be47a528047b37de23388d554bb9",
+      "Bytes": 5822
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "866b07d3752b6deaddb146cdeb9e89aa3bf56f5cd20f86a1f2b26f2cd5a073b3",
+      "Bytes": 5509
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "eb8fe92049c1ee687552aa233e581aa32f4b588c023768141dcf4e45094f2a9f",
+      "Bytes": 4370
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "e9ef02a3625db1ceed93b70d1362828eaceb8fbc93095499949382e0673ccd52",
+      "Bytes": 4057
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "eb8fe92049c1ee687552aa233e581aa32f4b588c023768141dcf4e45094f2a9f",
+      "Bytes": 4370
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "e9ef02a3625db1ceed93b70d1362828eaceb8fbc93095499949382e0673ccd52",
+      "Bytes": 4057
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "51159caf427f689f904e249638d954c0c928c9a9b49fc4b444a09b5699369529",
+      "Bytes": 5019
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "a3561df007c635fb5c225a443ca3e0284fc7dcd6235adb6b2e8f1326eec58285",
+      "Bytes": 4393
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "73b9922451c21d74b18ef4cc2e7072ecf7f7e88ee1279dc68581e3f33a8bca25",
+      "Bytes": 5022
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "8eadb0f5331ff29ded42ec087ac19d65ea6f77ec4b61cc64bd35f62ba86f01a2",
+      "Bytes": 4396
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "0add517faa4709c1be5e3d2e9fd6f27c10efddc9de2bcd5d259a7d940dfed406",
+      "Bytes": 5132
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "aadbb71d0dead169bb3c0514ab7a98c880102cf19ff7369456a2af7ee0cdba76",
+      "Bytes": 4506
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "ff6ead02f21fcd8625ee3365a31d748565cef08419ccea2c0fc67caaec4bf12d",
+      "Bytes": 5135
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "380807306590dbc1bf331be2f1672c3ac34a6145f9e3cb5d880ca53b6c21a01c",
+      "Bytes": 4509
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "51159caf427f689f904e249638d954c0c928c9a9b49fc4b444a09b5699369529",
+      "Bytes": 5019
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "a3561df007c635fb5c225a443ca3e0284fc7dcd6235adb6b2e8f1326eec58285",
+      "Bytes": 4393
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "73b9922451c21d74b18ef4cc2e7072ecf7f7e88ee1279dc68581e3f33a8bca25",
+      "Bytes": 5022
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "8eadb0f5331ff29ded42ec087ac19d65ea6f77ec4b61cc64bd35f62ba86f01a2",
+      "Bytes": 4396
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "0add517faa4709c1be5e3d2e9fd6f27c10efddc9de2bcd5d259a7d940dfed406",
+      "Bytes": 5132
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "aadbb71d0dead169bb3c0514ab7a98c880102cf19ff7369456a2af7ee0cdba76",
+      "Bytes": 4506
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "ff6ead02f21fcd8625ee3365a31d748565cef08419ccea2c0fc67caaec4bf12d",
+      "Bytes": 5135
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "380807306590dbc1bf331be2f1672c3ac34a6145f9e3cb5d880ca53b6c21a01c",
+      "Bytes": 4509
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "500265a181f628178e01618ea9e2f38276c8decfc39e415a8ad859af7f9695f6",
+      "Bytes": 4551
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "500265a181f628178e01618ea9e2f38276c8decfc39e415a8ad859af7f9695f6",
+      "Bytes": 4551
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "500265a181f628178e01618ea9e2f38276c8decfc39e415a8ad859af7f9695f6",
+      "Bytes": 4551
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "500265a181f628178e01618ea9e2f38276c8decfc39e415a8ad859af7f9695f6",
+      "Bytes": 4551
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "35933d82ac446756f26e7021c331b6bb715769fc3cd1999e482a325e055a379d",
+      "Bytes": 4555
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "6222437841f2fcd24af3f34d1f6227620f5f687168287ac14f518d41618927e4",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "en",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "4f789aeff593eaa4451c28921442920ac71fa6787c1c1c84218d34b469af1a57",
+      "Bytes": 5051
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "f9b2654ee1bc7d7233b0709198ebd0d10fc395b37632fec75946b7fecd6eea8d",
+      "Bytes": 4750
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "4f789aeff593eaa4451c28921442920ac71fa6787c1c1c84218d34b469af1a57",
+      "Bytes": 5051
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "f9b2654ee1bc7d7233b0709198ebd0d10fc395b37632fec75946b7fecd6eea8d",
+      "Bytes": 4750
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "be6b2e9d7d7b72f8df37c6e7bed3ad06b6c5789486114a8d39abde9cb373b28c",
+      "Bytes": 3589
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "9b7d14fca433dd3ab7de92312692a19154ef2da34c576c19fe53975bc2c649c9",
+      "Bytes": 3288
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "be6b2e9d7d7b72f8df37c6e7bed3ad06b6c5789486114a8d39abde9cb373b28c",
+      "Bytes": 3589
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "9b7d14fca433dd3ab7de92312692a19154ef2da34c576c19fe53975bc2c649c9",
+      "Bytes": 3288
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "3c62e5d2ac1a74e00f4c00ca2e018354c0935760d9d1d88ccd0d47d39e65854d",
+      "Bytes": 5768
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "255684d00f8a7aaed4e58e47af19251680bda89e771690a234eef338981d6a59",
+      "Bytes": 5467
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "3c62e5d2ac1a74e00f4c00ca2e018354c0935760d9d1d88ccd0d47d39e65854d",
+      "Bytes": 5768
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "255684d00f8a7aaed4e58e47af19251680bda89e771690a234eef338981d6a59",
+      "Bytes": 5467
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "7f11a9f8fd5e2039893beeea37d9a8904cac986d0e7b4b30d7caa587751acc31",
+      "Bytes": 4306
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "4802be5359a467ba0a3d31342c24f53aaa61026c943f3ef5588c5812da254d71",
+      "Bytes": 4005
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "7f11a9f8fd5e2039893beeea37d9a8904cac986d0e7b4b30d7caa587751acc31",
+      "Bytes": 4306
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "discover",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "4802be5359a467ba0a3d31342c24f53aaa61026c943f3ef5588c5812da254d71",
+      "Bytes": 4005
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "bcafd7f8161ea43e427770d339f60c3d2a29c1ed4d640322c73e9b7a1b31d3b5",
+      "Bytes": 5051
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "5ef54b2ce88dbc8726b14e93ae14608ce85957b100332fd9f47837686bb86651",
+      "Bytes": 4750
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "bcafd7f8161ea43e427770d339f60c3d2a29c1ed4d640322c73e9b7a1b31d3b5",
+      "Bytes": 5051
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "5ef54b2ce88dbc8726b14e93ae14608ce85957b100332fd9f47837686bb86651",
+      "Bytes": 4750
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "b3b30b50fceabd8010b19c71d9eedfc12788e73abe1dc93c747c69219061fc27",
+      "Bytes": 3589
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "27a4afbdebd362480c1fdcf417ba6884f86b5006bf94c9d2512d5719d13968e5",
+      "Bytes": 3288
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "b3b30b50fceabd8010b19c71d9eedfc12788e73abe1dc93c747c69219061fc27",
+      "Bytes": 3589
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "27a4afbdebd362480c1fdcf417ba6884f86b5006bf94c9d2512d5719d13968e5",
+      "Bytes": 3288
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "7cbea8d1ab64e5ba7d9d4b7c22438f622cd9145dea13eac6ae4d08098b66bb9f",
+      "Bytes": 5768
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "9ea42d277cebec6b39a832fb340e30f095414dd2df8ad69f998c5aaafe773066",
+      "Bytes": 5467
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "7cbea8d1ab64e5ba7d9d4b7c22438f622cd9145dea13eac6ae4d08098b66bb9f",
+      "Bytes": 5768
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "9ea42d277cebec6b39a832fb340e30f095414dd2df8ad69f998c5aaafe773066",
+      "Bytes": 5467
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "a888e6491d4c0e43f377f9bf993506936d242962f4ed5f9c755e3c85592d9d95",
+      "Bytes": 4306
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "1bbd8a39d72ff0dbfa0bab6f1b0184333de78ec3d0f498d0a7bb4555b2494dea",
+      "Bytes": 4005
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "a888e6491d4c0e43f377f9bf993506936d242962f4ed5f9c755e3c85592d9d95",
+      "Bytes": 4306
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "all",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "1bbd8a39d72ff0dbfa0bab6f1b0184333de78ec3d0f498d0a7bb4555b2494dea",
+      "Bytes": 4005
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "a2f6c0062c9b6d1434152eac4730bfdce2314189184836d066a0f233adb4e793",
+      "Bytes": 4479
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "a107dca43754221904fc909c2ed8aa306949fafe1307af10f46c2ef037b7bf93",
+      "Bytes": 4178
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "a2f6c0062c9b6d1434152eac4730bfdce2314189184836d066a0f233adb4e793",
+      "Bytes": 4479
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "a107dca43754221904fc909c2ed8aa306949fafe1307af10f46c2ef037b7bf93",
+      "Bytes": 4178
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "3b797a28049583917beb894078551b44f7c8c78cf33f311fcf0d620f23c42c45",
+      "Bytes": 3017
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "a9a419b8db613b8057dd763883de09e4da3c98e8493f14964595cba2a80a4e31",
+      "Bytes": 2716
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "3b797a28049583917beb894078551b44f7c8c78cf33f311fcf0d620f23c42c45",
+      "Bytes": 3017
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "a9a419b8db613b8057dd763883de09e4da3c98e8493f14964595cba2a80a4e31",
+      "Bytes": 2716
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "6b31469cc8e9f6fbe8a27bc920e6d7ce2efc27bf9af49cea2bd06a6845b38b04",
+      "Bytes": 5153
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "78157856d1b5e62120a40f4985cfac2e621dae04cd2aa53fe14a33b0f1e89b9c",
+      "Bytes": 4852
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "6b31469cc8e9f6fbe8a27bc920e6d7ce2efc27bf9af49cea2bd06a6845b38b04",
+      "Bytes": 5153
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "78157856d1b5e62120a40f4985cfac2e621dae04cd2aa53fe14a33b0f1e89b9c",
+      "Bytes": 4852
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "09d0eb587d766f3e7ac8dd06c5fdd8d5c349f9c368131cb0abdbad60e6e31ee6",
+      "Bytes": 3691
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "5bd69c6caf086ae30651783f5c6c028bcb64e5cccee0396209826bdd02b358bf",
+      "Bytes": 3390
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "09d0eb587d766f3e7ac8dd06c5fdd8d5c349f9c368131cb0abdbad60e6e31ee6",
+      "Bytes": 3691
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "connected",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "5bd69c6caf086ae30651783f5c6c028bcb64e5cccee0396209826bdd02b358bf",
+      "Bytes": 3390
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "c47ccb5ff0b1fe832cead98c0d3ecf2e7de08fbeceada1005983de886dfe53f1",
+      "Bytes": 5110
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "493b41883a76c6001be10ceba6bd15511f9e787fc2248c7a8acc6d6057a51ee5",
+      "Bytes": 4809
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "c47ccb5ff0b1fe832cead98c0d3ecf2e7de08fbeceada1005983de886dfe53f1",
+      "Bytes": 5110
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "493b41883a76c6001be10ceba6bd15511f9e787fc2248c7a8acc6d6057a51ee5",
+      "Bytes": 4809
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "fc77cb4bdea14e329323fe5493b8e09c73cc14ea1e7231110fa7fd4810dc78ce",
+      "Bytes": 3648
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "099de119c15efe938fae073425953a38d14f96c030a2ce5060f92f30f745c9fd",
+      "Bytes": 3347
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "fc77cb4bdea14e329323fe5493b8e09c73cc14ea1e7231110fa7fd4810dc78ce",
+      "Bytes": 3648
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "099de119c15efe938fae073425953a38d14f96c030a2ce5060f92f30f745c9fd",
+      "Bytes": 3347
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "8f79d4f696b067d0829efd91c660fe1552d7c82df6386064379defdd13bd6c43",
+      "Bytes": 5827
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "77865d247bb422326d464859f945bf928d6ae55056ec13cca0da565fb806847d",
+      "Bytes": 5526
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "8f79d4f696b067d0829efd91c660fe1552d7c82df6386064379defdd13bd6c43",
+      "Bytes": 5827
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "77865d247bb422326d464859f945bf928d6ae55056ec13cca0da565fb806847d",
+      "Bytes": 5526
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "b68b18f2a39c7e43de90bfc05d54f791b2d5c8ae61cb9517172b4cf569518740",
+      "Bytes": 4365
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "59f2ea1efabff75e89c81002b7fdab79325616eea4d0ec743eb2f33ec40275be",
+      "Bytes": 4064
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "b68b18f2a39c7e43de90bfc05d54f791b2d5c8ae61cb9517172b4cf569518740",
+      "Bytes": 4365
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "collection",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "59f2ea1efabff75e89c81002b7fdab79325616eea4d0ec743eb2f33ec40275be",
+      "Bytes": 4064
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "1a9a4fe9f092099bc166ec6c10f9cda302ea416361d66c3253d91263e9962204",
+      "Bytes": 4978
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "cb92306fff8605cadf9ab5b4b4c2aa7f0a6b858475d8f4d2b388d5d774ef44fe",
+      "Bytes": 4376
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "73afa83eae79966eeb88eb7ceddaa7b6d846da9d01a9bfcd280e7850a9453896",
+      "Bytes": 4984
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "655fb19c5272d88ace352e092ddea5300bf0c44d6d0e521b986512162fc24d41",
+      "Bytes": 4382
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "aec3747737dfe9f606cf0804ec105ba521a455b69902ae72b22ee37e78fc9fe5",
+      "Bytes": 5087
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "bffb019248e256b07732aa7818c505266888f81ca7162da9dfbd66874bde265a",
+      "Bytes": 4485
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "e9f1d36a52cce3e9043d53449f7202d88a64a8deec8b3fbeb714b3554dee4971",
+      "Bytes": 5093
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "3d189dadfc425443070e9e5d1b1e7f4222760cfcb9304bb7242295e124156c05",
+      "Bytes": 4491
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "1a9a4fe9f092099bc166ec6c10f9cda302ea416361d66c3253d91263e9962204",
+      "Bytes": 4978
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "cb92306fff8605cadf9ab5b4b4c2aa7f0a6b858475d8f4d2b388d5d774ef44fe",
+      "Bytes": 4376
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "73afa83eae79966eeb88eb7ceddaa7b6d846da9d01a9bfcd280e7850a9453896",
+      "Bytes": 4984
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "655fb19c5272d88ace352e092ddea5300bf0c44d6d0e521b986512162fc24d41",
+      "Bytes": 4382
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "aec3747737dfe9f606cf0804ec105ba521a455b69902ae72b22ee37e78fc9fe5",
+      "Bytes": 5087
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "bffb019248e256b07732aa7818c505266888f81ca7162da9dfbd66874bde265a",
+      "Bytes": 4485
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "e9f1d36a52cce3e9043d53449f7202d88a64a8deec8b3fbeb714b3554dee4971",
+      "Bytes": 5093
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "detail",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "3d189dadfc425443070e9e5d1b1e7f4222760cfcb9304bb7242295e124156c05",
+      "Bytes": 4491
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "f10ba3559cc59f6dd2d6fac751c412288cf39510913290923a288a96db6eebfd",
+      "Bytes": 4526
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "f10ba3559cc59f6dd2d6fac751c412288cf39510913290923a288a96db6eebfd",
+      "Bytes": 4526
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "f10ba3559cc59f6dd2d6fac751c412288cf39510913290923a288a96db6eebfd",
+      "Bytes": 4526
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "f10ba3559cc59f6dd2d6fac751c412288cf39510913290923a288a96db6eebfd",
+      "Bytes": 4526
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "service",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "420b866be5635e49cf527ae149aac5107c4ada388d78f75c20f8f1e99ef459c3",
+      "Bytes": 4530
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 0
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 1
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 2
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 3
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 4
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 5
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 6
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 7
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 8
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 9
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 10
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 11
+    },
+    "Expected": {
+      "SHA256": "20b3e102dc86c4d87d8bd35dfd46e95f11fa2dee728662dd352d097aef15735f",
+      "Bytes": 331
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 12
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 13
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 14
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Mode": "sidebar",
+      "Language": "zh-CN",
+      "Flags": 15
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  }
+]

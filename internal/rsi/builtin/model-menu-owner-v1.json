@@ -1,0 +1,1189 @@
+[
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:another:Zulu",
+          "name": "Private account label",
+          "model": "Zulu",
+          "account": "another",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:alpha",
+          "name": "Private account label",
+          "model": "alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:retired",
+          "name": "Private account label",
+          "model": "retired",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "profile:api:2",
+          "name": "Local",
+          "model": "local",
+          "account": "",
+          "account_backed": false,
+          "connected": true,
+          "verified": false,
+          "current": false
+        }
+      ],
+      "catalogues": []
+    },
+    "expected": {
+      "choices": [
+        {
+          "key": "account:another:Zulu",
+          "label": "Zulu"
+        },
+        {
+          "key": "account:owned:retired",
+          "label": "retired"
+        },
+        {
+          "key": "account:owned:Alpha",
+          "label": "Alpha"
+        },
+        {
+          "key": "account:owned:alpha",
+          "label": "alpha"
+        }
+      ],
+      "current": ""
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:another:Zulu",
+          "name": "Private account label",
+          "model": "Zulu",
+          "account": "another",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:alpha",
+          "name": "Private account label",
+          "model": "alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:retired",
+          "name": "Private account label",
+          "model": "retired",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "profile:api:2",
+          "name": "Local",
+          "model": "local",
+          "account": "",
+          "account_backed": false,
+          "connected": true,
+          "verified": false,
+          "current": false
+        }
+      ],
+      "catalogues": [
+        {
+          "account": "owned",
+          "available": true,
+          "models": [
+            {
+              "key": "account:owned:Alpha",
+              "name": "Alpha"
+            },
+            {
+              "key": "account:owned:New",
+              "name": "New"
+            },
+            {
+              "key": "account:owned:alpha",
+              "name": "alpha"
+            }
+          ]
+        },
+        {
+          "account": "another",
+          "available": true,
+          "models": [
+            {
+              "key": "account:another:Alpha",
+              "name": "Alpha"
+            },
+            {
+              "key": "account:another:New",
+              "name": "New"
+            },
+            {
+              "key": "account:another:alpha",
+              "name": "alpha"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "choices": [
+        {
+          "key": "account:owned:New",
+          "label": "New"
+        },
+        {
+          "key": "account:another:New",
+          "label": "New"
+        },
+        {
+          "key": "account:owned:Alpha",
+          "label": "Alpha"
+        },
+        {
+          "key": "account:owned:alpha",
+          "label": "alpha"
+        },
+        {
+          "key": "account:another:Alpha",
+          "label": "Alpha"
+        },
+        {
+          "key": "account:another:alpha",
+          "label": "alpha"
+        }
+      ],
+      "current": ""
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:another:Zulu",
+          "name": "Private account label",
+          "model": "Zulu",
+          "account": "another",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:alpha",
+          "name": "Private account label",
+          "model": "alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:retired",
+          "name": "Private account label",
+          "model": "retired",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "profile:api:2",
+          "name": "Local",
+          "model": "local",
+          "account": "",
+          "account_backed": false,
+          "connected": true,
+          "verified": false,
+          "current": false
+        }
+      ],
+      "catalogues": [
+        {
+          "account": "owned",
+          "available": false,
+          "models": []
+        },
+        {
+          "account": "another",
+          "available": false,
+          "models": []
+        }
+      ]
+    },
+    "expected": {
+      "choices": [
+        {
+          "key": "account:another:Zulu",
+          "label": "Zulu"
+        },
+        {
+          "key": "account:owned:retired",
+          "label": "retired"
+        },
+        {
+          "key": "account:owned:Alpha",
+          "label": "Alpha"
+        },
+        {
+          "key": "account:owned:alpha",
+          "label": "alpha"
+        }
+      ],
+      "current": "",
+      "unavailable": true
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:another:Zulu",
+          "name": "Private account label",
+          "model": "Zulu",
+          "account": "another",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:alpha",
+          "name": "Private account label",
+          "model": "alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "account:owned:retired",
+          "name": "Private account label",
+          "model": "retired",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": true
+        },
+        {
+          "key": "account:owned:Alpha",
+          "name": "Private account label",
+          "model": "Alpha",
+          "account": "owned",
+          "account_backed": true,
+          "connected": true,
+          "verified": false,
+          "current": false
+        },
+        {
+          "key": "profile:api:2",
+          "name": "Local",
+          "model": "local",
+          "account": "",
+          "account_backed": false,
+          "connected": true,
+          "verified": false,
+          "current": false
+        }
+      ],
+      "catalogues": [
+        {
+          "account": "owned",
+          "available": true,
+          "models": [
+            {
+              "key": "account:owned:Alpha",
+              "name": "Alpha"
+            },
+            {
+              "key": "account:owned:New",
+              "name": "New"
+            },
+            {
+              "key": "account:owned:alpha",
+              "name": "alpha"
+            }
+          ]
+        },
+        {
+          "account": "another",
+          "available": true,
+          "models": [
+            {
+              "key": "account:another:Alpha",
+              "name": "Alpha"
+            },
+            {
+              "key": "account:another:New",
+              "name": "New"
+            },
+            {
+              "key": "account:another:alpha",
+              "name": "alpha"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "choices": [
+        {
+          "key": "account:owned:retired",
+          "label": "retired",
+          "disabled": true
+        },
+        {
+          "key": "account:owned:New",
+          "label": "New"
+        },
+        {
+          "key": "account:another:New",
+          "label": "New"
+        },
+        {
+          "key": "account:owned:Alpha",
+          "label": "Alpha"
+        },
+        {
+          "key": "account:owned:alpha",
+          "label": "alpha"
+        },
+        {
+          "key": "account:another:Alpha",
+          "label": "Alpha"
+        },
+        {
+          "key": "account:another:alpha",
+          "label": "alpha"
+        }
+      ],
+      "current": "account:owned:retired"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-settings/1",
+    "input": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": false,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": ""
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-settings/1",
+    "input": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-settings/1",
+    "input": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": true,
+          "current": true,
+          "auth_status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "active"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "connected"
+        },
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-settings/1",
+    "input": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "key",
+          "known_account": false,
+          "verified": false,
+          "current": true,
+          "auth_status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "known_account": true,
+          "verified": false,
+          "current": false,
+          "auth_status": "connected"
+        }
+      ],
+      "requested": "",
+      "notice": "tested"
+    },
+    "expected": {
+      "rows": [
+        {
+          "ref": "api",
+          "account": "",
+          "open": false,
+          "status": "logged_out"
+        },
+        {
+          "ref": "account",
+          "account": "owned",
+          "open": false,
+          "status": "Needs attention"
+        }
+      ],
+      "suppress_notice": false
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-settings/1",
+    "input": {
+      "rows": [],
+      "requested": "",
+      "notice": "",
+      "draft": {
+        "has_source": false,
+        "method": "",
+        "openai_endpoint": false
+      },
+      "with_view": true
+    },
+    "expected": {
+      "rows": [],
+      "suppress_notice": false,
+      "draft": {
+        "endpoint": "https://api.openai.com/v1",
+        "method": "",
+        "service": "openai",
+        "use_source": false,
+        "wire_api": "openai_completions"
+      },
+      "view": {
+        "resource": "model-connections-page",
+        "digest": "sha256:1376d022d7c83a70f8f02339606b198bda9f0a2fe24f54cac6aa047f3b109bbd",
+        "source": "{{define \"model-list\"}}\n<section class=\"model-resources\" aria-label=\"{{modelTr \"Models\"}}\">\n <div class=\"page-heading\"><div><h1>{{modelTr \"Models\"}}</h1></div></div>\n <section class=\"model-connections\" aria-label=\"{{modelTr \"Accounts\"}}\">\n <div class=\"list-heading\"><h2>{{modelTr \"Accounts\"}}</h2><a class=\"button secondary setting-action account-add\" href=\"/settings/models/new?method=account\">{{if .Accounts}}{{modelTr \"Add another account\"}}{{else}}{{modelTr \"Sign in with an account\"}}{{end}}</a></div>\n <div id=\"signin-status\">{{template \"signin\" .}}</div>\n {{range .Accounts}}<div class=\"setting-row model-connection-row\" role=\"group\" aria-label=\"ChatGPT · {{.AccountLabel}}\" data-account-connection=\"{{.ConnectionID}}\">\n <span class=\"connection-name\">ChatGPT · {{.AccountLabel}}</span><div class=\"connection-meta\"><span class=\"status-pill\" data-status=\"{{.Status}}\">{{if eq .Status \"logged_out\"}}{{modelTr \"Signed out\"}}{{else if eq .Status \"reauth_required\"}}{{modelTr \"Needs attention\"}}{{else}}{{modelTr .Status}}{{end}}</span>\n <details data-form-menu><summary class=\"control-icon-button\" aria-label=\"{{modelTr \"Manage connection\"}}: {{.AccountLabel}}\">{{template \"icon-more-v1\"}}</summary><div class=\"actions\">\n <form method=\"post\" action=\"/auth/login\" data-open-signin><input type=\"hidden\" name=\"account\" value=\"{{.ConnectionID}}\"><input type=\"hidden\" name=\"provider\" value=\"chatgpt\"><button class=\"secondary setting-action\">{{modelTr \"Reconnect account\"}}</button></form>\n {{if ne .Status \"logged_out\"}}<form method=\"post\" action=\"/auth/logout\" data-settings-confirm=\"{{modelTr \"Sign out of provider\"}}\" data-confirm-description=\"{{modelTr \"Signing out disconnects all saved models using this account.\"}}\"><input type=\"hidden\" name=\"account\" value=\"{{.ConnectionID}}\"><button class=\"secondary setting-action danger-text\">{{modelTr \"Sign out of provider\"}}</button></form>{{end}}\n </div></details></div></div>{{end}}\n </section>\n <section class=\"model-connections\" aria-label=\"{{modelTr \"API connections\"}}\"><div class=\"list-heading\"><h2>{{modelTr \"API connections\"}}</h2><a class=\"button secondary setting-action\" href=\"/settings/models/new\">{{modelTr \"Connect with an API key\"}}</a></div>\n {{range .Settings.DirectModels}}{{template \"model-resource\" .}}{{end}}\n </section>\n</section>\n{{end}}\n\n{{define \"model-new\"}}\n<div class=\"model-connect\">\n <a class=\"back-link\" href=\"/settings/models\">{{modelTr \"Models\"}}</a>\n {{if eq .Settings.ConnectionMethod \"account\"}}\n <h1>{{modelTr \"Sign in with an account\"}}</h1>\n <div class=\"setting-row\"><span class=\"setting-name\">ChatGPT</span><form action=\"/auth/login\" method=\"post\" data-open-signin><input type=\"hidden\" name=\"provider\" value=\"chatgpt\"><input type=\"hidden\" name=\"return_to\" value=\"/settings/models\"><button class=\"secondary setting-action\">{{modelTr \"Sign in with ChatGPT\"}}</button></form></div>\n {{else}}\n <h1>{{modelTr \"Connect with an API key\"}}</h1>\n <form class=\"model-connect-form\" action=\"/model/add\" method=\"post\" data-api-connection data-model-owner-connection>\n <label>{{modelTr \"Provider\"}}<select name=\"service\" id=\"api-service\"><option value=\"openai\" data-model-owner-key-required=\"true\" data-model-owner-endpoint-readonly=\"true\" data-model-owner-expand-advanced=\"false\" data-model-owner-endpoint-default=\"https://api.openai.com/v1\" data-model-owner-endpoint-force=\"true\" data-model-owner-endpoint-replace=\"\" {{if eq .Settings.Service \"openai\"}}selected{{end}}>OpenAI</option><option value=\"custom\" data-model-owner-key-required=\"false\" data-model-owner-endpoint-readonly=\"false\" data-model-owner-expand-advanced=\"true\" data-model-owner-endpoint-default=\"http://127.0.0.1:8000/v1\" data-model-owner-endpoint-force=\"false\" data-model-owner-endpoint-replace=\"https://api.openai.com/v1\" {{if eq .Settings.Service \"custom\"}}selected{{end}}>{{modelTr \"Custom endpoint\"}}</option></select></label>\n <label><span class=\"control-field-label\">{{modelTr \"API key\"}}{{template \"help\" (help \"api-key-help\" (modelTr \"API key\") (modelTr \"Local endpoints may not require an API key.\"))}}</span><input type=\"password\" aria-label=\"{{modelTr \"API key\"}}\" name=\"api_key\" maxlength=\"16384\" autocomplete=\"new-password\" spellcheck=\"false\" autocapitalize=\"off\"></label>\n <label>{{modelTr \"Model ID\"}}<input name=\"model\" value=\"{{.Settings.Model}}\" required autocomplete=\"off\"></label>\n <details class=\"model-connection-advanced\" {{if eq .Settings.Service \"custom\"}}open{{end}}><summary>{{modelTr \"Advanced\"}}</summary>\n <label>{{modelTr \"Endpoint URL\"}}<input type=\"url\" name=\"endpoint\" value=\"{{.Settings.Endpoint}}\" required></label>\n <label>{{modelTr \"Protocol\"}}<select name=\"wire_api\"><option value=\"openai_completions\" {{if eq .Settings.WireAPI \"openai_completions\"}}selected{{end}}>Chat Completions</option><option value=\"openai_responses\" {{if eq .Settings.WireAPI \"openai_responses\"}}selected{{end}}>Responses</option></select></label>\n <label><span>{{modelTr \"Display name\"}} <span class=\"muted\">{{modelTr \"optional\"}}</span></span><input name=\"name\" value=\"{{.Settings.Name}}\" placeholder=\"{{modelTr \"My local model\"}}\"></label>\n </details>\n <button class=\"secondary setting-action\">{{modelTr \"Connect\"}}</button>\n </form>\n {{end}}\n</div>\n{{end}}\n\n{{define \"model-resource\"}}\n<div class=\"setting-row model-connection-row resource-model\" id=\"model-{{.ProfileID}}\">\n <details class=\"connection-details\" {{if .Open}}open{{end}}><summary class=\"connection-name\">{{.Name}}</summary><dl class=\"facts\"><div><dt>{{modelTr \"Model ID\"}}</dt><dd>{{.ModelID}}</dd></div><div><dt>{{modelTr \"Endpoint URL\"}}</dt><dd>{{.Endpoint}}</dd></div></dl></details>\n <div class=\"connection-meta\"><span class=\"status-pill\" data-status=\"{{.ConnectionStatus}}\">{{if eq .ConnectionStatus \"logged_out\"}}{{modelTr \"Disconnected\"}}{{else}}{{modelTr .ConnectionStatus}}{{end}}</span>\n {{if or .KeyAuth (not .Verified)}}<details data-form-menu><summary class=\"control-icon-button\" aria-label=\"{{modelTr \"Manage connection\"}}: {{.Name}}\">{{template \"icon-more-v1\"}}</summary><div class=\"actions\">\n {{if and (ne .ConnectionStatus \"logged_out\") (not .Verified)}}<form method=\"post\" action=\"/model/reconnect\" data-model-verify><input type=\"hidden\" name=\"profile\" value=\"{{.ProfileID}}\"><input type=\"hidden\" name=\"profile_version\" value=\"{{.Version}}\"><input type=\"hidden\" name=\"config_version\" value=\"{{.ConfigVersion}}\"><button class=\"secondary setting-action\" name=\"consent\" value=\"yes\">{{modelTr \"Reconnect\"}}</button></form>{{end}}\n {{if and .KeyAuth (ne .ConnectionStatus \"logged_out\")}}<form method=\"post\" action=\"/model/disconnect\" data-settings-confirm=\"{{modelTr \"Disconnect\"}}\" data-confirm-description=\"{{modelTr \"Disconnect this model connection?\"}}\"><input type=\"hidden\" name=\"profile\" value=\"{{.ProfileID}}\"><input type=\"hidden\" name=\"profile_version\" value=\"{{.Version}}\"><input type=\"hidden\" name=\"auth_version\" value=\"{{.AuthVersion}}\"><button class=\"secondary setting-action danger-text\" name=\"confirm\" value=\"yes\">{{modelTr \"Disconnect\"}}</button></form>{{end}}\n {{if eq .ConnectionStatus \"logged_out\"}}<a class=\"button secondary setting-action\" href=\"/settings/models/new?source={{.ProfileID}}\">{{modelTr \"Reconnect\"}}</a>{{end}}\n </div></details>{{end}}\n </div>\n</div>\n{{end}}\n\n{{define \"signin\"}}\n{{if eq .Auth.Status \"pending\"}}<div class=\"signin-progress\" data-signin-pending>\n <div class=\"setting-row\"><span class=\"setting-copy\"><strong>ChatGPT</strong><span role=\"status\">{{modelTr \"Waiting for sign-in\"}}</span></span>\n\n <form method=\"post\" action=\"/auth/cancel\">{{if .AuthOnResources}}<input type=\"hidden\" name=\"return_to\" value=\"/settings/models\">{{end}}<button class=\"secondary setting-action\">{{modelTr \"Cancel sign-in\"}}</button></form></div>\n {{range .Auth.Events}}{{if .URL}}<a data-signin-fallback href=\"{{authURL .URL}}\" target=\"_blank\" rel=\"noreferrer\">{{modelTr \"Continue sign-in in your browser ↗\"}}</a>{{end}}{{if .DeviceCode}}<span>{{modelTr \"Device code:\"}} <code>{{.DeviceCode}}</code></span>{{end}}{{end}}\n</div>\n{{else if eq .Auth.Status \"connected\"}}<span hidden data-account-reconnected></span>{{if .AuthError}}<p class=\"feedback warning\">{{modelTr .AuthError}}</p>{{end}}\n{{else if eq .Auth.Status \"reauth_required\"}}<p class=\"feedback warning\">{{if .AuthError}}{{modelTr .AuthError}}{{else}}{{modelTr \"Sign-in was not completed. Reconnect when you are ready.\"}}{{end}}</p>{{end}}\n{{end}}\n"
+      },
+      "copy": {
+        "resource": "model-connections-copy",
+        "source": "[\n  {\n    \"key\": \"API connections\",\n    \"value\": \"API 连接\"\n  },\n  {\n    \"key\": \"API key\",\n    \"value\": \"API 密钥\"\n  },\n  {\n    \"key\": \"Accounts\",\n    \"value\": \"账户\"\n  },\n  {\n    \"key\": \"Add another account\",\n    \"value\": \"添加其他账户\"\n  },\n  {\n    \"key\": \"Advanced\",\n    \"value\": \"高级选项\"\n  },\n  {\n    \"key\": \"Cancel sign-in\",\n    \"value\": \"取消登录\"\n  },\n  {\n    \"key\": \"Connect\",\n    \"value\": \"连接\"\n  },\n  {\n    \"key\": \"Connect with an API key\",\n    \"value\": \"使用 API 密钥连接\"\n  },\n  {\n    \"key\": \"Continue sign-in in your browser ↗\",\n    \"value\": \"在浏览器中继续登录 ↗\"\n  },\n  {\n    \"key\": \"Custom endpoint\",\n    \"value\": \"自定义地址\"\n  },\n  {\n    \"key\": \"Device code:\",\n    \"value\": \"设备代码：\"\n  },\n  {\n    \"key\": \"Disconnect\",\n    \"value\": \"断开连接\"\n  },\n  {\n    \"key\": \"Disconnect this model connection?\",\n    \"value\": \"断开此模型连接？\"\n  },\n  {\n    \"key\": \"Disconnected\",\n    \"value\": \"已断开\"\n  },\n  {\n    \"key\": \"Display name\",\n    \"value\": \"显示名称\"\n  },\n  {\n    \"key\": \"Endpoint URL\",\n    \"value\": \"端点 URL\"\n  },\n  {\n    \"key\": \"Local endpoints may not require an API key.\",\n    \"value\": \"本地服务可能不需要 API 密钥。\"\n  },\n  {\n    \"key\": \"Manage connection\",\n    \"value\": \"管理连接\"\n  },\n  {\n    \"key\": \"Model ID\",\n    \"value\": \"模型 ID\"\n  },\n  {\n    \"key\": \"Models\",\n    \"value\": \"模型\"\n  },\n  {\n    \"key\": \"My local model\",\n    \"value\": \"我的本地模型\"\n  },\n  {\n    \"key\": \"Needs attention\",\n    \"value\": \"需要检查\"\n  },\n  {\n    \"key\": \"Protocol\",\n    \"value\": \"协议\"\n  },\n  {\n    \"key\": \"Provider\",\n    \"value\": \"服务商\"\n  },\n  {\n    \"key\": \"Reconnect\",\n    \"value\": \"重新连接\"\n  },\n  {\n    \"key\": \"Reconnect account\",\n    \"value\": \"重新连接账户\"\n  },\n  {\n    \"key\": \"Sign in with ChatGPT\",\n    \"value\": \"登录 ChatGPT\"\n  },\n  {\n    \"key\": \"Sign in with an account\",\n    \"value\": \"使用账户登录\"\n  },\n  {\n    \"key\": \"Sign out of provider\",\n    \"value\": \"退出服务商账户\"\n  },\n  {\n    \"key\": \"Sign-in was not completed. Reconnect when you are ready.\",\n    \"value\": \"登录尚未完成。准备好后可重新连接。\"\n  },\n  {\n    \"key\": \"Signed in, but model activation failed. Choose a model in Chat.\",\n    \"value\": \"账户已登录，但模型未能恢复可用。请在对话中选择模型。\"\n  },\n  {\n    \"key\": \"Signed out\",\n    \"value\": \"已退出\"\n  },\n  {\n    \"key\": \"Signing out disconnects all saved models using this account.\",\n    \"value\": \"退出后，使用此账户的所有已保存模型都会断开连接。\"\n  },\n  {\n    \"key\": \"The credential files are unavailable. Check directory permissions and try again.\",\n    \"value\": \"凭据文件不可用。请检查私有目录权限后重试。\"\n  },\n  {\n    \"key\": \"Waiting for sign-in\",\n    \"value\": \"等待登录\"\n  },\n  {\n    \"key\": \"connected\",\n    \"value\": \"已连接\"\n  },\n  {\n    \"key\": \"invalid\",\n    \"value\": \"无效\"\n  },\n  {\n    \"key\": \"logged_out\",\n    \"value\": \"已退出\"\n  },\n  {\n    \"key\": \"optional\",\n    \"value\": \"可选\"\n  },\n  {\n    \"key\": \"reauth_required\",\n    \"value\": \"需要重新登录\"\n  },\n  {\n    \"key\": \"unavailable\",\n    \"value\": \"不可用\"\n  }\n]\n",
+        "digest": "sha256:d61c44368c49c814d11e9c7b6840c3b47f206b029e2f2aca91b3a6297e6affd1"
+      }
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-settings/1",
+    "input": {
+      "rows": [],
+      "requested": "",
+      "notice": "",
+      "draft": {
+        "has_source": true,
+        "method": "",
+        "openai_endpoint": false
+      }
+    },
+    "expected": {
+      "rows": [],
+      "suppress_notice": false,
+      "draft": {
+        "endpoint": "",
+        "method": "",
+        "service": "custom",
+        "use_source": true,
+        "wire_api": ""
+      }
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "custom",
+      "wire_api": "",
+      "account_backed": false
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "openai",
+      "wire_api": "openai_responses",
+      "account_backed": false
+    },
+    "expected": {
+      "endpoint_override": "https://api.openai.com/v1",
+      "wire_api": "openai_responses",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": true,
+      "login": {
+        "models": [
+          "Zulu",
+          "Alpha"
+        ]
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_responses",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "login_model": "Zulu"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": false,
+      "preset": "cli-shorthand"
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "image_input": false
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": false,
+      "reconnect": {
+        "has_current": false,
+        "target_current": false
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "reconnect_action": "activate"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": false,
+      "reconnect": {
+        "has_current": true,
+        "target_current": true
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "reconnect_action": "activate"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": false,
+      "reconnect": {
+        "has_current": true,
+        "target_current": false
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "reconnect_action": "probe"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": false,
+      "added": {
+        "has_current": false
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "added_action": "activate"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": true,
+      "added": {
+        "has_current": false
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_responses",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "added_action": "activate"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": false,
+      "added": {
+        "has_current": true
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "added_action": "probe"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": true,
+      "added": {
+        "has_current": true
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_responses",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "added_action": "save"
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [],
+      "catalogues": [],
+      "browser": {
+        "reason": "refresh",
+        "unavailable": false,
+        "previous": [
+          {
+            "key": "account:owned:old",
+            "label": "旧模型",
+            "sort_key": "旧模型"
+          },
+          {
+            "key": "profile:old:1",
+            "label": "Old profile",
+            "sort_key": "old profile"
+          }
+        ],
+        "received": [
+          {
+            "key": "profile:current:2",
+            "label": "Current profile",
+            "sort_key": "current profile"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "choices": [],
+      "current": "",
+      "order": [
+        {
+          "source": "received",
+          "index": 0
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [],
+      "catalogues": [],
+      "browser": {
+        "reason": "ack",
+        "unavailable": false,
+        "previous": [
+          {
+            "key": "account:owned:old",
+            "label": "旧模型",
+            "sort_key": "旧模型"
+          },
+          {
+            "key": "profile:old:1",
+            "label": "Old profile",
+            "sort_key": "old profile"
+          }
+        ],
+        "received": [
+          {
+            "key": "profile:current:2",
+            "label": "Current profile",
+            "sort_key": "current profile"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "choices": [],
+      "current": "",
+      "order": [
+        {
+          "source": "previous",
+          "index": 0
+        },
+        {
+          "source": "received",
+          "index": 0
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [],
+      "catalogues": [],
+      "browser": {
+        "reason": "ack",
+        "unavailable": false,
+        "previous": [
+          {
+            "key": "account:owned:one",
+            "label": "Zulu",
+            "sort_key": "zulu"
+          },
+          {
+            "key": "account:owned:two",
+            "label": "alpha",
+            "sort_key": "alpha"
+          },
+          {
+            "key": "profile:old:1",
+            "label": "Stale profile",
+            "sort_key": "stale profile"
+          }
+        ],
+        "received": [
+          {
+            "key": "profile:current:2",
+            "label": "Current profile",
+            "sort_key": "current profile"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "choices": [],
+      "current": "",
+      "order": [
+        {
+          "source": "previous",
+          "index": 0
+        },
+        {
+          "source": "received",
+          "index": 0
+        },
+        {
+          "source": "previous",
+          "index": 1
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-menu/1",
+    "input": {
+      "candidates": [],
+      "catalogues": [],
+      "browser": {
+        "reason": "ack",
+        "unavailable": false,
+        "previous": [
+          {
+            "key": "account:owned:one",
+            "label": "ΟΣ",
+            "sort_key": "ος"
+          },
+          {
+            "key": "account:owned:two",
+            "label": "İ",
+            "sort_key": "i̇"
+          },
+          {
+            "key": "account:owned:three",
+            "label": "😀",
+            "sort_key": "😀"
+          },
+          {
+            "key": "account:owned:four",
+            "label": "",
+            "sort_key": ""
+          }
+        ],
+        "received": [
+          {
+            "key": "account:owned:one",
+            "label": "ALPHA",
+            "disabled": true,
+            "sort_key": "alpha"
+          },
+          {
+            "key": "profile:current:2",
+            "label": "alpha",
+            "sort_key": "alpha"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "choices": [],
+      "current": "",
+      "order": [
+        {
+          "source": "previous",
+          "index": 3
+        },
+        {
+          "source": "previous",
+          "index": 2
+        },
+        {
+          "source": "previous",
+          "index": 1
+        },
+        {
+          "source": "received",
+          "index": 0
+        },
+        {
+          "source": "received",
+          "index": 1
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "service": "",
+      "wire_api": "",
+      "account_backed": true,
+      "login": {
+        "models": [],
+        "restore_owned_current": true
+      }
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_responses",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "restore_owned_current": true
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "preset": "terminal-setup",
+      "service": "",
+      "wire_api": "",
+      "account_backed": false
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_completions",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "endpoint_default": "http://127.0.0.1:8000/v1",
+      "token_limit": 1048576
+    }
+  },
+  {
+    "instance_id": "model-connections",
+    "contract": "steward.model-connection-policy/1",
+    "input": {
+      "preset": "terminal-setup",
+      "service": "",
+      "wire_api": "",
+      "account_backed": true
+    },
+    "expected": {
+      "endpoint_override": "",
+      "wire_api": "openai_responses",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "image_input": true,
+      "endpoint_default": "http://127.0.0.1:8000/v1",
+      "token_limit": 1048576
+    }
+  }
+]

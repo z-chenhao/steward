@@ -1,0 +1,18 @@
+{
+  "en": {
+    "reconnect": "Reconnect",
+    "refresh_status": "Refresh status",
+    "disconnect": "Disconnect",
+    "confirm_disconnect": "Disconnect this account?",
+    "disconnect_description": "Ghost will stop using this account. Your other accounts stay connected.",
+    "open_authorization": "Open authorization page"
+  },
+  "zh-CN": {
+    "reconnect": "重新连接",
+    "refresh_status": "刷新状态",
+    "disconnect": "断开连接",
+    "confirm_disconnect": "断开此账户的连接？",
+    "disconnect_description": "Ghost 将停止使用此账户，其他账户仍保持连接。",
+    "open_authorization": "打开授权页面"
+  }
+}
