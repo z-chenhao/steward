@@ -16,7 +16,7 @@ let page;try{
  await page.goto(url);await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);await page.getByRole('button',{name:'Open workspace'}).click();await page.locator('#composer-root textarea').waitFor();
  // Read the retained component as a user before asynchronous frames resize.
  await page.waitForFunction(()=>document.querySelector('.composer textarea')?.classList.contains('resize-none'));
- await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
+ if(!phase.includes('preview')){await page.mouse.move(4,200);await page.mouse.wheel(0,-100)}
  const selector=phase==='preview'?'iframe[src^="/ui/plan-preview?"]':'iframe[src^="/ui/plan?"]'+(expectedRef?'[src*="'+encodeURIComponent(expectedRef)+'"]':'');await page.locator(selector).waitFor();const frame=page.frameLocator(selector);await frame.locator('summary').waitFor();const detectedAt=Date.now();if(!(await frame.locator('summary').innerText()).trim().startsWith(expectedCaption))throw Error('wrong frozen Plan template');
  if(await page.locator(selector).count()!==1)throw Error('expected exactly one managed Plan');
  if(expectedRef&&new URL(await page.locator(selector).getAttribute('src'),url).searchParams.get('ref')!==expectedRef)throw Error('original component reference changed');
