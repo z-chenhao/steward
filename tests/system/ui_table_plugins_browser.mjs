@@ -12,6 +12,9 @@ try{
  if(phase==='restart')await page.route('**/api/ui/state?**',async route=>{if(new URL(route.request().url()).searchParams.get('ref')===ref.replace(/#1$/,'#0'))await new Promise(resolve=>setTimeout(resolve,500));await route.continue()});
  await page.goto(url);
  await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);await page.getByRole('button',{name:'Open workspace'}).click();
+ // Read the retained component as a user before asynchronous frames resize.
+ await page.waitForFunction(()=>document.querySelector('.composer textarea')?.classList.contains('resize-none'));
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  const previewMode=phase.endsWith('preview'),literal=phase==='literal-preview';
  const selector=previewMode?'iframe[title="Table preview"]':'iframe[title="Table view"][src*="'+encodeURIComponent(ref)+'"]';
  const frame=page.frameLocator(selector);await frame.locator(literal?'th[data-numeric=false]':'th[data-numeric=true]').waitFor();const detectedAt=Date.now();

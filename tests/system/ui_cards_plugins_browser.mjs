@@ -8,6 +8,9 @@ try{
  const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage();page.setDefaultTimeout(8000);
  const stage=value=>appendFileSync(out+'/stages.log',value+'\n');await page.setViewportSize({width:1400,height:980});
  stage('navigating');await page.goto(url);stage('login page');await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);await page.getByRole('button',{name:'Open workspace'}).click();stage('authenticated');
+ // Read the retained component as a user before asynchronous frames resize.
+ await page.waitForFunction(()=>document.querySelector('.composer textarea')?.classList.contains('resize-none'));
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  if(phase.endsWith('preview')){
   const frame=page.frameLocator('iframe[title="Cards preview"]');await frame.locator('.native-card-title').filter({hasText:'Alpha'}).waitFor();if(await frame.locator('h3').textContent()!==heading)throw Error('preview changed owning version');
   const isolation=await frame.locator('body').evaluate(n=>({inert:n.inert,origin:self.origin,scripts:document.scripts.length,images:document.images.length}));

@@ -176,7 +176,7 @@ verify_ui_interactions 的超宽沙箱夹具在桌面及 390px 视口验证：�
 - `TestUIStagedRecoveryKeepsAcceptedOrderDespiteReverseCompletion` 与 `TestUIPreviewRestoredAndNewSectionsKeepPrivateAcceptedOrder` 覆盖逆序完成、释放／重新取得 claim 后的接纳顺序及私有排序键不外泄。`TestUIPreviewUsesCatalogCharacterLimitsForPublicText` 与前端 wire 回归覆盖中文／补充平面字符到达和超出字符上限，防止以字节或 UTF-16 长度过早拒绝合法正文。
 - ui-interactions 浏览器回归验证尺寸通知后仍可操作同一 iframe；intelligent-ui 的失败夹具抛出同消息的真实 Error，验证异常对象仍触发原失败替代。失败证据保留有界浏览器 console，避免仅从控件消失推断原因。
 
-以上单元与真实 SQLite 回归由现有 CI 的 go／frontend 分片执行；图文连续性、阅读位置和配方渲染由 startup-ui／channels-web 系统分片执行，UI 竞态继续归 capabilities-race。复用现有必需 `Ubuntu checks` 聚合门禁，不增加重复工作流。工具／渠道门禁保留普通 8K 模型的批准后续轮与多轮回执，防止展示声明挤占必需输入预算；不通过扩大模型窗口替代兼容性回归。
+以上单元与真实 SQLite 回归由现有 CI 的 go／frontend 分片执行；图文连续性、阅读位置和配方渲染由 startup-ui／channels-web 系统分片执行；托管组件恢复后的交互先等宿主脚本就绪，再用真实上滚表达阅读历史引用的意图，不用直接改写 scrollY 冒充用户输入，UI 竞态继续归 capabilities-race。复用现有必需 `Ubuntu checks` 聚合门禁，不增加重复工作流。工具／渠道门禁保留普通 8K 模型的批准后续轮与多轮回执，防止展示声明挤占必需输入预算；不通过扩大模型窗口替代兼容性回归。
 
 数值横轴回归由 TestSharedAxisNumericIntervalsValidateAndKeepFallbackCoordinates、前端 schema 和 ui-interactions 共同覆盖。真实浏览器以 0／1000／10000 为输入，验证中间点横向距离是总距离的十分之一，并核对 CSV 的 X 列；桌面／手机和明暗主题保持该比例。错误长度、重复／递减、错误类型及超范围坐标被拒绝，未提供 xValues 的旧分类轴保持原行为。
 

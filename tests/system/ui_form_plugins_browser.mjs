@@ -6,6 +6,9 @@ const[url,out,phase,ref='',caption='Original form']=process.argv.slice(2);await 
 const browser=await chromium.launch({headless:true,...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});let page;
 try{
  const context=await browser.newContext({locale:'en-US',viewport:{width:1400,height:980},reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(12000);await page.goto(url);await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);await page.getByRole('button',{name:'Open workspace'}).click();
+ // Read the retained component as a user before asynchronous frames resize.
+ await page.waitForFunction(()=>document.querySelector('.composer textarea')?.classList.contains('resize-none'));
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  const preview=phase.endsWith('preview'),variant=caption.startsWith('Form v124:'),notes=variant?'Saved new':'Saved old';
  const scope=preview?page.locator('[data-ui-preview]'):page.locator('[data-ui-spec*='+JSON.stringify('"view_ref":"'+ref+'"')+']');
  // SSR fallback has field.notes; wait for the actual managed native driver.

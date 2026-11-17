@@ -9,6 +9,9 @@ try{
  const context=await browser.newContext({locale:'en-US',viewport:{width:1400,height:980},reducedMotion:'reduce',acceptDownloads:true});
  page=await context.newPage();page.setDefaultTimeout(12000);await page.goto(url);
  await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);await page.getByRole('button',{name:'Open workspace'}).click();
+ // Read the retained component as a user before asynchronous frames resize.
+ await page.waitForFunction(()=>document.querySelector('.composer textarea')?.classList.contains('resize-none'));
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  const preview=phase.endsWith('preview'),variant=caption.startsWith('Chart v124:');
  const chart=preview?page.locator('section[data-openintelligentui="barChart"][inert]'):page.locator('section[data-openintelligentui="barChart"][data-view-ref='+JSON.stringify(ref)+']');
  await chart.locator('.recharts-bar-rectangle').nth(4).waitFor();await chart.locator('.native-answer-title').getByText(caption,{exact:true}).waitFor();const detectedAt=Date.now();

@@ -7,6 +7,9 @@ const browser=await chromium.launch({headless:true,...(process.env.STEWARD_BROWS
 try{
  const context=await browser.newContext({viewport:{width:1400,height:980},reducedMotion:'reduce'});page=await context.newPage();page.setDefaultTimeout(12000);const posts=[];page.on('request',req=>{if(req.method()==='POST'&&new URL(req.url()).pathname==='/api/ui/action')posts.push(JSON.parse(req.postData()))});
  await page.goto(url);await page.getByLabel('Workspace access token',{exact:true}).fill(process.env.STEWARD_WEB_TEST_TOKEN);await page.getByRole('button',{name:'Open workspace'}).click();
+ // Read the retained component as a user before asynchronous frames resize.
+ await page.waitForFunction(()=>document.querySelector('.composer textarea')?.classList.contains('resize-none'));
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  const scope=page.locator('[data-ui-spec*='+JSON.stringify('"widget_ref":"'+ref+'"')+']'),button=scope.getByRole('button',{name:'Refresh catalog',exact:true});await button.waitFor();
  const spec=await scope.evaluate(node=>JSON.parse(node.dataset.uiSpec)),c=spec.components.find(c=>c.widget_ref===ref),view=spec.action_views[ref];assert.equal(c.action_view,true);assert.equal(view.component,1);assert.equal(view.success_indicator,!variant);assert.equal(view.unknown_error,variant?'Action outcome unknown. Inspect its original receipt.':'Result unknown. Check the conversation.');
  const ready=()=>button.evaluate(node=>new Promise((resolve,reject)=>{const deadline=performance.now()+5000;const check=()=>!node.disabled?resolve():performance.now()>deadline?reject(Error('original action driver not ready')):setTimeout(check,20);check()}));await ready();
