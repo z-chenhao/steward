@@ -17,6 +17,12 @@ import (
 // InspectMemory is an owner-only read. No decrypted content enters an agent
 // Tool result, event, checkpoint or durable search index.
 func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, store *memorysqlite.Store) (memory.InspectionPage, error) {
+	return r.inspectMemory(ctx, q, store, nil)
+}
+
+type memoryInspectionProjector func(context.Context, evidenceAccess, memory.InspectionPage) error
+
+func (r *Runs) inspectMemory(ctx context.Context, q memory.InspectionQuery, store *memorysqlite.Store, project memoryInspectionProjector) (memory.InspectionPage, error) {
 	if err := q.Validate(); err != nil {
 		return memory.InspectionPage{}, err
 	}
@@ -28,10 +34,10 @@ func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 		return memory.InspectionPage{}, memory.ErrInspectionUnavailable
 	}
 	if q.Layer == memory.Transcripts {
-		return r.inspectMemoryTranscripts(ctx, q, access)
+		return r.inspectMemoryTranscripts(ctx, q, access, project)
 	}
 	if q.View == "maintenance" {
-		return r.inspectMemoryMaintenance(ctx, q, access)
+		return r.inspectMemoryMaintenance(ctx, q, access, project)
 	}
 	if store == nil {
 		return memory.InspectionPage{}, memory.ErrInspectionUnavailable
@@ -143,6 +149,11 @@ func (r *Runs) InspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 			}
 		}
 	}
+	if project != nil {
+		if err = project(ctx, access, page); err != nil {
+			return memory.InspectionPage{}, err
+		}
+	}
 	r.host.boundary("after_memory_inspection")
 	if err = store.RecheckInspection(ctx, snapshot); err != nil {
 		return memory.InspectionPage{}, err
@@ -171,7 +182,7 @@ func (r *Runs) recheckMemoryOwner(ctx context.Context, access evidenceAccess) er
 	}
 	return nil
 }
-func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.InspectionQuery, access evidenceAccess) (memory.InspectionPage, error) {
+func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.InspectionQuery, access evidenceAccess, project memoryInspectionProjector) (memory.InspectionPage, error) {
 	out := memory.InspectionPage{Items: []memory.InspectionRecord{}, Maintenance: []memory.MaintenanceRecord{}}
 	position, err := q.Position(access.scope.AgentID, access.floor)
 	if err != nil {
@@ -231,6 +242,11 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 			if e != nil {
 				return memory.InspectionPage{}, memory.ErrInspectionUnavailable
 			}
+		}
+	}
+	if project != nil {
+		if err = project(ctx, access, out); err != nil {
+			return memory.InspectionPage{}, err
 		}
 	}
 	r.host.boundary("after_memory_maintenance_inspection")

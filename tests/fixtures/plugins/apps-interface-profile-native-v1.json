@@ -1,0 +1,1587 @@
+{
+  "accounts": [
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Connected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Enabled public service",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Awaiting authorization",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Authorization expired",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": true,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "Disconnected",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    }
+  ],
+  "cards": [
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Connect",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "Enable app",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    }
+  ],
+  "advanced": [
+    false,
+    true,
+    true,
+    true
+  ],
+  "errors": [
+    "This app requires your own OAuth app. Ask the installation owner to configure it in Composio, then reconnect.",
+    "App connections changed. Refresh and try again.",
+    "Check the app, account alias and credential reference.",
+    "This account cannot be used. Reconnect it to continue.",
+    "Choose a label for the additional account.",
+    "This authorization link has expired. Reconnect the account to continue.",
+    "App service unavailable. Ask the installation owner to check the connection service.",
+    "App service unavailable. Ask the installation owner to check the connection service."
+  ],
+  "browser": {
+    "poll_notices": [
+      {
+        "text": "",
+        "error": false
+      },
+      {
+        "text": "Account connected.",
+        "error": false
+      },
+      {
+        "text": "",
+        "error": false
+      },
+      {
+        "text": "Authorization expired. Reconnect the account to continue.",
+        "error": true
+      },
+      {
+        "text": "",
+        "error": false
+      }
+    ],
+    "success_notices": [
+      "App settings updated.",
+      "App settings updated.",
+      "App settings updated.",
+      "App settings updated.",
+      "Account disconnected."
+    ],
+    "active_fold": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "popup_actions": [
+      "connect",
+      "continue",
+      "reconnect"
+    ],
+    "open_details_after_authorization": true,
+    "reveal_alias": true,
+    "poll_interval_ms": 5000,
+    "poll_window_ms": 600000,
+    "detail_timeout_ms": 15000,
+    "action_timeout_ms": 45000,
+    "messages": {
+      "open_authorization": "Open authorization page",
+      "details_failed": "App details could not be loaded. Refresh and try again.",
+      "connection_unknown": "The connection could not be confirmed. Refresh the page before trying again.",
+      "poll_paused": "Automatic status checks paused. Refresh the status or reconnect the account.",
+      "poll_failed": "Status could not be refreshed. Your accounts have been kept; retrying shortly.",
+      "authorization_failed": "The authorization page could not be opened.",
+      "authorization_opened": "Finish signing in in the authorization tab. This page checks automatically.",
+      "popup_blocked": "The browser blocked the authorization tab. Use Open authorization page to continue.",
+      "link_expired": "This authorization link has expired. Reconnect the account to continue."
+    }
+  },
+  "notices": {
+    "account_saved": "App settings updated.",
+    "service_saved": "App connection service saved.",
+    "unsaved": "Unsaved changes."
+  }
+}

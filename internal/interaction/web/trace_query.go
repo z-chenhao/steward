@@ -24,6 +24,12 @@ func traceQuery(r *http.Request) (*traceView, error) {
 				return nil, observability.ErrInvalid
 			}
 			v.ShowInternal = list[0] == "1"
+		case "reader_revision":
+			if !observability.ValidReaderRevision(list[0]) {
+				return nil, observability.ErrInvalid
+			}
+			v.ReaderRevision = list[0]
+			v.Query.ReaderRevision = list[0]
 		case "compare":
 			if list[0] != "messages" && list[0] != "tools" {
 				return nil, observability.ErrInvalid
@@ -93,6 +99,9 @@ func traceURL(v *traceView, field string, value any) string {
 	q := url.Values{}
 	if v.ShowInternal {
 		q.Set("internal", "1")
+	}
+	if v.ReaderRevision != "" {
+		q.Set("reader_revision", v.ReaderRevision)
 	}
 	if v.Query.Search != "" {
 		q.Set("search", v.Query.Search)
@@ -251,6 +260,9 @@ func tracePageQuery(r *http.Request) (*traceView, error) {
 		return nil, err
 	}
 	v.FullContext = full
+	if full != nil {
+		full.ReaderRevision = v.ReaderRevision
+	}
 	return v, nil
 }
 

@@ -104,7 +104,11 @@ migration rollback, CAS/revocation, route/projection freezing, encryption,
 credential redirect refusal, session expiry, XSS and unknown/invalid-component
 fallback. The channel harness also drives Web account login through the real Manager/Bridge
 against the existing local OAuth Fake, actual Probe/Select, hidden-model rejection,
-restart and logout, then scans persisted files for credential values. Existing
+restart and logout, then scans persisted files for credential values. First model
+activation also waits for the cold plugin composition, so its connected/ready
+boundary uses the same finite 60-second startup window as runtime readiness.
+Cancellation, abandoned-login, hidden-model and no-unnecessary-generation checks
+remain in this flow; OAuth, Run and Tool production deadlines are unchanged. Existing
 suites retain replay, cancellation, account lifecycle and
 Artifact access coverage.
 
@@ -288,3 +292,55 @@ HTTP 浏览器兼容：`web/random-id.test.mjs` 覆盖原生 UUID、仅有 `getR
 Trace 列表回归验证状态前置、Name／Input 合并、无伪排序箭头、费用无逐行 Estimated，以及 v2/v3 列偏好迁移。native-trace 浏览器验证动态抽屉完整 Run ID 键盘复制、Clipboard API 缺失／拒绝、原生复制失败后的完整值选中回退与焦点恢复。`web/traces_test.go` 验证 ID 转义与独立导航；`tool_preview_test.go` 验证工具传输展开边界、精度与原始证据保持；`observability/sqlite/tool_generation_test.go` 验证工具内模型节点归属、用途与跨 Run 隔离。
 
 审批恢复场景在两条 Task 回复及两条审批通知均已持久发送后再 SIGKILL，隔离“等待审批”的恢复边界；通知发送中断的 unknown/query-only 语义仍由 delivery_leases 和 multipart/crash 场景单独验证，不能通过放宽终态断言掩盖未知副作用。
+
+`TestApprovalParametersKeepOriginalHashAndResolvedOptions` 与 `TestApprovalParametersBrowser` 检查参数审批的中英文、原 hash、有值数值、明暗／桌面／手机真实几何与颜色、键盘和原生回退；浏览器测试进入既有 make test-browser，业务效果仍由 Computer owning／CLI 门禁证明。
+
+
+## 飞书状态插件验收
+
+修改前实际 Client.ConnectionStatus／Check 和 App.FeishuStatus 的 12 组输出保留在 `tests/fixtures/plugins/feishu-native-v1/status.json` 及 provenance；六种唯一状态进入独立 Owner 政策，当前标准组合为 35 包／370 项。
+
+- `TestFeishuStatusMatches12ExecutedNativeCases` 对照原修复指引；原凭据／认证缓存组件继续验证网络次数、刷新、到期与私密值隔离。
+- `TestFeishuStatusActualUpgradeRollbackStopAndCold` 使用真实插件进程、独立可执行版本、精确回退与停止／冷读取；停止时保留原状态并标记指引不可用。
+- `TestFeishuStatusPreparationFailureRetainsFacts` 验证初始化失败不回退原生指引、不改写权威事实、不泄露私有错误。
+- 必需 `feishu-plugins` 系统门禁通过实际 CLI、受控 Feishu API、SQLite 与真实包裁定，验证 disabled／unchecked／ready／credentials_rejected、独立指引及回退、停用／冷读、原模型配置保持，以及零消息／上传副作用；配置改变仍由原所有者控制面完成。
+
+门禁加入 core 和必需 tools-provider 分组，Host owning 回归保留在必需 FeishuStatus race 匹配。该门禁同时覆盖真实卡片投递的独立实现换版／回退、已冻结字节保留，以及停用后冷恢复 unknown 不重发；反馈、历史投递与完整检查还需对应回归共同证明。
+
+### 飞书冻结投影的恢复边界
+
+- 首次 Send 固定精确卡片；后续生成／写入不可用、workspace 改变时仍按原投影发送，旧完整 UISpec 投影继续原解释。
+- Query 在没有投影或回执时保持 unknown；不得补写候选或调用远端发送。已有回执只读恢复，不重发。
+- 同一 delivery ID 的消息哈希改变时，Send 与 Query 都不得写入或访问远端。
+- SQLite 实际关闭并重开后立即读取原投影，原字节及哈希冲突 fence 保持，无额外写入修复。
+- 对应回归：`TestDeliveryProjectionFreezesLinkAndPreservesLegacyCard`、`TestUnknownDeliveryQueryDoesNotAcceptOrSendNewProjection`、`TestFrozenDeliveryRejectsEnvelopeDriftBeforeTransport`、`TestChannelMigrationV24PreservesDataRollbackAndProjection`。这些检查只证明冻结恢复机制，不代表卡片业务已迁入插件。
+
+### 飞书托管卡片表现
+
+- `TestNativeCardsMatchCapturedV1` 通过插件策略和实际 Host wire binder 对照 8 项原生样本，包含反馈 callback 名称与原可信 URL。
+- `TestFeishuStatusActualUpgradeRollbackStopAndCold` 同时验证真实插件进程的卡片正文独立修改、Owner 验证、激活、回退和停用／关闭重开后拒绝普通 native 回退。
+- `TestDeliveryProjectionFreezesLinkAndPreservesLegacyCard` 断言卡片策略仅首次调用，恢复时当前策略不可用也复用原 wire。
+- `TestManagedCardFailureCannotFallBackOrSend` 与 `TestCardPresentationCannotAcquireLinksOrFeedback` 断言失败不接纳／发送，非法模式不能增加链接或反馈权限。
+- 完整原生凭据、反馈撤权及 unknown 回归继续保留；上述局部证据不能替代最终完整系统门禁或真实平台 Live 验收。
+
+- `TestFeedbackProjectionIsPreparedBeforeEffectAndOwnsAllResponses` 验证反馈效果前固定提示，仅成功触发 wake；未授权、不存在、过期和未知结果均使用对应插件文本，不泄露私有错误。
+- `TestFeedbackUnavailableProjectionCannotCommitAnswer` 验证停用、缺失和非法文案均不接纳回答；真实插件版本回归同时检查反馈成功文案的独立修改与回退。
+- `feishu-plugins` 必需门禁以 `managed=True` 调用原 `feishu_topic_delivery`、`feishu_task_questions`、`feishu_artifact_reviews`：首条输入前通过生产入口接纳默认插件图，fixture 只替代模型生成；实际 HTTP 场景覆盖来源、签名、跨渠道幂等、审阅文件、撤权、冷恢复与未知效果。默认历史 fixture 场景不能替代这一托管调用证据。
+
+### 终端交互的独立版本验收
+
+`TestTerminalInterfaceRetainsFourOriginalSetupProfilesAndOutput` 以迁移前完整夹具比较实际 setup 的四组 ProfileInput 和终端输出；`TestTerminalInterface*` 拒绝非法格式／控制转义、缺失视图、凭空模型位置、账户手填及 managed 后回退。`TestTerminalInterfaceActualUpgradeRetainedSessionRollbackStopAndCold` 运行实际隔离二进制和 `Session.Run`，同时改变展示和数字／确切 ID 歧义规则，核对新旧会话、原图冻结、精确回退、退役、Guardian stop／恢复、停用及实际重开后的首次不可用读取；原生兼容只保留具名历史消费者。原输入和凭据不送插件，纯读不增加效果账本。
+
+默认实际 CLI 的 `/setup`／取消／退出继续进入 `model-menu-plugins` 必需系统门禁；新分发包含 37 包／381 项 Owner 用例，历史组合不改写。终端及 App 生命周期回归进入既有必需 race，完整 test／lint 与原 PTY／故障恢复门禁保留。
+
+### 工作台模板插件的现有保护
+
+`web-workbench-native-v1` 保存候选之前的模板、客户端、原字典与原计数代码 hash，并实际执行原浏览器的七类区域函数。`build_owner.py` 只读取这些捕获文件，重建初始 Owner 预期，不从候选函数或当前资产获取期望。
+
+`TestWorkbenchOriginalOwnedViewsKeepNativeDOMAndFacts` 从捕获模板／字典渲染四类有内容页面的中英文原生 DOM，与托管默认视图对照；`TestWorkbenchPrivateBindingsCannotExposeDomainEnvelopes` 验证完整 DTO 打印不释放原消息和审批内部字段；`TestWorkbenchOwnerCannotRewriteNativeFormIdentity` 验证原 Source 身份不可被模板替换。`TestWebWorkbenchActualHTTPIndependentCopyRollbackRetainedAndCold` 使用真实 App／Owner／独立二进制和 HTTP 入口，检查实际文案换版、原图、精确回退、退役资源、停用和新 Store 的首次冷读，不重新激活或修复数据。 同一真实生命周期还验证带原 Reader 的 `/api/updates`：换版、退役、停用与冷读均使用原展示图，响应回传相同 Reader；无 Header 的既有公开协议保持历史语义。
+
+这些保护不替代整项验收。客户端、样式和兼容清理完成后，仍须完成实际浏览器的桌面／手机、明暗主题、草稿／审批／反馈／安排保存、实时区域及旧引用验证，以及固定源码的跨模块门禁。
+
+`TestWorkbenchBrowserOriginalStylesAndPinnedUpdates` 纳入必需 browser 门禁，以原封存完整样式和同一有内容事实对照四类页面，覆盖桌面／手机和明暗主题的实际计算字体／字号／间距／布局／颜色，检查真实同 Reader 更新请求、CSS 与执行侧栏前进／后退。传输配置和版本化样式链接不参与纯 DOM 内容比较，真实样式由上述浏览器比较证明。独立 App 生命周期同时修改文案、真实字号、轮询间隔和区域集合，并在原图／回退／退役／停用／首次冷读验证页面、配置、CSS 和实时片段的原版本一致性。原安排冲突草稿、长 UTF-8 回答、来源绑定与提交、转义／审批及 ETag 回归已改用托管视图路径。
+
+共享列表对齐仍按 `assertDataList` 检查实际 Search／Filters 矩形；错误诊断保留矩形、布局属性与所用样式引用，不记录用户内容。当前非工作台页面使用当前共享基础样式；保留的旧 Memory 页面也使用同一共享搜索／工具栏 gutter，不能被旧私有12px布局覆盖。

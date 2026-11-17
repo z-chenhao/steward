@@ -1,0 +1,5 @@
+{{/* Only declared markup versions before /3. Retire with their original graphs and published references. */}}
+{{define "app-account-copy-legacy-v1"}}<div class="setting-copy"><strong>{{.Name}} · {{.Alias}}</strong><p data-connection-status="{{.Status}}">{{appProfileText $.Apps .UI.StatusLabel}}</p>{{template "app-account-required-warning" .}}
+{{template "app-account-authorization" .}}</div>
+{{end}}
+{{define "app-account-actions-legacy-v1"}}{{if .UI.Actions}}<form method="post" action="/apps/configure" data-app-action class="app-account-actions" data-settings-confirm="{{tr "Disconnect this account?"}}" data-confirm-description="{{tr "Ghost will stop using this account. Your other accounts stay connected."}}">{{template "app-account-identity" .}}{{range .UI.Actions}}<button class="secondary" name="action" value="{{.}}">{{tr (appControlLabel .)}}</button>{{end}}</form>{{end}}{{end}}

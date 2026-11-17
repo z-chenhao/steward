@@ -76,6 +76,10 @@ type ownerHTTPSettings struct {
 	now time.Time
 }
 
+func (v ownerHTTPSettings) ScheduleDefaults(ctx context.Context) (automation.EditorDefaults, error) {
+	return v.r.OwnerScheduleDefaults(ctx)
+}
+
 func (v ownerHTTPSettings) Schedule(ctx context.Context, ref string) (task.ScheduledWork, error) {
 	return v.s.TaskReader().ScheduledDetail(ctx, ref)
 }

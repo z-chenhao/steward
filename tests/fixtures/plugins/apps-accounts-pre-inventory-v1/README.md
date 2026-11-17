@@ -1,0 +1,1 @@
+Captured from accepted Apps62 before independent inventory activation. Actual historical account1.0 and named prior composition tests build the original seven-service producer and manifest. Remove after those original consumers and retained references retire; current inventory failures never invoke these snapshots.

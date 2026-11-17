@@ -1,0 +1,1587 @@
+{
+  "notices": {
+    "account_saved": "应用设置已更新。",
+    "service_saved": "应用连接服务已保存。",
+    "unsaved": "有未保存的更改。"
+  },
+  "accounts": [
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已连接",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已启用公开服务",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "等待授权",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": true,
+      "authorization_link": true,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "授权失效",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "reconnect",
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": [
+        "check",
+        "disconnect"
+      ]
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": true,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": true,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    },
+    {
+      "visible": false,
+      "status_label": "已断开",
+      "warning": false,
+      "pending": false,
+      "authorization_link": false,
+      "actions": []
+    }
+  ],
+  "cards": [
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": false,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": false,
+      "manage_hidden": true,
+      "add_hidden": false
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": false,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "连接",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": false,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": true,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    },
+    {
+      "unavailable": true,
+      "first_label": "启用应用",
+      "first_hidden": true,
+      "additional": false,
+      "additional_hidden": true,
+      "empty_hidden": true,
+      "manage_hidden": false,
+      "add_hidden": true
+    }
+  ],
+  "advanced": [
+    false,
+    true,
+    true,
+    true
+  ],
+  "errors": [
+    "此应用需要自有 OAuth 应用。请安装负责人在 Composio 中配置后，再重新连接。",
+    "应用连接已发生变化，请刷新后重试。",
+    "请检查应用、账户别名和凭据引用。",
+    "此账户暂不可用，请重新连接。",
+    "请为新增账户填写别名。",
+    "授权链接已过期，请重新连接该账户。",
+    "应用服务暂不可用，请联系部署者检查连接服务。",
+    "应用服务暂不可用，请联系部署者检查连接服务。"
+  ],
+  "browser": {
+    "poll_notices": [
+      {
+        "text": "",
+        "error": false
+      },
+      {
+        "text": "账户已连接。",
+        "error": false
+      },
+      {
+        "text": "",
+        "error": false
+      },
+      {
+        "text": "授权已过期，请重新连接账户。",
+        "error": true
+      },
+      {
+        "text": "",
+        "error": false
+      }
+    ],
+    "success_notices": [
+      "应用设置已更新。",
+      "应用设置已更新。",
+      "应用设置已更新。",
+      "应用设置已更新。",
+      "账户已断开。"
+    ],
+    "active_fold": [
+      0,
+      1,
+      2,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "popup_actions": [
+      "connect",
+      "continue",
+      "reconnect"
+    ],
+    "open_details_after_authorization": true,
+    "reveal_alias": true,
+    "poll_interval_ms": 5000,
+    "poll_window_ms": 600000,
+    "detail_timeout_ms": 15000,
+    "action_timeout_ms": 45000,
+    "messages": {
+      "open_authorization": "打开授权页面",
+      "details_failed": "无法加载应用详情，请刷新后重试。",
+      "connection_unknown": "尚未确认连接结果，请刷新页面检查后再试。",
+      "poll_paused": "自动检查已暂停，请刷新状态或重新连接账户。",
+      "poll_failed": "暂时无法刷新状态，已保留账户，稍后会重试。",
+      "authorization_failed": "无法打开授权页面。",
+      "authorization_opened": "请在授权标签页中完成登录，此页面会自动检查结果。",
+      "popup_blocked": "浏览器拦截了授权标签页，请点击「打开授权页面」继续。",
+      "link_expired": "授权链接已过期，请重新连接该账户。"
+    }
+  }
+}

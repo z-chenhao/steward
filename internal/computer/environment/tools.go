@@ -42,6 +42,7 @@ func (c Config) Validate() error {
 // GuestDriver uses the very same instance as the desktop/browser adapter.
 type GuestDriver interface {
 	ExecuteEnvironment(context.Context, computer.Instance, string, string) tool.Result
+	WorkingDirectory() string
 }
 
 func ResourceHash(configuration any) string {
@@ -51,6 +52,10 @@ func ResourceHash(configuration any) string {
 
 func IsTool(name string) bool {
 	return name == "builtin__read" || name == "builtin__bash" || name == "builtin__edit" || name == "builtin__write"
+}
+
+func IsFileTool(name string) bool {
+	return name == "builtin__read" || name == "builtin__edit" || name == "builtin__write"
 }
 
 func Definitions(hash string) []tool.Definition {

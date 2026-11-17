@@ -28,6 +28,8 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch r.URL.Path {
+	case "/api/workbench/style":
+		s.workbenchStylesheet(w, r)
 	case "/api/models":
 		s.composerModelsAPI(w, r)
 	case "/api/ui/state", "/api/ui/action":
@@ -35,12 +37,40 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 	case "/ui/image":
 		s.uiImage(w, r)
 
+	case "/api/developer/memory/program":
+		s.memoryProgram(w, r)
+	case "/api/developer/memory/style":
+		s.memoryStylesheet(w, r)
+	case "/api/apps/browser":
+		s.appBrowser(w, r)
 	case "/api/apps/detail":
 		s.appDetail(w, r)
 	case "/ui/preview":
 		s.previewWidget(w, r)
 	case "/ui/widget":
 		s.widget(w, r)
+	case "/ui/plan-preview":
+		s.planPreview(w, r)
+	case "/ui/plan":
+		s.planView(w, r)
+	case "/ui/table-preview":
+		s.tablePreview(w, r)
+	case "/ui/cards-preview":
+		s.cardsPreview(w, r)
+	case "/ui/chart-preview":
+		s.chartPreview(w, r)
+	case "/ui/form-view":
+		s.formView(w, r)
+	case "/ui/chart":
+		s.chartView(w, r)
+	case "/ui/table":
+		s.tableView(w, r)
+	case "/ui/cards":
+		s.cardsView(w, r)
+	case "/ui/cards-link":
+		s.cardsLink(w, r)
+	case "/ui/cards-image":
+		s.cardsImage(w, r)
 	case "/api/developer/memory":
 		s.memoryAPI(w, r)
 	case "/api/workers":
@@ -51,6 +81,12 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 		s.computerView(w, r, false)
 	case "/api/computer/frame":
 		s.computerView(w, r, true)
+	case "/api/developer/traces/style":
+		s.traceStylesheet(w, r)
+	case "/trace/legacy-activity-v1.css":
+		s.legacyTraceStylesheet(w, r)
+	case "/api/developer/traces/program":
+		s.traceProgram(w, r)
 	case "/api/developer/traces":
 		s.traceAPI(w, r, "traces")
 	case "/api/developer/observations":
@@ -130,6 +166,9 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) post(w http.ResponseWriter, r *http.Request) error {
 	switch r.URL.Path {
+	case "/api/models/project":
+		s.composerModelProjection(w, r)
+		return nil
 	case "/api/ui/state", "/api/ui/action":
 		s.uiInteraction(w, r)
 		return nil
@@ -181,47 +220,37 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) error {
 		return s.reconnectModel(w, r)
 	case "/model/disconnect":
 		return s.disconnectKeyModel(w, r)
-	case "/model/catalog":
-		return s.showAccountCatalog(w, r)
 	case "/model/add":
 		status, err := s.Core.WebStatus(r.Context())
 		if err != nil {
 			return err
 		}
-		p, err := s.addModel(r)
+		p, action, err := s.addModel(r, status)
 		if err != nil {
 			return err
 		}
 		notice := "added"
-		if activeProfile(status) == "" {
+		switch action {
+		case "activate":
 			err = s.Control.SelectWithProbe(r.Context(), p.ProfileID, p.Version, status.ConfigVersion)
 			if err == nil {
 				err = s.Core.WaitForRuntime(r.Context())
 			}
-			if err != nil {
-				// The candidate was saved. Keep a failed first connection on that
-				// resource instead of offering to create the same model again.
-				next := r.Clone(r.Context())
-				u := *r.URL
-				u.Path = "/model/select"
-				next.URL = &u
-				next.PostForm = url.Values{"profile": {p.ProfileID}}
-				next.Form = next.PostForm
-				s.postFailure(w, next, err)
-				return nil
-			}
 			notice = "active"
-		} else if p.ProviderKind == "openai_compatible" {
-			if _, err = s.Control.Test(r.Context(), p.ProfileID); err != nil {
-				next := r.Clone(r.Context())
-				u := *r.URL
-				u.Path = "/model/select"
-				next.URL = &u
-				next.PostForm = url.Values{"profile": {p.ProfileID}}
-				next.Form = next.PostForm
-				s.postFailure(w, next, err)
-				return nil
-			}
+		case "probe":
+			_, err = s.Control.Test(r.Context(), p.ProfileID)
+		}
+		if err != nil {
+			// The candidate is already saved. Retain its resource and recovery entry,
+			// rather than offering to create the same model again.
+			next := r.Clone(r.Context())
+			u := *r.URL
+			u.Path = "/model/select"
+			next.URL = &u
+			next.PostForm = url.Values{"profile": {p.ProfileID}}
+			next.Form = next.PostForm
+			s.postFailure(w, next, err)
+			return nil
 		}
 		http.Redirect(w, r, resourceModelURL(p.ProfileID, notice), http.StatusSeeOther)
 		return nil

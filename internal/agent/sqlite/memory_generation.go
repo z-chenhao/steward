@@ -24,8 +24,9 @@ type semanticWriter interface {
 	AgeSemantic(context.Context, time.Time) error
 }
 type curationWork struct {
-	Input   memory.CurationInput
-	Request llm.GenerationRequest
+	PolicyRevision string `json:"policy_revision,omitempty"`
+	Input          memory.CurationInput
+	Request        llm.GenerationRequest
 }
 type memoryFailure struct {
 	Reason string `json:"validation_error"`
@@ -89,6 +90,10 @@ func (r *Runs) memoryGuard(ctx context.Context, req llm.GenerationRequest, token
 // prepareCuration freezes the source, candidate context, model and private
 // encrypted request once. Accepted output is reused across Memory DB retries.
 func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memory.CurationInput) (curationWork, string, *memory.Proposal, error) {
+	method, err := r.prepareCurationMethod(ctx, scope, in)
+	if err != nil {
+		return curationWork{}, "", nil, err
+	}
 	var work curationWork
 	var token string
 	var cached *memory.Proposal
@@ -117,8 +122,12 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 				return agent.ErrBusy
 			}
 			if status == "failed" {
+				if method == nil {
+					return recall.ErrConflict
+				}
+				work.PolicyRevision = method.Revision
 				work.Input = in
-				work.Request.Messages = []llm.Message{{Role: "system", Text: curationInstruction(in)}, {Role: "user", Text: curationModelText(in)}}
+				work.Request.Messages = []llm.Message{{Role: "system", Text: method.Instructions}, {Role: "user", Text: curationModelText(in)}}
 				if result != "" {
 					plain, err := r.vault.Open(ctx, result, priorID+":result")
 					var failure memoryFailure
@@ -133,6 +142,9 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 		} else if err != sql.ErrNoRows {
 			return agent.ErrStorage
 		} else {
+			if method == nil {
+				return recall.ErrConflict
+			}
 			var profile string
 			var version int64
 			if tx.QueryRowContext(ctx, `SELECT p.profile_id,p.version FROM agent_config a JOIN model_profile p ON p.profile_id=a.active_model_profile_id WHERE a.agent_id=? AND a.setup_status='ready' AND p.status='ready'`, scope.AgentID).Scan(&profile, &version) != nil {
@@ -145,7 +157,7 @@ func (r *Runs) prepareCuration(ctx context.Context, scope recall.Scope, in memor
 			if e = r.freezeSpend(ctx, tx, snapshot); e != nil {
 				return e
 			}
-			work = curationWork{Input: in, Request: llm.GenerationRequest{RunID: "memory:" + in.Observation.EventID, SessionID: "memory:" + in.Observation.EventID, Snapshot: snapshot, OutputLimitBytes: 32 << 10, Messages: []llm.Message{{Role: "system", Text: curationInstruction(in)}, {Role: "user", Text: curationModelText(in)}}}}
+			work = curationWork{PolicyRevision: method.Revision, Input: in, Request: llm.GenerationRequest{RunID: "memory:" + in.Observation.EventID, SessionID: "memory:" + in.Observation.EventID, Snapshot: snapshot, OutputLimitBytes: 32 << 10, Messages: []llm.Message{{Role: "system", Text: method.Instructions}, {Role: "user", Text: curationModelText(in)}}}}
 		}
 		// Private maintenance has the same model-window admission boundary as
 		// user work. Refuse before journaling or contacting the provider.

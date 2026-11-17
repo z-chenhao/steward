@@ -72,6 +72,18 @@ type MemoryProvider interface {
 type ConversationProvider interface {
 	Search(context.Context, Scope, Query) ([]Hit, error)
 }
+
+// Candidate contains an already scoped, provenance-filtered provider hit. This
+// is a private consumer seam, never a public plugin payload.
+type Candidate struct {
+	Hit   Hit
+	Score float64
+}
+type Selection struct {
+	Index, Offset, Length int
+	Evidence              []int
+}
+
 type Service struct {
 	Memory       MemoryProvider
 	Conversation ConversationProvider
@@ -84,7 +96,20 @@ type EmptyMemory struct{}
 func (EmptyMemory) Search(context.Context, Scope, Query) ([]Hit, error) { return []Hit{}, nil }
 
 func (s Service) Search(ctx context.Context, scope Scope, q Query, budget int) ([]Hit, error) {
-	if !q.Valid() || scope.UserID == "" || scope.AgentID == "" || budget < 0 {
+	if budget < 0 {
+		return nil, ErrInvalid
+	}
+	candidates, err := s.Collect(ctx, scope, q)
+	if err != nil {
+		return nil, err
+	}
+	return selectNative(q, candidates, budget)
+}
+
+// Collect returns only authenticated, provenance-filtered candidates. Consumers
+// may freeze this read before invoking independent selection policy.
+func (s Service) Collect(ctx context.Context, scope Scope, q Query) ([]Candidate, error) {
+	if !q.Valid() || scope.UserID == "" || scope.AgentID == "" {
 		return nil, ErrInvalid
 	}
 	if s.Memory == nil || s.Conversation == nil {
@@ -124,11 +149,7 @@ func (s Service) Search(ctx context.Context, scope Scope, q Query, budget int) (
 	for _, ref := range q.ExcludeRefs {
 		excluded[ref] = true
 	}
-	type ranked struct {
-		hit   Hit
-		score float64
-	}
-	candidates := []ranked{}
+	candidates := []Candidate{}
 	for _, list := range [][]Hit{a.hits, b} {
 		for i, h := range list {
 			if excluded[h.SourceRef] || seenRefs[h.SourceRef] || q.EvidenceFirst && h.Layer == "injected" || !QuotedMatch(q.Query, h.Content) {
@@ -141,11 +162,15 @@ func (s Service) Search(ctx context.Context, scope Scope, q Query, budget int) (
 			if blocked {
 				continue
 			}
-			candidates = append(candidates, ranked{h, h.Relevance + 1/float64(61+i)/100})
+			candidates = append(candidates, Candidate{h, h.Relevance + 1/float64(61+i)/100})
 		}
 	}
+	return candidates, nil
+}
+
+func selectNative(q Query, candidates []Candidate, budget int) ([]Hit, error) {
 	sort.SliceStable(candidates, func(i, j int) bool {
-		if q.EvidenceFirst && candidates[i].hit.Relevance == candidates[j].hit.Relevance {
+		if q.EvidenceFirst && candidates[i].Hit.Relevance == candidates[j].Hit.Relevance {
 			rank := func(h Hit) int {
 				if h.SourceType == "conversation" {
 					return 0
@@ -155,12 +180,12 @@ func (s Service) Search(ctx context.Context, scope Scope, q Query, budget int) (
 				}
 				return 1
 			}
-			a, b := rank(candidates[i].hit), rank(candidates[j].hit)
+			a, b := rank(candidates[i].Hit), rank(candidates[j].Hit)
 			if a != b {
 				return a < b
 			}
 		}
-		return candidates[i].score > candidates[j].score
+		return candidates[i].Score > candidates[j].Score
 	})
 	memorySources := map[string]bool{}
 	conversationSources := map[string]bool{}
@@ -168,7 +193,7 @@ func (s Service) Search(ctx context.Context, scope Scope, q Query, budget int) (
 	used := 0
 	seen := map[string]bool{}
 	for _, candidate := range candidates {
-		h := candidate.hit
+		h := candidate.Hit
 		if h.SourceType == "conversation" && !q.EvidenceFirst && memorySources[h.SourceRef] {
 			continue
 		}
@@ -188,7 +213,7 @@ func (s Service) Search(ctx context.Context, scope Scope, q Query, budget int) (
 		if q.ExcerptBytes > 0 {
 			h = Excerpt(h, q.Query, q.ExcerptBytes)
 			if q.EvidenceFirst {
-				h.Evidence = RelevantEvidence(candidate.hit.Evidence, q.Query, 2)
+				h.Evidence = RelevantEvidence(candidate.Hit.Evidence, q.Query, 2)
 			}
 		}
 		raw, _ := json.Marshal(h)

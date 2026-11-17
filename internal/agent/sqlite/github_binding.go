@@ -14,11 +14,11 @@ import (
 // This predicate only applies to Main Runs created for a GitHub observation.
 // Ordinary Main/Worker claims retain exactly their existing fence semantics.
 const currentGitHubCause = `NOT EXISTS(SELECT 1 FROM github_task_followup f WHERE f.run_id=r.run_id AND NOT EXISTS(
- SELECT 1 FROM github_task_binding b JOIN github_watch w USING(scope) JOIN task t ON t.task_id=b.task_id
+ SELECT 1 FROM github_task_binding b JOIN github_watch w USING(scope) JOIN task t ON t.task_id=b.task_id JOIN github_observation o ON o.sequence=f.observation_sequence
  WHERE b.scope=f.scope AND b.generation=f.generation AND b.enabled=1 AND b.rule_mode='automatic' AND w.enabled=1
  AND f.state IN('assigned','continued') AND b.task_id=f.task_id AND b.task_epoch=t.task_epoch
  AND t.agent_id=r.agent_id AND t.conversation_id=r.conversation_id AND t.task_epoch=coalesce(f.continued_epoch,f.task_epoch) AND t.status IN('active','completed') AND t.explicit_end_epoch<t.task_epoch
- AND b.privacy_epoch=f.privacy_epoch AND b.privacy_epoch=` + githubEpoch + ` AND w.intent_privacy_epoch=b.privacy_epoch
+ AND (` + validGitHubSourceMethod + `) AND b.privacy_epoch=f.privacy_epoch AND b.privacy_epoch=` + githubEpoch + ` AND w.intent_privacy_epoch=b.privacy_epoch
  AND t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0)))`
 
 // Selection, active waiting, and claiming use the same local eligibility.
@@ -184,7 +184,13 @@ func (s *Store) GitHubTaskBinding(ctx context.Context, cfg github.Config) (v git
 		v.Mode = "off"
 		v.State = "privacy_stopped"
 	} else {
-		v.TaskGoal = githubContextPreview(goal)
+		// All facts have been read consistently. Release the reader before
+		// isolated policy, then fence the exact binding/privacy before output.
+		_ = tx.Rollback()
+		v.TaskGoal, err = s.githubBindingGoalPreview(ctx, cfg, v.Version, goal)
+		if err != nil {
+			return v, githubStorageError(err)
+		}
 	}
 	return v, nil
 }

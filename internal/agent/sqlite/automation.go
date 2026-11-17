@@ -11,7 +11,8 @@ import (
 	"github.com/z-chenhao/assistant/internal/automation"
 	"github.com/z-chenhao/assistant/internal/event"
 	eventsqlite "github.com/z-chenhao/assistant/internal/event/sqlite"
-	"github.com/z-chenhao/assistant/internal/task"
+	"github.com/z-chenhao/assistant/internal/plugin/schedule/contract"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
@@ -23,13 +24,28 @@ func (r *Runs) ManageAutomation(ctx context.Context, key string, q automation.Re
 		return result, automation.ErrInvalid
 	}
 	raw, _ := encoded(q)
-	if _, e := automation.Parse(raw); e != nil {
+	if _, e := automation.DecodeRequest(raw); e != nil {
 		return result, e
 	}
-	err := r.write(ctx, func(tx *sql.Tx) error { var e error; result, e = r.manageAutomation(ctx, tx, key, q, now); return e })
+	var plan *ownerSchedulePlan
+	if q.Operation == "create" || q.Operation == "update" {
+		prepared, err := r.prepareOwnerScheduleRequest(ctx, key, digest(raw), automation.OwnerConfiguration{Instruction: q.Instruction, Ref: q.Ref, Version: q.Version, Enabled: true, Type: q.Type, Spec: q.Spec, Timezone: q.Timezone}, now, false)
+		if err != nil {
+			return result, err
+		}
+		if prepared.invalid {
+			return result, automation.ErrInvalid
+		}
+		plan = &prepared
+	}
+	err := r.write(ctx, func(tx *sql.Tx) error {
+		var e error
+		result, e = r.manageAutomation(ctx, tx, key, q, now, plan)
+		return e
+	})
 	return result, err
 }
-func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q automation.Request, now time.Time) (tool.Result, error) {
+func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q automation.Request, now time.Time, plan *ownerSchedulePlan) (tool.Result, error) {
 	var owner, ready string
 	if err := tx.QueryRowContext(ctx, `SELECT agent_id,setup_status FROM agent_config WHERE singleton=1`).Scan(&owner, &ready); err != nil {
 		return tool.Result{}, err
@@ -38,7 +54,8 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 		return tool.Result{}, agent.ErrSetup
 	}
 	if q.Operation == "list" {
-		rows, e := tx.QueryContext(ctx, `SELECT automation_id,instruction,trigger_type,trigger_spec,timezone,enabled,version,next_fire_at,below_value,intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=automation.agent_id),0) FROM automation WHERE agent_id=? ORDER BY created_at,automation_id LIMIT 50`, owner)
+		rows, e := tx.QueryContext(ctx, `SELECT automation_id,instruction,trigger_type,trigger_spec,timezone,enabled,version,next_fire_at,below_value,intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=automation.agent_id),0),json_extract(presentation_json,'$.instruction_label'),
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=automation.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-instruction-label/1') FROM automation WHERE agent_id=? ORDER BY created_at,automation_id LIMIT 50`, owner)
 		if e != nil {
 			return tool.Result{}, e
 		}
@@ -46,9 +63,10 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 		views := []automation.View{}
 		for rows.Next() {
 			var v automation.View
-			var eligible bool
+			var eligible, managedLabel bool
+			var label sql.NullString
 			var next, below sql.NullInt64
-			if e = rows.Scan(&v.Ref, &v.Instruction, &v.Type, &v.Spec, &v.Timezone, &v.Enabled, &v.Version, &next, &below, &eligible); e != nil {
+			if e = rows.Scan(&v.Ref, &v.Instruction, &v.Type, &v.Spec, &v.Timezone, &v.Enabled, &v.Version, &next, &below, &eligible, &label, &managedLabel); e != nil {
 				return tool.Result{}, e
 			}
 			if next.Valid {
@@ -58,11 +76,16 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 			if below.Valid {
 				v.Below = &below.Int64
 			}
-			v.Instruction = task.Title(v.Instruction)
 			if !eligible {
 				// Retain only Host control metadata. Instruction, schedule and
 				// threshold are revoked evidence even before any Task exists.
 				v = automation.View{Ref: v.Ref, Enabled: v.Enabled, Version: v.Version}
+			} else if label.Valid && validScheduleInstructionLabel(label.String) {
+				v.Instruction = label.String
+			} else if managedLabel {
+				return tool.Result{}, rsi.ErrInvalid
+			} else {
+				v.Instruction = legacyAutomationInstructionLabel(v.Instruction)
 			}
 			views = append(views, v)
 		}
@@ -87,15 +110,55 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 	if err != sql.ErrNoRows {
 		return tool.Result{}, err
 	}
+	if plan != nil {
+		managed, err := scheduleActivatedTx(ctx, tx)
+		if err != nil {
+			return tool.Result{}, err
+		}
+		if plan.claimFence == nil && managed != plan.managed {
+			return tool.Result{}, agent.ErrConflict
+		}
+		if plan.managed {
+			if err = r.ownerScheduleFence(ctx, tx, *plan); err != nil {
+				return tool.Result{}, err
+			}
+		}
+	}
+	next := func() (time.Time, error) {
+		if plan != nil {
+			if plan.invalid {
+				return time.Time{}, automation.ErrInvalid
+			}
+			return plan.next, nil
+		}
+		// Only historical model Runs without the managed service reach this path.
+		return automation.HistoricalNext(q.Type, q.Spec, q.Timezone, now)
+	}
+	var graph any
+	if plan != nil && plan.managed {
+		graph = plan.graph
+	}
+	var frequency, local, presentation any
+	if plan != nil {
+		if plan.presentation != nil {
+			presentation, _ = encoded(plan.presentation)
+		}
+		if plan.projectedFrequency != nil {
+			frequency, _ = encoded(plan.projectedFrequency)
+		}
+		if plan.projectedLocal != nil {
+			local, _ = encoded(plan.projectedLocal)
+		}
+	}
 	result := tool.Result{}
 	id := q.Ref
 	if q.Operation == "create" {
-		t, e := automation.Next(q.Type, q.Spec, q.Timezone, now)
+		t, e := next()
 		if e != nil || !t.After(now) {
 			return tool.Failure("INVALID_ARGUMENT"), nil
 		}
 		id = "automation:" + newID()
-		_, err = tx.ExecContext(ctx, `INSERT INTO automation(automation_id,agent_id,instruction,trigger_type,trigger_spec,timezone,enabled,next_fire_at,created_at,updated_at,version,below_value,intent_privacy_epoch) VALUES(?,?,?,?,?,?,1,?,?,?,1,?,coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=?),0))`, id, owner, q.Instruction, q.Type, q.Spec, q.Timezone, t.UnixMicro(), now.UnixMicro(), now.UnixMicro(), q.Below, owner)
+		_, err = tx.ExecContext(ctx, `INSERT INTO automation(automation_id,agent_id,instruction,trigger_type,trigger_spec,timezone,enabled,next_fire_at,created_at,updated_at,version,below_value,intent_privacy_epoch,method_graph,owner_frequency_json,owner_local_json,presentation_json) VALUES(?,?,?,?,?,?,1,?,?,?,1,?,coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=?),0),?,?,?,?)`, id, owner, q.Instruction, q.Type, q.Spec, q.Timezone, t.UnixMicro(), now.UnixMicro(), now.UnixMicro(), q.Below, owner, graph, frequency, local, presentation)
 	} else {
 		var version int64
 		var taskID sql.NullString
@@ -120,7 +183,7 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 				}
 			}
 		} else {
-			t, e := automation.Next(q.Type, q.Spec, q.Timezone, now)
+			t, e := next()
 			if e != nil || !t.After(now) {
 				return tool.Failure("INVALID_ARGUMENT"), nil
 			}
@@ -133,7 +196,7 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 					return tool.Failure("INVALID_ARGUMENT"), nil
 				}
 			}
-			_, err = tx.ExecContext(ctx, `UPDATE automation SET instruction=?,trigger_type=?,trigger_spec=?,timezone=?,is_below=CASE WHEN below_value IS ? THEN is_below ELSE 0 END,below_value=?,enabled=1,next_fire_at=?,schedule_version=schedule_version+1,updated_at=?,version=version+1 WHERE automation_id=?`, q.Instruction, q.Type, q.Spec, q.Timezone, q.Below, q.Below, t.UnixMicro(), now.UnixMicro(), id)
+			_, err = tx.ExecContext(ctx, `UPDATE automation SET instruction=?,trigger_type=?,trigger_spec=?,timezone=?,is_below=CASE WHEN below_value IS ? THEN is_below ELSE 0 END,below_value=?,enabled=1,next_fire_at=?,method_graph=?,owner_frequency_json=?,owner_local_json=?,presentation_json=?,schedule_version=schedule_version+1,updated_at=?,version=version+1 WHERE automation_id=?`, q.Instruction, q.Type, q.Spec, q.Timezone, q.Below, q.Below, t.UnixMicro(), graph, frequency, local, presentation, now.UnixMicro(), id)
 		}
 	}
 	if err != nil {
@@ -151,80 +214,6 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 	return result, automationEvent(ctx, tx, id, "changed")
 }
 
-// ScheduleAutomations only persists due trigger identity + unified Outbox in
-// one transaction. It never creates a Task, snapshot or Run. Missed occurrences
-// are coalesced to one original due fire; next cron is strictly after now.
-func (r *Runs) ScheduleAutomations(ctx context.Context, now time.Time) error {
-	var due bool
-	if err := r.host.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM automation WHERE enabled=1 AND next_fire_at<=?)`, now.UnixMicro()).Scan(&due); err != nil {
-		return agent.ErrStorage
-	}
-	if !due {
-		return nil
-	}
-	r.host.boundary("before_automation_fire")
-	err := r.write(ctx, func(tx *sql.Tx) error {
-		rows, e := tx.QueryContext(ctx, `SELECT automation_id,trigger_type,trigger_spec,timezone,instruction,next_fire_at,schedule_version,below_value FROM automation WHERE enabled=1 AND next_fire_at<=? ORDER BY next_fire_at,automation_id LIMIT 100`, now.UnixMicro())
-		if e != nil {
-			return e
-		}
-		type due struct {
-			id, kind, spec, zone, instruction string
-			at, version                       int64
-			below                             sql.NullInt64
-		}
-		ds := []due{}
-		for rows.Next() {
-			var d due
-			if e = rows.Scan(&d.id, &d.kind, &d.spec, &d.zone, &d.instruction, &d.at, &d.version, &d.below); e != nil {
-				rows.Close()
-				return e
-			}
-			ds = append(ds, d)
-		}
-		e = rows.Err()
-		rows.Close()
-		if e != nil {
-			return e
-		}
-		for _, d := range ds {
-			ev, e := event.New("/steward/automations", "ai.steward.automation_fired.v1", d.id, struct {
-				AutomationID string `json:"automation_id"`
-				Version      int64  `json:"schedule_version"`
-				FireAt       int64  `json:"fire_at"`
-			}{d.id, d.version, d.at})
-			if e != nil {
-				return e
-			}
-			if _, e = tx.ExecContext(ctx, `INSERT INTO automation_fire(event_id,automation_id,schedule_version,fire_at,instruction,below_value,state) VALUES(?,?,?,?,?,?,'pending')`, ev.ID(), d.id, d.version, d.at, d.instruction, d.below); e != nil {
-				return e
-			}
-			if e = eventsqlite.Enqueue(ctx, tx, ev); e != nil {
-				return e
-			}
-			var next any
-			if d.kind == "cron" {
-				t, e := automation.Next(d.kind, d.spec, d.zone, now)
-				if e != nil {
-					return e
-				}
-				next = t.UnixMicro()
-			}
-			if _, e = tx.ExecContext(ctx, `UPDATE automation SET next_fire_at=?,updated_at=?,version=version+1 WHERE automation_id=?`, next, now.UnixMicro(), d.id); e != nil {
-				return e
-			}
-		}
-		r.host.boundary("before_automation_fire_commit")
-		return nil
-	})
-	if err == nil {
-		r.host.boundary("after_automation_fire_commit")
-	}
-	return err
-}
-
-// Actor recovery consumes authoritative fire rows even when Broker delivery is
-// delayed or lost. Inbox, Task, fresh snapshots, Root and run_ready commit once.
 func (r *Runs) admitAutomations(ctx context.Context) error {
 	var pending bool
 	if err := r.host.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM automation_fire WHERE state='pending')`).Scan(&pending); err != nil {
@@ -233,7 +222,12 @@ func (r *Runs) admitAutomations(ctx context.Context) error {
 	if !pending {
 		return nil
 	}
-	err := r.write(ctx, func(tx *sql.Tx) error {
+	labels, err := r.prepareAutomationTaskLabels(ctx)
+	if err != nil {
+		return err
+	}
+	r.host.boundary("before_automation_label_commit")
+	err = r.write(ctx, func(tx *sql.Tx) error {
 		rows, e := tx.QueryContext(ctx, `SELECT f.event_id FROM automation_fire f JOIN automation a USING(automation_id) WHERE f.state='pending' AND a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) ORDER BY f.fire_at,f.event_id`)
 		if e != nil {
 			return e
@@ -288,13 +282,27 @@ func (r *Runs) admitAutomations(ctx context.Context) error {
 				}
 			} else {
 				if !taskID.Valid {
+					label, ok := labels[id]
+					if !ok {
+						continue
+					}
+					if e = r.automationTaskLabelFence(ctx, tx, label); e != nil {
+						return e
+					}
+					var labelGraph any
+					if label.managed {
+						labelGraph = label.graph
+					}
+					if _, e = tx.ExecContext(ctx, `UPDATE automation_fire SET task_title=?,task_label_graph=?,task_label_managed=? WHERE event_id=?`, label.title, labelGraph, label.managed, id); e != nil {
+						return e
+					}
 					taskID = sql.NullString{String: newID(), Valid: true}
 					var owner string
 					if e = tx.QueryRowContext(ctx, `SELECT agent_id FROM automation WHERE automation_id=?`, automationID).Scan(&owner); e != nil {
 						return e
 					}
 					now := time.Now().UnixMicro()
-					if _, e = tx.ExecContext(ctx, `INSERT INTO task(task_id,task_ref,agent_id,conversation_id,title,anchor_task,anchor_artifact_refs,status,task_epoch,created_at,updated_at,version,completion_policy) VALUES(?,?,?,?,?,?,'[]','active',1,?,?,1,'ongoing')`, taskID.String, "task:"+newID(), owner, owner, task.Title(brief), brief, now, now); e != nil {
+					if _, e = tx.ExecContext(ctx, `INSERT INTO task(task_id,task_ref,agent_id,conversation_id,title,anchor_task,anchor_artifact_refs,status,task_epoch,created_at,updated_at,version,completion_policy) VALUES(?,?,?,?,?,?,'[]','active',1,?,?,1,'ongoing')`, taskID.String, "task:"+newID(), owner, owner, label.title, brief, now, now); e != nil {
 						return e
 					}
 					if _, e = tx.ExecContext(ctx, `UPDATE automation SET task_id=?,version=version+1 WHERE automation_id=?`, taskID.String, automationID); e != nil {
@@ -303,7 +311,11 @@ func (r *Runs) admitAutomations(ctx context.Context) error {
 				}
 				instruction := fmt.Sprintf("Automation scheduled occurrence: %s.\n%s", time.UnixMicro(fireAt).UTC().Format(time.RFC3339), brief)
 				if below.Valid {
-					instruction += fmt.Sprintf("\nRecord the observed integer value with %s. Only entering below %d warrants a notification; never invent an observation.", automation.ObserveName, below.Int64)
+					guidance, err := r.automationObservationInstruction(ctx, tx, below.Int64)
+					if err != nil {
+						return err
+					}
+					instruction += "\n" + guidance
 				}
 				if _, e = tx.ExecContext(ctx, `INSERT INTO task_instruction(instruction_id,task_id,task_epoch,instruction,artifact_refs,created_at) VALUES(?,?,?,?,'[]',?)`, newID(), taskID.String, epoch, instruction, time.Now().UnixMicro()); e != nil {
 					return e
@@ -330,7 +342,19 @@ func (r *Runs) admitAutomations(ctx context.Context) error {
 
 func (t *tools) executeAutomation(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
 	result := tool.Failure("PERMISSION_DENIED")
-	err := t.runs.write(ctx, func(tx *sql.Tx) error {
+	now := t.runs.AutomationNow()
+	plan, err := t.prepareMainSchedule(ctx, inv, now)
+	if err != nil {
+		return result, err
+	}
+	threshold, err := t.prepareScheduleThreshold(ctx, inv)
+	if err != nil {
+		return result, err
+	}
+	if threshold != nil {
+		t.runs.host.boundary("before_automation_observe_commit")
+	}
+	err = t.runs.write(ctx, func(tx *sql.Tx) error {
 		if e := t.fence(ctx, tx); e != nil {
 			return e
 		}
@@ -339,7 +363,7 @@ func (t *tools) executeAutomation(ctx context.Context, inv tool.Invocation) (too
 			return e
 		}
 		if name == automation.ManageName && kind == "main" {
-			q, e := automation.Parse(args)
+			q, e := automation.DecodeRequest(args)
 			if e != nil {
 				result = tool.Failure("INVALID_ARGUMENT")
 				return nil
@@ -352,7 +376,7 @@ func (t *tools) executeAutomation(ctx context.Context, inv tool.Invocation) (too
 				source = inv.ID
 			}
 			canonical, _ := encoded(q)
-			result, e = t.runs.manageAutomation(ctx, tx, source+":"+digest(canonical), q, t.runs.AutomationNow())
+			result, e = t.runs.manageAutomation(ctx, tx, source+":"+digest(canonical), q, now, plan)
 			return e
 		}
 		if name != automation.ObserveName || !tool.Validate(automation.ObserveSchema, args) {
@@ -385,12 +409,27 @@ func (t *tools) executeAutomation(ctx context.Context, inv tool.Invocation) (too
 			if e = tx.QueryRowContext(ctx, `SELECT a.last_observed_fire FROM automation a JOIN automation_fire f USING(automation_id) WHERE f.event_id=?`, id).Scan(&latest); e != nil {
 				return e
 			}
-			notify := at > latest && q.Value < below.Int64 && !entered
+			var isBelow, notify bool
+			if threshold != nil {
+				if e = t.scheduleThresholdFence(ctx, tx, inv, *threshold); e != nil {
+					return e
+				}
+				isBelow, notify = threshold.decision.IsBelow, threshold.decision.Notify
+			} else {
+				var managed bool
+				if e = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM rsi_run b,json_each(b.managed_services_json) s WHERE b.run_id=? AND s.value=?)`, t.claim.RunID(), contract.Threshold).Scan(&managed); e != nil {
+					return e
+				}
+				if managed {
+					return rsi.ErrInvalid
+				}
+				isBelow, notify = legacyAutomationThreshold(q.Value, below.Int64, entered, at > latest)
+			}
 			if _, e = tx.ExecContext(ctx, `UPDATE automation_fire SET observed_value=?,notify=? WHERE event_id=?`, q.Value, notify, id); e != nil {
 				return e
 			}
 			if at > latest {
-				if _, e = tx.ExecContext(ctx, `UPDATE automation SET is_below=?,last_observed_fire=?,version=version+1 WHERE automation_id=(SELECT automation_id FROM automation_fire WHERE event_id=?)`, q.Value < below.Int64, at, id); e != nil {
+				if _, e = tx.ExecContext(ctx, `UPDATE automation SET is_below=?,last_observed_fire=?,version=version+1 WHERE automation_id=(SELECT automation_id FROM automation_fire WHERE event_id=?)`, isBelow, at, id); e != nil {
 					return e
 				}
 			}

@@ -1,0 +1,63 @@
+{
+  "scope": "original native workbench implementation captured before candidate construction",
+  "files": [
+    {
+      "source": "internal/interaction/web/templates/tasks.html",
+      "sha256": "21a392572c6c7bad4aaeb2604c245353e0292c1f10a34bd7a7da39f46c4ad5f0"
+    },
+    {
+      "source": "internal/interaction/web/templates/task.html",
+      "sha256": "483d365009b9143f908dc4c51c698c18f08fb94e6410fc4386c1e5cfcb129ad9"
+    },
+    {
+      "source": "internal/interaction/web/templates/attention.html",
+      "sha256": "d944798ed9f9e808611af28ebc714a64b72f26373d7b29b641da9697a7094ce2"
+    },
+    {
+      "source": "internal/interaction/web/templates/conversation.html",
+      "sha256": "9e4415b5f4fa88456dd299da7a3f320ec698d8cb94e4e1fe5d7d498542508089"
+    },
+    {
+      "source": "internal/interaction/web/templates/schedule-editor.html",
+      "sha256": "a5215f36bf0d4523f6a4d36d77a7dfd7ee340ec857ab07b2a9dd25666f8394fd"
+    },
+    {
+      "source": "web/src/live-updates.ts",
+      "sha256": "1464074fe452b10350464be6da1a30c1ef06e1acd719e845ad3fc29b2ee1e505"
+    },
+    {
+      "source": "web/src/task-executions.ts",
+      "sha256": "0a04b35a34b7fefd0171d14340173112cabef99decdd93c0859a639c7f5f7cdd"
+    },
+    {
+      "source": "web/src/task-filters.tsx",
+      "sha256": "856cf6332f7db4dbc6c24dcf7d66aef084babae1cc525394eac05bf5c3312297"
+    },
+    {
+      "source": "web/src/task-planning.css",
+      "sha256": "355023e6ce85e2460d6a643aaf475b77366ee83a6a772cec953c16eedcce2549"
+    },
+    {
+      "source": "web/src/conversation.css",
+      "sha256": "797ac5497c230c7b09b413d0199ca5ed0dd529b486c97ef954e40d694973bfb5"
+    },
+    {
+      "source": "web/src/workspace.css",
+      "sha256": "92556d4fcc1920316b2236275d3f88e3072f8e894087fd3848dfd0c81bb424e4"
+    },
+    {
+      "source": "internal/interaction/web/locales/zh-CN.json",
+      "sha256": "5f3712c722882f4bf4c64127ab5db677ba70a8ceb983d46b9e141a444f0fbc7b"
+    },
+    {
+      "source": "internal/interaction/web/presentation.go",
+      "sha256": "aef7216ef1444b73422abb4185ae0503bbd1a32f95b3bfc323f95ba240ae2318",
+      "capture": "internal/interaction/web/presentation.go.txt"
+    },
+    {
+      "source": "internal/interaction/web/tasks.go",
+      "sha256": "f029867fe53e9380accbf07f1359d12de075e914ebdc4a7793d5a2ee954455ae",
+      "capture": "internal/interaction/web/tasks.go.txt"
+    }
+  ]
+}

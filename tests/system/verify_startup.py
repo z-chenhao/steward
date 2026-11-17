@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Install a native release; drive bare steward through the maintained real PTY.
 
-Launch/Doctor/Drive/Evidence/Cleanup includes actual Pi/QuickJS dependencies,
+Launch/Doctor/Drive/Evidence/Cleanup includes the model bridge and QuickJS dependencies,
 local JetStream, explicit model setup, Tool execution and SIGKILL/restart.
 Only the model HTTP peer is deterministic. No online account or user state.
 """
 import argparse
+from contextlib import closing
 import hashlib
 from http.server import ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
 import signal
-from contextlib import closing
 import sqlite3
 import tarfile
 import tempfile
@@ -138,6 +138,13 @@ def verify_install():
                 terminal.expect('You> ')
                 before = h.state()
                 assert_final(before, 1)
+                plugin_selection = h.command('plugin', 'status')
+                require(plugin_selection['graph_revision'] and plugin_selection['epoch'] == 1,
+                        'distributed feature bundle was not independently verified and selected')
+                with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db:
+                    packages = {row[0] for row in db.execute("SELECT p.plugin_id FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?", (plugin_selection['graph_revision'],))}
+                require(packages == {'steward.docx-reader', 'steward.image-ocr', 'steward.trace-inspector', 'steward.context-compact', 'steward.recall', 'steward.conversation', 'steward.memory-curator', 'steward.evidence-reader', 'steward.skill-library', 'steward.experience-learning', 'steward.task-control', 'steward.task-progress', 'steward.task-feedback', 'steward.delegation', 'steward.codemode', 'steward.file-tools', 'steward.shell-tools', 'steward.coding-workspace', 'steward.computer-use', 'steward.web-access', 'steward.web-extract', 'steward.mcp-bridge', 'steward.connected-apps', 'steward.tool-discovery', 'steward.apps-directory', 'steward.apps-accounts', 'steward.apps-logos', 'steward.apps-interface', 'steward.github-pr-followup', 'steward.artifact-workbench', 'steward.intelligent-ui', 'steward.schedule', 'steward.memory-inspector', 'steward.model-connections', 'steward.feishu-chat', 'steward.capability-settings', 'steward.terminal-interface', 'steward.reference-pricing', 'steward.web-workbench', 'steward.service-watchdog'},
+                        'native installation did not activate the distributed feature composition')
                 require(len(before['tools']) == 2 and {t['tool_name'] for t in before['tools']} == {'builtin__codemode_execute','builtin__artifact_manage'} and all(t['attempt_count'] == 1 for t in before['tools']), 'startup bypassed Code Mode or the nested Tool executor')
                 require(terminal.stop(signal.SIGKILL) == -signal.SIGKILL, 'missing crash evidence')
                 report['first_launch'] = terminal.transcript()
@@ -147,12 +154,15 @@ def verify_install():
                 restarted = h.state()
                 changed = [key for key in before if restarted[key] != before[key]]
                 require(not changed, 'restart duplicated or changed completed state: '+','.join(changed))
+                require(h.command('plugin', 'status') == plugin_selection,
+                        'restart replaced the accepted plugin selection')
                 require(terminal.stop() == 0, 'foreground cleanup failed')
                 report['restart'] = terminal.transcript()
             # Reinstallation changes only the runtime, retaining the data root.
             run('sh', str(installer), '--prefix', str(prefix))
             require(h.state() == before, 'reinstallation changed application data')
             report['state'] = before
+            report['plugin_bootstrap'] = plugin_selection
             report['checks'].append('explicit local setup -> real Pi Probe/select -> Main -> Direct Tool -> durable reply; SIGKILL and bare-command restart preserve completed state; /quit joins runtime; reinstall preserves user data')
             report['checks'].append('unmanaged executable protected; no shell-profile or credential writes')
         finally:

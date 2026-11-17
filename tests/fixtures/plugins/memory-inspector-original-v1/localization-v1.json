@@ -1,0 +1,522 @@
+[
+  {
+    "english": "All origins",
+    "chinese": "全部来源"
+  },
+  {
+    "english": "All statuses",
+    "chinese": "全部状态"
+  },
+  {
+    "english": "All tiers",
+    "chinese": "全部层级"
+  },
+  {
+    "english": "Apply filters",
+    "chinese": "应用筛选"
+  },
+  {
+    "english": "Attempts",
+    "chinese": "尝试次数"
+  },
+  {
+    "english": "Automatically extracted",
+    "chinese": "自动提取"
+  },
+  {
+    "english": "Cache read tokens",
+    "chinese": "缓存输入 Tokens"
+  },
+  {
+    "english": "Clear all",
+    "chinese": "清除全部"
+  },
+  {
+    "english": "Continue reading →",
+    "chinese": "继续阅读 →"
+  },
+  {
+    "english": "Copy full ID",
+    "chinese": "复制完整 ID"
+  },
+  {
+    "english": "Created after",
+    "chinese": "创建于此后"
+  },
+  {
+    "english": "Created before",
+    "chinese": "创建于此前"
+  },
+  {
+    "english": "Created time",
+    "chinese": "创建时间"
+  },
+  {
+    "english": "Developer",
+    "chinese": "开发者工具"
+  },
+  {
+    "english": "Developer sections",
+    "chinese": "开发者页面"
+  },
+  {
+    "english": "Document edit has an unknown target, stale revision, changed layer or duplicate target.",
+    "chinese": "文档编辑包含未知目标、旧修订、更换层级或重复目标。"
+  },
+  {
+    "english": "Document edits contain cyclic dependencies or link to a retired target.",
+    "chinese": "文档编辑包含循环依赖，或链接到本轮退役的文档。"
+  },
+  {
+    "english": "Document fields violate the layer, revision, content or supporting quote limits.",
+    "chinese": "文档字段不符合层级、修订、正文或支持引文的限制。"
+  },
+  {
+    "english": "Document has no supporting observations or linked evidence.",
+    "chinese": "文档缺少支持它的原始记录或关联证据。"
+  },
+  {
+    "english": "Document links must refer to supplied current documents.",
+    "chinese": "文档链接必须引用本轮提供的当前文档。"
+  },
+  {
+    "english": "Documents retired",
+    "chinese": "退役文档"
+  },
+  {
+    "english": "Documents written",
+    "chinese": "写入文档"
+  },
+  {
+    "english": "Dream proposals must contain no facts and at most eight document edits.",
+    "chinese": "整理提案不能包含事实条目，且最多编辑八份文档。"
+  },
+  {
+    "english": "Dreaming",
+    "chinese": "后台整理"
+  },
+  {
+    "english": "Error code",
+    "chinese": "错误代码"
+  },
+  {
+    "english": "Evidence refers to an observation outside the supplied batch.",
+    "chinese": "证据引用超出本批提供的原始记录。"
+  },
+  {
+    "english": "Explicitly remembered",
+    "chinese": "主动记住"
+  },
+  {
+    "english": "Failure details were not recorded for this older attempt.",
+    "chinese": "这条旧记录未保存具体失败原因。"
+  },
+  {
+    "english": "Filter memories",
+    "chinese": "筛选记忆"
+  },
+  {
+    "english": "Filtered memories",
+    "chinese": "已筛选记忆"
+  },
+  {
+    "english": "Filters",
+    "chinese": "筛选"
+  },
+  {
+    "english": "Formation",
+    "chinese": "形成方式"
+  },
+  {
+    "english": "Generations",
+    "chinese": "模型生成"
+  },
+  {
+    "english": "Help",
+    "chinese": "帮助"
+  },
+  {
+    "english": "ID",
+    "chinese": "ID"
+  },
+  {
+    "english": "Injected context",
+    "chinese": "注入上下文"
+  },
+  {
+    "english": "Input / output tokens",
+    "chinese": "输入 / 输出词元"
+  },
+  {
+    "english": "Input tokens",
+    "chinese": "输入 Token"
+  },
+  {
+    "english": "Latency",
+    "chinese": "耗时"
+  },
+  {
+    "english": "Later injections",
+    "chinese": "后续注入"
+  },
+  {
+    "english": "Later reads",
+    "chinese": "后续读取"
+  },
+  {
+    "english": "Latest 50 attempts. Failed proposals never become memory; retry success replaces the current error.",
+    "chinese": "最近 50 次调用。失败提案不会写入记忆；重试成功后清除当前错误。"
+  },
+  {
+    "english": "Local control",
+    "chinese": "本机控制"
+  },
+  {
+    "english": "MEMORY_INVALID_PROPOSAL",
+    "chinese": "MEMORY_INVALID_PROPOSAL"
+  },
+  {
+    "english": "Maintenance records",
+    "chinese": "维护记录"
+  },
+  {
+    "english": "Memories formed from conversations or explicit remember requests will appear here.",
+    "chinese": "通过对话形成或明确要求记住的记忆会显示在这里。"
+  },
+  {
+    "english": "Memory",
+    "chinese": "记忆"
+  },
+  {
+    "english": "Memory ID",
+    "chinese": "记忆 ID"
+  },
+  {
+    "english": "Memory content",
+    "chinese": "记忆内容"
+  },
+  {
+    "english": "Memory content could not be decrypted. Check the memory key configuration and refresh.",
+    "chinese": "无法解密记忆正文。请检查记忆密钥配置后刷新。"
+  },
+  {
+    "english": "Memory content unavailable",
+    "chinese": "记忆正文不可用"
+  },
+  {
+    "english": "Memory detail sections",
+    "chinese": "记忆详情分区"
+  },
+  {
+    "english": "Memory details",
+    "chinese": "记忆详情"
+  },
+  {
+    "english": "Memory layer",
+    "chinese": "记忆层级"
+  },
+  {
+    "english": "Memory notes",
+    "chinese": "记忆笔记"
+  },
+  {
+    "english": "Memory representations",
+    "chinese": "知识表示"
+  },
+  {
+    "english": "Memory results",
+    "chinese": "记忆结果"
+  },
+  {
+    "english": "Memory sources",
+    "chinese": "记忆来源"
+  },
+  {
+    "english": "Memory tier",
+    "chinese": "记忆层级"
+  },
+  {
+    "english": "Memory views",
+    "chinese": "记忆视图"
+  },
+  {
+    "english": "Metadata",
+    "chinese": "元数据"
+  },
+  {
+    "english": "Model",
+    "chinese": "模型"
+  },
+  {
+    "english": "Model attempts",
+    "chinese": "模型调用记录"
+  },
+  {
+    "english": "Model cost",
+    "chinese": "模型费用"
+  },
+  {
+    "english": "More sources →",
+    "chinese": "更多来源 →"
+  },
+  {
+    "english": "Next memory",
+    "chinese": "下一条记忆"
+  },
+  {
+    "english": "No maintenance records",
+    "chinese": "暂无维护记录"
+  },
+  {
+    "english": "No matching memories",
+    "chinese": "没有匹配的记忆"
+  },
+  {
+    "english": "No model attempts recorded.",
+    "chinese": "尚无模型调用记录。"
+  },
+  {
+    "english": "Not priced",
+    "chinese": "未计价"
+  },
+  {
+    "english": "Older records →",
+    "chinese": "更早的记录 →"
+  },
+  {
+    "english": "Open task →",
+    "chinese": "打开任务 →"
+  },
+  {
+    "english": "Open trace →",
+    "chinese": "打开 Trace →"
+  },
+  {
+    "english": "Operation",
+    "chinese": "操作"
+  },
+  {
+    "english": "Original record",
+    "chinese": "原始记录"
+  },
+  {
+    "english": "Output must be one JSON object with only supported fields.",
+    "chinese": "输出须为单个 JSON 对象，且只能包含支持的字段。"
+  },
+  {
+    "english": "Output tokens",
+    "chinese": "输出 Token"
+  },
+  {
+    "english": "Preview",
+    "chinese": "预览"
+  },
+  {
+    "english": "Previous memory",
+    "chinese": "上一条记忆"
+  },
+  {
+    "english": "Proposal does not satisfy the required schema or evidence rules.",
+    "chinese": "提案不符合规定结构或证据要求。"
+  },
+  {
+    "english": "Proposal exceeds the 32 KiB output limit.",
+    "chinese": "提案超过 32 KiB 输出限制。"
+  },
+  {
+    "english": "Proposal returned tool calls instead of the required JSON.",
+    "chinese": "提案返回了工具调用，未按要求返回 JSON。"
+  },
+  {
+    "english": "Provider output was clipped before the proposal completed.",
+    "chinese": "提案尚未完整返回，服务商输出已被截断。"
+  },
+  {
+    "english": "Receipt",
+    "chinese": "回执"
+  },
+  {
+    "english": "Reference API price estimate, not an invoice. Subscription charges may differ.",
+    "chinese": "按 API 参考价格估算，并非实际账单；订阅调用的实际收费可能不同。"
+  },
+  {
+    "english": "Related memories",
+    "chinese": "关联记忆"
+  },
+  {
+    "english": "Replaced by",
+    "chinese": "后继记录"
+  },
+  {
+    "english": "Replacement history",
+    "chinese": "替代历史"
+  },
+  {
+    "english": "Replaces",
+    "chinese": "替代记录"
+  },
+  {
+    "english": "Resize memory sources",
+    "chinese": "调整记忆来源宽度"
+  },
+  {
+    "english": "Revision",
+    "chinese": "修订号"
+  },
+  {
+    "english": "Search memories",
+    "chinese": "搜索记忆"
+  },
+  {
+    "english": "Search memory content or ID…",
+    "chinese": "搜索记忆内容或 ID…"
+  },
+  {
+    "english": "Source",
+    "chinese": "来源"
+  },
+  {
+    "english": "Source content",
+    "chinese": "来源正文"
+  },
+  {
+    "english": "Source execution",
+    "chinese": "来源执行"
+  },
+  {
+    "english": "Source message",
+    "chinese": "来源消息"
+  },
+  {
+    "english": "Source task",
+    "chinese": "来源任务"
+  },
+  {
+    "english": "Source unavailable",
+    "chinese": "来源不可用"
+  },
+  {
+    "english": "Sources",
+    "chinese": "来源"
+  },
+  {
+    "english": "Status",
+    "chinese": "状态"
+  },
+  {
+    "english": "Superseded memory",
+    "chinese": "已被替代的记忆"
+  },
+  {
+    "english": "Supporting quote is empty or is not an exact substring of its observation.",
+    "chinese": "支持引文为空，或与对应原始记录的文字不完全匹配。"
+  },
+  {
+    "english": "This memory has been superseded. Only its metadata is available.",
+    "chinese": "此记忆已被替代，仅显示元数据。"
+  },
+  {
+    "english": "Tokens",
+    "chinese": "Token"
+  },
+  {
+    "english": "Total",
+    "chinese": "合计"
+  },
+  {
+    "english": "Traces",
+    "chinese": "执行轨迹"
+  },
+  {
+    "english": "Transcripts",
+    "chinese": "原始记录"
+  },
+  {
+    "english": "Unchanged writes",
+    "chinese": "无变化写入"
+  },
+  {
+    "english": "Unknown origin",
+    "chinese": "来源未知"
+  },
+  {
+    "english": "Written note",
+    "chinese": "主动写入"
+  },
+  {
+    "english": "active",
+    "chinese": "有效"
+  },
+  {
+    "english": "all",
+    "chinese": "all"
+  },
+  {
+    "english": "applied",
+    "chinese": "已应用"
+  },
+  {
+    "english": "cancelled",
+    "chinese": "已取消"
+  },
+  {
+    "english": "completed",
+    "chinese": "已完成"
+  },
+  {
+    "english": "dream",
+    "chinese": "记忆整理"
+  },
+  {
+    "english": "facts",
+    "chinese": "facts"
+  },
+  {
+    "english": "failed",
+    "chinese": "失败"
+  },
+  {
+    "english": "forget",
+    "chinese": "遗忘"
+  },
+  {
+    "english": "memory:",
+    "chinese": "memory:"
+  },
+  {
+    "english": "memory_manage",
+    "chinese": "memory_manage"
+  },
+  {
+    "english": "pending",
+    "chinese": "待确认"
+  },
+  {
+    "english": "records on this page",
+    "chinese": "条记录在本页"
+  },
+  {
+    "english": "rejected",
+    "chinese": "已拒绝"
+  },
+  {
+    "english": "remember",
+    "chinese": "记住"
+  },
+  {
+    "english": "retired",
+    "chinese": "retired"
+  },
+  {
+    "english": "running",
+    "chinese": "运行中"
+  },
+  {
+    "english": "superseded",
+    "chinese": "已被替代"
+  },
+  {
+    "english": "← Memory",
+    "chinese": "← 记忆列表"
+  }
+]

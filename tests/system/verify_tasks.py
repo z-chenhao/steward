@@ -7,18 +7,60 @@ from pathlib import Path
 import signal
 from contextlib import closing
 import sqlite3
+import sys
 import tempfile
 
 from terminal_driver import Terminal
 from verify_main import MainHarness, require
+
+METHOD_CALL_QUERY = "SELECT run_id,instance_id,operation_id,request_hash,state_version,result_json IS NOT NULL AS accepted FROM rsi_call ORDER BY run_id,instance_id,operation_id"
+
+
+def select_managed_tasks(h, delegation=False, codemode=False):
+    repo = Path(__file__).resolve().parents[2]
+    bindings = []
+    policy = json.loads((repo / 'tests/fixtures/plugins/task-control-policy.json').read_text())
+    progress = json.loads((repo / 'tests/fixtures/plugins/task-progress-policy.json').read_text())
+    policy['allowed_contracts'] += progress['allowed_contracts']
+    policy['cases'] += progress['cases']
+    feedback = json.loads((repo / 'tests/fixtures/plugins/task-feedback-policy.json').read_text())
+    policy['allowed_contracts'] += feedback['allowed_contracts']
+    policy['cases'] += feedback['cases']
+    names = ['task-control', 'task-progress', 'task-feedback']
+    if delegation:
+        contribution = json.loads((repo / 'tests/fixtures/plugins/delegation-policy.json').read_text())
+        policy['allowed_contracts'] += contribution['allowed_contracts']
+        policy['cases'] += contribution['cases']
+        names.append('delegation')
+    if codemode:
+        contribution = json.loads((repo / 'tests/fixtures/plugins/codemode-policy.json').read_text())
+        policy['allowed_contracts'] += contribution['allowed_contracts']
+        policy['allowed_requests'] = sorted(set(policy.get('allowed_requests', []) + contribution['allowed_requests']))
+        policy['cases'] += contribution['cases']
+        names.append('codemode')
+    for name in names:
+        installed = h.command('plugin', 'install', str(h.binary.parent / 'plugins' / name))
+        bindings.append(dict(instance_id=name, package_digest=installed['digest'], config={}, state_namespace=name, state_version=1))
+    graph = h.command('plugin', 'prepare', text=json.dumps(dict(protocol='steward-rsi-plugins/0.1', bindings=bindings)))
+    h.command('plugin', 'policy', text=json.dumps(policy))
+    h.command('plugin', 'propose', text=json.dumps(dict(candidate_id='task-system', baseline='', target=graph['revision'], policy_id=policy['id'], goal='Independent Task discovery and labels with protected Host control')))
+    decision = h.command('plugin', 'verify', 'task-system')
+    h.command('plugin', 'activate', text=json.dumps(dict(operation_id='task-select', expected_graph_revision='', target_graph_revision=graph['revision'], decision_ref=decision['decision_ref'])))
+    return graph['revision']
 
 
 def state(h):
     value = h.state()
     with closing(sqlite3.connect(Path(h.env["STEWARD_DATA_ROOT"]) / "state.db")) as db, db:
         db.row_factory = sqlite3.Row
+        db.execute("BEGIN")
         for key, query in {
+            "method_calls": METHOD_CALL_QUERY,
             "tasks": "SELECT * FROM task ORDER BY created_at,task_id",
+            "task_labels": "SELECT q.invocation_id,q.request_hash,b.graph_revision,EXISTS(SELECT 1 FROM json_each(b.managed_services_json) WHERE value='steward.task-label/1') managed,p.graph_revision plan_graph,p.request_hash plan_request_hash,p.title,t.title task_title FROM task_request q JOIN tool_invocation i ON i.invocation_id=q.invocation_id JOIN task t ON t.task_ref=json_extract(q.receipt_json,'$.taskRef') LEFT JOIN rsi_run b ON b.run_id=i.run_id LEFT JOIN task_label_plan p USING(invocation_id) WHERE json_extract(i.arguments_json,'$.operation')='create' ORDER BY q.invocation_id",
+            "title_plans": "SELECT invocation_id,graph_revision,request_hash,title FROM task_label_plan ORDER BY invocation_id",
+            "feedback_policies": "SELECT f.feedback_ref,p.graph_revision,p.response_guidance,f.expires_at-f.created_at lifetime_us,EXISTS(SELECT 1 FROM task_invocation i JOIN rsi_run b ON b.run_id=(SELECT run_id FROM tool_invocation WHERE invocation_id=i.invocation_id) WHERE json_extract(i.receipt_json,'$.feedbackRef')=f.feedback_ref AND b.graph_revision=p.graph_revision AND EXISTS(SELECT 1 FROM json_each(b.managed_services_json) WHERE value='steward.task-feedback-policy/1')) creator_graph FROM task_feedback f LEFT JOIN task_feedback_policy_binding p USING(feedback_ref) ORDER BY f.rowid",
+            "progress_policies": "SELECT c.run_id,c.operation_id,c.result_json FROM rsi_call c JOIN run r USING(run_id) WHERE r.worker_position='root' AND c.instance_id='task-progress' ORDER BY c.run_id,c.operation_id",
             "feedbacks": "SELECT * FROM task_feedback ORDER BY rowid",
             "instructions": "SELECT * FROM task_instruction ORDER BY sequence",
             "updates": "SELECT * FROM task_update ORDER BY occurred_at,event_id",
@@ -75,6 +117,9 @@ def assertions(value, tasks, roots, updates):
     caps = {c["snapshot_id"]: c for c in value["capabilities"]}
     return {
         "task_count": len(value["tasks"]) == tasks,
+        "managed_label_before_task_commit": len(value["task_labels"]) == tasks and all(row["managed"] and row["graph_revision"] == row["plan_graph"] and row["graph_revision"] and row["request_hash"] == row["plan_request_hash"] and row["title"] == row["task_title"] and row["title"] for row in value["task_labels"]),
+        "no_opaque_task_label_calls": not any(row["instance_id"] == "task-control" for row in value["method_calls"]),
+        "managed_feedback_recipe": len(value['feedback_policies']) == len(value['feedbacks']) and all(p['creator_graph'] and p['lifetime_us'] == 604800 * 1000000 and p['response_guidance'] == "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;" for p in value['feedback_policies']),
         "root_count_and_no_child": len(workers) == roots and all(r["task_id"] and r["parent_run_id"] is None for r in workers),
         "one_completion_per_root": len(value["updates"]) == updates and len({u["root_run_id"] for u in value["updates"]}) == updates,
         "durable_report_dedup": len(value["inbox"]) == updates == len(value["reporter_dedup"]),
@@ -97,7 +142,7 @@ def check(value, tasks=1, roots=1, updates=1):
     return checks
 
 
-def run(binary):
+def run(binary, failure_root=None):
     report = {"version": 1, "scope": "Task/Root/Reporter implementation; controlled stop evidence is in task-control reports; Child, Artifact and delivery evidence is maintained in their dedicated harnesses", "checks": [], "crashes": []}
     with tempfile.TemporaryDirectory(prefix="steward-tasks-") as directory:
         root = Path(directory)
@@ -108,7 +153,21 @@ def run(binary):
             h = MainHarness(binary, folder, fixture="tasks")
             try:
                 h.setup()
+                select_managed_tasks(h)
                 return action(h)
+            except Exception:
+                if failure_root is not None:
+                    # Only this disposable, explicitly scripted fixture is
+                    # captured. Keep identities/status, not requests or secrets.
+                    try:
+                        failure_root.mkdir(parents=True, exist_ok=True)
+                        with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db', timeout=2)) as db:
+                            db.row_factory = sqlite3.Row
+                            rows = [dict(row) for row in db.execute(METHOD_CALL_QUERY)]
+                        (failure_root / (name + '.json')).write_text(json.dumps(dict(boundary=name, binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(), calls=rows), indent=2) + '\n')
+                    except (OSError, sqlite3.Error) as error:
+                        print('Task diagnostic capture failed: ' + str(error), file=sys.stderr)
+                raise
             finally:
                 h.cleanup()
 
@@ -362,9 +421,12 @@ def run(binary):
                 expected = summary if boundary.startswith("after_") else ""
                 require(before["tasks"][0]["progress_summary"] == expected, "progress/checkpoint boundary not atomic")
                 require(not before["updates"] and not before["inbox"], "ordinary progress woke Main")
+                policies = before['progress_policies']
+                require(len(policies) == 2 and all(p['result_json'] for p in policies), 'guidance and stage selection were not durable before progress/checkpoint boundary')
                 h.command("chat", "work")
                 after = state(h); check(after)
                 require(after["tasks"][0]["progress_summary"] == summary, "recovery lost semantic progress")
+                require(after['progress_policies'] == policies, 'recovery redispatched accepted progress policy')
                 prior = {g["generation_id"]: g for g in before["generations"] if g["status"] == "completed"}
                 require(all(g["attempt_count"] == prior[g["generation_id"]]["attempt_count"] and g["request_hash"] == prior[g["generation_id"]]["request_hash"]
                             for g in after["generations"] if g["generation_id"] in prior), "progress recovery regenerated a completed turn")
@@ -374,7 +436,7 @@ def run(binary):
             report["crashes"].append(scenario(boundary, progress_crash))
         report["checks"].append("F-005: Root stage prose commits atomically with its checkpoint; SIGKILL before/after preserves progress, reuses accepted model turns and creates no extra Main work")
 
-        for boundary in ("before_task_commit", "after_task_commit", "before_result_commit", "after_result_commit",
+        for boundary in ("before_task_label_commit", "after_task_label_commit", "before_task_commit", "after_task_commit", "before_result_commit", "after_result_commit",
                          "before_report_commit", "after_report_commit", "before_followup_commit", "after_followup_commit"):
             def crash(h):
                 receipt = h.send("duplicate", "Duplicate: Recover the wedding checklist.")
@@ -382,8 +444,13 @@ def run(binary):
                 child = h.hold(boundary)
                 child.kill(); child.communicate(timeout=10)
                 before = state(h)
+                if boundary.endswith("task_label_commit"):
+                    require(not before["tasks"], "title computation crossed Task acceptance")
+                    require(bool(before["title_plans"]) == boundary.startswith("after_"), "pure title acceptance crossed its crash boundary")
+                    require(not before["method_calls"], "pure title computation reserved opaque calls")
                 h.command("chat", "work")
                 after = state(h); check(after)
+                require(all(plan in after["title_plans"] for plan in before["title_plans"]), "recovery rewrote accepted title choices")
                 require(all(r["status"] == "completed" for r in after["runs"]), "recovery left nonterminal work")
                 require(len(after["task_requests"]) == 1 and len(after["task_invocations"]) == 2, "duplicate source/Tool created another Task")
                 prior = {g["generation_id"]: g for g in before["generations"] if g["status"] == "completed"}
@@ -392,7 +459,7 @@ def run(binary):
                 require(state(h) == after, "duplicate/restart drain changed terminal state")
                 return {"boundary": boundary, "before_kill": before, "recovered": after}
             report["crashes"].append(scenario(boundary, crash))
-        report["checks"].append("Eight SIGKILL boundaries around atomic Task/Root, result, Reporter Inbox and batched Main admission; completed calls reused")
+        report["checks"].append("Ten SIGKILL boundaries around pure title acceptance, atomic Task/Root, result, Reporter Inbox and batched Main admission; accepted choices and completed calls reused")
     report["cleanup"] = "owned PTYs/children reaped; disposable databases removed"
     return report
 
@@ -403,7 +470,7 @@ def main():
     parser.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args(); args.evidence.unlink(missing_ok=True)
     binary = args.binary.resolve()
-    report = run(binary)
+    report = run(binary, args.evidence.parent / (args.evidence.stem + '-failures'))
     report["binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")

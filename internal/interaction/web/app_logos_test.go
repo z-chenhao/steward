@@ -18,7 +18,11 @@ func (f logoTransport) RoundTrip(r *http.Request) (*http.Response, error) { retu
 
 func TestAppLogosBundledForEverySuggestedApp(t *testing.T) {
 	s := languageServer()
-	for _, app := range connectedapps.Suggestions("", "") {
+	editorial, err := (&connectedapps.Service{}).Editorial(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, app := range editorial.Items {
 		t.Run(app.Slug, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			s.ServeHTTP(w, languageRequest("GET", "/apps/logo/"+app.Slug, "en", ""))
@@ -51,9 +55,9 @@ func TestAppLogoNewProviderMetadataUsesAnonymousBoundedCache(t *testing.T) {
 		}
 		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`<svg viewBox="0 0 10 10"><path fill="#ea4335" d="M0 0h10v10H0z"/></svg>`)), Header: make(http.Header)}, nil
 	})}}
-	cache.register("new_app", "https://assets.composio.dev/logos/new_app.svg")
+	cache.registerForRevision("", "new_app", "https://assets.composio.dev/logos/new_app.svg")
 	for range 2 {
-		body, kind, err := cache.get(context.Background(), "new_app")
+		body, kind, err := cache.getLegacyV1(context.Background(), "new_app")
 		if err != nil || kind != "image/svg+xml" || !strings.Contains(string(body), "#ea4335") {
 			t.Fatal(kind, err)
 		}
@@ -66,7 +70,7 @@ func TestAppLogoNewProviderMetadataUsesAnonymousBoundedCache(t *testing.T) {
 			t.Fatal(source)
 		}
 	}
-	if _, _, err := cache.get(context.Background(), "unregistered"); err == nil || calls != 1 {
+	if _, _, err := cache.getLegacyV1(context.Background(), "unregistered"); err == nil || calls != 1 {
 		t.Fatal("unknown logo fetched")
 	}
 }
@@ -95,8 +99,8 @@ func TestAppLogoSanitizationRetainsBrandShapesAndRejectsActiveContent(t *testing
 		cache := appLogoCache{client: &http.Client{Transport: logoTransport(func(*http.Request) (*http.Response, error) {
 			return &http.Response{StatusCode: test.status, Body: io.NopCloser(strings.NewReader(test.body)), Header: make(http.Header)}, nil
 		})}}
-		cache.register("new_app", "")
-		if _, _, err := cache.get(context.Background(), "new_app"); err == nil {
+		cache.registerForRevision("", "new_app", "")
+		if _, _, err := cache.getLegacyV1(context.Background(), "new_app"); err == nil {
 			t.Fatal("invalid upstream logo accepted", test.status)
 		}
 	}

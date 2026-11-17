@@ -1,0 +1,96 @@
+[
+  {
+    "instance_id": "reference-pricing",
+    "contract": "steward.reference-pricing/1",
+    "input": {
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna"
+    },
+    "expected": {
+      "table": {
+        "currency": "USD",
+        "source": "Bundled catalog (Pi AI 1.5.0) / openai",
+        "version": "catalog-f1d176d7917f3547",
+        "base": {
+          "input": 100000,
+          "output": 500000,
+          "cache_read": 10000,
+          "cache_write": 125000
+        },
+        "tiers": [
+          {
+            "above_input_tokens": 272000,
+            "rates": {
+              "input": 200000,
+              "output": 750000,
+              "cache_read": 20000,
+              "cache_write": 250000
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "instance_id": "reference-pricing",
+    "contract": "steward.reference-pricing/1",
+    "input": {
+      "provider_kind": "openai_compatible",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model"
+    },
+    "expected": {
+      "table": null
+    }
+  },
+  {
+    "instance_id": "reference-pricing",
+    "contract": "steward.reference-pricing/1",
+    "input": {
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "gpt-6-luna"
+    },
+    "expected": {
+      "table": {
+        "currency": "USD",
+        "source": "Bundled catalog (Pi AI 1.5.0) / openai-codex",
+        "version": "catalog-f1d176d7917f3547",
+        "base": {
+          "input": 100000,
+          "output": 500000,
+          "cache_read": 10000,
+          "cache_write": 125000
+        },
+        "tiers": [
+          {
+            "above_input_tokens": 272000,
+            "rates": {
+              "input": 200000,
+              "output": 750000,
+              "cache_read": 20000,
+              "cache_write": 250000
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "instance_id": "reference-pricing",
+    "contract": "steward.reference-pricing/1",
+    "input": {
+      "provider_kind": "openai_account",
+      "endpoint_hash": "72ad3db948b22df147713c287d484511770cbb538350527656ee1311058d7425",
+      "wire_api": "openai_completions",
+      "model_id": "unknown-model"
+    },
+    "expected": {
+      "table": null
+    }
+  }
+]

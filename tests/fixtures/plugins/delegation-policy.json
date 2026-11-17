@@ -1,0 +1,22 @@
+{
+  "id": "delegation-system-owner",
+  "allowed_contracts": [
+    "steward.delegation-policy/1"
+  ],
+  "allowed_requests": [],
+  "cases": [
+    {
+      "instance_id": "delegation",
+      "contract": "steward.delegation-policy/1",
+      "input": {
+        "depth": 2,
+        "descendants": 3
+      },
+      "expected": {
+        "depth": 2,
+        "descendants": 3,
+        "instructions": "Delegation: pass a self-contained subtask and accessible Artifact references. A Child receives no Parent conversation. Aggregate its final result; delegation never creates a Task."
+      }
+    }
+  ]
+}

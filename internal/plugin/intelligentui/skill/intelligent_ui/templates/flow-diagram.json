@@ -1,0 +1,19 @@
+{
+  "title": "Three-stage flow",
+  "fallback": "Illustrative flow: input enters the process, which produces a result. Replace labels with the actual verified flow.",
+  "components": [
+    {
+      "name": "generateSandboxedUi",
+      "props": {
+        "initialHeight": 240,
+        "placeholderMessages": [
+          "Preparing the explanation"
+        ],
+        "css": "#simple-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;margin:0;padding:0}#simple-flow li{display:grid;grid-template-columns:minmax(0,1fr) 24px;gap:12px;align-items:center;min-width:0}#simple-flow .flow-node{display:grid;gap:6px;padding:16px 12px;border:1px solid var(--color-border-secondary);border-radius:8px;background:var(--color-background-secondary)}#simple-flow strong{font-weight:500}#simple-flow span{color:var(--color-text-secondary);font-size:13px}#simple-flow svg{width:24px;height:24px}#simple-flow path{fill:none;stroke:var(--color-text-primary);stroke-width:1.5}#simple-flow li:last-child svg{visibility:hidden}@media(max-width:480px){#simple-flow{grid-template-columns:1fr;gap:12px}#simple-flow li{grid-template-columns:1fr;gap:12px}#simple-flow svg{justify-self:center;transform:rotate(90deg)}#simple-flow li:last-child svg{display:none}}",
+        "html": "<ol id=\"simple-flow\" aria-label=\"Illustrative three-stage process\"><li><div class=\"flow-node\"><strong>Input</strong><span>Verified information</span></div><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12H21M15 6L21 12L15 18\"/></svg></li><li><div class=\"flow-node\"><strong>Process</strong><span>Apply the actual steps</span></div><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12H21M15 6L21 12L15 18\"/></svg></li><li><div class=\"flow-node\"><strong>Result</strong><span>The observed outcome</span></div><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12H21M15 6L21 12L15 18\"/></svg></li></ol>",
+        "jsFunctions": "",
+        "jsExpressions": []
+      }
+    }
+  ]
+}

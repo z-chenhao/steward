@@ -1,0 +1,9 @@
+{
+  "source": "/private/var/folders/_h/65wkv4dn2m51ch2p4y9tpjm40000gn/T/steward-apps-session-flow-px4t5key/source",
+  "files": {
+    "intent.go.txt": "e5ad730fe6c4e9f2d58c00ec96fe05cbf4cd64db80f1d8c968455895b969d670",
+    "steward.plugin.json": "8b6b557d9644e32fd5eab370a92852d3df578ddf903fc980ece3fc3a7f9dfb4d"
+  },
+  "retention": "Exact pre-session handler/manifest consumer; native flow only before durable service opt-in or retained in-flight operation. Delete with those consumers.",
+  "not_a_full_old_release_compiler_claim": true
+}

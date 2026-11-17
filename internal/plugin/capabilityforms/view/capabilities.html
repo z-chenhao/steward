@@ -1,0 +1,96 @@
+{{define "capability-status"}}
+<span class="status-pill" data-status="{{.State}}">{{if and .PendingRestart (not .Candidate)}}{{capabilityTr "Restart required"}}{{else if eq .State "preparing"}}{{capabilityTr "Preparing"}}{{else if eq .State "unsupported"}}{{capabilityTr "Unavailable on this device"}}{{else if eq .State "unavailable"}}{{capabilityTr "Needs attention"}}{{else if .Configured}}{{capabilityTr "Enabled"}}{{else}}{{capabilityTr "Off"}}{{end}}</span>
+{{end}}
+
+{{define "capabilities-page"}}
+<section class="workspace-page settings-page capabilities-page">
+ {{with .Capability}}
+ {{if .ParentMemory}}<a class="back-link" href="/settings/capabilities/memory">{{capabilityTr "← Memory"}}</a>{{else}}<a class="back-link" href="/settings/capabilities">{{capabilityTr "← All capabilities"}}</a>{{end}}
+ <div class="page-heading"><div><h1 aria-label="{{capabilityTr .Title}}">{{capabilityTr .Title}}{{template "help" (capabilityHelp .)}}</h1></div>{{template "capability-status" .}}</div>
+ {{if and (eq .State "unavailable") .Message}}<p class="feedback error" role="status" data-capability-feedback>{{capabilityTr .Message}}</p>{{else if and .Verified (or .Candidate .Checked .Advanced (not .PendingRestart))}}<p class="feedback success" role="status" data-capability-feedback>{{capabilityTr "Connection available."}}</p>{{end}}
+ {{if .Form.Available}}<section class="form-panel settings-group">{{template "capability-guided-form" .}}</section>{{else}}<p class="feedback error" role="alert">{{capabilityTr "These settings cannot be edited here. Your existing configuration is unchanged."}}</p>{{end}}
+ {{if eq .ID "memory"}}<div class="setting-row"><span class="setting-name">{{capabilityTr "Semantic search"}}</span><a class="button secondary setting-action" href="/settings/capabilities/embedding">{{capabilityTr "Configure"}}</a></div>{{end}}
+ {{else}}
+ <div class="page-heading"><div><h1>{{capabilityTr "Capabilities"}}</h1></div></div>
+ <section class="form-panel settings-group"><div class="object-list">{{range .Capabilities}}<a class="object-row" href="{{capabilityURL .ID}}"><div><strong>{{capabilityTr .Title}}</strong></div><div class="row-badges">{{template "capability-status" .}}<span class="settings-chevron" aria-hidden="true">›</span></div></a>{{end}}</div></section>
+ {{end}}
+</section>
+{{end}}
+
+{{define "capability-guided-form"}}
+<form class="capability-guided" action="/capability/configure" method="post" data-capability-form>
+ <input type="hidden" name="editor" value="guided"><input type="hidden" name="capability" value="{{.ID}}"><input type="hidden" name="revision" value="{{.Revision}}">
+ {{with .Form}}
+ {{if .Error}}<p class="feedback error" role="alert" data-capability-feedback>{{capabilityTr .Error}}</p>{{end}}
+ {{if or (eq $.ID "memory") (eq $.ID "embedding") (eq $.ID "skills") (eq $.ID "computer")}}
+ <div class="setting-row"><label for="capability-mode">{{capabilityTr "Configuration mode"}}</label><select id="capability-mode" name="mode" data-capability-mode><option value="automatic" {{if eq .Mode "automatic"}}selected{{end}}>{{capabilityTr "Auto"}}</option><option value="custom" {{if eq .Mode "custom"}}selected{{end}}>{{capabilityTr "Custom"}}</option>{{if ne $.ID "embedding"}}<option value="off" {{if eq .Mode "off"}}selected{{end}}>{{capabilityTr "Off"}}</option>{{end}}</select></div>
+ {{else}}
+ <div class="setting-row"><label for="capability-enabled">{{if eq $.ID "execution"}}{{capabilityTr "Use a custom local workspace"}}{{else}}{{capabilityTr "Enabled"}}{{end}}</label><input id="capability-enabled" type="checkbox" role="switch" name="enabled" value="yes" {{if .Enabled}}checked{{end}}></div>
+ {{end}}
+ <div data-capability-fields>
+ {{if eq $.ID "memory"}}
+ <fieldset><legend>{{capabilityTr "Encryption"}}</legend>
+ <label>{{capabilityTr "Encryption key reference"}}<input data-required name="key_ref" value="{{.Memory.KeyRef}}" autocomplete="off" spellcheck="false" placeholder="env:STEWARD_MEMORY_KEY"></label>
+ </fieldset>
+ {{else if eq $.ID "embedding"}}
+ <fieldset><legend>{{capabilityTr "Embedding service"}}</legend>
+ <label>{{capabilityTr "Endpoint URL"}}<input type="url" data-required name="endpoint" value="{{.Embedding.Endpoint}}" placeholder="http://127.0.0.1:11434/v1" spellcheck="false"></label>
+ <div class="capability-field-pair"><label>{{capabilityTr "Model ID"}}<input data-required name="model" value="{{.Embedding.Model}}" spellcheck="false"></label><label>{{capabilityTr "Vector dimensions"}}<input type="number" data-required name="dimensions" min="1" max="4096" step="1" value="{{.Embedding.Dimensions}}"></label></div>
+ <label>{{capabilityTr "API key reference (optional)"}}<input name="key_ref" value="{{.Embedding.KeyRef}}" autocomplete="off" spellcheck="false" placeholder="env:EMBEDDING_API_KEY"></label>
+ </fieldset>
+ {{else if eq $.ID "skills"}}
+ <fieldset><legend>{{capabilityTr "Skill catalog"}}</legend>
+ <label>{{capabilityTr "Catalog directory"}}<input data-required name="root" value="{{.Skills.Root}}" spellcheck="false" placeholder="/absolute/private/skills"></label>
+ <label>{{capabilityTr "Skill scope"}}<select name="scope"><option value="agent" {{if eq .Skills.Scope "agent"}}selected{{end}}>{{capabilityTr "Agent"}}</option><option value="workspace" {{if eq .Skills.Scope "workspace"}}selected{{end}}>{{capabilityTr "Workspace"}}</option></select></label>
+ </fieldset>
+ {{else if eq $.ID "execution"}}
+ <fieldset><legend>{{capabilityTr "Local workspace"}}</legend>
+ <label>{{capabilityTr "Workspace directory"}}<input data-required name="root" value="{{.Execution.Root}}" spellcheck="false" placeholder="/absolute/private/workspace"></label>
+ <label>{{capabilityTr "Read-only toolchain directories (optional)"}}<textarea name="toolchains" rows="3" spellcheck="false">{{.Execution.Toolchains}}</textarea></label>
+ </fieldset>
+ {{else if eq $.ID "mcp"}}
+ <input type="hidden" name="provider_count" value="{{len .Providers}}">
+ {{range $i,$provider:=.Providers}}<fieldset class="capability-provider"><legend>{{if .Name}}{{.Name}}{{else}}{{capabilityTr "New MCP server"}}{{end}}</legend>
+ <input type="hidden" name="provider.{{$i}}.original" value="{{.Original}}">
+ <label>{{capabilityTr "Server name"}}<input data-required name="provider.{{$i}}.name" value="{{.Name}}" spellcheck="false" placeholder="local_catalog"></label>
+ <label>{{capabilityTr "Executable path"}}<input data-required name="provider.{{$i}}.command" value="{{.Command}}" spellcheck="false" placeholder="/absolute/path/to/mcp-server"></label>
+ <label>{{capabilityTr "Private state directory"}}<input data-required name="provider.{{$i}}.directory" value="{{.Directory}}" spellcheck="false" placeholder="/absolute/private/provider"></label>
+ <label>{{capabilityTr "Command arguments (optional)"}}<textarea name="provider.{{$i}}.args" rows="3" spellcheck="false">{{.Args}}</textarea></label>
+ <h3 class="settings-section-title">{{capabilityTr "Allowed tools"}}</h3>
+ <input type="hidden" name="provider.{{$i}}.tool_count" value="{{len .Tools}}">
+ <div class="capability-tool-head" aria-hidden="true"><span>{{capabilityTr "Tool name"}}</span><span>{{capabilityTr "Permission"}}</span></div>
+ {{range $j,$tool:=.Tools}}<div class="capability-tool-row"><label class="sr-only" for="mcp-tool-{{$i}}-{{$j}}">{{capabilityTr "Tool name"}}</label><input id="mcp-tool-{{$i}}-{{$j}}" data-required name="provider.{{$i}}.tool.{{$j}}.name" value="{{.Name}}" spellcheck="false" placeholder="{{capabilityTr "Tool name"}}"><label class="sr-only" for="mcp-permission-{{$i}}-{{$j}}">{{capabilityTr "Permission"}}</label><select id="mcp-permission-{{$i}}-{{$j}}" name="provider.{{$i}}.tool.{{$j}}.permission"><option value="read_only" {{if eq .Permission "read_only"}}selected{{end}}>{{capabilityTr "Read only"}}</option><option value="external_effect" {{if eq .Permission "external_effect"}}selected{{end}}>{{capabilityTr "May make changes"}}</option></select>{{if gt (len $provider.Tools) 1}}<button type="submit" class="secondary control-icon-button" aria-label="{{capabilityTr "Remove tool"}}" name="action" value="remove-tool-{{$i}}-{{$j}}" formnovalidate>{{template "icon-close"}}</button>{{else}}<span></span>{{end}}</div>{{end}}
+ <div class="actions settings-actions"><button type="submit" class="secondary setting-action" name="action" value="add-tool-{{$i}}" formnovalidate>{{capabilityTr "Add allowed tool"}}</button><button type="submit" class="secondary setting-action" name="action" value="remove-provider-{{$i}}" formnovalidate>{{capabilityTr "Remove server"}}</button></div>
+ </fieldset>{{end}}
+ <div class="actions settings-actions"><button type="submit" class="secondary setting-action" name="action" value="add-provider" formnovalidate>{{capabilityTr "Add MCP server"}}</button></div>
+ {{else if eq $.ID "computer"}}
+ <fieldset><legend>{{capabilityTr "Computer connection"}}</legend>
+ <label>{{capabilityTr "Computer store directory"}}<input data-required name="root" value="{{.Computer.Root}}" spellcheck="false" placeholder="/absolute/private/computer-store"></label>
+ <label>{{capabilityTr "Lume endpoint"}}<input type="url" data-required name="endpoint" value="{{.Computer.Endpoint}}" spellcheck="false" placeholder="http://127.0.0.1:7777"></label>
+ </fieldset>
+ <fieldset><legend>{{capabilityTr "Guest access"}}</legend>
+ <div class="capability-field-pair"><label>{{capabilityTr "Guest user"}}<input data-required name="guest_user" value="{{.Computer.User}}" autocomplete="off" spellcheck="false"></label><label>{{capabilityTr "SSH port"}}<input type="number" data-required name="guest_port" min="1" max="65535" step="1" value="{{.Computer.Port}}"></label></div>
+ <label>{{capabilityTr "Guest password reference"}}<input data-required name="password_ref" value="{{.Computer.PasswordRef}}" autocomplete="off" spellcheck="false" placeholder="env:STEWARD_GUEST_PASSWORD"></label>
+ <label>{{capabilityTr "Pinned SSH host key"}}<input data-required name="host_key" value="{{.Computer.HostKey}}" spellcheck="false" placeholder="SHA256:…"></label>
+ </fieldset>
+ <details class="capability-options" {{if not $.Configured}}open{{end}}><summary>{{capabilityTr "Sealed base compatibility"}}</summary><fieldset><legend class="sr-only">{{capabilityTr "Sealed base compatibility"}}</legend>
+ <label>{{capabilityTr "Provider version"}}<input data-required name="provider_version" value="{{.Computer.ProviderVersion}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Guest build"}}<input data-required name="guest_build" value="{{.Computer.GuestBuild}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Driver version"}}<input data-required name="driver_version" value="{{.Computer.DriverVersion}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Driver SHA-256"}}<input data-required name="driver_sha256" value="{{.Computer.DriverSHA256}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Driver team"}}<input data-required name="driver_team" value="{{.Computer.DriverTeam}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Driver bundle"}}<input data-required name="driver_bundle" value="{{.Computer.DriverBundle}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Architecture"}}<input data-required name="architecture" value="{{.Computer.Architecture}}" spellcheck="false"></label>
+ <label>{{capabilityTr "Restoration manifest version"}}<input type="number" data-required name="manifest_version" min="1" max="1" step="1" value="{{.Computer.ManifestVersion}}"></label>
+ </fieldset></details>
+ <details class="capability-options" {{if not $.Configured}}open{{end}}><summary>{{capabilityTr "JavaScript runtime"}}</summary><fieldset><legend class="sr-only">{{capabilityTr "JavaScript runtime"}}</legend>
+ <label>{{capabilityTr "Node executable path"}}<input data-required name="node" value="{{.Computer.Node}}" spellcheck="false" placeholder="/absolute/path/to/node"></label>
+ <label>{{capabilityTr "Sidecar script path"}}<input data-required name="script" value="{{.Computer.Script}}" spellcheck="false" placeholder="/absolute/path/to/runtime/javascript/src/sidecar.mjs"></label>
+ </fieldset></details>
+ {{end}}
+ </div>
+ {{end}}
+ <noscript><div class="actions capability-submit settings-actions"><button name="action" value="apply" class="setting-action">{{capabilityTr "Save"}}</button></div></noscript>
+ <p class="capability-draft-status" role="status" data-capability-draft></p>
+</form>
+{{end}}

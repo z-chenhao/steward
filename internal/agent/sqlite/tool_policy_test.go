@@ -29,10 +29,13 @@ func admitPolicy(t *testing.T, defs []tool.Definition, calls []llm.ToolCall) (*S
 func admitLegacyMainPolicy(t *testing.T, defs []tool.Definition, calls []llm.ToolCall) (*Store, *Runs, agent.RunClaim, tool.Executor, string) {
 	return admitPolicyRun(t, defs, calls, true)
 }
-func admitPolicyRun(t *testing.T, defs []tool.Definition, calls []llm.ToolCall, legacy bool) (*Store, *Runs, agent.RunClaim, tool.Executor, string) {
+func admitPolicyRun(t *testing.T, defs []tool.Definition, calls []llm.ToolCall, legacy bool, configure ...func(*Store, *Runs)) (*Store, *Runs, agent.RunClaim, tool.Executor, string) {
 	t.Helper()
 	ctx := context.Background()
 	s, r, _, a, p := loopFixture(t)
+	for _, setup := range configure {
+		setup(s, r)
+	}
 	registry, err := tool.NewRegistry(defs)
 	if err != nil {
 		t.Fatal(err)

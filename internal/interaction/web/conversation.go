@@ -51,7 +51,8 @@ func (s *Server) showMessage(ctx context.Context, m conversation.Message, approv
 		return out, err
 	}
 	var grouped struct {
-		Bubbles []ui.Spec `json:"bubbles"`
+		Bubbles      []ui.Spec              `json:"bubbles"`
+		FormDisplays map[string]ui.FormView `json:"form_displays"`
 	}
 	if json.Unmarshal(raw, &grouped) == nil && len(grouped.Bubbles) > 0 {
 		for _, bubble := range grouped.Bubbles {
@@ -59,10 +60,19 @@ func (s *Server) showMessage(ctx context.Context, m conversation.Message, approv
 			if err != nil {
 				return out, err
 			}
-			out.Bubbles = append(out.Bubbles, shownProjection{HTML: ui.HTML(data, bubble.Fallback), Spec: string(data), Fallback: bubble.Fallback})
+			out.Bubbles = append(out.Bubbles, shownProjection{HTML: ui.HTMLWithFormDisplays(data, bubble.Fallback, grouped.FormDisplays), Spec: string(data), Fallback: bubble.Fallback})
 		}
 	}
-	out.Projection = shownProjection{HTML: ui.HTML(raw, fallback), Spec: string(raw), Fallback: fallback}
+	// Strip the private display envelope before exposing the client spec.
+	var spec ui.Spec
+	clientRaw := raw
+	if json.Unmarshal(raw, &spec) == nil && spec.SchemaVersion == ui.Version {
+		clientRaw, err = json.Marshal(spec)
+		if err != nil {
+			return out, err
+		}
+	}
+	out.Projection = shownProjection{HTML: ui.HTMLWithFormDisplays(clientRaw, fallback, grouped.FormDisplays), Spec: string(clientRaw), Fallback: fallback}
 	return out, nil
 }
 func (s *Server) loadConversation(ctx context.Context, p *page) error {

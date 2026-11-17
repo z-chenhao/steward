@@ -1,0 +1,459 @@
+{
+  "items": [
+    {
+      "slug": "gmail",
+      "name": "Gmail",
+      "description": "Read and organize your email",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "outlook",
+      "name": "Outlook",
+      "description": "Bring your Outlook mail into the conversation",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "slack",
+      "name": "Slack",
+      "description": "Find messages and work with your team",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "microsoft_teams",
+      "name": "Microsoft Teams",
+      "description": "Keep up with team conversations",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "discord",
+      "name": "Discord",
+      "description": "Stay in touch with your communities",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "telegram",
+      "name": "Telegram",
+      "description": "Keep your conversations close",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "whatsapp",
+      "name": "WhatsApp",
+      "description": "Keep up with your messages",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "zoom",
+      "name": "Zoom",
+      "description": "Plan meetings and find recordings",
+      "category_id": "communication",
+      "category_name": "Communication"
+    },
+    {
+      "slug": "googlecalendar",
+      "name": "Google Calendar",
+      "description": "Make room for meetings and everyday plans",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "googletasks",
+      "name": "Google Tasks",
+      "description": "Keep track of your next steps",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "notion",
+      "name": "Notion",
+      "description": "Work with notes, documents and databases",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "todoist",
+      "name": "Todoist",
+      "description": "Turn plans into tasks and reminders",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "ticktick",
+      "name": "TickTick",
+      "description": "Keep your tasks and habits organized",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "asana",
+      "name": "Asana",
+      "description": "Keep projects and team tasks moving",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "trello",
+      "name": "Trello",
+      "description": "Organize work across boards and cards",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "clickup",
+      "name": "ClickUp",
+      "description": "Bring your tasks and projects together",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "monday",
+      "name": "Monday.com",
+      "description": "Keep track of your team's work",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "airtable",
+      "name": "Airtable",
+      "description": "Work with your tables and records",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "calendly",
+      "name": "Calendly",
+      "description": "Make scheduling easier",
+      "category_id": "productivity",
+      "category_name": "Productivity"
+    },
+    {
+      "slug": "googledrive",
+      "name": "Google Drive",
+      "description": "Work with Drive, Docs, Sheets and Slides",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "googledocs",
+      "name": "Google Docs",
+      "description": "Find and work on your documents",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "googlesheets",
+      "name": "Google Sheets",
+      "description": "Work with spreadsheets and data",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "googleslides",
+      "name": "Google Slides",
+      "description": "Build on your presentations",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "one_drive",
+      "name": "OneDrive",
+      "description": "Find and work with your files",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "share_point",
+      "name": "SharePoint",
+      "description": "Find your team's shared knowledge",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "dropbox",
+      "name": "Dropbox",
+      "description": "Keep your files within reach",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "box",
+      "name": "Box",
+      "description": "Work with your team's files",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "confluence",
+      "name": "Confluence",
+      "description": "Bring your team's knowledge into context",
+      "category_id": "storage",
+      "category_name": "Documents and storage"
+    },
+    {
+      "slug": "github",
+      "name": "GitHub",
+      "description": "Follow issues, pull requests and development",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "gitlab",
+      "name": "GitLab",
+      "description": "Keep up with repositories and delivery",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "bitbucket",
+      "name": "Bitbucket",
+      "description": "Work with repositories and pull requests",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "linear",
+      "name": "Linear",
+      "description": "Move issues and projects forward",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "jira",
+      "name": "Jira",
+      "description": "Keep track of issues and project work",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "sentry",
+      "name": "Sentry",
+      "description": "Investigate errors and application issues",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "vercel",
+      "name": "Vercel",
+      "description": "Keep up with your web deployments",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "netlify",
+      "name": "Netlify",
+      "description": "Follow your sites and deployments",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "supabase",
+      "name": "Supabase",
+      "description": "Work with your application's data",
+      "category_id": "development",
+      "category_name": "Development"
+    },
+    {
+      "slug": "figma",
+      "name": "Figma",
+      "description": "Bring design files into the conversation",
+      "category_id": "design",
+      "category_name": "Design"
+    },
+    {
+      "slug": "canva",
+      "name": "Canva",
+      "description": "Create and work on your designs",
+      "category_id": "design",
+      "category_name": "Design"
+    },
+    {
+      "slug": "miro",
+      "name": "Miro",
+      "description": "Explore ideas on your team boards",
+      "category_id": "design",
+      "category_name": "Design"
+    },
+    {
+      "slug": "webflow",
+      "name": "Webflow",
+      "description": "Work with your site's content",
+      "category_id": "design",
+      "category_name": "Design"
+    },
+    {
+      "slug": "wordpress",
+      "name": "WordPress",
+      "description": "Work on your site's posts and content",
+      "category_id": "design",
+      "category_name": "Design"
+    },
+    {
+      "slug": "hubspot",
+      "name": "HubSpot",
+      "description": "Keep customer work moving",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "salesforce",
+      "name": "Salesforce",
+      "description": "Work with your customer records",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "pipedrive",
+      "name": "Pipedrive",
+      "description": "Keep track of deals and customers",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "zendesk",
+      "name": "Zendesk",
+      "description": "Keep up with customer support",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "intercom",
+      "name": "Intercom",
+      "description": "Bring customer conversations together",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "mailchimp",
+      "name": "Mailchimp",
+      "description": "Plan your email campaigns",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "typeform",
+      "name": "Typeform",
+      "description": "Work with forms and responses",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "shopify",
+      "name": "Shopify",
+      "description": "Keep up with your store",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "stripe",
+      "name": "Stripe",
+      "description": "Understand payments and customers",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "quickbooks",
+      "name": "QuickBooks",
+      "description": "Work with your business finances",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "xero",
+      "name": "Xero",
+      "description": "Keep your accounting work organized",
+      "category_id": "business",
+      "category_name": "Business"
+    },
+    {
+      "slug": "youtube",
+      "name": "YouTube",
+      "description": "Find videos and channel information",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "spotify",
+      "name": "Spotify",
+      "description": "Explore music and your playlists",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "reddit",
+      "name": "Reddit",
+      "description": "Explore discussions and communities",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "twitter",
+      "name": "X (Twitter)",
+      "description": "Keep up with posts and conversations",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "linkedin",
+      "name": "LinkedIn",
+      "description": "Keep up with your professional network",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "instagram",
+      "name": "Instagram",
+      "description": "Work with your posts and account",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "pinterest",
+      "name": "Pinterest",
+      "description": "Collect ideas and inspiration",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "raindrop",
+      "name": "Raindrop.io",
+      "description": "Organize your bookmarks",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "strava",
+      "name": "Strava",
+      "description": "Explore your activities and training",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "fitbit",
+      "name": "Fitbit",
+      "description": "Bring your activity records into context",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "google_maps",
+      "name": "Google Maps",
+      "description": "Explore places and plan routes",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    },
+    {
+      "slug": "weathermap",
+      "name": "OpenWeatherMap",
+      "description": "Make plans with the forecast in mind",
+      "category_id": "personal",
+      "category_name": "Personal life"
+    }
+  ]
+}

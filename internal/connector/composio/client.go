@@ -177,11 +177,6 @@ func (c Client) request(ctx context.Context, method, path string, query url.Valu
 	return nil
 }
 
-func (c Client) Catalog(ctx context.Context, search, category, cursor string) (Catalog, error) {
-	var v Catalog
-	err := c.request(ctx, "GET", "/toolkits", url.Values{"type": {"native"}, "include_deprecated": {"false"}, "sort_by": {"alphabetically"}, "limit": {"40"}, "search": {search}, "category": {category}, "cursor": {cursor}}, nil, &v)
-	return v, err
-}
 func (c Client) Toolkit(ctx context.Context, slug string) (Toolkit, error) {
 	var v Toolkit
 	if !ValidID(slug) {
@@ -190,25 +185,38 @@ func (c Client) Toolkit(ctx context.Context, slug string) (Toolkit, error) {
 	err := c.request(ctx, "GET", "/toolkits/"+slug, nil, nil, &v)
 	return v, err
 }
-func (c Client) Connect(ctx context.Context, user, toolkit, alias, authConfig string) (Link, error) {
-	var link Link
+
+// CreateSession is one non-replaying protocol effect. The fixed envelope only
+// grants the accepted Toolkit/user/auth selection; no extra router abilities.
+func (c Client) CreateSession(ctx context.Context, user, toolkit, alias, authConfig string) (string, error) {
 	if !ValidID(user) || !ValidID(toolkit) || !ValidID(alias) || authConfig != "" && !ValidID(authConfig) {
-		return link, &Error{Status: 400}
+		return "", &Error{Status: 400}
 	}
 	body := map[string]any{"user_id": user, "toolkits": map[string]any{"enabled": []string{toolkit}}, "instant": false, "manage_connections": map[string]any{"enabled": false}, "workbench": map[string]any{"enable": false}, "proxy_execute": map[string]any{"enable": false}, "multi_account": map[string]any{"enable": true, "require_explicit_selection": true}, "execute": map[string]any{"enable_multi_execute": false}}
 	if authConfig != "" {
 		body["auth_configs"] = map[string]string{toolkit: authConfig}
 	}
+
 	var session struct {
 		ID string `json:"session_id"`
 	}
 	if err := c.request(ctx, "POST", "/tool_router/session", nil, body, &session); err != nil {
-		return link, err
+		return "", err
 	}
 	if !ValidID(session.ID) {
-		return link, &Error{Uncertain: true}
+		return "", &Error{Uncertain: true}
 	}
-	if err := c.request(ctx, "POST", "/tool_router/session/"+session.ID+"/link", nil, map[string]string{"toolkit": toolkit, "alias": alias}, &link); err != nil {
+	return session.ID, nil
+}
+
+// CreateSessionLink is one non-replaying protocol effect. It validates the
+// original provider URL and account identity before returning an opaque grant.
+func (c Client) CreateSessionLink(ctx context.Context, session, toolkit, alias string) (Link, error) {
+	if !ValidID(session) || !ValidID(toolkit) || !ValidID(alias) {
+		return Link{}, &Error{Status: 400}
+	}
+	var link Link
+	if err := c.request(ctx, "POST", "/tool_router/session/"+session+"/link", nil, map[string]string{"toolkit": toolkit, "alias": alias}, &link); err != nil {
 		return link, err
 	}
 	u, err := url.Parse(link.URL)
@@ -226,9 +234,9 @@ func (c Client) Account(ctx context.Context, id string) (Account, error) {
 	return v, err
 }
 
-// Disconnect first attempts upstream token revocation. Deleting the broker's
-// record alone is not proof that the original service revoked its grant.
-func (c Client) Disconnect(ctx context.Context, id string) bool {
+// RevokeAccount performs one accepted token-revocation effect. Only this exact
+// original account's authoritative REVOKED response proves revocation.
+func (c Client) RevokeAccount(ctx context.Context, id string) bool {
 	if !ValidID(id) {
 		return false
 	}
@@ -236,17 +244,16 @@ func (c Client) Disconnect(ctx context.Context, id string) bool {
 		Account Account `json:"connected_account"`
 	}
 	err := c.request(ctx, "POST", "/connected_accounts/"+id+"/revoke", nil, nil, &result)
-	revoked := err == nil && result.Account.ID == id && result.Account.Status == "REVOKED"
-	_ = c.request(ctx, "DELETE", "/connected_accounts/"+id, nil, nil, nil)
-	return revoked
+	return err == nil && result.Account.ID == id && result.Account.Status == "REVOKED"
 }
-func (c Client) SearchTools(ctx context.Context, toolkit, query, cursor string) (Tools, error) {
-	var v Tools
-	if !ValidID(toolkit) {
-		return v, &Error{Status: 400}
+
+// DeleteAccount performs one broker-record effect. Success does not prove the
+// supplier token was revoked, and failure is never retried by this adapter.
+func (c Client) DeleteAccount(ctx context.Context, id string) error {
+	if !ValidID(id) {
+		return &Error{Status: 400}
 	}
-	err := c.request(ctx, "GET", "/tools", url.Values{"toolkit_slug": {toolkit}, "query": {query}, "cursor": {cursor}, "include_deprecated": {"false"}, "toolkit_versions": {"latest"}, "limit": {"8"}}, nil, &v)
-	return v, err
+	return c.request(ctx, "DELETE", "/connected_accounts/"+id, nil, nil, nil)
 }
 func (c Client) Tool(ctx context.Context, slug, version string) (Tool, error) {
 	var v Tool

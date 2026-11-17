@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {buildSync} from 'esbuild';
 import {runInNewContext} from 'node:vm';
-const source=buildSync({entryPoints:[new URL('src/trace-time.ts',import.meta.url).pathname],bundle:true,format:'cjs',write:false}).outputFiles[0].text;
+const source=buildSync({stdin:{contents:"export * from './src/trace-time';export * from './src/legacy/trace-time-v1';",resolveDir:new URL('.',import.meta.url).pathname,loader:'ts'},bundle:true,format:'cjs',write:false}).outputFiles[0].text;
 const module={exports:{}};runInNewContext(source,{module,exports:module.exports});
 const {boundedWindow,zoomWindow,bucketSelection}=module.exports;
 test('all timeline durations use two decimals and milliseconds below one second',()=>{

@@ -1,0 +1,7 @@
+{
+  "source": "executed unchanged Server.loadSettings with original source profiles before draft migration",
+  "native_settings_sha256": "4522f9518d320d6bc7d6df79b08cb99ddfe79f606c928154cfc61f90c2658632",
+  "fixture_sha256": "6be973d6c38b970de2e1c501a9a357df7a08ccc4b71303c66f03c09969794f7c",
+  "cases": 24,
+  "source_values": "Source strings remain Host-bound; fixture represents their use with use_source=true and empty replacement strings."
+}

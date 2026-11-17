@@ -17,6 +17,7 @@ type DeliveryStore interface {
 	DeliveryBinding(context.Context, delivery.Request) (interaction.Binding, error)
 	DeliveryReplySource(context.Context, delivery.Request) (string, error)
 	FeishuTaskFeedbackCard(context.Context, string) (string, string, bool, error)
+	LoadProjection(context.Context, string, string) (json.RawMessage, bool, error)
 	SaveProjection(context.Context, string, string, int, any) (json.RawMessage, error)
 	ChannelReceipt(context.Context, string, int, string) (string, error)
 	AcceptChannelReceipt(context.Context, string, int, string, string) error
@@ -26,9 +27,10 @@ type Artifacts interface {
 	OpenArtifact(context.Context, string) (io.ReadCloser, error)
 }
 type Adapter struct {
-	Client    Client
-	Store     DeliveryStore
-	Artifacts Artifacts
+	Client      Client
+	Store       DeliveryStore
+	Artifacts   Artifacts
+	ProjectCard CardProjector
 }
 
 // Feishu's UUID dedup window is bounded. A crashed, uncertain remote send is
@@ -63,17 +65,40 @@ func (a Adapter) deliver(ctx context.Context, e delivery.Envelope, send bool) de
 	if err != nil {
 		return rejected
 	}
-	candidate := composeProjection(e, a.Client.Config.WorkspaceURL, source)
-	if feedback != "" {
-		if source == "" || e.Request.Intent != "needs_input" || len(e.Message.Content) != 1 || e.Message.Content[0].Type != "text" {
-			return delivery.Observation{Outcome: delivery.Failed, Code: "rejected"}
-		}
-		candidate.Transport.Card = taskFeedbackCard(feedback, e.Message.Content[0].Text, reviewURL)
-		candidate.Transport.IncludeArtifacts = false
+	// Eligibility and source remain live Host checks, even for frozen cards.
+	if feedback != "" && (source == "" || e.Request.Intent != "needs_input" || len(e.Message.Content) != 1 || e.Message.Content[0].Type != "text") {
+		return delivery.Observation{Outcome: delivery.Failed, Code: "rejected"}
 	}
-	raw, err := a.Store.SaveProjection(ctx, e.Request.DeliveryID, ui.Hash(e.Message), ui.Version, candidate)
+	hash := ui.Hash(e.Message)
+	raw, exists, err := a.Store.LoadProjection(ctx, e.Request.DeliveryID, hash)
 	if err != nil {
 		return fail
+	}
+	if !exists {
+		// A query is not acceptance of a new presentation and cannot acquire send
+		// permission. Accepted projections must survive current policy changes.
+		if !send {
+			return fail
+		}
+		var candidate projection
+		if a.ProjectCard != nil {
+			candidate, err = a.prepareCard(ctx, e, source, feedback, reviewURL)
+			if err != nil {
+				return fail
+			}
+		} else {
+			// Explicit historical/storeless embeddings; production always supplies the
+			// managed projector. An activated service never takes this branch.
+			candidate = composeProjection(e, a.Client.Config.WorkspaceURL, source)
+			if feedback != "" {
+				candidate.Transport.Card = taskFeedbackCard(feedback, e.Message.Content[0].Text, reviewURL)
+				candidate.Transport.IncludeArtifacts = false
+			}
+		}
+		raw, err = a.Store.SaveProjection(ctx, e.Request.DeliveryID, hash, ui.Version, candidate)
+		if err != nil {
+			return fail
+		}
 	}
 	var spec projection
 	if json.Unmarshal(raw, &spec) != nil {

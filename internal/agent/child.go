@@ -48,7 +48,7 @@ func MainTools(specs []tool.Spec) []tool.Spec {
 		if s.Internal || s.Exposure == tool.Hidden {
 			continue
 		}
-		if strings.HasPrefix(s.Name, "mcp__") && (s.Permission == "read_only" || s.Permission == "external_effect") {
+		if (strings.HasPrefix(s.Name, "mcp__") || strings.HasPrefix(s.Name, "plugin__")) && (s.Permission == "read_only" || s.Permission == "external_effect") {
 			out = append(out, s)
 			continue
 		}

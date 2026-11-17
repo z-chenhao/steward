@@ -1,0 +1,1 @@
+Captured from accepted UI54 before account markup /3. These exact /2 sources serve the existing historical package/variation fixtures; current production does not compile them. Remove with those compatibility regressions when /2 graphs and references are no longer supported.

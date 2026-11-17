@@ -24,9 +24,14 @@ func largeToolCatalog() []tool.Definition {
 }
 
 func TestLegacyMainLoadsOneOf500ToolsAndWorkerUsesCodeModeWithoutLoading(t *testing.T) {
+	testToolDiscoveryMainAndWorker(t, nil, "lookup_499", "mcp__catalog__lookup_499")
+}
+func testToolDiscoveryMainAndWorker(t *testing.T, configure func(*Store, *Runs), query, target string) {
 	s, r, a, p := childFixture(t, largeToolCatalog()...)
+	if configure != nil {
+		configure(s, r)
+	}
 	r.ConfigureJavaScript(realCodeRuntime(t))
-	target := "mcp__catalog__lookup_499"
 	worker := false
 	p.respond = func(request llm.GenerationRequest) (llm.GenerationResult, error) {
 		last := request.Messages[len(request.Messages)-1]
@@ -43,7 +48,16 @@ func TestLegacyMainLoadsOneOf500ToolsAndWorkerUsesCodeModeWithoutLoading(t *test
 			if last.Role == "tool" {
 				return llm.GenerationResult{Text: last.Text}, nil
 			}
-			return calls(codemode.ToolName, `{"source":"if (ALL_TOOLS.some(t=>t.name==='builtin__tool_search')) throw Error('model-only search leaked'); return await tools.mcp__catalog__lookup_499({text:'Worker request'});"}`), nil
+			source := `if (ALL_TOOLS.some(t=>t.name==='builtin__tool_search')) throw Error('model-only search leaked'); `
+			if configure != nil {
+				q, _ := json.Marshal(query)
+				want, _ := json.Marshal(target)
+				source += `const hits=await searchTools(` + string(q) + `,{limit:1,namespace:'mcp__catalog'});if(hits.length!==1||hits[0].name!==` + string(want) + `)throw Error('ranked discovery not used'); `
+			}
+			targetJSON, _ := json.Marshal(target)
+			source += `return await tools[` + string(targetJSON) + `]({text:'Worker request'});`
+			raw, _ := json.Marshal(map[string]string{"source": source})
+			return calls(codemode.ToolName, string(raw)), nil
 		}
 		if worker {
 			if isFollowup(request) || last.Role == "tool" {
@@ -56,7 +70,8 @@ func TestLegacyMainLoadsOneOf500ToolsAndWorkerUsesCodeModeWithoutLoading(t *test
 			if !strings.Contains(last.Text, "NOT_FOUND") {
 				t.Fatal("undeclared tool was dispatched", last.Text)
 			}
-			return llm.GenerationResult{ToolCalls: []llm.ToolCall{{ID: "search", Name: tool.SearchName, Arguments: `{"query":"lookup_499","limit":1}`}}}, nil
+			raw, _ := json.Marshal(tool.SearchRequest{Query: query, Limit: 1})
+			return llm.GenerationResult{ToolCalls: []llm.ToolCall{{ID: "search", Name: tool.SearchName, Arguments: string(raw)}}}, nil
 		case "search":
 			if len(catalog) != 1 || catalog[0] != target {
 				t.Fatal("search did not load exactly one tool", catalog)
@@ -95,7 +110,14 @@ func TestLegacyMainLoadsOneOf500ToolsAndWorkerUsesCodeModeWithoutLoading(t *test
 	mustSubmit(t, a, "catalog-worker", "Delegate a catalog workflow")
 	mustDrain(t, a)
 	if scalar(t, s, `SELECT count(*) FROM code_execution`) != 1 || scalar(t, s, `SELECT count(*) FROM tool_invocation WHERE tool_name=? AND status='succeeded' AND attempt_count=1`, target) != 2 {
-		t.Fatal("Code Mode required a model declaration or lost execution")
+		var outcomes string
+		if err := s.db.QueryRow(`SELECT coalesce(group_concat(tool_name||':'||status||':'||result_json,';'),'') FROM tool_invocation WHERE tool_name=?`, codemode.ToolName).Scan(&outcomes); err != nil {
+			t.Fatal(err)
+		}
+		t.Fatal("Code Mode required a model declaration or lost execution", outcomes)
+	}
+	if configure != nil && scalar(t, s, `SELECT count(*) FROM code_search_reply`) != 1 {
+		t.Fatal("actual CodeMode discovery bypassed managed accepted cache")
 	}
 }
 

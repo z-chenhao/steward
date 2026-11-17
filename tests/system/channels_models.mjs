@@ -77,19 +77,28 @@ export async function composerModelLoading(page,context,url,evidence){
  const choices=['gpt-6-luna','gpt-5.6-luna',...Array.from({length:13},(_,i)=>'fixture-model-'+String(i+1).padStart(2,'0'))].map(label=>({key:key(label),label}));
  choices.push({key:key('retired'),label:'Unavailable model',disabled:true},{key:'profile:api-connection:1',label:'API connection'});
  choices.sort((a,b)=>a.label.toLowerCase()>b.label.toLowerCase()?-1:1);
- let current=key('gpt-6-luna'),version=1,reads=0,mode='initial',release,started,dropSwitch=false;
+ // Match the actual SSR configuration fence before installing controlled reads.
+ // React has already replaced the initial select. Read the original SSR
+ // markup, rather than assuming a fixture model or inspecting an empty locator.
+ const initialMarkup=await(await context.request.get(url)).text();
+ const nativeFacts=await page.evaluate(markup=>{const doc=new DOMParser().parseFromString(markup,'text/html');return {picker:JSON.parse(doc.querySelector('[data-composer-model]').getAttribute('data-model-picker')),reader_revision:doc.querySelector('[data-composer-model]').getAttribute('data-reader-revision')||undefined,version:doc.querySelector('[data-composer-model]')?.getAttribute('data-config-version'),choices:[...doc.querySelectorAll('#composer-model option')].filter(option=>option.value).map(option=>({key:option.value,label:option.label}))}},initialMarkup);
+ if(!nativeFacts.choices.length||!nativeFacts.version)throw Error('saved native model fallback unavailable');
+ const nativeChoice=nativeFacts.choices[0];
+ const initialVersion=Number(nativeFacts.version);
+ if(!Number.isSafeInteger(initialVersion))throw Error('initial model configuration version unavailable');
+ let current=key('gpt-6-luna'),version=initialVersion,reads=0,mode='initial',release,started,dropSwitch=false,switches=0;
  const blocked=new Promise(resolve=>{release=resolve});const firstRead=new Promise(resolve=>{started=resolve});
  let held=blocked,begin=started;
  const json=body=>({status:200,contentType:'application/json',body:JSON.stringify(body)});
  await page.route('**/api/models',async route=>{
-  reads++;const snapshot={choices,current,config_version:version};
+  reads++;const snapshot={choices,current,config_version:version,picker:nativeFacts.picker,...(nativeFacts.reader_revision?{reader_revision:nativeFacts.reader_revision}:{})};
   if(mode==='initial'||mode==='delayed'){begin();await held}
   if(mode==='failed'){await route.fulfill({status:503});return}
   if(mode==='partial'){await route.fulfill(json({...snapshot,choices:[...choices.filter(choice=>choice.key===current||choice.label.startsWith('gpt-')||choice.key.startsWith('profile:')),{...choices.find(choice=>choice.label==='fixture-model-09'),disabled:true}],unavailable:true}));return}
   await route.fulfill(json(snapshot)).catch(()=>{});
  });
  await page.route('**/model/choose',async route=>{
-  const form=new URLSearchParams(route.request().postData());
+  const form=new URLSearchParams(route.request().postData());switches++;
   if(Number(form.get('config_version'))!==version)throw Error('stale catalog overwrote confirmed selection version');
   current=form.get('choice');version++;
   if(current.startsWith('profile:')){
@@ -98,7 +107,7 @@ export async function composerModelLoading(page,context,url,evidence){
   }
   if(dropSwitch){dropSwitch=false;await route.abort();return}
   // The production acknowledgement deliberately includes only saved profiles.
-  await route.fulfill(json({current,config_version:version,choices:choices.filter(choice=>choice.key===current||choice.key.startsWith('profile:'))}));
+  await route.fulfill(json({picker:nativeFacts.picker,...(nativeFacts.reader_revision?{reader_revision:nativeFacts.reader_revision}:{}),current,config_version:version,choices:choices.filter(choice=>choice.key===current||choice.key.startsWith('profile:'))}));
  });
  await page.reload();await firstRead;
  const picker=page.locator('#composer-model-picker');await picker.waitFor();
@@ -137,6 +146,12 @@ export async function composerModelLoading(page,context,url,evidence){
  mode='partial';await picker.click();await page.getByText('Some account models are unavailable. Try again.',{exact:true}).waitFor();await page.getByRole('option',{name:'API connection',exact:true}).waitFor();
  if(await page.getByRole('option').count()!==choices.length)throw Error('new profile version duplicated or removed cached choices');
  mode='ready';await page.getByRole('option',{name:'fixture-model-10',exact:true}).click();await picker.filter({hasText:'fixture-model-10'}).waitFor();await assertDraft();
+ mode='failed';dropSwitch=true;const beforeUnknown=switches;
+ await picker.click();await page.getByRole('option',{name:'fixture-model-12',exact:true}).click();
+ await page.getByText('The account model list is unavailable.',{exact:true}).waitFor();
+ if(await page.getByText('Model selection failed. Try again.',{exact:true}).count()||switches!==beforeUnknown+1)throw Error('unavailable readback invented a failed outcome or replayed the selection');
+ mode='ready';await picker.click();await picker.filter({hasText:'fixture-model-12'}).waitFor();await page.keyboard.press('Escape');await assertDraft();
+
  for(const language of ['en','zh-CN']){
   await context.request.post(url+'/settings/language',{form:{language}});
   for(const theme of ['light','dark'])for(const width of [1400,320]){
@@ -150,7 +165,7 @@ export async function composerModelLoading(page,context,url,evidence){
  }
  await context.request.post(url+'/settings/language',{form:{language:'en'}});
  mode='failed';await page.reload();await page.getByText('The account model list is unavailable.',{exact:true}).waitFor();
- await picker.click();const fallback=page.getByRole('option',{name:'gpt-6-luna',exact:true});await fallback.waitFor();
+ await picker.click();const fallback=page.getByRole('option',{name:nativeChoice.label,exact:true});await fallback.waitFor();
  if(await fallback.getAttribute('aria-disabled')==='true')throw Error('initial read failure disabled saved fallback');
  await page.keyboard.press('Escape');mode='ready';await picker.click();await page.getByRole('option',{name:'fixture-model-13',exact:true}).waitFor();await page.keyboard.press('Escape');
  for(const mode of ['no-script','fetch-unavailable']){
@@ -160,9 +175,40 @@ export async function composerModelLoading(page,context,url,evidence){
    if(mode==='fetch-unavailable')await plain.addInitScript(()=>{window.fetch=undefined});
    const fallback=await plain.newPage();await fallback.goto(url);
    await fallback.locator('#composer-model').waitFor();await fallback.locator('.model-native-submit').waitFor();
-   await fallback.locator('#composer-model').selectOption(key('gpt-6-luna'));
-   if(await fallback.locator('#composer-model').inputValue()!==key('gpt-6-luna'))throw Error(mode+' lost native model selection');
+   await fallback.locator('#composer-model').selectOption(nativeChoice.key);
+   if(await fallback.locator('#composer-model').inputValue()!==nativeChoice.key)throw Error(mode+' lost native model selection');
   }finally{await plain.close()}
  }
- await writeFile(evidence+'/composer-model-loading.json',JSON.stringify({prefetch:true,singleFlight:true,noPartialMenu:true,completeAfterSwitch:true,canonicalProfileVersion:true,usableDuringRefresh:true,failedRefreshRetainsChoices:true,initialFailureRetry:true,partialCatalogueRetainsChoices:true,nativeFallback:true,lateReadFenced:true,unknownSelectionReadback:true,draftAndAttachment:true,models:choices.length},null,2));
+ await writeFile(evidence+'/composer-model-loading.json',JSON.stringify({prefetch:true,singleFlight:true,noPartialMenu:true,completeAfterSwitch:true,canonicalProfileVersion:true,usableDuringRefresh:true,failedRefreshRetainsChoices:true,initialFailureRetry:true,partialCatalogueRetainsChoices:true,nativeFallback:true,lateReadFenced:true,unknownSelectionReadback:true,unavailableReadbackDoesNotInventFailure:true,draftAndAttachment:true,models:choices.length},null,2));
+}
+
+export async function modelPluginPolicy(page,context,url,evidence){
+ const expected=process.env.STEWARD_MODEL_POLICY_ENDPOINT;
+ if(!expected)throw Error('owner policy expectation missing');
+ await page.goto(url+'/settings/models/new');
+ await page.getByRole('heading',{name:'Connect with an API key',exact:true}).waitFor();
+ const provider=page.locator('[name=service]'),endpoint=page.locator('[name=endpoint]'),key=page.locator('[name=api_key]');
+ await selectValue(page,provider,'openai');
+ if(await endpoint.inputValue()!=='https://api.openai.com/v1'||!await endpoint.evaluate(node=>node.readOnly)||!await key.evaluate(node=>node.required))throw Error('explicit provider field bindings changed');
+ await selectValue(page,provider,'custom');
+ const state=await page.locator('[data-api-connection]').evaluate(form=>({endpoint:form.querySelector('[name=endpoint]').value,required:form.querySelector('[name=api_key]').required,readOnly:form.querySelector('[name=endpoint]').readOnly,open:form.querySelector('.model-connection-advanced').open}));
+ if(state.endpoint!==expected||state.required||state.readOnly||!state.open)throw Error('selected owner field policy not applied: '+JSON.stringify(state));
+ await writeFile(evidence+'/model-plugin-policy.json',JSON.stringify(state,null,2)+'\n');
+}
+
+export async function modelPickerVersion(page,context,url,evidence){
+ const expected=process.env.STEWARD_MODEL_PICKER_LABEL, pending=process.env.STEWARD_MODEL_PICKER_PENDING, busy=process.env.STEWARD_MODEL_PICKER_BUSY;
+ if(!expected||!pending||!['true','false'].includes(busy))throw Error('independent picker expectation missing');
+ let release,begin,changes=0;const held=new Promise(resolve=>release=resolve),started=new Promise(resolve=>begin=resolve);
+ page.on('request',request=>{if(new URL(request.url()).pathname==='/model/choose')changes++});
+ await page.route('**/api/models',async route=>{begin();await held;await route.continue().catch(()=>{})});
+ await page.reload();await started;
+ const picker=page.getByRole('combobox',{name:expected,exact:true});await picker.waitFor();
+ if(await picker.getAttribute('aria-busy')!==busy)throw Error('actual picker ignored owning loading policy');
+ await picker.click();await page.getByRole('status').filter({hasText:pending}).waitFor();
+ if(await page.getByRole('option').count())throw Error('pending picker exposed incomplete choices');
+ await page.screenshot({path:evidence+'/picker-owned-version.png'});
+ release();await page.getByRole('option').first().waitFor();await page.keyboard.press('Escape');
+ if(changes)throw Error('presentation change activated a model');
+ await writeFile(evidence+'/picker-owned-version.json',JSON.stringify({label:expected,pending,busy,activation_requests:changes},null,2));
 }

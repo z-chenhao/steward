@@ -59,7 +59,16 @@ func childPolicy(req llm.GenerationRequest) (llm.GenerationResult, error) {
 }
 
 func TestChildDirectToolRootChildGrandchild(t *testing.T) {
-	s, _, a, p := childFixture(t)
+	testDelegationDirectToolRootChildGrandchild(t, false)
+}
+func TestDelegationPluginDirectToolRootChildGrandchild(t *testing.T) {
+	testDelegationDirectToolRootChildGrandchild(t, true)
+}
+func testDelegationDirectToolRootChildGrandchild(t *testing.T, managed bool) {
+	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	p.respond = childPolicy
 	mustSubmit(t, a, "tree", "Main private conversation")
 	mustDrain(t, a)
@@ -121,6 +130,7 @@ func TestChildDirectToolRootChildGrandchild(t *testing.T) {
 
 // Persist the provider exchange so the admission path cannot be bypassed by a
 // fabricated call ID or a model-supplied Run identity.
+
 func childAdmission(t *testing.T, s *Store, r *Runs, a agent.Actor, p *loopProvider, args ...string) (agent.RunClaim, agent.Run, agent.Generation, []llm.ToolCall) {
 	t.Helper()
 	ctx := context.Background()
@@ -134,6 +144,9 @@ func childAdmission(t *testing.T, s *Store, r *Runs, a agent.Actor, p *loopProvi
 		t.Fatal(err)
 	}
 	c := rootClaim(t, s, r)
+	if err := r.Initialize(ctx, c); err != nil {
+		t.Fatal(err)
+	}
 	run, err := r.Load(ctx, c)
 	if err != nil {
 		t.Fatal(err)
@@ -149,6 +162,12 @@ func childAdmission(t *testing.T, s *Store, r *Runs, a agent.Actor, p *loopProvi
 	return c, run, gen, response.ToolCalls
 }
 func TestChildAtomicAdmissionReplayAndBounds(t *testing.T) {
+	testDelegationAtomicAdmissionReplayAndBounds(t, false)
+}
+func TestDelegationPluginAtomicAdmissionReplayAndBounds(t *testing.T) {
+	testDelegationAtomicAdmissionReplayAndBounds(t, true)
+}
+func testDelegationAtomicAdmissionReplayAndBounds(t *testing.T, managed bool) {
 	for _, tc := range []struct {
 		name     string
 		limits   agent.ChildLimits
@@ -165,6 +184,9 @@ func TestChildAtomicAdmissionReplayAndBounds(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, r, a, p := childFixture(t)
+			if managed {
+				installDelegationPlugin(t, s, r)
+			}
 			r.ConfigureChildLimits(tc.limits)
 			c, run, gen, calls := childAdmission(t, s, r, a, p, tc.args...)
 			ts := r.ToolStore(c)
@@ -189,8 +211,18 @@ func TestChildAtomicAdmissionReplayAndBounds(t *testing.T) {
 		})
 	}
 }
+
 func TestChildAdmissionRollsBackInvocationCounterAndOutbox(t *testing.T) {
+	testDelegationAdmissionRollsBackInvocationCounterAndOutbox(t, false)
+}
+func TestDelegationPluginAdmissionRollsBackInvocationCounterAndOutbox(t *testing.T) {
+	testDelegationAdmissionRollsBackInvocationCounterAndOutbox(t, true)
+}
+func testDelegationAdmissionRollsBackInvocationCounterAndOutbox(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	c, run, gen, calls := childAdmission(t, s, r, a, p, `{"task":"child"}`)
 	before := scalar(t, s, `SELECT count(*) FROM event_outbox`)
 	if _, err := s.db.Exec(`CREATE TRIGGER fail_child BEFORE INSERT ON agent_invocation BEGIN SELECT RAISE(ABORT,'injected'); END`); err != nil {
@@ -203,8 +235,18 @@ func TestChildAdmissionRollsBackInvocationCounterAndOutbox(t *testing.T) {
 		t.Fatal("partial child admission")
 	}
 }
+
 func TestChildAdmissionConcurrentDuplicateAndOldOwner(t *testing.T) {
+	testDelegationAdmissionConcurrentDuplicateAndOldOwner(t, false)
+}
+func TestDelegationPluginAdmissionConcurrentDuplicateAndOldOwner(t *testing.T) {
+	testDelegationAdmissionConcurrentDuplicateAndOldOwner(t, true)
+}
+func testDelegationAdmissionConcurrentDuplicateAndOldOwner(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	c, run, gen, calls := childAdmission(t, s, r, a, p, `{"task":"child"}`)
 	var wg sync.WaitGroup
 	errs := make(chan error, 8)
@@ -233,8 +275,18 @@ func TestChildAdmissionConcurrentDuplicateAndOldOwner(t *testing.T) {
 		t.Fatal("old owner", err)
 	}
 }
+
 func TestChildFrozenModelAndCapabilitiesAfterProfileSwitch(t *testing.T) {
+	testDelegationFrozenModelAndCapabilitiesAfterProfileSwitch(t, false)
+}
+func TestDelegationPluginFrozenModelAndCapabilitiesAfterProfileSwitch(t *testing.T) {
+	testDelegationFrozenModelAndCapabilitiesAfterProfileSwitch(t, true)
+}
+func testDelegationFrozenModelAndCapabilitiesAfterProfileSwitch(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	c, run, gen, calls := childAdmission(t, s, r, a, p, `{"task":"child"}`)
 	input := modelInput()
 	input.ModelID = "new-model"
@@ -246,10 +298,20 @@ func TestChildFrozenModelAndCapabilitiesAfterProfileSwitch(t *testing.T) {
 		t.Fatal("Child used live profile/capabilities")
 	}
 }
+
 func TestChildDepthCeilingAndBusinessFailureOnlyReachParent(t *testing.T) {
+	testDelegationDepthCeilingAndBusinessFailureOnlyReachParent(t, false)
+}
+func TestDelegationPluginDepthCeilingAndBusinessFailureOnlyReachParent(t *testing.T) {
+	testDelegationDepthCeilingAndBusinessFailureOnlyReachParent(t, true)
+}
+func testDelegationDepthCeilingAndBusinessFailureOnlyReachParent(t *testing.T, managed bool) {
 	for _, failure := range []bool{false, true} {
 		t.Run(fmt.Sprint(failure), func(t *testing.T) {
 			s, r, a, p := childFixture(t)
+			if managed {
+				installDelegationPlugin(t, s, r)
+			}
 			r.ConfigureChildLimits(agent.ChildLimits{Depth: 1, Descendants: 4096, ToolCalls: 10000})
 			p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 				if failure && req.Messages[len(req.Messages)-1].Text == "child explicit input" {
@@ -272,6 +334,7 @@ func TestChildDepthCeilingAndBusinessFailureOnlyReachParent(t *testing.T) {
 		})
 	}
 }
+
 func TestChildMigrationV12PreservesFrozenRunsAndAtomicRollback(t *testing.T) {
 	for _, broken := range []bool{false, true} {
 		t.Run(fmt.Sprint(broken), func(t *testing.T) {
@@ -312,7 +375,16 @@ func TestChildMigrationV12PreservesFrozenRunsAndAtomicRollback(t *testing.T) {
 }
 
 func TestChildApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t *testing.T) {
+	testDelegationApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t, false)
+}
+func TestDelegationPluginApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t *testing.T) {
+	testDelegationApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t, true)
+}
+func testDelegationApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t, effectDef(t, "query_before_retry"))
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		last := req.Messages[len(req.Messages)-1]
 		if last.Role == "tool" || isFollowup(req) {
@@ -380,7 +452,16 @@ func TestChildApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t *testing.T) 
 }
 
 func TestChildRejectsRealPrivateArtifactAndLateEpochResult(t *testing.T) {
+	testDelegationRejectsRealPrivateArtifactAndLateEpochResult(t, false)
+}
+func TestDelegationPluginRejectsRealPrivateArtifactAndLateEpochResult(t *testing.T) {
+	testDelegationRejectsRealPrivateArtifactAndLateEpochResult(t, true)
+}
+func testDelegationRejectsRealPrivateArtifactAndLateEpochResult(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	// The private Main output exists, but has never been granted to this Task.
 	receipt := mustSubmit(t, a, "private", "private")
 	private := putArtifact(t, s, artifact.Scope{UserID: artifact.LocalUser, AgentID: idAgent(t, s), RunID: receipt.RunID}, "private Main output")
@@ -436,12 +517,21 @@ func TestChildRejectsRealPrivateArtifactAndLateEpochResult(t *testing.T) {
 }
 
 func TestChildUnknownEffectNeverBecomesSuccessOrNewChild(t *testing.T) {
+	testDelegationUnknownEffectNeverBecomesSuccessOrNewChild(t, false)
+}
+func TestDelegationPluginUnknownEffectNeverBecomesSuccessOrNewChild(t *testing.T) {
+	testDelegationUnknownEffectNeverBecomesSuccessOrNewChild(t, true)
+}
+func testDelegationUnknownEffectNeverBecomesSuccessOrNewChild(t *testing.T, managed bool) {
 	for _, modelFailure := range []bool{false, true} {
 		t.Run(fmt.Sprint(modelFailure), func(t *testing.T) {
 			s, r, a, p := childFixture(t, effectDef(t, "never"))
+			if managed {
+				installDelegationPlugin(t, s, r)
+			}
 			p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 				last := req.Messages[len(req.Messages)-1]
-				if last.Role == "tool" && modelFailure && strings.Contains(req.Messages[1].Text, "general Worker executing") {
+				if last.Role == "tool" && modelFailure && strings.Contains(req.Messages[0].Text, prompt.Worker()) {
 					return llm.GenerationResult{}, llm.ModelNotFound
 				}
 				if last.Role == "tool" || isFollowup(req) {
@@ -572,6 +662,15 @@ func TestChildStorageRejectsAncestryAndCapabilityExpansion(t *testing.T) {
 	if _, err := s.db.Exec(`INSERT INTO capability_snapshot SELECT ?,agent_config_version,role,'changed',skill_set_hash,data_scope,can_spawn_agents,json_insert(tools_json,'$[#]',json('{"name":"forbidden-memory-write","permission":"memory_write"}')),created_at,format_version FROM capability_snapshot WHERE snapshot_id=?`, expanded, capID); err != nil {
 		t.Fatal(err)
 	}
+	nullSpec, changedSpec := newID(), newID()
+	for _, variant := range []struct{ id, expression string }{
+		{nullSpec, "json_insert(tools_json,'$[#]',NULL)"},
+		{changedSpec, "json_set(tools_json,'$[0].description','same name but changed descriptor')"},
+	} {
+		if _, err := s.db.Exec(`INSERT INTO capability_snapshot SELECT ?,agent_config_version,role,'changed',skill_set_hash,data_scope,can_spawn_agents,`+variant.expression+`,created_at,format_version FROM capability_snapshot WHERE snapshot_id=?`, variant.id, capID); err != nil {
+			t.Fatal(err)
+		}
+	}
 	for _, tc := range []struct {
 		name, task, parent, root, cap, model string
 		depth                                int
@@ -582,6 +681,8 @@ func TestChildStorageRejectsAncestryAndCapabilityExpansion(t *testing.T) {
 		{"wrong depth", taskID, parent, root, capID, modelID, depth + 1},
 		{"new model snapshot", taskID, parent, root, capID, mainModel, depth},
 		{"expanded capability", taskID, parent, root, expanded, modelID, depth},
+		{"NULL capability", taskID, parent, root, nullSpec, modelID, depth},
+		{"same name changed descriptor", taskID, parent, root, changedSpec, modelID, depth},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := s.db.Exec(`INSERT INTO run(run_id,agent_id,conversation_id,task_id,parent_run_id,root_run_id,kind,worker_position,status,task_epoch,depth,capability_snapshot_id,model_snapshot_id,checkpoint_json,history_boundary,created_at,updated_at,version) SELECT ?,agent_id,conversation_id,?,?,?,kind,worker_position,'queued',task_epoch,?,?,?,checkpoint_json,history_boundary,created_at,updated_at,1 FROM run WHERE run_id=?`, newID(), tc.task, tc.parent, tc.root, tc.depth, tc.cap, tc.model, child)
@@ -593,10 +694,29 @@ func TestChildStorageRejectsAncestryAndCapabilityExpansion(t *testing.T) {
 	if scalar(t, s, `SELECT count(*) FROM run WHERE worker_position='child'`) != 1 {
 		t.Fatal("invalid Child persisted")
 	}
+	subset := newID()
+	if _, err := s.db.Exec(`INSERT INTO capability_snapshot SELECT ?,agent_config_version,role,'subset',skill_set_hash,data_scope,can_spawn_agents,json_remove(tools_json,'$[0]'),created_at,format_version FROM capability_snapshot WHERE snapshot_id=?`, subset, capID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.db.Exec(`INSERT INTO run(run_id,agent_id,conversation_id,task_id,parent_run_id,root_run_id,kind,worker_position,status,task_epoch,depth,capability_snapshot_id,model_snapshot_id,checkpoint_json,history_boundary,created_at,updated_at,version) SELECT ?,agent_id,conversation_id,task_id,parent_run_id,root_run_id,kind,worker_position,'queued',task_epoch,depth,?,model_snapshot_id,checkpoint_json,history_boundary,created_at,updated_at,1 FROM run WHERE run_id=?`, newID(), subset, child); err != nil {
+		t.Fatal("valid capability reduction rejected", err)
+	}
+	if scalar(t, s, `SELECT count(*) FROM run WHERE worker_position='child'`) != 2 {
+		t.Fatal("valid subset did not persist")
+	}
 }
 
 func TestChildDoesNotReceiveAppendedTaskInstructions(t *testing.T) {
+	testDelegationDoesNotReceiveAppendedTaskInstructions(t, false)
+}
+func TestDelegationPluginDoesNotReceiveAppendedTaskInstructions(t *testing.T) {
+	testDelegationDoesNotReceiveAppendedTaskInstructions(t, true)
+}
+func testDelegationDoesNotReceiveAppendedTaskInstructions(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	c, run, gen, calls := childAdmission(t, s, r, a, p, `{"task":"child"}`)
 	ctx := context.Background()
 	if _, err := r.ToolStore(c).Accept(ctx, gen.Request.GenerationID, calls, run.Tools); err != nil {
@@ -632,7 +752,16 @@ func TestChildDoesNotReceiveAppendedTaskInstructions(t *testing.T) {
 }
 
 func TestChildOutOfOrderCompletionBeforeParentWaitKeepsCallOrder(t *testing.T) {
+	testDelegationOutOfOrderCompletionBeforeParentWaitKeepsCallOrder(t, false)
+}
+func TestDelegationPluginOutOfOrderCompletionBeforeParentWaitKeepsCallOrder(t *testing.T) {
+	testDelegationOutOfOrderCompletionBeforeParentWaitKeepsCallOrder(t, true)
+}
+func testDelegationOutOfOrderCompletionBeforeParentWaitKeepsCallOrder(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	c, run, gen, calls := childAdmission(t, s, r, a, p, `{"task":"first child result"}`, `{"task":"second child result"}`)
 	ctx := context.Background()
 	ts := r.ToolStore(c)
@@ -684,7 +813,16 @@ func TestChildOutOfOrderCompletionBeforeParentWaitKeepsCallOrder(t *testing.T) {
 }
 
 func TestChildLargeResultUsesSharedArtifactNormalizationAndKeepsEnvelope(t *testing.T) {
-	s, _, a, p := childFixture(t)
+	testDelegationLargeResultUsesSharedArtifactNormalizationAndKeepsEnvelope(t, false)
+}
+func TestDelegationPluginLargeResultUsesSharedArtifactNormalizationAndKeepsEnvelope(t *testing.T) {
+	testDelegationLargeResultUsesSharedArtifactNormalizationAndKeepsEnvelope(t, true)
+}
+func testDelegationLargeResultUsesSharedArtifactNormalizationAndKeepsEnvelope(t *testing.T, managed bool) {
+	s, r, a, p := childFixture(t)
+	if managed {
+		installDelegationPlugin(t, s, r)
+	}
 	input := modelInput()
 	input.ModelID = "large-output"
 	input.ContextWindow = 32768

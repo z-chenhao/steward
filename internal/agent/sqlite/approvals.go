@@ -70,11 +70,11 @@ func (r *Runs) PendingApprovals(ctx context.Context) ([]interaction.Approval, er
 }
 
 func (r *Runs) approvalView(ctx context.Context, pendingOnly bool) ([]interaction.Approval, error) {
-	query := `SELECT approval_id,tool_name,arguments_json,frozen_arguments_hash,status,expires_at FROM (
+	query := `SELECT approval_id,tool_name,arguments_json,frozen_arguments_hash,status,expires_at,action_parameters FROM (
  SELECT a.approval_id,i.tool_name,i.arguments_json,a.frozen_arguments_hash,
  CASE WHEN a.status IN ('pending','approved') AND a.expires_at<=? AND i.status IN ('queued','waiting') AND i.attempt_count=0 THEN 'expired' ELSE a.status END status,
- a.expires_at,a.created_at FROM approval a JOIN tool_invocation i USING(invocation_id) WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)
- UNION ALL SELECT approval_id,'account_spend',arguments_json,frozen_hash,status,0,created_at FROM spend_approval WHERE scope=(SELECT agent_id FROM agent_config WHERE singleton=1)
+ a.expires_at,a.created_at,coalesce(p.plan_json,'') action_parameters FROM approval a JOIN tool_invocation i USING(invocation_id) LEFT JOIN computer_action_plan p ON p.invocation_id=i.invocation_id AND p.request_hash=i.request_hash WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)
+ UNION ALL SELECT approval_id,'account_spend',arguments_json,frozen_hash,status,0,created_at,'' FROM spend_approval WHERE scope=(SELECT agent_id FROM agent_config WHERE singleton=1)
  )`
 	if pendingOnly {
 		query += " WHERE status='pending'"
@@ -91,7 +91,7 @@ func (r *Runs) approvalView(ctx context.Context, pendingOnly bool) ([]interactio
 	out := []interaction.Approval{}
 	for rows.Next() {
 		var v interaction.Approval
-		if rows.Scan(&v.ID, &v.Tool, &v.Arguments, &v.Hash, &v.Status, &v.ExpiresAt) != nil {
+		if rows.Scan(&v.ID, &v.Tool, &v.Arguments, &v.Hash, &v.Status, &v.ExpiresAt, &v.Parameters) != nil {
 			return nil, agent.ErrStorage
 		}
 		out = append(out, v)
@@ -248,7 +248,28 @@ func (r *Runs) ReconcileUnknown(ctx context.Context) error {
 		if json.Unmarshal([]byte(v.specs), &specs) != nil {
 			return agent.ErrStorage
 		}
-		registry, err := r.registry.Select(specs)
+		current, ok := r.registry.Resolve(v.name)
+		if !ok || current.Query == nil {
+			// No authoritative receipt query exists. Keep unknown without
+			// invoking a method or validating unrelated plugin capabilities.
+			continue
+		}
+		var original *tool.Spec
+		for i := range specs {
+			if specs[i].Name == v.name {
+				original = &specs[i]
+				break
+			}
+		}
+		if original == nil {
+			// An originally unavailable operation cannot acquire a newly
+			// registered tool's query authority. Its uncertainty remains intact.
+			continue
+		}
+		// This scan may run after the Run ended and has no execution claim.
+		// Validate only the queried resource against its own frozen identity;
+		// other features' managed views cannot authorize or block this query.
+		registry, err := r.registry.Select([]tool.Spec{*original})
 		if err != nil {
 			return err
 		}

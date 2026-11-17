@@ -126,12 +126,16 @@ type Definition struct {
 	// PreviousSpecs is an explicit Host-owned compatibility allow-list. Selecting
 	// one retains its exact schema/policy; it never adds new operations to a Run.
 	PreviousSpecs []Spec
-	Spec          Spec
-	Host          bool // Trusted Host builtins receive the accepted invocation, never model-supplied IDs.
-	Execute       func(context.Context, string) Result
-	Invoke        func(context.Context, Request) Outcome
-	Query         func(context.Context, Request) Evidence
-	ConflictKeys  func(string) []string
+	// NamespaceSource is original, unformatted discovery text. MCP supplies it
+	// for new-snapshot presentation policy; it never enters the public Spec or
+	// model declaration. Existing snapshots keep NamespaceDescription instead.
+	NamespaceSource *string `json:"-"`
+	Spec            Spec
+	Host            bool // Trusted Host builtins receive the accepted invocation, never model-supplied IDs.
+	Execute         func(context.Context, string) Result
+	Invoke          func(context.Context, Request) Outcome
+	Query           func(context.Context, Request) Evidence
+	ConflictKeys    func(string) []string
 }
 type Registry struct {
 	mu          sync.RWMutex
@@ -157,6 +161,7 @@ func NewRegistry(definitions []Definition) (*Registry, error) {
 			return nil, errors.New("duplicate tool definition")
 		}
 		d.Spec = copySpec(d.Spec)
+		d.NamespaceSource = copyNamespaceSource(d.NamespaceSource)
 		d.PreviousSpecs = append([]Spec(nil), d.PreviousSpecs...)
 		for i, previous := range d.PreviousSpecs {
 			if !d.Host || previous.Name != d.Spec.Name || previous.Version < 1 || previous.Version >= d.Spec.Version || previous.Permission != d.Spec.Permission || previous.ReplayPolicy != d.Spec.ReplayPolicy || !json.Valid([]byte(previous.InputSchema)) {
@@ -264,6 +269,7 @@ func (r *Registry) Resolve(name string) (Definition, bool) {
 	defer r.mu.RUnlock()
 	d, ok := r.definitions[name]
 	d.Spec = copySpec(d.Spec)
+	d.NamespaceSource = copyNamespaceSource(d.NamespaceSource)
 	d.PreviousSpecs = append([]Spec(nil), d.PreviousSpecs...)
 	for i := range d.PreviousSpecs {
 		d.PreviousSpecs[i] = copySpec(d.PreviousSpecs[i])
@@ -303,6 +309,14 @@ func (r *Registry) ReplaceGroup(prefix string, definitions []Definition) error {
 func copySpec(s Spec) Spec {
 	s.PromptContext = append([]PromptContext(nil), s.PromptContext...)
 	return s
+}
+
+func copyNamespaceSource(source *string) *string {
+	if source == nil {
+		return nil
+	}
+	value := *source
+	return &value
 }
 
 type Invocation struct {
@@ -489,11 +503,21 @@ func (e Executor) executeOne(ctx context.Context, inv Invocation) (Result, error
 					return Result{}, err
 				}
 			}
-		} else if d.Invoke != nil {
-			outcome = d.Invoke(callCtx, request)
-			result = outcome.Result
 		} else {
-			result = d.Execute(callCtx, inv.Call.Arguments)
+			callCtx = context.WithValue(callCtx, acceptedInvocationKey{}, inv.ID)
+			if store, ok := e.Store.(InvocationContextStore); ok {
+				var err error
+				callCtx, err = store.InvocationContext(callCtx, inv)
+				if err != nil {
+					return Result{}, err
+				}
+			}
+			if d.Invoke != nil {
+				outcome = d.Invoke(callCtx, request)
+				result = outcome.Result
+			} else {
+				result = d.Execute(callCtx, inv.Call.Arguments)
+			}
 		}
 		defer closeOutput(callCtx, result)()
 		if callCtx.Err() != nil && !d.Host {

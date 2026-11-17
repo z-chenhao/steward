@@ -52,9 +52,11 @@ if [ -f "$source_root/go.mod" ]; then
   cp "$source_root"/runtime/javascript/package*.json "$stage/runtime/javascript/"
   (cd "$stage/provider-bridge" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
   (cd "$stage/runtime/javascript" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
+  sh "$source_root/scripts/build-plugins.sh" "$stage/bin/steward" "$stage/bin/plugins" "$stage/runtime/javascript/node_modules"
   python3 "$source_root/scripts/licenses.py" "$stage/licenses"
 else
   cp "$source_root/bin/steward" "$stage/bin/steward"
+  cp -R "$source_root/bin/plugins" "$stage/bin/"
   cp -R "$source_root/provider-bridge/." "$stage/provider-bridge/"
   cp -R "$source_root/runtime/javascript/." "$stage/runtime/javascript/"
   cp -R "$source_root/licenses" "$stage/"

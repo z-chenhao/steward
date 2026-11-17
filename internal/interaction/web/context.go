@@ -20,12 +20,13 @@ type ContextReader interface {
 }
 
 type contextView struct {
-	Query      observability.ContextQuery
-	Rounds     observability.Rounds
-	Frozen     *observability.FrozenContext
-	Diff       *observability.ContextDiff
-	RoundAfter int64
-	DiffAfter  int
+	ReaderRevision string
+	Query          observability.ContextQuery
+	Rounds         observability.Rounds
+	Frozen         *observability.FrozenContext
+	Diff           *observability.ContextDiff
+	RoundAfter     int64
+	DiffAfter      int
 }
 
 func contextQuery(r *http.Request) (*contextView, error) {
@@ -36,6 +37,11 @@ func contextQuery(r *http.Request) (*contextView, error) {
 			return nil, observability.ErrInvalid
 		}
 		switch key {
+		case "reader_revision":
+			if !observability.ValidReaderRevision(list[0]) {
+				return nil, observability.ErrInvalid
+			}
+			v.ReaderRevision = list[0]
 		case "run", "step", "section", "item", "offset", "after", "round_after", "diff_after", "format":
 		default:
 			return nil, observability.ErrInvalid
@@ -115,11 +121,14 @@ func (s *Server) loadContext(ctx context.Context, v *contextView, api string) er
 		v.Frozen = &frozen
 	}
 	if api == "diff" || api == "" && (v.Query.Section == "messages" || v.Query.Section == "tools") {
-		diff, e := s.Contexts.ContextDiff(ctx, observability.DiffQuery{RunID: v.Query.RunID, Step: v.Query.Step, Section: v.Query.Section, After: v.DiffAfter})
+		diff, e := s.Contexts.ContextDiff(ctx, observability.DiffQuery{RunID: v.Query.RunID, Step: v.Query.Step, Section: v.Query.Section, After: v.DiffAfter, ReaderRevision: v.ReaderRevision})
 		if e != nil {
 			return e
 		}
 		v.Diff = &diff
+		if diff.ReaderRevision != "" {
+			v.ReaderRevision = diff.ReaderRevision
+		}
 	}
 	return nil
 }
@@ -130,7 +139,7 @@ func (s *Server) contextAPI(w http.ResponseWriter, r *http.Request, kind string)
 		err = observability.ErrInvalid
 	}
 	if err == nil && kind == "diff" {
-		err = (observability.DiffQuery{RunID: v.Query.RunID, Step: v.Query.Step, Section: v.Query.Section, After: v.DiffAfter}).Validate()
+		err = (observability.DiffQuery{RunID: v.Query.RunID, Step: v.Query.Step, Section: v.Query.Section, After: v.DiffAfter, ReaderRevision: v.ReaderRevision}).Validate()
 	}
 	if err == nil {
 		err = s.loadContext(r.Context(), v, kind)
@@ -149,7 +158,13 @@ func (s *Server) contextAPI(w http.ResponseWriter, r *http.Request, kind string)
 	}
 }
 
-func contextURL(run string) string { return tracePath(run) + "?tab=context&ctx=1" }
+func contextURL(run string, revision ...string) string {
+	link := tracePath(run) + "?tab=context&ctx=1"
+	if len(revision) > 0 && revision[0] != "" {
+		link += "&reader_revision=" + url.QueryEscape(revision[0])
+	}
+	return link
+}
 
 // Keep section, item and byte pagination separate. Switching a round or section
 // clears all dependent offsets, so a stale offset cannot hide a new prompt.
@@ -166,6 +181,9 @@ func contextLink(v *contextView, field string, value any) string {
 		n = *x
 	}
 	q := url.Values{"run": {v.Query.RunID}}
+	if v.ReaderRevision != "" {
+		q.Set("reader_revision", v.ReaderRevision)
+	}
 	if v.RoundAfter >= 0 {
 		q.Set("round_after", strconv.FormatInt(v.RoundAfter, 10))
 	}

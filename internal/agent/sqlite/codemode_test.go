@@ -31,7 +31,16 @@ func realCodeRuntime(t *testing.T) *codemode.Sidecar {
 }
 
 func TestCodeModeAcceptsLargeBoundedSource(t *testing.T) {
+	testCodeModeAcceptsLargeBoundedSource(t, false)
+}
+func TestCodeModePluginAcceptsLargeBoundedSource(t *testing.T) {
+	testCodeModeAcceptsLargeBoundedSource(t, true)
+}
+func testCodeModeAcceptsLargeBoundedSource(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t, codemode.Definition())
+	if managed {
+		installCodeModePlugin(t, s, r)
+	}
 	input := modelInput()
 	input.Name, input.ContextWindow = "Large bounded script", 32768
 	activateLoop(t, s, input)
@@ -108,7 +117,16 @@ func TestCodeModeWrapperToolCapacityOwnership(t *testing.T) {
 }
 
 func TestCodeModeRealRuntimeNestedToolAndStore(t *testing.T) {
+	testCodeModeRealRuntimeNestedToolAndStore(t, false)
+}
+func TestCodeModePluginRealRuntimeNestedToolAndStore(t *testing.T) {
+	testCodeModeRealRuntimeNestedToolAndStore(t, true)
+}
+func testCodeModeRealRuntimeNestedToolAndStore(t *testing.T, managed bool) {
 	s, r, a, p := childFixture(t, codemode.Definition())
+	if managed {
+		installCodeModePlugin(t, s, r)
+	}
 	r.ConfigureJavaScript(realCodeRuntime(t))
 	r.ConfigureToolLimits(ToolLimits{Global: 1, Agent: 1, Run: 1, Provider: 1, Tool: 1})
 	execute := func(req llm.GenerationRequest) (llm.GenerationResult, error) {
@@ -201,9 +219,18 @@ func TestNestedAdmissionRejectsUnacceptedParent(t *testing.T) {
 var _ tool.Store = nestedTools{}
 
 func TestCodeModeStoreAndEventCommitFailuresDoNotLeakSuccess(t *testing.T) {
+	testCodeModeStoreAndEventCommitFailuresDoNotLeakSuccess(t, false)
+}
+func TestCodeModePluginStoreAndEventCommitFailuresDoNotLeakSuccess(t *testing.T) {
+	testCodeModeStoreAndEventCommitFailuresDoNotLeakSuccess(t, true)
+}
+func testCodeModeStoreAndEventCommitFailuresDoNotLeakSuccess(t *testing.T, managed bool) {
 	for _, boundary := range []string{"store", "terminal-event"} {
 		t.Run(boundary, func(t *testing.T) {
 			s, r, a, p := childFixture(t, codemode.Definition())
+			if managed {
+				installCodeModePlugin(t, s, r)
+			}
 			r.ConfigureJavaScript(realCodeRuntime(t))
 			trigger := `CREATE TRIGGER reject_store BEFORE INSERT ON code_store BEGIN SELECT RAISE(ABORT,'injected store failure'); END`
 			source := `store("x",1); return "UNCOMMITTED_SUCCESS";`

@@ -35,7 +35,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y bubblewrap
+          sudo apt-get install -y bubblewrap util-linux
       - name: Test startup ownership and CLI contracts
         run: go test ./cmd/steward ./internal/startup ./internal/llm/secret
       - name: Build native package and checksums

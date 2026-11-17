@@ -1,0 +1,2062 @@
+{
+  "en": {
+    "label": "Model",
+    "placeholder_label": "Choose model",
+    "states": [
+      {
+        "id": 0,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 1,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 2,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 3,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 4,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 5,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 6,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 7,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 8,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 9,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 10,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 11,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 12,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 13,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 14,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 15,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 16,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 17,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 18,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 19,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 20,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 21,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 22,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 23,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 24,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 25,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 26,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 27,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 28,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 29,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 30,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": ""
+      },
+      {
+        "id": 31,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 32,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 33,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 34,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 35,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 36,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 37,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 38,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 39,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 40,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 41,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 42,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 43,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 44,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 45,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 46,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 47,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 48,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 49,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 50,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 51,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 52,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 53,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 54,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 55,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 56,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 57,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 58,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 59,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 60,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 61,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 62,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 63,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Some account models are unavailable. Try again."
+      },
+      {
+        "id": 64,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 65,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 66,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 67,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 68,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 69,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 70,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 71,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 72,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 73,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 74,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 75,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 76,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 77,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 78,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 79,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 80,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 81,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 82,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 83,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 84,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 85,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 86,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 87,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 88,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 89,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 90,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 91,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 92,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 93,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 94,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 95,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "The account model list is unavailable."
+      },
+      {
+        "id": 96,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 97,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 98,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 99,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 100,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 101,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 102,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 103,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 104,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 105,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 106,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 107,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 108,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 109,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 110,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 111,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 112,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 113,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 114,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 115,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 116,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 117,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 118,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 119,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 120,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 121,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 122,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 123,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 124,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 125,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 126,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "Loading models…",
+        "error": "Model selection failed. Try again."
+      },
+      {
+        "id": 127,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "Model selection failed. Try again."
+      }
+    ]
+  },
+  "zh_cn": {
+    "label": "模型",
+    "placeholder_label": "选择模型",
+    "states": [
+      {
+        "id": 0,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 1,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 2,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 3,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 4,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 5,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 6,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 7,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 8,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 9,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 10,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 11,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 12,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 13,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 14,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 15,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 16,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 17,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 18,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 19,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 20,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 21,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 22,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 23,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 24,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 25,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 26,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 27,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 28,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 29,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 30,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": ""
+      },
+      {
+        "id": 31,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": ""
+      },
+      {
+        "id": 32,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 33,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 34,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 35,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 36,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 37,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 38,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 39,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 40,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 41,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 42,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 43,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 44,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 45,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 46,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 47,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 48,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 49,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 50,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 51,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 52,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 53,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 54,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 55,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 56,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 57,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 58,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 59,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 60,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 61,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 62,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 63,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "部分账户模型暂不可用，请重试。"
+      },
+      {
+        "id": 64,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 65,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 66,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 67,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 68,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 69,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 70,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 71,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 72,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 73,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 74,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 75,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 76,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 77,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 78,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 79,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 80,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 81,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 82,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 83,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 84,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 85,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 86,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 87,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 88,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 89,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 90,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 91,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 92,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 93,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 94,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 95,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "账户模型列表暂不可用。"
+      },
+      {
+        "id": 96,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 97,
+        "busy": false,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 98,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 99,
+        "busy": true,
+        "disabled": false,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 100,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 101,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 102,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 103,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 104,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 105,
+        "busy": false,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 106,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 107,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 108,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 109,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 110,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 111,
+        "busy": true,
+        "disabled": true,
+        "placeholder": true,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 112,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 113,
+        "busy": false,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 114,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 115,
+        "busy": true,
+        "disabled": false,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 116,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 117,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 118,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 119,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 120,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 121,
+        "busy": false,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 122,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 123,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 124,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 125,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 126,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "正在加载模型…",
+        "error": "模型切换失败，请重试。"
+      },
+      {
+        "id": 127,
+        "busy": true,
+        "disabled": true,
+        "placeholder": false,
+        "pending_text": "",
+        "error": "模型切换失败，请重试。"
+      }
+    ]
+  }
+}

@@ -5,26 +5,33 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/z-chenhao/assistant/internal/memory"
 	"sort"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
+	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/computer"
+	"github.com/z-chenhao/assistant/internal/connectedapps"
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/memory"
+	"github.com/z-chenhao/assistant/internal/plugin/webaccess"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"github.com/z-chenhao/assistant/internal/tool/codemode"
+	"github.com/z-chenhao/assistant/internal/tool/mcp"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 type tools struct {
 	runs      *Runs
 	claim     agent.RunClaim
 	codeOwner *codeBridge
+	registry  *tool.Registry
 }
 
 func (t *tools) forCode(b *codeBridge) *tools {
-	return &tools{runs: t.runs, claim: t.claim, codeOwner: b}
+	return &tools{runs: t.runs, claim: t.claim, codeOwner: b, registry: t.registry}
 }
 func (t *tools) fence(ctx context.Context, tx *sql.Tx) error {
 	if t.codeOwner != nil {
@@ -33,7 +40,19 @@ func (t *tools) fence(ctx context.Context, tx *sql.Tx) error {
 	return fence(ctx, tx, t.claim)
 }
 
-func (r *Runs) ToolStore(c agent.RunClaim) tool.Store { return &tools{runs: r, claim: c} }
+func (r *Runs) ToolStore(c agent.RunClaim) tool.Store {
+	registry := r.registry
+	if selected, err := r.RegistryForRun(context.Background(), c, r.registry); err == nil {
+		registry = selected
+	}
+	return &tools{runs: r, claim: c, registry: registry}
+}
+func (t *tools) catalog() *tool.Registry {
+	if t.registry != nil {
+		return t.registry
+	}
+	return t.runs.registry
+}
 
 func (t *tools) Accept(ctx context.Context, exchange string, calls []llm.ToolCall, specs []tool.Spec) ([]tool.Invocation, error) {
 	return t.accept(ctx, exchange, calls, specs, "")
@@ -41,9 +60,16 @@ func (t *tools) Accept(ctx context.Context, exchange string, calls []llm.ToolCal
 
 func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCall, specs []tool.Spec, parent string) ([]tool.Invocation, error) {
 	out := []tool.Invocation{}
+	effective, rejected, hookErr := t.runs.pluginBeforeTools(ctx, t.claim, exchange, calls, t.fence)
+	if hookErr != nil {
+		return nil, hookErr
+	}
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
 		out = out[:0]
 		if err := t.fence(ctx, tx); err != nil {
+			return err
+		}
+		if err := t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID()); err != nil {
 			return err
 		}
 		var frozen string
@@ -98,6 +124,7 @@ func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCal
 				}{call, specs})
 			}
 			hash := digest(request)
+			call = effective[i]
 			var inv tool.Invocation
 			var oldHash string
 			var result sql.NullString
@@ -123,7 +150,7 @@ func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCal
 						undeclared = spec.Exposure == tool.Hidden || (parent == "" && spec.CodeModeOnly) || (parent != "" && spec.Exposure == tool.ModelOnly) || (parent == "" && spec.Searchable() && !declared[call.Name])
 						p = spec.Policy()
 						policy = p.Replay
-						if d, ok := t.runs.registry.Resolve(spec.Name); !undeclared && ok && d.ConflictKeys != nil && tool.Validate(spec.InputSchema, call.Arguments) {
+						if d, ok := t.catalog().Resolve(spec.Name); !undeclared && ok && d.ConflictKeys != nil && tool.Validate(spec.InputSchema, call.Arguments) {
 							keys = d.ConflictKeys(call.Arguments)
 						}
 					}
@@ -163,7 +190,9 @@ func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCal
 					return err
 				}
 				rejection := tool.Result{}
-				if undeclared {
+				if rejected[i] {
+					rejection = tool.Failure("PERMISSION_DENIED")
+				} else if undeclared {
 					rejection = tool.Failure("NOT_FOUND")
 				} else if !allowed {
 					rejection = tool.Failure("RESOURCE_LIMIT")
@@ -232,7 +261,7 @@ func (t *tools) Start(ctx context.Context, id string) error {
 			return err
 		}
 		family, _ := tool.HostFamily(name)
-		definition, registered := t.runs.registry.Resolve(name)
+		definition, registered := t.catalog().Resolve(name)
 		if registered && definition.Host && (family == tool.ComputerBuiltin || family == tool.EnvironmentBuiltin) {
 			if err := p.Prepare(ctx); errors.Is(err, computer.ErrPreparing) {
 				return tool.ErrResource
@@ -241,6 +270,9 @@ func (t *tools) Start(ctx context.Context, id string) error {
 	}
 	return t.runs.write(ctx, func(tx *sql.Tx) error {
 		if err := t.fence(ctx, tx); err != nil {
+			return err
+		}
+		if err := t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID()); err != nil {
 			return err
 		}
 		inv, p, err := t.load(ctx, tx, id)
@@ -273,7 +305,7 @@ func (t *tools) Start(ctx context.Context, id string) error {
 		// every execution slot. These bounded Host transactions have no provider
 		// effect and retain ordinary admission, fencing and role checks.
 		family, trusted := tool.HostFamily(inv.Call.Name)
-		definition, registered := t.runs.registry.Resolve(inv.Call.Name)
+		definition, registered := t.catalog().Resolve(inv.Call.Name)
 		control := trusted && registered && definition.Host && (family == tool.TaskBuiltin || family == tool.SearchBuiltin)
 		if inv.Call.Name != codemode.ToolName && !control {
 			// Actual Tools share atomic quotas/conflicts across direct and nested
@@ -287,6 +319,9 @@ func (t *tools) Start(ctx context.Context, id string) error {
 			if global >= limits.Global || byAgent >= limits.Agent || byRun >= limits.Run || byProvider >= limits.Provider || byTool >= limits.Tool || conflicts > 0 {
 				return tool.ErrResource
 			}
+		}
+		if err := t.artifactDispatchRecipeTx(ctx, tx, inv, p); err != nil {
+			return err
 		}
 		res, err := tx.ExecContext(ctx, `UPDATE tool_invocation SET status='running',wait_reason=NULL,next_wake_at=NULL,execution_token=?,attempt_count=attempt_count+1,version=version+1,updated_at=? WHERE invocation_id=? AND run_id=? AND desired_state='running' AND status IN ('queued','running','waiting')`, t.claim.(*claim).token, time.Now().UnixMicro(), id, t.claim.RunID())
 		if err != nil {
@@ -313,14 +348,76 @@ func (t *tools) FinishResult(ctx context.Context, id string, result tool.Result)
 	return out, err
 }
 func (t *tools) finish(ctx, outputCtx context.Context, id string, result tool.Result, reconcile, reject bool, out *tool.Result) error {
-	prepared := t.runs.stageOutput(outputCtx, id, result)
+	recipeErr := t.prepareArtifactResultRecipe(outputCtx, id, result)
+	if errors.Is(recipeErr, rsi.ErrNotFound) || errors.Is(recipeErr, rsi.ErrRevoked) || errors.Is(recipeErr, rsi.ErrInvalid) {
+		recipeErr = artifact.ErrUnavailable
+	}
+	prepared := preparedOutput{err: recipeErr}
+	if recipeErr == nil {
+		prepared = t.runs.stageOutput(outputCtx, id, result)
+	}
 	defer prepared.Close()
+	if _, observation := result.HostFence.(computer.ObservationReceipt); observation && result.Error == nil {
+		t.runs.host.boundary("before_computer_observation_commit")
+	}
+	if _, documentation := result.HostFence.(computer.DocumentationReceipt); documentation && result.Error == nil {
+		t.runs.host.boundary("before_computer_documentation_commit")
+	}
+	if receipt, ok := result.HostFence.(computer.TargetReceipt); ok && result.Error == nil {
+		if receipt.Token != "" {
+			t.runs.host.boundary("before_computer_binding_commit")
+		} else {
+			t.runs.host.boundary("before_computer_inventory_commit")
+		}
+	}
+	if _, ok := result.HostFence.(mcp.ManagedReceipt); ok && result.Error == nil {
+		t.runs.host.boundary("before_mcp_method_commit")
+	}
+	if _, ok := result.HostFence.(connectedapps.ManagedReceipt); ok && result.Error == nil {
+		t.runs.host.boundary("before_apps_method_commit")
+	}
+	if _, ok := result.HostFence.(webReadReceipt); ok && result.Error == nil {
+		t.runs.host.boundary("before_web_read_commit")
+	}
+	if receipt, ok := result.HostFence.(webPublicationReceipt); ok && result.Error == nil {
+		if receipt.Name == webaccess.FetchName {
+			t.runs.host.boundary("before_web_fetch_commit")
+		} else {
+			t.runs.host.boundary("before_web_research_commit")
+		}
+	}
 	committed := false
 	original := result
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
 		result = original
 		if err := t.fence(ctx, tx); err != nil {
 			return err
+		}
+		if _, ok := result.HostFence.(mcp.ManagedReceipt); ok && result.Error == nil {
+			var err error
+			result, err = t.commitMCPResult(ctx, tx, id, result)
+			if err != nil {
+				return err
+			}
+		}
+		if _, ok := result.HostFence.(connectedapps.ManagedReceipt); ok && result.Error == nil {
+			var err error
+			result, err = t.commitAppsResult(ctx, tx, id, result)
+			if err != nil {
+				return err
+			}
+		}
+		if receipt, ok := result.HostFence.(webReadReceipt); ok && result.Error == nil {
+			if err := t.commitWebRead(ctx, tx, id, receipt); err != nil {
+				return err
+			}
+			result.HostFence = nil
+		}
+		if receipt, ok := result.HostFence.(webPublicationReceipt); ok && result.Error == nil {
+			if err := t.commitWebPublication(ctx, tx, id, receipt); err != nil {
+				return err
+			}
+			result.HostFence = nil
 		}
 		// A wrapper result can commit only under the same execution owner that
 		// produced its frozen terminal receipt. Calls rejected before VM admission
@@ -352,6 +449,17 @@ func (t *tools) finish(ctx, outputCtx context.Context, id string, result tool.Re
 			if err := t.commitObservation(ctx, tx, receipt); err != nil {
 				return err
 			}
+		}
+		if receipt, ok := result.HostFence.(computer.DocumentationReceipt); ok && result.Error == nil {
+			if err := t.commitComputerDocumentation(ctx, tx, receipt); err != nil {
+				return err
+			}
+		}
+		if receipt, ok := result.HostFence.(computer.TargetReceipt); ok && result.Error == nil {
+			if err := t.commitComputerTargets(ctx, tx, receipt); err != nil {
+				return err
+			}
+			result.HostFence = nil // consumed; replay carries only the accepted public result
 		}
 		if err = t.fence(ctx, tx); err != nil {
 			return err
@@ -407,6 +515,9 @@ func (t *tools) finish(ctx, outputCtx context.Context, id string, result tool.Re
 		}
 		committed = true
 		t.runs.host.boundary("before_tool_commit")
+		if err = t.runs.enqueuePluginEvent(ctx, tx, t.claim.RunID(), rsiplugin.ToolResult, 1, id); err != nil {
+			return err
+		}
 		return runEvent(ctx, tx, t.claim.RunID(), "tool_invocation."+status, 1)
 	})
 	if err == nil && committed {
@@ -428,7 +539,7 @@ func (t *tools) load(ctx context.Context, tx *sql.Tx, id string) (tool.Invocatio
 		return inv, p, agent.ErrStorage
 	}
 	if p.Version == 0 { // Pre-M3 accepted safe/internal calls have fixed defaults.
-		if d, ok := t.runs.registry.Resolve(inv.Call.Name); ok {
+		if d, ok := t.catalog().Resolve(inv.Call.Name); ok {
 			p = d.Spec.Policy()
 		}
 	}
@@ -437,6 +548,13 @@ func (t *tools) load(ctx context.Context, tx *sql.Tx, id string) (tool.Invocatio
 }
 func (t *tools) Prepare(ctx context.Context, id string) (tool.Invocation, error) {
 	var inv tool.Invocation
+	preparedFailure, prepareErr := t.prepareComputerParameters(ctx, id)
+	if prepareErr == nil && preparedFailure.Error == nil {
+		preparedFailure, prepareErr = t.prepareArtifactDispatchRecipe(ctx, id)
+	}
+	if prepareErr != nil {
+		return inv, prepareErr
+	}
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
 		if err := t.fence(ctx, tx); err != nil {
 			return err
@@ -469,7 +587,7 @@ func (t *tools) Prepare(ctx context.Context, id string) (tool.Invocation, error)
 		var d tool.Definition
 		known := false
 		if visible {
-			d, known = t.runs.registry.Resolve(inv.Call.Name)
+			d, known = t.catalog().Resolve(inv.Call.Name)
 		}
 		rejection := ""
 		if !known {
@@ -487,6 +605,10 @@ func (t *tools) Prepare(ctx context.Context, id string) (tool.Invocation, error)
 			if external {
 				rejection = "PERMISSION_DENIED"
 			}
+		}
+		if rejection == "" && preparedFailure.Error != nil {
+			inv.Result = preparedFailure
+			return nil
 		}
 		if rejection != "" {
 			// A rejection still uses the single accepted invocation lifecycle.
@@ -537,7 +659,28 @@ func (t *tools) Prepare(ctx context.Context, id string) (tool.Invocation, error)
 			if err = tx.QueryRowContext(ctx, `SELECT a.approval_id,i.arguments_json,a.frozen_arguments_hash,i.tool_name FROM approval a JOIN tool_invocation i USING(invocation_id) WHERE i.invocation_id=?`, id).Scan(&approvalID, &args, &hash, &name); err != nil {
 				return err
 			}
-			text := "Approval required for " + name + ": " + args + "\nUse /approve " + approvalID + " " + hash + " or /deny " + approvalID + " " + hash
+			var parameters string
+			if err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT plan_json FROM computer_action_plan WHERE invocation_id=?),'')`, id).Scan(&parameters); err != nil {
+				return err
+			}
+			prepared := ""
+			if parameters != "" {
+				var choice computer.ActionParameters
+				if json.Unmarshal([]byte(parameters), &choice) != nil {
+					return agent.ErrStorage
+				}
+				// Explicit strings already occur verbatim in the original arguments. Only
+				// replaceable bounded options need an additional notification preview.
+				choice.Text, choice.Value, choice.URL, choice.App, choice.Browser, choice.Direction, choice.Failure = "", "", "", "", "", "", ""
+				choice.Selector = ""
+				choice.NameFromSource = false
+				choice.KeyInput = nil
+				options, _ := encoded(choice)
+				if options != "{}" {
+					prepared = "\nAction options: " + options
+				}
+			}
+			text := "Approval required for " + name + ": " + args + prepared + "\nUse /approve " + approvalID + " " + hash + " or /deny " + approvalID + " " + hash
 			if err = t.runs.notification(ctx, tx, t.claim.RunID(), "approval:"+approvalID, "approval", "security", text); err != nil {
 				return err
 			}

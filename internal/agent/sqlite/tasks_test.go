@@ -15,6 +15,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/prompt"
 	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
@@ -101,7 +102,7 @@ func calls(name string, args ...string) llm.GenerationResult {
 }
 func isRoot(req llm.GenerationRequest) bool {
 	for _, m := range req.Messages {
-		if strings.Contains(m.Text, "general Worker executing") {
+		if m.Role == "system" && (strings.Contains(m.Text, prompt.Identity()) || strings.Contains(m.Text, prompt.Worker())) {
 			return true
 		}
 	}
@@ -117,7 +118,14 @@ func isFollowup(req llm.GenerationRequest) bool {
 }
 
 func TestTaskCreateCompletionPolicyDedup(t *testing.T) {
-	s, _, a, p := taskFixture(t)
+	testTaskPolicyDedup(t, false)
+}
+func TestTaskPluginCreateCompletionPolicyDedup(t *testing.T) { testTaskPolicyDedup(t, true) }
+func testTaskPolicyDedup(t *testing.T, managed bool) {
+	s, r, a, p := taskFixture(t)
+	if managed {
+		installTaskPlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if isRoot(req) || isFollowup(req) || req.Messages[len(req.Messages)-1].Role == "tool" {
 			return llm.GenerationResult{Text: "accepted result"}, nil
@@ -150,7 +158,16 @@ func TestTaskCreateCompletionPolicyDedup(t *testing.T) {
 }
 
 func TestTaskVerticalSliceDuplicateSourcesAndDurableReporter(t *testing.T) {
+	testTaskVerticalSlice(t, false)
+}
+func TestTaskPluginVerticalSliceDuplicateSourcesAndDurableReporter(t *testing.T) {
+	testTaskVerticalSlice(t, true)
+}
+func testTaskVerticalSlice(t *testing.T, managed bool) {
 	s, r, a, p := taskFixture(t)
+	if managed {
+		installTaskPlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if isRoot(req) {
 			for _, spec := range req.Tools {
@@ -574,7 +591,13 @@ func executeTaskRun(t *testing.T, a agent.Actor, r *Runs, ctx context.Context, c
 	if err != nil {
 		return err
 	}
-	registry, err := a.Registry.Select(run.Tools)
+	// Match Actor's per-Run dispatch: presentation and plugin contributions
+	// belong to the original frozen graph, including after deactivation.
+	base, err := r.RegistryForRun(ctx, c, a.Registry)
+	if err != nil {
+		return err
+	}
+	registry, err := base.Select(run.Tools)
 	if err != nil {
 		return err
 	}
@@ -643,7 +666,7 @@ func TestTaskSearchRoleScopeFiltersAndReadOnlyProgress(t *testing.T) {
 	// Query entry is scoped through its current Main Run, not supplied IDs.
 	if err = r.write(ctx, func(tx *sql.Tx) error {
 		request, _ := task.ParseSearch(`{"query":"Travel"}`)
-		result, err := r.searchTasks(ctx, tx, receipt.RunID, request)
+		result, err := r.legacySearchTasksV1(ctx, tx, receipt.RunID, request)
 		if err != nil {
 			return err
 		}
@@ -655,14 +678,14 @@ func TestTaskSearchRoleScopeFiltersAndReadOnlyProgress(t *testing.T) {
 			t.Fatal("ambiguous search hid candidates", summaries)
 		}
 		request.Status = []string{"completed"}
-		result, err = r.searchTasks(ctx, tx, receipt.RunID, request)
+		result, err = r.legacySearchTasksV1(ctx, tx, receipt.RunID, request)
 		if err != nil {
 			return err
 		}
 		if result.Text != "[]" {
 			t.Fatal("status did not filter scope", result)
 		}
-		result, err = r.searchTasks(ctx, tx, "different-agent-run", request)
+		result, err = r.legacySearchTasksV1(ctx, tx, "different-agent-run", request)
 		if err != nil {
 			return err
 		}

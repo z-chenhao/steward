@@ -23,6 +23,8 @@ import (
 	"github.com/z-chenhao/assistant/internal/interaction"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/llm/account"
+	modelmenu "github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	workbench "github.com/z-chenhao/assistant/internal/plugin/webworkbench/contract"
 	"github.com/z-chenhao/assistant/internal/task"
 )
 
@@ -40,8 +42,8 @@ func (c Config) Validate() error {
 	return nil
 }
 
-const Subject = "browser"
-const Destination = "local"
+const Subject = interaction.WebSubject
+const Destination = interaction.WebDestination
 
 type Status struct {
 	Readiness            string  `json:"readiness"`
@@ -72,42 +74,50 @@ type Models interface {
 	AddProfile(context.Context, llm.ProfileInput) (llm.Profile, error)
 }
 type Server struct {
-	modelMu         sync.Mutex
-	appLogos        appLogoCache
-	Apps            AppConnections
-	Computer        ComputerReader
-	Capabilities    CapabilitySettings
-	Workers         WorkerReader
-	Inspector       ExecutionReader
-	Memory          MemoryReader
-	Contexts        ContextReader
-	Traces          TraceReader
-	Tasks           TaskReader
-	Feedbacks       FeedbackSettings
-	Schedules       ScheduleSettings
-	Config          Config
-	Core            Core
-	Models          Models
-	Control         llm.Control
-	Accounts        *account.Manager
-	Secrets         llm.SecretStore
-	AccountCatalog  func(context.Context, string) ([]llm.CatalogModel, error)
-	Callback        http.Handler
-	Wake            func()
-	uiPreviews      uiPreview
-	replies         replyPreview
-	mu              sync.Mutex
-	requests        sync.WaitGroup
-	stopping        bool
-	session         string
-	sessionExpires  time.Time
-	auth            llm.AuthState
-	authOnResources bool
-	authError       string
-	accountID       string
-	authCancel      context.CancelFunc
-	authDone        chan struct{}
-	lifetime        context.Context
+	WebWorkbench          func(context.Context, string) (workbench.Presentation, string, bool, error)
+	modelMu               sync.Mutex
+	appLogos              appLogoCache
+	Interface             AppInterfaceReader
+	Logos                 AppLogoReader
+	Apps                  AppConnections
+	Computer              ComputerReader
+	Capabilities          CapabilitySettings
+	CapabilityForms       CapabilityFormProjector
+	Workers               WorkerReader
+	Inspector             ExecutionReader
+	Memory                MemoryReader
+	Contexts              ContextReader
+	Traces                TraceReader
+	Tasks                 TaskReader
+	Feedbacks             FeedbackSettings
+	Schedules             ScheduleSettings
+	Config                Config
+	Core                  Core
+	Models                Models
+	Control               llm.Control
+	Accounts              *account.Manager
+	Secrets               llm.SecretStore
+	ModelConnectionPolicy func(context.Context, modelmenu.ConnectionFacts) (modelmenu.ConnectionDefaults, bool, error)
+	ModelSettings         func(context.Context, modelmenu.SettingsFacts) (modelmenu.SettingsProjection, bool, error)
+	ModelPicker           func(context.Context, string) (modelmenu.PickerPresentation, error)
+	ModelMenu             func(context.Context, modelmenu.Facts) (modelmenu.Projection, bool, error)
+	AccountCatalog        func(context.Context, string) ([]llm.CatalogModel, error)
+	Callback              http.Handler
+	Wake                  func()
+	uiPreviews            uiPreview
+	replies               replyPreview
+	mu                    sync.Mutex
+	requests              sync.WaitGroup
+	stopping              bool
+	session               string
+	sessionExpires        time.Time
+	auth                  llm.AuthState
+	authOnResources       bool
+	authError             string
+	accountID             string
+	authCancel            context.CancelFunc
+	authDone              chan struct{}
+	lifetime              context.Context
 }
 
 func (s *Server) Serve(ctx context.Context, l net.Listener) error {

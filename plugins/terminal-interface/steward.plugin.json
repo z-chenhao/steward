@@ -1,0 +1,339 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.terminal-interface",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-017"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.terminal-interface/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "view",
+              "choose-model"
+            ]
+          },
+          "facts": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer"
+              },
+              "empty": {
+                "type": "boolean"
+              },
+              "exact": {
+                "type": "integer"
+              },
+              "number": {
+                "type": "integer"
+              },
+              "manual": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "count",
+              "empty",
+              "exact",
+              "number",
+              "manual"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "operation"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "view": {
+            "type": "object",
+            "properties": {
+              "Help": {
+                "type": "string"
+              },
+              "State": {
+                "type": "string"
+              },
+              "InputPrompt": {
+                "type": "string"
+              },
+              "Repair": {
+                "type": "string"
+              },
+              "Busy": {
+                "type": "string"
+              },
+              "Idle": {
+                "type": "string"
+              },
+              "InputRejected": {
+                "type": "string"
+              },
+              "Ask": {
+                "type": "string"
+              },
+              "Cancelled": {
+                "type": "string"
+              },
+              "Retained": {
+                "type": "string"
+              },
+              "BridgeMissing": {
+                "type": "string"
+              },
+              "ProbeFailed": {
+                "type": "string"
+              },
+              "ProbeTimeout": {
+                "type": "string"
+              },
+              "ProbeIncompatible": {
+                "type": "string"
+              },
+              "KnownFailure": {
+                "type": "string"
+              },
+              "UnknownFailure": {
+                "type": "string"
+              },
+              "Message": {
+                "type": "string"
+              },
+              "Attachment": {
+                "type": "string"
+              },
+              "OtherPart": {
+                "type": "string"
+              },
+              "LoginURL": {
+                "type": "string"
+              },
+              "LoginCode": {
+                "type": "string"
+              },
+              "LoginProgress": {
+                "type": "string"
+              },
+              "Workspace": {
+                "type": "string"
+              },
+              "LoginRequired": {
+                "type": "string"
+              },
+              "ApprovalSaved": {
+                "type": "string"
+              },
+              "Task": {
+                "type": "string"
+              },
+              "Profile": {
+                "type": "string"
+              },
+              "ProbePassed": {
+                "type": "string"
+              },
+              "ActivateCommand": {
+                "type": "string"
+              },
+              "CredentialStorage": {
+                "type": "string"
+              },
+              "AccountConnected": {
+                "type": "string"
+              },
+              "AccountLoggedOut": {
+                "type": "string"
+              },
+              "UnknownCommand": {
+                "type": "string"
+              },
+              "Privacy": {
+                "type": "string"
+              },
+              "Activate": {
+                "type": "string"
+              },
+              "Selected": {
+                "type": "string"
+              },
+              "ConnectionMenu": {
+                "type": "string"
+              },
+              "LocalHelp": {
+                "type": "string"
+              },
+              "ConnectionPrompt": {
+                "type": "string"
+              },
+              "Endpoint": {
+                "type": "string"
+              },
+              "KeyEnvironment": {
+                "type": "string"
+              },
+              "CatalogUnavailable": {
+                "type": "string"
+              },
+              "AccountPrompt": {
+                "type": "string"
+              },
+              "ContextTokens": {
+                "type": "string"
+              },
+              "OutputTokens": {
+                "type": "string"
+              },
+              "TokenPrompt": {
+                "type": "string"
+              },
+              "TokenInvalid": {
+                "type": "string"
+              },
+              "ProfileSaved": {
+                "type": "string"
+              },
+              "ProbeCapabilities": {
+                "type": "string"
+              },
+              "Testing": {
+                "type": "string"
+              },
+              "Checking": {
+                "type": "string"
+              },
+              "Model": {
+                "type": "string"
+              },
+              "ModelPrompt": {
+                "type": "string"
+              },
+              "SingleModel": {
+                "type": "string"
+              },
+              "ChooseListed": {
+                "type": "string"
+              },
+              "RecoveredState": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "Help",
+              "State",
+              "InputPrompt",
+              "Repair",
+              "Busy",
+              "Idle",
+              "InputRejected",
+              "Ask",
+              "Cancelled",
+              "Retained",
+              "BridgeMissing",
+              "ProbeFailed",
+              "ProbeTimeout",
+              "ProbeIncompatible",
+              "KnownFailure",
+              "UnknownFailure",
+              "Message",
+              "Attachment",
+              "OtherPart",
+              "LoginURL",
+              "LoginCode",
+              "LoginProgress",
+              "Workspace",
+              "LoginRequired",
+              "ApprovalSaved",
+              "Task",
+              "Profile",
+              "ProbePassed",
+              "ActivateCommand",
+              "CredentialStorage",
+              "AccountConnected",
+              "AccountLoggedOut",
+              "UnknownCommand",
+              "Privacy",
+              "Activate",
+              "Selected",
+              "ConnectionMenu",
+              "LocalHelp",
+              "ConnectionPrompt",
+              "Endpoint",
+              "KeyEnvironment",
+              "CatalogUnavailable",
+              "AccountPrompt",
+              "ContextTokens",
+              "OutputTokens",
+              "TokenPrompt",
+              "TokenInvalid",
+              "ProfileSaved",
+              "ProbeCapabilities",
+              "Testing",
+              "Checking",
+              "Model",
+              "ModelPrompt",
+              "SingleModel",
+              "ChooseListed",
+              "RecoveredState"
+            ],
+            "additionalProperties": false
+          },
+          "choice": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "index",
+                  "manual",
+                  "retry"
+                ]
+              },
+              "index": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "kind",
+              "index"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  }
+}

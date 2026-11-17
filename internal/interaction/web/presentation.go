@@ -25,34 +25,3 @@ func toolLabel(name string) string {
 	}
 	return strings.ReplaceAll(strings.TrimPrefix(name, "builtin__"), "_", " ")
 }
-func historyLabel(kind string) string {
-	switch kind {
-	case "instruction":
-		return "Request updated"
-	case "completed":
-		return "Work round completed"
-	case "failed":
-		return "Work attempt failed"
-	case "needs_input":
-		return "Input requested"
-	case "unknown":
-		return "Outcome unconfirmed"
-	}
-	return kind
-}
-
-func tabLabel(name string) string {
-	switch name {
-	case "overview":
-		return "Input / Output"
-	case "metadata":
-		return "Details"
-	case "context":
-		return "Context"
-	case "wire":
-		return "Requests"
-	case "diff":
-		return "Compare"
-	}
-	return name
-}

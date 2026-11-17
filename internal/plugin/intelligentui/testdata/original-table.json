@@ -1,0 +1,1691 @@
+{
+  "props": {
+    "title": "Original table evidence",
+    "columns": [
+      "Name",
+      "Amount",
+      "Note"
+    ],
+    "rows": [
+      [
+        "Beta",
+        "10",
+        "same"
+      ],
+      [
+        "Alpha",
+        "2",
+        "same"
+      ],
+      [
+        "Gamma",
+        "",
+        "=SUM(A1:A2)"
+      ],
+      [
+        "Delta",
+        "-3",
+        "中文, \"quoted\""
+      ],
+      [
+        "Alpha",
+        "20",
+        "@unsafe"
+      ]
+    ],
+    "source": "Independent pre-producer fixture"
+  },
+  "stages": [
+    {
+      "name": "initial",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Beta10same",
+        "Alpha2same",
+        "Gamma=SUM(A1:A2)",
+        "Delta-3中文, \"quoted\"",
+        "Alpha20@unsafe"
+      ],
+      "state": {
+        "state": {},
+        "model_context": {},
+        "version": 0
+      }
+    },
+    {
+      "name": "amount-ascending",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"ascending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Gamma=SUM(A1:A2)",
+        "Delta-3中文, \"quoted\"",
+        "Alpha2same",
+        "Beta10same",
+        "Alpha20@unsafe"
+      ],
+      "state": {
+        "state": {
+          "sort": 1,
+          "direction": 1
+        },
+        "model_context": {
+          "title": "Original table evidence",
+          "sort": "Amount",
+          "direction": 1
+        },
+        "version": 1
+      }
+    },
+    {
+      "name": "amount-descending",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Alpha20@unsafe",
+        "Beta10same",
+        "Alpha2same",
+        "Delta-3中文, \"quoted\"",
+        "Gamma=SUM(A1:A2)"
+      ],
+      "state": {
+        "state": {
+          "sort": 1,
+          "direction": -1
+        },
+        "model_context": {
+          "title": "Original table evidence",
+          "sort": "Amount",
+          "direction": -1
+        },
+        "version": 2
+      }
+    },
+    {
+      "name": "query-same",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Beta10same",
+        "Alpha2same"
+      ],
+      "state": {
+        "state": {
+          "sort": 1,
+          "direction": -1,
+          "query": "same",
+          "selected": ""
+        },
+        "model_context": {
+          "title": "Original table evidence",
+          "sort": "Amount",
+          "direction": -1,
+          "filter": "same",
+          "selection": ""
+        },
+        "version": 3
+      }
+    },
+    {
+      "name": "reset",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Beta10same",
+        "Alpha2same",
+        "Gamma=SUM(A1:A2)",
+        "Delta-3中文, \"quoted\"",
+        "Alpha20@unsafe"
+      ],
+      "state": {
+        "state": {
+          "sort": -1,
+          "direction": 1,
+          "query": "",
+          "selected": ""
+        },
+        "model_context": {
+          "title": "Original table evidence",
+          "sort": null,
+          "direction": 1,
+          "filter": "",
+          "selection": ""
+        },
+        "version": 4
+      }
+    },
+    {
+      "name": "selected-alpha",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Alpha2same",
+        "Alpha20@unsafe"
+      ],
+      "state": {
+        "state": {
+          "sort": -1,
+          "direction": 1,
+          "query": "",
+          "selected": "Alpha"
+        },
+        "model_context": {
+          "title": "Original table evidence",
+          "sort": null,
+          "direction": 1,
+          "filter": "",
+          "selection": "Alpha"
+        },
+        "version": 5
+      }
+    },
+    {
+      "name": "final-reset",
+      "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+      "rows": [
+        "Beta10same",
+        "Alpha2same",
+        "Gamma=SUM(A1:A2)",
+        "Delta-3中文, \"quoted\"",
+        "Alpha20@unsafe"
+      ],
+      "state": {
+        "state": {
+          "sort": -1,
+          "direction": 1,
+          "query": "",
+          "selected": ""
+        },
+        "model_context": {
+          "title": "Original table evidence",
+          "sort": null,
+          "direction": 1,
+          "filter": "",
+          "selection": ""
+        },
+        "version": 6
+      }
+    }
+  ],
+  "styles": [
+    {
+      "width": 1400,
+      "theme": "light",
+      "cells": [
+        {
+          "text": "Name",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(102, 102, 102)"
+        },
+        {
+          "text": "Amount",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "end",
+          "color": "rgb(102, 102, 102)"
+        },
+        {
+          "text": "Note",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(102, 102, 102)"
+        },
+        {
+          "text": "Beta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "10",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "2",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Gamma",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "=SUM(A1:A2)",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Delta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "-3",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "中文, \"quoted\"",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "20",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "@unsafe",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        }
+      ]
+    },
+    {
+      "width": 1400,
+      "theme": "dark",
+      "cells": [
+        {
+          "text": "Name",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(175, 175, 175)"
+        },
+        {
+          "text": "Amount",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "end",
+          "color": "rgb(175, 175, 175)"
+        },
+        {
+          "text": "Note",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(175, 175, 175)"
+        },
+        {
+          "text": "Beta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "10",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "2",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Gamma",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "=SUM(A1:A2)",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Delta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "-3",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "中文, \"quoted\"",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "20",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "@unsafe",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "cells": [
+        {
+          "text": "Name",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(102, 102, 102)"
+        },
+        {
+          "text": "Amount",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "end",
+          "color": "rgb(102, 102, 102)"
+        },
+        {
+          "text": "Note",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(102, 102, 102)"
+        },
+        {
+          "text": "Beta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "10",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "2",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Gamma",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "=SUM(A1:A2)",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Delta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "-3",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "中文, \"quoted\"",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "20",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(33, 33, 33)"
+        },
+        {
+          "text": "@unsafe",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(33, 33, 33)"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "cells": [
+        {
+          "text": "Name",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(175, 175, 175)"
+        },
+        {
+          "text": "Amount",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "end",
+          "color": "rgb(175, 175, 175)"
+        },
+        {
+          "text": "Note",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "12px",
+          "lineHeight": "19.2px",
+          "align": "left",
+          "color": "rgb(175, 175, 175)"
+        },
+        {
+          "text": "Beta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "10",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "2",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "same",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Gamma",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "=SUM(A1:A2)",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Delta",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "-3",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "中文, \"quoted\"",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "Alpha",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "20",
+          "numeric": "true",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "end",
+          "color": "rgb(237, 237, 237)"
+        },
+        {
+          "text": "@unsafe",
+          "numeric": "false",
+          "font": "Inter, \"PingFang SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", sans-serif",
+          "size": "13px",
+          "lineHeight": "20.8px",
+          "align": "left",
+          "color": "rgb(237, 237, 237)"
+        }
+      ]
+    }
+  ],
+  "csv": {
+    "filtered": "77u/Ik5hbWUiLCJBbW91bnQiLCJOb3RlIg0KIkJldGEiLCIxMCIsInNhbWUiDQoiQWxwaGEiLCIyIiwic2FtZSI=",
+    "all": "77u/Ik5hbWUiLCJBbW91bnQiLCJOb3RlIg0KIkJldGEiLCIxMCIsInNhbWUiDQoiQWxwaGEiLCIyIiwic2FtZSINCiJHYW1tYSIsIiIsIic9U1VNKEExOkEyKSINCiJEZWx0YSIsIi0zIiwi5Lit5paHLCAiInF1b3RlZCIiIg0KIkFscGhhIiwiMjAiLCInQHVuc2FmZSI="
+  },
+  "locale_cases": [
+    {
+      "locale": "zh-CN",
+      "actualLocale": {
+        "language": "zh-CN",
+        "collation": {
+          "locale": "zh-CN",
+          "usage": "sort",
+          "sensitivity": "variant",
+          "ignorePunctuation": false,
+          "collation": "pinyin",
+          "numeric": false,
+          "caseFirst": "false"
+        }
+      },
+      "props": {
+        "title": "Original table evidence",
+        "columns": [
+          "Name",
+          "Amount",
+          "Note"
+        ],
+        "rows": [
+          [
+            "Beta",
+            "10",
+            "same"
+          ],
+          [
+            "Alpha",
+            "2",
+            "same"
+          ],
+          [
+            "Gamma",
+            "",
+            "=SUM(A1:A2)"
+          ],
+          [
+            "Delta",
+            "-3",
+            "中文, \"quoted\""
+          ],
+          [
+            "Alpha",
+            "20",
+            "@unsafe"
+          ],
+          [
+            "Ångström",
+            "11",
+            "locale"
+          ],
+          [
+            "Älg",
+            "12",
+            "locale"
+          ],
+          [
+            "Örebro",
+            "13",
+            "locale"
+          ],
+          [
+            "Zulu",
+            "14",
+            "locale"
+          ],
+          [
+            "阿尔法",
+            "15",
+            "locale"
+          ]
+        ],
+        "source": "Independent pre-producer fixture"
+      },
+      "stages": [
+        {
+          "name": "initial",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {},
+            "model_context": {},
+            "version": 0
+          }
+        },
+        {
+          "name": "name-ascending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"ascending\"><button type=\"button\" class=\"answer-column-sort\">Name<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "阿尔法15locale",
+            "Älg12locale",
+            "Alpha2same",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Beta10same",
+            "Delta-3中文, \"quoted\"",
+            "Gamma=SUM(A1:A2)",
+            "Örebro13locale",
+            "Zulu14locale"
+          ],
+          "state": {
+            "state": {
+              "sort": 0,
+              "direction": 1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Name",
+              "direction": 1
+            },
+            "version": 1
+          }
+        },
+        {
+          "name": "amount-ascending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"ascending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha2same",
+            "Beta10same",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale",
+            "Alpha20@unsafe"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": 1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": 1
+            },
+            "version": 2
+          }
+        },
+        {
+          "name": "amount-descending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha20@unsafe",
+            "阿尔法15locale",
+            "Zulu14locale",
+            "Örebro13locale",
+            "Älg12locale",
+            "Ångström11locale",
+            "Beta10same",
+            "Alpha2same",
+            "Delta-3中文, \"quoted\"",
+            "Gamma=SUM(A1:A2)"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": -1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1
+            },
+            "version": 3
+          }
+        },
+        {
+          "name": "query-same",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": -1,
+              "query": "same",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1,
+              "filter": "same",
+              "selection": ""
+            },
+            "version": 4
+          }
+        },
+        {
+          "name": "reset",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": ""
+            },
+            "version": 5
+          }
+        },
+        {
+          "name": "selected-alpha",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha2same",
+            "Alpha20@unsafe"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": "Alpha"
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": "Alpha"
+            },
+            "version": 6
+          }
+        },
+        {
+          "name": "final-reset",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": ""
+            },
+            "version": 7
+          }
+        }
+      ]
+    },
+    {
+      "locale": "sv-SE",
+      "actualLocale": {
+        "language": "sv-SE",
+        "collation": {
+          "locale": "sv-SE",
+          "usage": "sort",
+          "sensitivity": "variant",
+          "ignorePunctuation": false,
+          "collation": "default",
+          "numeric": false,
+          "caseFirst": "false"
+        }
+      },
+      "props": {
+        "title": "Original table evidence",
+        "columns": [
+          "Name",
+          "Amount",
+          "Note"
+        ],
+        "rows": [
+          [
+            "Beta",
+            "10",
+            "same"
+          ],
+          [
+            "Alpha",
+            "2",
+            "same"
+          ],
+          [
+            "Gamma",
+            "",
+            "=SUM(A1:A2)"
+          ],
+          [
+            "Delta",
+            "-3",
+            "中文, \"quoted\""
+          ],
+          [
+            "Alpha",
+            "20",
+            "@unsafe"
+          ],
+          [
+            "Ångström",
+            "11",
+            "locale"
+          ],
+          [
+            "Älg",
+            "12",
+            "locale"
+          ],
+          [
+            "Örebro",
+            "13",
+            "locale"
+          ],
+          [
+            "Zulu",
+            "14",
+            "locale"
+          ],
+          [
+            "阿尔法",
+            "15",
+            "locale"
+          ]
+        ],
+        "source": "Independent pre-producer fixture"
+      },
+      "stages": [
+        {
+          "name": "initial",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {},
+            "model_context": {},
+            "version": 0
+          }
+        },
+        {
+          "name": "name-ascending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"ascending\"><button type=\"button\" class=\"answer-column-sort\">Name<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha2same",
+            "Alpha20@unsafe",
+            "Beta10same",
+            "Delta-3中文, \"quoted\"",
+            "Gamma=SUM(A1:A2)",
+            "Zulu14locale",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {
+              "sort": 0,
+              "direction": 1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Name",
+              "direction": 1
+            },
+            "version": 1
+          }
+        },
+        {
+          "name": "amount-ascending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"ascending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha2same",
+            "Beta10same",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale",
+            "Alpha20@unsafe"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": 1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": 1
+            },
+            "version": 2
+          }
+        },
+        {
+          "name": "amount-descending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha20@unsafe",
+            "阿尔法15locale",
+            "Zulu14locale",
+            "Örebro13locale",
+            "Älg12locale",
+            "Ångström11locale",
+            "Beta10same",
+            "Alpha2same",
+            "Delta-3中文, \"quoted\"",
+            "Gamma=SUM(A1:A2)"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": -1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1
+            },
+            "version": 3
+          }
+        },
+        {
+          "name": "query-same",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": -1,
+              "query": "same",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1,
+              "filter": "same",
+              "selection": ""
+            },
+            "version": 4
+          }
+        },
+        {
+          "name": "reset",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": ""
+            },
+            "version": 5
+          }
+        },
+        {
+          "name": "selected-alpha",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha2same",
+            "Alpha20@unsafe"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": "Alpha"
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": "Alpha"
+            },
+            "version": 6
+          }
+        },
+        {
+          "name": "final-reset",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Ångström</button></td><td data-numeric=\"true\">11</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Älg</button></td><td data-numeric=\"true\">12</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Örebro</button></td><td data-numeric=\"true\">13</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Zulu</button></td><td data-numeric=\"true\">14</td><td data-numeric=\"false\">locale</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">阿尔法</button></td><td data-numeric=\"true\">15</td><td data-numeric=\"false\">locale</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Ångström11locale",
+            "Älg12locale",
+            "Örebro13locale",
+            "Zulu14locale",
+            "阿尔法15locale"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": ""
+            },
+            "version": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": "en-US-text-boundaries",
+      "locale": "en-US",
+      "props": {
+        "title": "Original table evidence",
+        "columns": [
+          "Name",
+          "Amount",
+          "Note"
+        ],
+        "rows": [
+          [
+            "Beta",
+            "10",
+            "same"
+          ],
+          [
+            "Alpha",
+            "2",
+            "same"
+          ],
+          [
+            "Gamma",
+            "",
+            "=SUM(A1:A2)"
+          ],
+          [
+            "Delta",
+            "-3",
+            "中文, \"quoted\""
+          ],
+          [
+            "Alpha",
+            "20",
+            "@unsafe"
+          ],
+          [
+            "Text boundaries",
+            "﻿0x10",
+            "line\r\nbreak \u0000end"
+          ]
+        ],
+        "source": "Independent pre-producer fixture"
+      },
+      "stages": [
+        {
+          "name": "initial",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Text boundaries</button></td><td data-numeric=\"true\">﻿0x10</td><td data-numeric=\"false\">line\r\nbreak \u0000end</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Text boundaries﻿0x10line\r\nbreak \u0000end"
+          ],
+          "state": {
+            "state": {},
+            "model_context": {},
+            "version": 0
+          }
+        },
+        {
+          "name": "amount-ascending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"ascending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Text boundaries</button></td><td data-numeric=\"true\">﻿0x10</td><td data-numeric=\"false\">line\r\nbreak \u0000end</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Text boundaries﻿0x10line\r\nbreak \u0000end",
+            "Alpha2same",
+            "Beta10same",
+            "Alpha20@unsafe"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": 1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": 1
+            },
+            "version": 1
+          }
+        },
+        {
+          "name": "amount-descending",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Text boundaries</button></td><td data-numeric=\"true\">﻿0x10</td><td data-numeric=\"false\">line\r\nbreak \u0000end</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha20@unsafe",
+            "Beta10same",
+            "Alpha2same",
+            "Text boundaries﻿0x10line\r\nbreak \u0000end",
+            "Delta-3中文, \"quoted\"",
+            "Gamma=SUM(A1:A2)"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": -1
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1
+            },
+            "version": 2
+          }
+        },
+        {
+          "name": "query-same",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"descending\"><button type=\"button\" class=\"answer-column-sort\">Amount<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m8 5-4 4m4-4v14m8 0 4-4m-4 4V5\"></path></svg></button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same"
+          ],
+          "state": {
+            "state": {
+              "sort": 1,
+              "direction": -1,
+              "query": "same",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": "Amount",
+              "direction": -1,
+              "filter": "same",
+              "selection": ""
+            },
+            "version": 3
+          }
+        },
+        {
+          "name": "reset",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Text boundaries</button></td><td data-numeric=\"true\">﻿0x10</td><td data-numeric=\"false\">line\r\nbreak \u0000end</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Text boundaries﻿0x10line\r\nbreak \u0000end"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": ""
+            },
+            "version": 4
+          }
+        },
+        {
+          "name": "selected-alpha",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr aria-selected=\"true\"><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"true\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Alpha2same",
+            "Alpha20@unsafe"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": "Alpha"
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": "Alpha"
+            },
+            "version": 5
+          }
+        },
+        {
+          "name": "final-reset",
+          "html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Text boundaries</button></td><td data-numeric=\"true\">﻿0x10</td><td data-numeric=\"false\">line\r\nbreak \u0000end</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>",
+          "rows": [
+            "Beta10same",
+            "Alpha2same",
+            "Gamma=SUM(A1:A2)",
+            "Delta-3中文, \"quoted\"",
+            "Alpha20@unsafe",
+            "Text boundaries﻿0x10line\r\nbreak \u0000end"
+          ],
+          "state": {
+            "state": {
+              "sort": -1,
+              "direction": 1,
+              "query": "",
+              "selected": ""
+            },
+            "model_context": {
+              "title": "Original table evidence",
+              "sort": null,
+              "direction": 1,
+              "filter": "",
+              "selection": ""
+            },
+            "version": 6
+          }
+        }
+      ]
+    }
+  ],
+  "initial_html": "<section class=\"answer-table\" aria-label=\"Original table evidence\"><div class=\"answer-table-scroll\" role=\"region\" aria-label=\"Original table evidence table\" tabindex=\"0\"><table><caption>Original table evidence</caption><thead><tr><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Name</button></th><th scope=\"col\" data-numeric=\"true\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Amount</button></th><th scope=\"col\" data-numeric=\"false\" aria-sort=\"none\"><button type=\"button\" class=\"answer-column-sort\">Note</button></th></tr></thead><tbody><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Beta</button></td><td data-numeric=\"true\">10</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">2</td><td data-numeric=\"false\">same</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Gamma</button></td><td data-numeric=\"true\"></td><td data-numeric=\"false\">=SUM(A1:A2)</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Delta</button></td><td data-numeric=\"true\">-3</td><td data-numeric=\"false\">中文, \"quoted\"</td></tr><tr><td data-numeric=\"false\"><button type=\"button\" class=\"answer-cell-select\" aria-pressed=\"false\">Alpha</button></td><td data-numeric=\"true\">20</td><td data-numeric=\"false\">@unsafe</td></tr></tbody></table></div><p class=\"answer-table-source\">Independent pre-producer fixture</p></section>"
+}

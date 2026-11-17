@@ -86,6 +86,10 @@ func (p *Provider) browser(ctx context.Context, i computer.Instance, method stri
 		}
 		return nil, err
 	}
+	return decodeBrowserResponse(output)
+}
+
+func decodeBrowserResponse(output string) (map[string]any, error) {
 	var v map[string]any
 	if json.Unmarshal([]byte(output), &v) != nil {
 		return nil, computer.ErrUnknown
@@ -279,32 +283,24 @@ func (p *Provider) Act(ctx context.Context, i computer.Instance, t computer.Targ
 		args["element_token"] = m["element_token"]
 	}
 	if method == "selectText" {
-		start, ok := m["selection_start"].(int)
-		length, ok2 := m["selection_length"].(int)
-		if !ok || !ok2 || start < 0 || length < 1 || start+length > 256 {
+		dispatch, ok := m["selection_dispatch"].(computer.SelectionDispatch)
+		if !ok {
 			return nil, computer.ErrInvalid
 		}
-		args["keys"] = []string{"cmd", "up"}
-		if _, err := g.driver(ctx, ip, "hotkey", args); err != nil {
-			return nil, computer.ErrUnknown
-		}
-		delete(args, "keys")
-		args["key"] = "right"
-		for n := 0; n < start; n++ {
-			if _, err := g.driver(ctx, ip, "press_key", args); err != nil {
-				return nil, computer.ErrUnknown
-			}
-		}
-		delete(args, "key")
-		args["keys"] = []string{"shift", "right"}
-		for n := 0; n < length; n++ {
-			if _, err := g.driver(ctx, ip, "hotkey", args); err != nil {
-				return nil, computer.ErrUnknown
-			}
-		}
-		return map[string]any{"effect": "unverifiable"}, nil
+		return nativeSelection(ctx, dispatch, args, func(method string, params map[string]any) (map[string]any, error) {
+			return g.driver(ctx, ip, method, params)
+		})
 	}
-	toolName := map[string]string{"click": "click", "scroll": "scroll", "drag": "drag", "setValue": "set_value", "performSecondaryAction": "click", "typeText": "type_text", "paste": "type_text", "pressKey": "press_key"}[method]
+	if method == "pressKey" {
+		dispatch, ok := m["key_dispatch"].(computer.KeyDispatch)
+		if !ok {
+			return nil, computer.ErrInvalid
+		}
+		return nativeKey(ctx, dispatch, args, func(method string, params map[string]any) (map[string]any, error) {
+			return g.driver(ctx, ip, method, params)
+		})
+	}
+	toolName := map[string]string{"click": "click", "scroll": "scroll", "drag": "drag", "setValue": "set_value", "performSecondaryAction": "click", "typeText": "type_text", "paste": "type_text"}[method]
 	if toolName == "" {
 		return nil, computer.ErrInvalid
 	}
@@ -328,18 +324,9 @@ func (p *Provider) Act(ctx context.Context, i computer.Instance, t computer.Targ
 		delete(args, "y")
 	case "setValue":
 		args["value"] = m["value"]
-	case "selectText":
-		args["text"] = m["value"]
 	case "performSecondaryAction":
 		args["action"] = m["value"]
-	case "pressKey":
-		key := text(m["text"])
-		if strings.Contains(key, "+") {
-			toolName = "hotkey"
-			args["keys"] = strings.Split(key, "+")
-		} else {
-			args["key"] = key
-		}
+
 	default:
 		args["text"] = m["text"]
 	}

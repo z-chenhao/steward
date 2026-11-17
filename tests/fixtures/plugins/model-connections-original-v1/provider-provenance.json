@@ -1,0 +1,7 @@
+{
+  "source": "Executed original enhanceSettings provider sync/change code before migration",
+  "source_sha256": "d09108734292fd92bc94b9df88b4b8e16636d51a8fc3fc114270b7457c360abb",
+  "fragment_sha256": "de8f3f957401fb5a469c4794476bda2e981eafc722c135b9f214748b8c0646cf",
+  "cases": 32,
+  "fixture_sha256": "f04a55b5b45b5fbe3b1a588e86328ac642ea44aaaef3e8a617e806a975928c03"
+}

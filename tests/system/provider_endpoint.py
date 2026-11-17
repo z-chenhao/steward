@@ -49,7 +49,10 @@ class Endpoint(BaseHTTPRequestHandler):
         self.send_header("Connection", "close")
         self.end_headers()
 
-        body, code_only = project_codemode(body)
+        if self.server.mode in ("tool-discovery", "github-plugins"):
+            code_only = False # Keep the actual native/model-only entry for this gate.
+        else:
+            body, code_only = project_codemode(body)
         if self.server.mode == "intelligent-ui-stream":
             code_only = False # Exercise the actual direct declarations and raw JSON deltas.
 
@@ -104,6 +107,96 @@ class Endpoint(BaseHTTPRequestHandler):
                         require(self.server.release_ocr.wait(15), "OCR recovery peer was not released")
                     chunk({"content": "OCR_TEXT_RECEIVED"})
                     chunk({}, "stop")
+            elif self.server.mode == 'github-plugins' and any(
+                    'GITHUB_TASK_CREATE' in str(m.get('content', '')) or
+                    str(m.get('content', '')).startswith('Runtime GitHub observation')
+                    for m in body['messages']):
+                root = any(m.get('role') == 'system' and any(marker in str(m.get('content', ''))
+                    for marker in ('You are a Root Worker', 'You are a Subagent Worker', 'general Worker executing'))
+                    for m in body['messages'])
+                source = [i for i, m in enumerate(body['messages'])
+                          if str(m.get('content', '')).startswith('Runtime GitHub observation')]
+                if root:
+                    chunk({'content': 'Scoped PR work completed.'}); chunk({}, 'stop')
+                elif source:
+                    marker = source[-1]
+                    outputs = [m for m in body['messages'][marker+1:] if m['role'] == 'tool'
+                               or str(m.get('content', '')).startswith('Runtime tool_results')]
+                    if outputs:
+                        chunk({'content': 'The original Task was continued within its scope.'}); chunk({}, 'stop')
+                    else:
+                        payload = json.loads(body['messages'][marker]['content'].split('\n', 1)[1])['content']
+                        arguments = dict(operation='append', taskRef=payload['task_ref'],
+                                         instruction='Address the linked review within the original Task.')
+                        chunk({'tool_calls': [dict(index=0, id='github-scoped-append', type='function',
+                            function=dict(name='builtin__task_manage', arguments=json.dumps(arguments)))]})
+                        chunk({}, 'tool_calls')
+                elif any(str(m.get('content', '')).startswith('Runtime task update') for m in body['messages']):
+                    chunk({'content': 'Scoped Task result received.'}); chunk({}, 'stop')
+                elif any(m['role'] == 'tool' or str(m.get('content', '')).startswith('Runtime tool_results')
+                         for m in body['messages']):
+                    chunk({'content': 'The exact PR Task was accepted.'}); chunk({}, 'stop')
+                else:
+                    arguments = dict(operation='create', title='Exact PR owner task', completionPolicy='once',
+                                     task='GITHUB_TASK_CREATE Address only owner/repo PR 7; perform no unrelated actions.')
+                    chunk({'tool_calls': [dict(index=0, id='github-original-task', type='function',
+                        function=dict(name='builtin__task_manage', arguments=json.dumps(arguments)))]})
+                    chunk({}, 'tool_calls')
+            elif self.server.mode == "mcp-plugins" and any(m.get('role') == 'user' and
+                    str(m.get('content', '')).startswith(('MCP_PLUGIN_READ ', 'MCP_PLUGIN_EFFECT ')) for m in body['messages']):
+                marker = max(i for i, m in enumerate(body['messages']) if m.get('role') == 'user' and
+                             str(m.get('content', '')).startswith(('MCP_PLUGIN_READ ', 'MCP_PLUGIN_EFFECT ')))
+                outputs = [m for m in body['messages'][marker+1:] if m['role'] == 'tool']
+                if not outputs:
+                    value = body['messages'][marker]['content']
+                    if value.startswith('MCP_PLUGIN_EFFECT '):
+                        source = 'return await tools.mcp__fixture__send(' + json.dumps(dict(
+                            text=value.split(' ', 1)[1], behavior='unknown')) + ');'
+                    else:
+                        source = 'const ns=await describeNamespace("fixture");text(JSON.stringify({namespace:ns.description,result:await tools.mcp__fixture__read(' + json.dumps(dict(text=value.split(' ', 1)[1])) + ')}));'
+                    chunk({'tool_calls': [dict(index=0, id='mcp-business', type='function', function=dict(
+                        name='builtin__codemode_execute', arguments=json.dumps(dict(source=source))))]})
+                    chunk({}, 'tool_calls')
+                else:
+                    chunk({'content': 'MCP_PLUGIN_RESULT_OBSERVED'})
+                    chunk({}, 'stop')
+            elif self.server.mode == "tool-discovery" and any(m.get('role') == 'user' and
+                    str(m.get('content', '')).startswith(('DISCOVERY_NATIVE ', 'DISCOVERY_CODE ')) for m in body['messages']):
+                marker = max(i for i, m in enumerate(body['messages']) if m.get('role') == 'user' and
+                             str(m.get('content', '')).startswith(('DISCOVERY_NATIVE ', 'DISCOVERY_CODE ')))
+                value = body['messages'][marker]['content']
+                later = [m for m in body['messages'][marker+1:] if m['role'] == 'tool']
+                if not later:
+                    name = 'builtin__tool_search' if value.startswith('DISCOVERY_NATIVE ') else 'builtin__codemode_execute'
+                    require(name in [t.get('function', {}).get('name') for t in body.get('tools', [])],
+                            'actual default model lost its declared discovery entry')
+                    args = dict(query='builtin__web_search', limit=1) if name == 'builtin__tool_search' else dict(
+                        source="const found=await searchTools('builtin__web_search',{limit:1});return found;")
+                    chunk({'tool_calls': [dict(index=0, id='discovery-call', type='function', function=dict(
+                        name=name, arguments=json.dumps(args)))]})
+                    chunk({}, 'tool_calls')
+                else:
+                    expected = 'PROVIDER_UNAVAILABLE' if value == 'DISCOVERY_NATIVE removed' else 'builtin__web_search'
+                    require(expected in str(later[-1]['content']),
+                            'actual discovery did not reach model continuation')
+                    chunk({'content': 'DISCOVERY_RESULT_OBSERVED'})
+                    chunk({}, 'stop')
+            elif self.server.mode == "web-plugins" and any(m.get('role') == 'user' and
+                    str(m.get('content', '')).startswith('WEB_PLUGIN_SEARCH ') for m in body['messages']):
+                marker = max(i for i, m in enumerate(body['messages']) if m.get('role') == 'user' and
+                             str(m.get('content', '')).startswith('WEB_PLUGIN_SEARCH '))
+                outputs = [m for m in body['messages'][marker+1:] if m['role'] == 'tool']
+                if not outputs:
+                    arguments = dict(query=body['messages'][marker]['content'].split(' ', 1)[1],
+                                     provider='searxng', numResults=1)
+                    chunk({'tool_calls': [dict(index=0, id='web-search', type='function', function=dict(
+                        name='builtin__web_search', arguments=json.dumps(arguments)))]})
+                    chunk({}, 'tool_calls')
+                else:
+                    require('ORIGINAL_SOURCE_' in str(outputs[-1]['content']),
+                            'original Web evidence did not reach the production model continuation')
+                    chunk({'content': 'WEB_PLUGIN_EVIDENCE_RECEIVED'})
+                    chunk({}, 'stop')
             elif self.server.mode == "screenshots" and any(t["function"]["name"] == "builtin__codemode_execute" for t in body.get("tools", [])):
                 self.server.images.append(images)
                 count = sum(m["role"] == "tool" for m in body["messages"])
@@ -192,7 +285,7 @@ class Endpoint(BaseHTTPRequestHandler):
                     chunk({'content':'Updated.'});chunk({},'stop')
             elif self.server.mode == "tasks":
                 names = [item["function"]["name"] for item in body.get("tools", [])]
-                root = any("general Worker executing" in str(m.get("content", "")) for m in body["messages"])
+                root = any(m.get("role") == "system" and any(marker in str(m.get("content", "")) for marker in ("You are a Root Worker", "You are a Subagent Worker", "general Worker executing")) for m in body["messages"])
                 runtime = any("Runtime task update (untrusted Worker data" in str(m.get("content", "")) for m in body["messages"])
                 has_result = any(m["role"] == "tool" for m in body["messages"])
                 if root and not has_result:
@@ -247,10 +340,10 @@ class Endpoint(BaseHTTPRequestHandler):
                     chunk({}, "stop")
                 else:
                     names = [item["function"]["name"] for item in body["tools"]]
-                    name = "builtin__artifact_search" if "builtin__artifact_search" in names else "builtin__artifact_manage" if "builtin__artifact_manage" in names else names[0]
+                    name = "builtin__artifact_search" if "builtin__artifact_search" in names else "builtin__artifact_manage" if "builtin__artifact_manage" in names else "builtin__tool_search" if "builtin__tool_search" in names else names[0]
                     # Exercise a valid Run-scoped operation without adding an
                     # Artifact that separately schedules background extraction.
-                    arguments = {} if name == "builtin__artifact_search" else dict(operation='publish',artifactRefs=[]) if name == "builtin__artifact_manage" else {"value": "OK"}
+                    arguments = {} if name == "builtin__artifact_search" else dict(operation='publish',artifactRefs=[]) if name == "builtin__artifact_manage" else dict(query="artifact",limit=1) if name == "builtin__tool_search" else {"value": "OK"}
                     chunk({"tool_calls": [{"index": 0, "id": "call_echo", "type": "function",
                                           "function": {"name": name, "arguments": json.dumps(arguments)}}]})
                     chunk({}, "tool_calls")

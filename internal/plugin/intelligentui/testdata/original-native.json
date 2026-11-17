@@ -1,0 +1,746 @@
+[
+  {
+    "accepted": true,
+    "components": [
+      {
+        "type": "openintelligentui",
+        "name": "Table",
+        "props": {
+          "title": "数据",
+          "columns": [
+            "名称"
+          ],
+          "rows": [
+            [
+              "\u003cscript\u003e上海\u003c/script\u003e"
+            ]
+          ],
+          "source": "用户"
+        },
+        "text": "数据\n名称\n\u003cscript\u003e上海\u003c/script\u003e\n用户"
+      }
+    ],
+    "html": "\u003cp class=\"semantic\"\u003e数据\n名称\n\u0026lt;script\u0026gt;上海\u0026lt;/script\u0026gt;\n用户\u003c/p\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"Table\",\"props\":{\"title\":\"数据\",\"columns\":[\"名称\"],\"rows\":[[\"\u003cscript\u003e上海\u003c/script\u003e\"]],\"source\":\"用户\"}}]}",
+    "name": "table-unicode-escaping",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "Table",
+          "props": {
+            "title": "数据",
+            "columns": [
+              "名称"
+            ],
+            "rows": [
+              [
+                "\u003cscript\u003e上海\u003c/script\u003e"
+              ]
+            ],
+            "source": "用户"
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandboxed": false,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "Table",
+          "props": {
+            "title": "数据",
+            "columns": [
+              "名称"
+            ],
+            "rows": [
+              [
+                "\u003cscript\u003e上海\u003c/script\u003e"
+              ]
+            ],
+            "source": "用户"
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "type": "openintelligentui",
+        "name": "barChart",
+        "props": {
+          "title": "净变化",
+          "description": "用户数据",
+          "data": [
+            {
+              "label": "甲",
+              "value": -2
+            },
+            {
+              "label": "乙",
+              "value": 3
+            }
+          ]
+        },
+        "text": "净变化\n用户数据\n甲: -2\n乙: 3"
+      }
+    ],
+    "html": "\u003cp class=\"semantic\"\u003e净变化\n用户数据\n甲: -2\n乙: 3\u003c/p\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"barChart\",\"props\":{\"title\":\"净变化\",\"description\":\"用户数据\",\"data\":[{\"label\":\"甲\",\"value\":-2},{\"label\":\"乙\",\"value\":3}]}}]}",
+    "name": "bar-negative",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "barChart",
+          "props": {
+            "title": "净变化",
+            "description": "用户数据",
+            "data": [
+              {
+                "label": "甲",
+                "value": -2
+              },
+              {
+                "label": "乙",
+                "value": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandboxed": false,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "barChart",
+          "props": {
+            "title": "净变化",
+            "description": "用户数据",
+            "data": [
+              {
+                "label": "甲",
+                "value": -2
+              },
+              {
+                "label": "乙",
+                "value": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"pieChart\",\"props\":{\"title\":\"份额\",\"description\":\"用户数据\",\"data\":[{\"label\":\"甲\",\"value\":-2}]}}]}",
+    "name": "pie-negative-rejected",
+    "stored_readable": false
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "type": "openintelligentui",
+        "name": "steward.lineChart",
+        "props": {
+          "title": "成本",
+          "description": "示例",
+          "unit": "元",
+          "labels": [
+            "起点",
+            "中间",
+            "终点"
+          ],
+          "xValues": [
+            0,
+            1000,
+            10000
+          ],
+          "series": [
+            {
+              "name": "A",
+              "values": [
+                99,
+                179,
+                899
+              ]
+            }
+          ]
+        },
+        "text": "成本\n示例\n\nA / 起点 (x=0): 99 元\nA / 中间 (x=1000): 179 元\nA / 终点 (x=10000): 899 元"
+      }
+    ],
+    "html": "\u003cp class=\"semantic\"\u003e成本\n示例\n\nA / 起点 (x=0): 99 元\nA / 中间 (x=1000): 179 元\nA / 终点 (x=10000): 899 元\u003c/p\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"steward.lineChart\",\"props\":{\"title\":\"成本\",\"description\":\"示例\",\"unit\":\"元\",\"labels\":[\"起点\",\"中间\",\"终点\"],\"xValues\":[0,1000,10000],\"series\":[{\"name\":\"A\",\"values\":[99,179,899]}]}}]}",
+    "name": "line-unequal-intervals",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "steward.lineChart",
+          "props": {
+            "title": "成本",
+            "description": "示例",
+            "unit": "元",
+            "labels": [
+              "起点",
+              "中间",
+              "终点"
+            ],
+            "xValues": [
+              0,
+              1000,
+              10000
+            ],
+            "series": [
+              {
+                "name": "A",
+                "values": [
+                  99,
+                  179,
+                  899
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandboxed": false,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "steward.lineChart",
+          "props": {
+            "title": "成本",
+            "description": "示例",
+            "unit": "元",
+            "labels": [
+              "起点",
+              "中间",
+              "终点"
+            ],
+            "xValues": [
+              0,
+              1000,
+              10000
+            ],
+            "series": [
+              {
+                "name": "A",
+                "values": [
+                  99,
+                  179,
+                  899
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"steward.lineChart\",\"props\":{\"title\":\"成本\",\"description\":\"示例\",\"unit\":\"元\",\"labels\":[\"起点\",\"中间\",\"终点\"],\"xValues\":[0,0,10000],\"series\":[{\"name\":\"A\",\"values\":[99,179,899]}]}}]}",
+    "name": "line-nonascending-rejected",
+    "stored_readable": false
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "type": "openintelligentui",
+        "name": "scheduleTime",
+        "props": {
+          "reasonForScheduling": "讨论",
+          "meetingDuration": 30,
+          "timeSlots": [
+            {
+              "date": "2026-11-14",
+              "time": "10:00"
+            }
+          ]
+        },
+        "text": "讨论\n2026-11-14 10:00 (30 min)",
+        "message_id": "reply:oracle",
+        "form_id": "06d4bb581ab6d1b068a5113683a59631f189aeb58c13d6f8f1d0e1a512dcfa3d"
+      }
+    ],
+    "html": "\u003cform class=\"native-meeting-fallback\" method=\"post\" action=\"/ui/form\" data-form-id=\"06d4bb581ab6d1b068a5113683a59631f189aeb58c13d6f8f1d0e1a512dcfa3d\" data-submitted=\"false\"\u003e\u003cp\u003e讨论\u003c/p\u003e\u003cinput type=\"hidden\" name=\"message_id\" value=\"reply:oracle\"\u003e\u003cinput type=\"hidden\" name=\"form_id\" value=\"06d4bb581ab6d1b068a5113683a59631f189aeb58c13d6f8f1d0e1a512dcfa3d\"\u003e\u003cfieldset\u003e\u003cbutton name=\"field.choice\" value=\"0\"\u003e2026-11-14 · 10:00 (30 min)\u003c/button\u003e\u003cbutton name=\"field.choice\" value=\"decline\"\u003eNone of these work\u003c/button\u003e\u003c/fieldset\u003e\u003c/form\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"scheduleTime\",\"props\":{\"reasonForScheduling\":\"讨论\",\"meetingDuration\":30,\"timeSlots\":[{\"date\":\"2026-11-14\",\"time\":\"10:00\"}]}}]}",
+    "name": "meeting",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "scheduleTime",
+          "props": {
+            "reasonForScheduling": "讨论",
+            "meetingDuration": 30,
+            "timeSlots": [
+              {
+                "date": "2026-11-14",
+                "time": "10:00"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandboxed": false,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "scheduleTime",
+          "props": {
+            "reasonForScheduling": "讨论",
+            "meetingDuration": 30,
+            "timeSlots": [
+              {
+                "date": "2026-11-14",
+                "time": "10:00"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "title": "比较与选择",
+        "widget_ref": "ui:oracle#0",
+        "type": "widget",
+        "name": "generateSandboxedUi",
+        "props": {
+          "initialHeight": 460,
+          "placeholderMessages": [],
+          "css": "",
+          "html": "\u003cp\u003e架构图\u003c/p\u003e",
+          "jsFunctions": "",
+          "jsExpressions": []
+        },
+        "text": "完整文字替代"
+      }
+    ],
+    "html": "\u003csection class=\"intelligent-widget\"\u003e\u003ch3\u003e比较与选择\u003c/h3\u003e\u003cp class=\"semantic\"\u003e完整文字替代\u003c/p\u003e\u003c/section\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"generateSandboxedUi\",\"props\":{\"initialHeight\":460,\"placeholderMessages\":[],\"css\":\"\",\"html\":\"\u003cp\u003e架构图\u003c/p\u003e\",\"jsFunctions\":\"\",\"jsExpressions\":[]}}]}",
+    "name": "sandbox-array",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "generateSandboxedUi",
+          "props": {
+            "initialHeight": 460,
+            "placeholderMessages": [],
+            "css": "",
+            "html": "\u003cp\u003e架构图\u003c/p\u003e",
+            "jsFunctions": "",
+            "jsExpressions": []
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandbox": {
+      "initialHeight": 460,
+      "placeholderMessages": [],
+      "css": "",
+      "html": "\u003cp\u003e架构图\u003c/p\u003e",
+      "jsFunctions": "",
+      "jsExpressions": []
+    },
+    "sandboxed": true,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "generateSandboxedUi",
+          "props": {
+            "initialHeight": 460,
+            "placeholderMessages": [],
+            "css": "",
+            "html": "\u003cp\u003e架构图\u003c/p\u003e",
+            "jsFunctions": "",
+            "jsExpressions": []
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "title": "比较与选择",
+        "widget_ref": "ui:oracle#0",
+        "type": "widget",
+        "name": "generateSandboxedUi",
+        "props": {
+          "css": "",
+          "html": "\u003cp\u003e架构图\u003c/p\u003e",
+          "initialHeight": 460,
+          "jsExpressions": [],
+          "jsFunctions": "",
+          "placeholderMessages": []
+        },
+        "text": "完整文字替代"
+      }
+    ],
+    "html": "\u003csection class=\"intelligent-widget\"\u003e\u003ch3\u003e比较与选择\u003c/h3\u003e\u003cp class=\"semantic\"\u003e完整文字替代\u003c/p\u003e\u003c/section\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"generateSandboxedUi\",\"props\":{\"initialHeight\":460,\"placeholderMessages\":[],\"css\":\"\",\"html\":\"\u003cp\u003e架构图\u003c/p\u003e\",\"jsFunctions\":\"\",\"jsExpressions\":\"\"}}]}",
+    "name": "sandbox-empty-string",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "generateSandboxedUi",
+          "props": {
+            "css": "",
+            "html": "\u003cp\u003e架构图\u003c/p\u003e",
+            "initialHeight": 460,
+            "jsExpressions": [],
+            "jsFunctions": "",
+            "placeholderMessages": []
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandbox": {
+      "initialHeight": 460,
+      "placeholderMessages": [],
+      "css": "",
+      "html": "\u003cp\u003e架构图\u003c/p\u003e",
+      "jsFunctions": "",
+      "jsExpressions": []
+    },
+    "sandboxed": true,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "generateSandboxedUi",
+          "props": {
+            "css": "",
+            "html": "\u003cp\u003e架构图\u003c/p\u003e",
+            "initialHeight": 460,
+            "jsExpressions": [],
+            "jsFunctions": "",
+            "placeholderMessages": []
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "title": "比较与选择",
+        "widget_ref": "ui:oracle#0",
+        "type": "widget",
+        "name": "generateSandboxedUi",
+        "props": {
+          "initialHeight": 460,
+          "placeholderMessages": [],
+          "css": "",
+          "html": "\u003cp\u003e架构图\u003c/p\u003e",
+          "jsFunctions": "",
+          "jsExpressions": [
+            "initialize()"
+          ]
+        },
+        "text": "完整文字替代"
+      }
+    ],
+    "html": "\u003csection class=\"intelligent-widget\"\u003e\u003ch3\u003e比较与选择\u003c/h3\u003e\u003cp class=\"semantic\"\u003e完整文字替代\u003c/p\u003e\u003c/section\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"generateSandboxedUi\",\"props\":{\"initialHeight\":460,\"placeholderMessages\":[],\"css\":\"\",\"html\":\"\u003cp\u003e架构图\u003c/p\u003e\",\"jsFunctions\":\"\",\"jsExpressions\":[\"initialize()\"]}}]}",
+    "name": "sandbox-code-list",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "generateSandboxedUi",
+          "props": {
+            "initialHeight": 460,
+            "placeholderMessages": [],
+            "css": "",
+            "html": "\u003cp\u003e架构图\u003c/p\u003e",
+            "jsFunctions": "",
+            "jsExpressions": [
+              "initialize()"
+            ]
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandbox": {
+      "initialHeight": 460,
+      "placeholderMessages": [],
+      "css": "",
+      "html": "\u003cp\u003e架构图\u003c/p\u003e",
+      "jsFunctions": "",
+      "jsExpressions": [
+        "initialize()"
+      ]
+    },
+    "sandboxed": true,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "generateSandboxedUi",
+          "props": {
+            "initialHeight": 460,
+            "placeholderMessages": [],
+            "css": "",
+            "html": "\u003cp\u003e架构图\u003c/p\u003e",
+            "jsFunctions": "",
+            "jsExpressions": [
+              "initialize()"
+            ]
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"generateSandboxedUi\",\"props\":{\"initialHeight\":460,\"placeholderMessages\":[],\"css\":\"\",\"html\":\"\u003cp\u003e架构图\u003c/p\u003e\",\"jsFunctions\":\"\",\"jsExpressions\":\"initialize()\"}}]}",
+    "name": "sandbox-code-string",
+    "stored_readable": false
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"generateSandboxedUi\",\"props\":{\"initialHeight\":460,\"placeholderMessages\":[],\"css\":\"\",\"html\":\"\u003cp\u003e架构图\u003c/p\u003e\",\"jsFunctions\":\"\",\"jsExpressions\":null}}]}",
+    "name": "sandbox-null",
+    "stored_readable": false
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"generateSandboxedUi\",\"props\":{\"initialHeight\":460,\"placeholderMessages\":[],\"css\":\"\",\"html\":\"\u003cp\u003e架构图\u003c/p\u003e\",\"jsFunctions\":\"\",\"jsExpressions\":{}}}]}",
+    "name": "sandbox-object",
+    "stored_readable": false
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "type": "openintelligentui",
+        "name": "steward.form",
+        "props": {
+          "title": "出行",
+          "fields": [
+            {
+              "name": "city",
+              "label": "城市",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        "text": "出行\n\n\n城市",
+        "message_id": "reply:oracle",
+        "form_id": "3ff644454f732a5a3fb88cb59392ba25e764c54528f64534dc674b7b439a0530"
+      }
+    ],
+    "html": "\u003cform class=\"native-input-form\" method=\"post\" action=\"/ui/form\" data-form-id=\"3ff644454f732a5a3fb88cb59392ba25e764c54528f64534dc674b7b439a0530\"\u003e\u003ch3\u003e出行\u003c/h3\u003e\u003cinput type=\"hidden\" name=\"message_id\" value=\"reply:oracle\"\u003e\u003cinput type=\"hidden\" name=\"form_id\" value=\"3ff644454f732a5a3fb88cb59392ba25e764c54528f64534dc674b7b439a0530\"\u003e\u003cfieldset\u003e\u003cdiv class=\"native-form-field\"\u003e\u003clabel for=\"3ff644454f732a5a3fb88cb59392ba25e764c54528f64534dc674b7b439a0530-city\"\u003e城市\u003c/label\u003e\u003cinput id=\"3ff644454f732a5a3fb88cb59392ba25e764c54528f64534dc674b7b439a0530-city\" type=\"text\" name=\"field.city\" value=\"\" maxlength=\"4096\" required\u003e\u003c/div\u003e\u003cbutton type=\"submit\"\u003eSend\u003c/button\u003e\u003c/fieldset\u003e\u003c/form\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"steward.form\",\"props\":{\"title\":\"出行\",\"fields\":[{\"name\":\"city\",\"label\":\"城市\",\"type\":\"text\",\"required\":true}]}}]}",
+    "name": "typed-form",
+    "normalized": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "steward.form",
+          "props": {
+            "title": "出行",
+            "fields": [
+              {
+                "name": "city",
+                "label": "城市",
+                "type": "text",
+                "required": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "readable": "完整文字替代",
+    "sandboxed": false,
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "steward.form",
+          "props": {
+            "title": "出行",
+            "fields": [
+              {
+                "name": "city",
+                "label": "城市",
+                "type": "text",
+                "required": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"type\":\"confirmation\",\"approval_id\":\"forged\",\"frozen_arguments_hash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]}",
+    "name": "forged-approval",
+    "stored": {
+      "title": "比较与选择",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "type": "confirmation",
+          "approval_id": "forged",
+          "frozen_arguments_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"Table\",\"props\":{\"title\":\"数据\",\"columns\":[\"A\"],\"rows\":[[\"a\",\"b\"]],\"source\":\"用户\"}}]}",
+    "name": "table-misaligned",
+    "stored_readable": false
+  },
+  {
+    "accepted": true,
+    "components": [
+      {
+        "type": "openintelligentui",
+        "name": "Table",
+        "props": {
+          "title": "数据",
+          "columns": [
+            "A"
+          ],
+          "rows": [
+            [
+              "a"
+            ]
+          ],
+          "source": "用户"
+        },
+        "text": "数据\nA\na\n用户"
+      }
+    ],
+    "html": "\u003cp class=\"semantic\"\u003e数据\nA\na\n用户\u003c/p\u003e",
+    "input": "{\"title\":\"比较与选择\",\"fallback\":\"完整文字替代\",\"components\":[{\"name\":\"Table\",\"props\":{\"title\":\"数据\",\"columns\":[\"A\"],\"rows\":[[\"a\"]],\"source\":\"用户\"}}],\"text\":\"先解释这一组数据\"}",
+    "name": "public-text-section",
+    "normalized": {
+      "title": "比较与选择",
+      "text": "先解释这一组数据",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "Table",
+          "props": {
+            "title": "数据",
+            "columns": [
+              "A"
+            ],
+            "rows": [
+              [
+                "a"
+              ]
+            ],
+            "source": "用户"
+          }
+        }
+      ]
+    },
+    "readable": "先解释这一组数据\n\n完整文字替代",
+    "sandboxed": false,
+    "stored": {
+      "title": "比较与选择",
+      "text": "先解释这一组数据",
+      "fallback": "完整文字替代",
+      "components": [
+        {
+          "name": "Table",
+          "props": {
+            "title": "数据",
+            "columns": [
+              "A"
+            ],
+            "rows": [
+              [
+                "a"
+              ]
+            ],
+            "source": "用户"
+          }
+        }
+      ]
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\": \"历史\", \"fallback\": \"原文\", \"html\": \"\u003cp\u003eold\u003c/p\u003e\"}",
+    "name": "legacy-html",
+    "stored": {
+      "title": "历史",
+      "fallback": "原文",
+      "html": "\u003cp\u003eold\u003c/p\u003e"
+    },
+    "stored_readable": true
+  },
+  {
+    "accepted": false,
+    "input": "{\"title\": \"没有正文\"}",
+    "name": "malformed",
+    "stored_readable": false
+  }
+]

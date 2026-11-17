@@ -32,6 +32,14 @@ func Serve(in io.Reader, out io.Writer, root string) error {
 		switch request.Method {
 		case "initialize":
 			result = map[string]any{"protocolVersion": "2025-03-26", "capabilities": map[string]any{"tools": map[string]any{}}, "serverInfo": map[string]string{"name": "fixture", "version": "1"}}
+			if data, err := os.ReadFile(filepath.Join(root, "mcp-initialize.json")); err == nil {
+				if !json.Valid(data) {
+					return io.ErrUnexpectedEOF
+				}
+				result = json.RawMessage(data)
+			} else if !os.IsNotExist(err) {
+				return err
+			}
 		case "tools/list":
 			result = map[string]any{"tools": []any{
 				map[string]any{"name": "read", "description": "Read structured fixture data", "inputSchema": json.RawMessage(Schema)},
@@ -42,6 +50,18 @@ func Serve(in io.Reader, out io.Writer, root string) error {
 					return io.ErrUnexpectedEOF
 				}
 				result = json.RawMessage(catalog)
+			}
+			if data, err := os.ReadFile(filepath.Join(root, "mcp-pages.json")); err == nil {
+				var pages map[string]json.RawMessage
+				var params struct {
+					Cursor string `json:"cursor"`
+				}
+				if json.Unmarshal(data, &pages) != nil || json.Unmarshal(request.Params, &params) != nil || len(pages[params.Cursor]) == 0 {
+					return io.ErrUnexpectedEOF
+				}
+				result = pages[params.Cursor]
+			} else if !os.IsNotExist(err) {
+				return err
 			}
 		case "tools/call":
 			var p struct {

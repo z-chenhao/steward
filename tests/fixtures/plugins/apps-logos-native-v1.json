@@ -1,0 +1,3724 @@
+[
+  {
+    "Name": "bundled-airtable",
+    "Slug": "airtable",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "airtable",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"27fc0889c209c97f3521c53c9a6d77649062c7b2809489f168463cd0411a7dd6\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "27fc0889c209c97f3521c53c9a6d77649062c7b2809489f168463cd0411a7dd6",
+        "Bytes": 1292,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"27fc0889c209c97f3521c53c9a6d77649062c7b2809489f168463cd0411a7dd6\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "27fc0889c209c97f3521c53c9a6d77649062c7b2809489f168463cd0411a7dd6",
+        "Bytes": 1292,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-asana",
+    "Slug": "asana",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "asana",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"8a85eca5dc6d3cc627d4c4d6269a2eb90f6c14777dbb9c7adfd61e41e976d8d0\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "8a85eca5dc6d3cc627d4c4d6269a2eb90f6c14777dbb9c7adfd61e41e976d8d0",
+        "Bytes": 1456,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"8a85eca5dc6d3cc627d4c4d6269a2eb90f6c14777dbb9c7adfd61e41e976d8d0\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "8a85eca5dc6d3cc627d4c4d6269a2eb90f6c14777dbb9c7adfd61e41e976d8d0",
+        "Bytes": 1456,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-bitbucket",
+    "Slug": "bitbucket",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "bitbucket",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3142e89dde1643591079d9a1f6b61ab7aeae8c68ae68443b750c8411f46d73f4\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3142e89dde1643591079d9a1f6b61ab7aeae8c68ae68443b750c8411f46d73f4",
+        "Bytes": 1396,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3142e89dde1643591079d9a1f6b61ab7aeae8c68ae68443b750c8411f46d73f4\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3142e89dde1643591079d9a1f6b61ab7aeae8c68ae68443b750c8411f46d73f4",
+        "Bytes": 1396,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-box",
+    "Slug": "box",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "box",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"326ff2d09a9bc00ed33d201499671d3b3ef343152dab0601d8bb55368757af95\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "326ff2d09a9bc00ed33d201499671d3b3ef343152dab0601d8bb55368757af95",
+        "Bytes": 6729,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"326ff2d09a9bc00ed33d201499671d3b3ef343152dab0601d8bb55368757af95\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "326ff2d09a9bc00ed33d201499671d3b3ef343152dab0601d8bb55368757af95",
+        "Bytes": 6729,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-calendly",
+    "Slug": "calendly",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "calendly",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"6ece6c9deed7e80436ec27754ed19220485e98831c95205d05c875c86021b623\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "6ece6c9deed7e80436ec27754ed19220485e98831c95205d05c875c86021b623",
+        "Bytes": 5309,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"6ece6c9deed7e80436ec27754ed19220485e98831c95205d05c875c86021b623\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "6ece6c9deed7e80436ec27754ed19220485e98831c95205d05c875c86021b623",
+        "Bytes": 5309,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-canva",
+    "Slug": "canva",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "canva",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ebdd9eaae224e6d7fdc29a97dd573a25610c0b6f8627fe80dcfc6efa905b68bc\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ebdd9eaae224e6d7fdc29a97dd573a25610c0b6f8627fe80dcfc6efa905b68bc",
+        "Bytes": 4761,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ebdd9eaae224e6d7fdc29a97dd573a25610c0b6f8627fe80dcfc6efa905b68bc\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ebdd9eaae224e6d7fdc29a97dd573a25610c0b6f8627fe80dcfc6efa905b68bc",
+        "Bytes": 4761,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-clickup",
+    "Slug": "clickup",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "clickup",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"2d73ba75a13eabfaee75e0b9c6527f19fa04151c2e427b09f62441b185d33c44\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "2d73ba75a13eabfaee75e0b9c6527f19fa04151c2e427b09f62441b185d33c44",
+        "Bytes": 1252,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"2d73ba75a13eabfaee75e0b9c6527f19fa04151c2e427b09f62441b185d33c44\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "2d73ba75a13eabfaee75e0b9c6527f19fa04151c2e427b09f62441b185d33c44",
+        "Bytes": 1252,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-confluence",
+    "Slug": "confluence",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "confluence",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"0a953023b7078bdfe9946859179df462e5ecca6aaea397eff77a5057a1f89899\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "0a953023b7078bdfe9946859179df462e5ecca6aaea397eff77a5057a1f89899",
+        "Bytes": 1267,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"0a953023b7078bdfe9946859179df462e5ecca6aaea397eff77a5057a1f89899\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "0a953023b7078bdfe9946859179df462e5ecca6aaea397eff77a5057a1f89899",
+        "Bytes": 1267,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-discord",
+    "Slug": "discord",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "discord",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"38cce72821c78dbd68469203f11cd19390fcc90de6a109bc560da09e03a3956a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "38cce72821c78dbd68469203f11cd19390fcc90de6a109bc560da09e03a3956a",
+        "Bytes": 2381,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"38cce72821c78dbd68469203f11cd19390fcc90de6a109bc560da09e03a3956a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "38cce72821c78dbd68469203f11cd19390fcc90de6a109bc560da09e03a3956a",
+        "Bytes": 2381,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-dropbox",
+    "Slug": "dropbox",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "dropbox",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"4657f3e9f0d82c9c965d75791344ffce9109adddca60f6fc092abfa973e900de\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "4657f3e9f0d82c9c965d75791344ffce9109adddca60f6fc092abfa973e900de",
+        "Bytes": 4325,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"4657f3e9f0d82c9c965d75791344ffce9109adddca60f6fc092abfa973e900de\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "4657f3e9f0d82c9c965d75791344ffce9109adddca60f6fc092abfa973e900de",
+        "Bytes": 4325,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-figma",
+    "Slug": "figma",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "figma",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3ca3d4a769f0aab9ed203f2ad5d7307272db75ea09e3325eca500623a04d48c6\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3ca3d4a769f0aab9ed203f2ad5d7307272db75ea09e3325eca500623a04d48c6",
+        "Bytes": 4783,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3ca3d4a769f0aab9ed203f2ad5d7307272db75ea09e3325eca500623a04d48c6\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3ca3d4a769f0aab9ed203f2ad5d7307272db75ea09e3325eca500623a04d48c6",
+        "Bytes": 4783,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-fitbit",
+    "Slug": "fitbit",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "fitbit",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f22cb3ba31c670cd1f966c4cf5ab3115c50b91d9688a9130986e61c6f1bd476f\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f22cb3ba31c670cd1f966c4cf5ab3115c50b91d9688a9130986e61c6f1bd476f",
+        "Bytes": 3921,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f22cb3ba31c670cd1f966c4cf5ab3115c50b91d9688a9130986e61c6f1bd476f\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f22cb3ba31c670cd1f966c4cf5ab3115c50b91d9688a9130986e61c6f1bd476f",
+        "Bytes": 3921,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-github",
+    "Slug": "github",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "github",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"e8cba65c4657c63c41e6f665372dc220d673aca9f9ff69d773c5d0aabb0ef0b2\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "e8cba65c4657c63c41e6f665372dc220d673aca9f9ff69d773c5d0aabb0ef0b2",
+        "Bytes": 1547,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"e8cba65c4657c63c41e6f665372dc220d673aca9f9ff69d773c5d0aabb0ef0b2\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "e8cba65c4657c63c41e6f665372dc220d673aca9f9ff69d773c5d0aabb0ef0b2",
+        "Bytes": 1547,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-gitlab",
+    "Slug": "gitlab",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "gitlab",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"285d70a1371aa793f1d61078db72fef9bbea5032853e1be0d8787a38ec537024\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "285d70a1371aa793f1d61078db72fef9bbea5032853e1be0d8787a38ec537024",
+        "Bytes": 2195,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"285d70a1371aa793f1d61078db72fef9bbea5032853e1be0d8787a38ec537024\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "285d70a1371aa793f1d61078db72fef9bbea5032853e1be0d8787a38ec537024",
+        "Bytes": 2195,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-gmail",
+    "Slug": "gmail",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "gmail",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"6d2939226b2dcaaaedea95fb3d33de81bdf55ec50cff202a5f16e2d1bb648690\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "6d2939226b2dcaaaedea95fb3d33de81bdf55ec50cff202a5f16e2d1bb648690",
+        "Bytes": 1400,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"6d2939226b2dcaaaedea95fb3d33de81bdf55ec50cff202a5f16e2d1bb648690\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "6d2939226b2dcaaaedea95fb3d33de81bdf55ec50cff202a5f16e2d1bb648690",
+        "Bytes": 1400,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-google_maps",
+    "Slug": "google_maps",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "google_maps",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"eecce8e876a9bb40e11554d8b26ea5732e00c0468d593c00c4cd188be2d4b5b6\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "eecce8e876a9bb40e11554d8b26ea5732e00c0468d593c00c4cd188be2d4b5b6",
+        "Bytes": 820,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"eecce8e876a9bb40e11554d8b26ea5732e00c0468d593c00c4cd188be2d4b5b6\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "eecce8e876a9bb40e11554d8b26ea5732e00c0468d593c00c4cd188be2d4b5b6",
+        "Bytes": 820,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-googlecalendar",
+    "Slug": "googlecalendar",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "googlecalendar",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"303ce7ec8bd61f9a9b4b61b4732d9ec7a0e5f6baa46215f188434888a3a78a2a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "303ce7ec8bd61f9a9b4b61b4732d9ec7a0e5f6baa46215f188434888a3a78a2a",
+        "Bytes": 5184,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"303ce7ec8bd61f9a9b4b61b4732d9ec7a0e5f6baa46215f188434888a3a78a2a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "303ce7ec8bd61f9a9b4b61b4732d9ec7a0e5f6baa46215f188434888a3a78a2a",
+        "Bytes": 5184,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-googledocs",
+    "Slug": "googledocs",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "googledocs",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ed0f7d8d4abaf13f7b9cb12da5ebc8de13146af303b0a39c669bbb0bea51981b\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ed0f7d8d4abaf13f7b9cb12da5ebc8de13146af303b0a39c669bbb0bea51981b",
+        "Bytes": 2024,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ed0f7d8d4abaf13f7b9cb12da5ebc8de13146af303b0a39c669bbb0bea51981b\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ed0f7d8d4abaf13f7b9cb12da5ebc8de13146af303b0a39c669bbb0bea51981b",
+        "Bytes": 2024,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-googledrive",
+    "Slug": "googledrive",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "googledrive",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3317e17ac8e9d5bc60cb4df784f4b5e03bbec07449be2aa4c9c5289d43e42373\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3317e17ac8e9d5bc60cb4df784f4b5e03bbec07449be2aa4c9c5289d43e42373",
+        "Bytes": 1528,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3317e17ac8e9d5bc60cb4df784f4b5e03bbec07449be2aa4c9c5289d43e42373\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3317e17ac8e9d5bc60cb4df784f4b5e03bbec07449be2aa4c9c5289d43e42373",
+        "Bytes": 1528,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-googlesheets",
+    "Slug": "googlesheets",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "googlesheets",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"7832008c16b98fc6d6cf560d9a57518b5a728500cd379f1c66fde7427b62679b\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "7832008c16b98fc6d6cf560d9a57518b5a728500cd379f1c66fde7427b62679b",
+        "Bytes": 1496,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"7832008c16b98fc6d6cf560d9a57518b5a728500cd379f1c66fde7427b62679b\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "7832008c16b98fc6d6cf560d9a57518b5a728500cd379f1c66fde7427b62679b",
+        "Bytes": 1496,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-googleslides",
+    "Slug": "googleslides",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "googleslides",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"38e124bd4e038e07d7f4aa7fe294c18cf12d5545bbddd5ffb853643777793c95\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "38e124bd4e038e07d7f4aa7fe294c18cf12d5545bbddd5ffb853643777793c95",
+        "Bytes": 2678,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"38e124bd4e038e07d7f4aa7fe294c18cf12d5545bbddd5ffb853643777793c95\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "38e124bd4e038e07d7f4aa7fe294c18cf12d5545bbddd5ffb853643777793c95",
+        "Bytes": 2678,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-googletasks",
+    "Slug": "googletasks",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "googletasks",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"451a21adc2995d6fc722bfbf2b84626204414f2558949e01ad9c6d38ea7b4a94\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "451a21adc2995d6fc722bfbf2b84626204414f2558949e01ad9c6d38ea7b4a94",
+        "Bytes": 1442,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"451a21adc2995d6fc722bfbf2b84626204414f2558949e01ad9c6d38ea7b4a94\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "451a21adc2995d6fc722bfbf2b84626204414f2558949e01ad9c6d38ea7b4a94",
+        "Bytes": 1442,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-hubspot",
+    "Slug": "hubspot",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "hubspot",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"b78718acbf0a332086765138c32ab8dbb9018fbd5bd698f3cec49723b0320291\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "b78718acbf0a332086765138c32ab8dbb9018fbd5bd698f3cec49723b0320291",
+        "Bytes": 4982,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"b78718acbf0a332086765138c32ab8dbb9018fbd5bd698f3cec49723b0320291\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "b78718acbf0a332086765138c32ab8dbb9018fbd5bd698f3cec49723b0320291",
+        "Bytes": 4982,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-instagram",
+    "Slug": "instagram",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "instagram",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"5fead8a8e9b0eb0e7f0544abec5580790f1e9ebeb89dd787c6f282f6e273fba9\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "5fead8a8e9b0eb0e7f0544abec5580790f1e9ebeb89dd787c6f282f6e273fba9",
+        "Bytes": 4492,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"5fead8a8e9b0eb0e7f0544abec5580790f1e9ebeb89dd787c6f282f6e273fba9\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "5fead8a8e9b0eb0e7f0544abec5580790f1e9ebeb89dd787c6f282f6e273fba9",
+        "Bytes": 4492,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-intercom",
+    "Slug": "intercom",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "intercom",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"d6ce5951574b0e3017ffd16deacd99b32e38469bee19142739652205cbad8672\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "d6ce5951574b0e3017ffd16deacd99b32e38469bee19142739652205cbad8672",
+        "Bytes": 3906,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"d6ce5951574b0e3017ffd16deacd99b32e38469bee19142739652205cbad8672\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "d6ce5951574b0e3017ffd16deacd99b32e38469bee19142739652205cbad8672",
+        "Bytes": 3906,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-jira",
+    "Slug": "jira",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "jira",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"6903bd3c7b73e7d5b6a0b0da66fafc2f59d94bab20ce0aa052b96417890b2aea\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "6903bd3c7b73e7d5b6a0b0da66fafc2f59d94bab20ce0aa052b96417890b2aea",
+        "Bytes": 1080,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"6903bd3c7b73e7d5b6a0b0da66fafc2f59d94bab20ce0aa052b96417890b2aea\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "6903bd3c7b73e7d5b6a0b0da66fafc2f59d94bab20ce0aa052b96417890b2aea",
+        "Bytes": 1080,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-linear",
+    "Slug": "linear",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "linear",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c9ea36d7a430569f79fd0a08f46aa6e130b16a7155660f7d16d5505a7b1d6886\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c9ea36d7a430569f79fd0a08f46aa6e130b16a7155660f7d16d5505a7b1d6886",
+        "Bytes": 707,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c9ea36d7a430569f79fd0a08f46aa6e130b16a7155660f7d16d5505a7b1d6886\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c9ea36d7a430569f79fd0a08f46aa6e130b16a7155660f7d16d5505a7b1d6886",
+        "Bytes": 707,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-linkedin",
+    "Slug": "linkedin",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "linkedin",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"9939e66b3d4cc4a971f4740644d041574e04114a8f1e113bbc4da512ae9c2b6c\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "9939e66b3d4cc4a971f4740644d041574e04114a8f1e113bbc4da512ae9c2b6c",
+        "Bytes": 5568,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"9939e66b3d4cc4a971f4740644d041574e04114a8f1e113bbc4da512ae9c2b6c\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "9939e66b3d4cc4a971f4740644d041574e04114a8f1e113bbc4da512ae9c2b6c",
+        "Bytes": 5568,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-mailchimp",
+    "Slug": "mailchimp",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "mailchimp",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"430abd26d4efb49525c257eafcbb166e5342ce42b42b02c4346d02fe877537fb\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "430abd26d4efb49525c257eafcbb166e5342ce42b42b02c4346d02fe877537fb",
+        "Bytes": 14385,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"430abd26d4efb49525c257eafcbb166e5342ce42b42b02c4346d02fe877537fb\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "430abd26d4efb49525c257eafcbb166e5342ce42b42b02c4346d02fe877537fb",
+        "Bytes": 14385,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-microsoft_teams",
+    "Slug": "microsoft_teams",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "microsoft_teams",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"692647135a29607ee91483a3a88a31dead1be59d388da98e4672e6e644c71d22\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "692647135a29607ee91483a3a88a31dead1be59d388da98e4672e6e644c71d22",
+        "Bytes": 4334,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"692647135a29607ee91483a3a88a31dead1be59d388da98e4672e6e644c71d22\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "692647135a29607ee91483a3a88a31dead1be59d388da98e4672e6e644c71d22",
+        "Bytes": 4334,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-miro",
+    "Slug": "miro",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "miro",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"331b250a8d69b18306acae7e22aecea6d9bf65f1158543887494e405fde6aa2d\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "331b250a8d69b18306acae7e22aecea6d9bf65f1158543887494e405fde6aa2d",
+        "Bytes": 1004,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"331b250a8d69b18306acae7e22aecea6d9bf65f1158543887494e405fde6aa2d\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "331b250a8d69b18306acae7e22aecea6d9bf65f1158543887494e405fde6aa2d",
+        "Bytes": 1004,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-monday",
+    "Slug": "monday",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "monday",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ba654333d917cc6cce5580b0a0f40122f5051bf765dc891a1e879fce08d05675\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ba654333d917cc6cce5580b0a0f40122f5051bf765dc891a1e879fce08d05675",
+        "Bytes": 1264,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ba654333d917cc6cce5580b0a0f40122f5051bf765dc891a1e879fce08d05675\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ba654333d917cc6cce5580b0a0f40122f5051bf765dc891a1e879fce08d05675",
+        "Bytes": 1264,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-netlify",
+    "Slug": "netlify",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "netlify",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"b11efd1dc7fcaf1118ad95265008d2bc99268ef1dc12ed762f28101dd9837bc0\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "b11efd1dc7fcaf1118ad95265008d2bc99268ef1dc12ed762f28101dd9837bc0",
+        "Bytes": 6333,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"b11efd1dc7fcaf1118ad95265008d2bc99268ef1dc12ed762f28101dd9837bc0\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "b11efd1dc7fcaf1118ad95265008d2bc99268ef1dc12ed762f28101dd9837bc0",
+        "Bytes": 6333,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-notion",
+    "Slug": "notion",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "notion",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"62778b5dab64bf33735ea0598d95661cb86ffb52db559ac047d437c0cf454f6f\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "62778b5dab64bf33735ea0598d95661cb86ffb52db559ac047d437c0cf454f6f",
+        "Bytes": 2269,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"62778b5dab64bf33735ea0598d95661cb86ffb52db559ac047d437c0cf454f6f\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "62778b5dab64bf33735ea0598d95661cb86ffb52db559ac047d437c0cf454f6f",
+        "Bytes": 2269,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-one_drive",
+    "Slug": "one_drive",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "one_drive",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"40b1c8c5fd69576fc405f51cdbe0ca58b7f76fcb1c1bcfadc296fd4440e36458\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "40b1c8c5fd69576fc405f51cdbe0ca58b7f76fcb1c1bcfadc296fd4440e36458",
+        "Bytes": 1921,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"40b1c8c5fd69576fc405f51cdbe0ca58b7f76fcb1c1bcfadc296fd4440e36458\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "40b1c8c5fd69576fc405f51cdbe0ca58b7f76fcb1c1bcfadc296fd4440e36458",
+        "Bytes": 1921,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-outlook",
+    "Slug": "outlook",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "outlook",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"14d05741b08202a59a8940f64d500ae05a59418acf5901505f156fb05b878354\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "14d05741b08202a59a8940f64d500ae05a59418acf5901505f156fb05b878354",
+        "Bytes": 13063,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"14d05741b08202a59a8940f64d500ae05a59418acf5901505f156fb05b878354\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "14d05741b08202a59a8940f64d500ae05a59418acf5901505f156fb05b878354",
+        "Bytes": 13063,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-pinterest",
+    "Slug": "pinterest",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "pinterest",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"00cd48753062d051ca5eb896d7ba072541ed208af21d03c033d46380c3d550c2\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "00cd48753062d051ca5eb896d7ba072541ed208af21d03c033d46380c3d550c2",
+        "Bytes": 1281,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"00cd48753062d051ca5eb896d7ba072541ed208af21d03c033d46380c3d550c2\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "00cd48753062d051ca5eb896d7ba072541ed208af21d03c033d46380c3d550c2",
+        "Bytes": 1281,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-pipedrive",
+    "Slug": "pipedrive",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "pipedrive",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"1b3a3c873e17f0f259d390fdf6a241bb60476330dc88c522b41c6a0e64333c5a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "1b3a3c873e17f0f259d390fdf6a241bb60476330dc88c522b41c6a0e64333c5a",
+        "Bytes": 3386,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"1b3a3c873e17f0f259d390fdf6a241bb60476330dc88c522b41c6a0e64333c5a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "1b3a3c873e17f0f259d390fdf6a241bb60476330dc88c522b41c6a0e64333c5a",
+        "Bytes": 3386,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-quickbooks",
+    "Slug": "quickbooks",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "quickbooks",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"977a63a34e96a08d472f1ea72f74dbf98d164c85c77ec994a0eb7901e0b3e743\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "977a63a34e96a08d472f1ea72f74dbf98d164c85c77ec994a0eb7901e0b3e743",
+        "Bytes": 1061,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"977a63a34e96a08d472f1ea72f74dbf98d164c85c77ec994a0eb7901e0b3e743\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "977a63a34e96a08d472f1ea72f74dbf98d164c85c77ec994a0eb7901e0b3e743",
+        "Bytes": 1061,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-raindrop",
+    "Slug": "raindrop",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "raindrop",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"812036f0ba7c8318134b09f85b5af21478e5804632d32d8835b1450b9cfd25ca\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "812036f0ba7c8318134b09f85b5af21478e5804632d32d8835b1450b9cfd25ca",
+        "Bytes": 3081,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"812036f0ba7c8318134b09f85b5af21478e5804632d32d8835b1450b9cfd25ca\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "812036f0ba7c8318134b09f85b5af21478e5804632d32d8835b1450b9cfd25ca",
+        "Bytes": 3081,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-reddit",
+    "Slug": "reddit",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "reddit",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"693bf81a4dc6e0bf33eeee121eb79413ea2f2069004673c85910ec7c21752176\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "693bf81a4dc6e0bf33eeee121eb79413ea2f2069004673c85910ec7c21752176",
+        "Bytes": 8976,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"693bf81a4dc6e0bf33eeee121eb79413ea2f2069004673c85910ec7c21752176\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "693bf81a4dc6e0bf33eeee121eb79413ea2f2069004673c85910ec7c21752176",
+        "Bytes": 8976,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-salesforce",
+    "Slug": "salesforce",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "salesforce",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"bd27edb5242d9dbdb0013dc2e10c821f88724026316d85427e7916652b669a99\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "bd27edb5242d9dbdb0013dc2e10c821f88724026316d85427e7916652b669a99",
+        "Bytes": 12491,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"bd27edb5242d9dbdb0013dc2e10c821f88724026316d85427e7916652b669a99\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "bd27edb5242d9dbdb0013dc2e10c821f88724026316d85427e7916652b669a99",
+        "Bytes": 12491,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-sentry",
+    "Slug": "sentry",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "sentry",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f5027033dc34585afc87ae4f896dce48a6b56a61d8b17a446a4da82b9f06b88e\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f5027033dc34585afc87ae4f896dce48a6b56a61d8b17a446a4da82b9f06b88e",
+        "Bytes": 12476,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f5027033dc34585afc87ae4f896dce48a6b56a61d8b17a446a4da82b9f06b88e\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f5027033dc34585afc87ae4f896dce48a6b56a61d8b17a446a4da82b9f06b88e",
+        "Bytes": 12476,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-share_point",
+    "Slug": "share_point",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "share_point",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"57a3bbc7e1813690a328621e00819e59eccf2c1814c4b5afa15cb45591dbd7e7\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "57a3bbc7e1813690a328621e00819e59eccf2c1814c4b5afa15cb45591dbd7e7",
+        "Bytes": 752,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"57a3bbc7e1813690a328621e00819e59eccf2c1814c4b5afa15cb45591dbd7e7\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "57a3bbc7e1813690a328621e00819e59eccf2c1814c4b5afa15cb45591dbd7e7",
+        "Bytes": 752,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-shopify",
+    "Slug": "shopify",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "shopify",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"572b2f1aebbc44332e8827dd5547941947bcc96bde6af9b28c3bb68801a334ed\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "572b2f1aebbc44332e8827dd5547941947bcc96bde6af9b28c3bb68801a334ed",
+        "Bytes": 2244,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"572b2f1aebbc44332e8827dd5547941947bcc96bde6af9b28c3bb68801a334ed\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "572b2f1aebbc44332e8827dd5547941947bcc96bde6af9b28c3bb68801a334ed",
+        "Bytes": 2244,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-slack",
+    "Slug": "slack",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "slack",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ec128e2dfa0435f7c41149c1170b21c9d36893410e7e40fe8c3d1e802ffc9db5\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ec128e2dfa0435f7c41149c1170b21c9d36893410e7e40fe8c3d1e802ffc9db5",
+        "Bytes": 2169,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ec128e2dfa0435f7c41149c1170b21c9d36893410e7e40fe8c3d1e802ffc9db5\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ec128e2dfa0435f7c41149c1170b21c9d36893410e7e40fe8c3d1e802ffc9db5",
+        "Bytes": 2169,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-spotify",
+    "Slug": "spotify",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "spotify",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"782cab32d01001df265c947cdfef2529a68d9f35fa3d92d6af25a4ff0e6eae35\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "782cab32d01001df265c947cdfef2529a68d9f35fa3d92d6af25a4ff0e6eae35",
+        "Bytes": 1371,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"782cab32d01001df265c947cdfef2529a68d9f35fa3d92d6af25a4ff0e6eae35\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "782cab32d01001df265c947cdfef2529a68d9f35fa3d92d6af25a4ff0e6eae35",
+        "Bytes": 1371,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-strava",
+    "Slug": "strava",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "strava",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"a3d8f05ac42bae7728fd6b6aaa83234f7c9dc80930f1d6d290b73fa24dc58eaf\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "a3d8f05ac42bae7728fd6b6aaa83234f7c9dc80930f1d6d290b73fa24dc58eaf",
+        "Bytes": 4445,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"a3d8f05ac42bae7728fd6b6aaa83234f7c9dc80930f1d6d290b73fa24dc58eaf\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "a3d8f05ac42bae7728fd6b6aaa83234f7c9dc80930f1d6d290b73fa24dc58eaf",
+        "Bytes": 4445,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-stripe",
+    "Slug": "stripe",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "stripe",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ee953b305c572c207a449ae3c4dddad12a4fdfb8477db14bf4628fd1b377e981\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ee953b305c572c207a449ae3c4dddad12a4fdfb8477db14bf4628fd1b377e981",
+        "Bytes": 429,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ee953b305c572c207a449ae3c4dddad12a4fdfb8477db14bf4628fd1b377e981\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ee953b305c572c207a449ae3c4dddad12a4fdfb8477db14bf4628fd1b377e981",
+        "Bytes": 429,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-supabase",
+    "Slug": "supabase",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "supabase",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"cfd8b91bc89a786ef2130af8f2cc98ef1f395149b47c80feb8bd1077beda2cfb\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "cfd8b91bc89a786ef2130af8f2cc98ef1f395149b47c80feb8bd1077beda2cfb",
+        "Bytes": 7094,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"cfd8b91bc89a786ef2130af8f2cc98ef1f395149b47c80feb8bd1077beda2cfb\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "cfd8b91bc89a786ef2130af8f2cc98ef1f395149b47c80feb8bd1077beda2cfb",
+        "Bytes": 7094,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-telegram",
+    "Slug": "telegram",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "telegram",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f8f6b0dd5bcc163bbfc04e396aaef93ea6bdad175733d23a1cf8ce2450069e40\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f8f6b0dd5bcc163bbfc04e396aaef93ea6bdad175733d23a1cf8ce2450069e40",
+        "Bytes": 4130,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f8f6b0dd5bcc163bbfc04e396aaef93ea6bdad175733d23a1cf8ce2450069e40\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f8f6b0dd5bcc163bbfc04e396aaef93ea6bdad175733d23a1cf8ce2450069e40",
+        "Bytes": 4130,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-ticktick",
+    "Slug": "ticktick",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "ticktick",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"765c667cf8122da54da8e3b7339740d019730885666a22f27040cf83345b2a74\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "765c667cf8122da54da8e3b7339740d019730885666a22f27040cf83345b2a74",
+        "Bytes": 3338,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"765c667cf8122da54da8e3b7339740d019730885666a22f27040cf83345b2a74\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "765c667cf8122da54da8e3b7339740d019730885666a22f27040cf83345b2a74",
+        "Bytes": 3338,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-todoist",
+    "Slug": "todoist",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "todoist",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"a4b0a613850b83ff28b9cb4a24590f609a2b34fba79687387baf693d92a7fd10\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "a4b0a613850b83ff28b9cb4a24590f609a2b34fba79687387baf693d92a7fd10",
+        "Bytes": 9467,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"a4b0a613850b83ff28b9cb4a24590f609a2b34fba79687387baf693d92a7fd10\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "a4b0a613850b83ff28b9cb4a24590f609a2b34fba79687387baf693d92a7fd10",
+        "Bytes": 9467,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-trello",
+    "Slug": "trello",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "trello",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"16506c3c33d89870a5502d9e7d0d061fda08b91da00d0e4cd0b22caa573f607c\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "16506c3c33d89870a5502d9e7d0d061fda08b91da00d0e4cd0b22caa573f607c",
+        "Bytes": 1428,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"16506c3c33d89870a5502d9e7d0d061fda08b91da00d0e4cd0b22caa573f607c\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "16506c3c33d89870a5502d9e7d0d061fda08b91da00d0e4cd0b22caa573f607c",
+        "Bytes": 1428,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-twitter",
+    "Slug": "twitter",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "twitter",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c7e63c0c59551c4bd9090354bac5b4d8345decd99cb93ab0b30b9cb70b7f700a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c7e63c0c59551c4bd9090354bac5b4d8345decd99cb93ab0b30b9cb70b7f700a",
+        "Bytes": 3621,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c7e63c0c59551c4bd9090354bac5b4d8345decd99cb93ab0b30b9cb70b7f700a\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c7e63c0c59551c4bd9090354bac5b4d8345decd99cb93ab0b30b9cb70b7f700a",
+        "Bytes": 3621,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-typeform",
+    "Slug": "typeform",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "typeform",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ed74d73df4b15d91d32b0820ee46ee866b90e3fe2c99b44e29268949ef666115\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ed74d73df4b15d91d32b0820ee46ee866b90e3fe2c99b44e29268949ef666115",
+        "Bytes": 3391,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"ed74d73df4b15d91d32b0820ee46ee866b90e3fe2c99b44e29268949ef666115\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "ed74d73df4b15d91d32b0820ee46ee866b90e3fe2c99b44e29268949ef666115",
+        "Bytes": 3391,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-vercel",
+    "Slug": "vercel",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "vercel",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3cf2476d918aa3a829facd98806c787474aa464a7462ac4fc02929e095e18ffe\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3cf2476d918aa3a829facd98806c787474aa464a7462ac4fc02929e095e18ffe",
+        "Bytes": 999,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"3cf2476d918aa3a829facd98806c787474aa464a7462ac4fc02929e095e18ffe\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "3cf2476d918aa3a829facd98806c787474aa464a7462ac4fc02929e095e18ffe",
+        "Bytes": 999,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-weathermap",
+    "Slug": "weathermap",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "weathermap",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"b0a445e8834a064779570f466330a7b872071c2618020698e2ea7c29e2ca52af\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "b0a445e8834a064779570f466330a7b872071c2618020698e2ea7c29e2ca52af",
+        "Bytes": 3192,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"b0a445e8834a064779570f466330a7b872071c2618020698e2ea7c29e2ca52af\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "b0a445e8834a064779570f466330a7b872071c2618020698e2ea7c29e2ca52af",
+        "Bytes": 3192,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-webflow",
+    "Slug": "webflow",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "webflow",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c95a9b8832542a6b1902d10d869795432f4457303f8b820ec876c5e97d2cfd54\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c95a9b8832542a6b1902d10d869795432f4457303f8b820ec876c5e97d2cfd54",
+        "Bytes": 3456,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c95a9b8832542a6b1902d10d869795432f4457303f8b820ec876c5e97d2cfd54\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c95a9b8832542a6b1902d10d869795432f4457303f8b820ec876c5e97d2cfd54",
+        "Bytes": 3456,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-whatsapp",
+    "Slug": "whatsapp",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "whatsapp",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c61e78a20679b75d407f4b45081dfc06c85fe9d36ddcdc9a7d5fb9c8526703bf\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c61e78a20679b75d407f4b45081dfc06c85fe9d36ddcdc9a7d5fb9c8526703bf",
+        "Bytes": 1882,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"c61e78a20679b75d407f4b45081dfc06c85fe9d36ddcdc9a7d5fb9c8526703bf\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "c61e78a20679b75d407f4b45081dfc06c85fe9d36ddcdc9a7d5fb9c8526703bf",
+        "Bytes": 1882,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-wordpress",
+    "Slug": "wordpress",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "wordpress",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"59b4dcfe238adcd4b864ad23db3312834300fb77d9b7d1d9d371de511265e726\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "59b4dcfe238adcd4b864ad23db3312834300fb77d9b7d1d9d371de511265e726",
+        "Bytes": 3131,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"59b4dcfe238adcd4b864ad23db3312834300fb77d9b7d1d9d371de511265e726\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "59b4dcfe238adcd4b864ad23db3312834300fb77d9b7d1d9d371de511265e726",
+        "Bytes": 3131,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-xero",
+    "Slug": "xero",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "xero",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"d6e4de52bc0eb46a6eb92f56cadecb17623389dd5ca4bfc9bc3dd6bd3fbda4c5\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "d6e4de52bc0eb46a6eb92f56cadecb17623389dd5ca4bfc9bc3dd6bd3fbda4c5",
+        "Bytes": 9741,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"d6e4de52bc0eb46a6eb92f56cadecb17623389dd5ca4bfc9bc3dd6bd3fbda4c5\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "d6e4de52bc0eb46a6eb92f56cadecb17623389dd5ca4bfc9bc3dd6bd3fbda4c5",
+        "Bytes": 9741,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-youtube",
+    "Slug": "youtube",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "youtube",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f36a37d9115feb9a20f2ffd47f69977cf31c02ad63dc899d68627fcdf0f31e79\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f36a37d9115feb9a20f2ffd47f69977cf31c02ad63dc899d68627fcdf0f31e79",
+        "Bytes": 892,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"f36a37d9115feb9a20f2ffd47f69977cf31c02ad63dc899d68627fcdf0f31e79\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "f36a37d9115feb9a20f2ffd47f69977cf31c02ad63dc899d68627fcdf0f31e79",
+        "Bytes": 892,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-zendesk",
+    "Slug": "zendesk",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "zendesk",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"26ff3dc628aada07bb9232647b7dbe6b62159edc349234312744cac25f8911ee\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "26ff3dc628aada07bb9232647b7dbe6b62159edc349234312744cac25f8911ee",
+        "Bytes": 4710,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"26ff3dc628aada07bb9232647b7dbe6b62159edc349234312744cac25f8911ee\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "26ff3dc628aada07bb9232647b7dbe6b62159edc349234312744cac25f8911ee",
+        "Bytes": 4710,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "bundled-zoom",
+    "Slug": "zoom",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "zoom",
+            "Source": "https://assets.composio.dev/override.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"d8c860621ffbaceb78c4c2e7dfb65ef17d6563f12bd36d9710a35ee4691ea5b4\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "d8c860621ffbaceb78c4c2e7dfb65ef17d6563f12bd36d9710a35ee4691ea5b4",
+        "Bytes": 12835,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"d8c860621ffbaceb78c4c2e7dfb65ef17d6563f12bd36d9710a35ee4691ea5b4\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "d8c860621ffbaceb78c4c2e7dfb65ef17d6563f12bd36d9710a35ee4691ea5b4",
+        "Bytes": 12835,
+        "Entries": 2
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "unregistered",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "invalid-slug",
+    "Slug": "bad%2Fapp",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": []
+  },
+  {
+    "Name": "approved-metadata",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": "https://assets.composio.dev/logos/new_app.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://assets.composio.dev/logos/new_app.svg accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "registered-default",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "empty-does-not-overwrite",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": "https://assets.composio.dev/old.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://assets.composio.dev/old.svg accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "nonempty-replaces-source",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": "https://assets.composio.dev/old.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": "https://logos.composio.dev/new.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 2
+      }
+    ],
+    "Requests": [
+      "GET https://assets.composio.dev/old.svg accept=image/svg+xml,image/png,image/jpeg",
+      "GET https://logos.composio.dev/new.svg accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "invalid-nonempty-replaces-with-default",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": "https://assets.composio.dev/old.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": "https://attacker.example/private.svg"
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 2
+      }
+    ],
+    "Requests": [
+      "GET https://assets.composio.dev/old.svg accept=image/svg+xml,image/png,image/jpeg",
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "cached-under-24h",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 86399,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "expired-24h",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 86401,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "aeeb303ea472534997afaef66e8dd0ec120e98e19212e68942eecbf6737d0194",
+        "Bytes": 112,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg",
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "redirect-rejected",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 302,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      },
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg",
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "upstream-failure",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 500,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      },
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg",
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "too-large",
+    "Slug": "new_app",
+    "BodyKind": "oversize",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "invalid-image",
+    "Slug": "new_app",
+    "BodyKind": "html",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "active-svg-sanitized",
+    "Slug": "new_app",
+    "BodyKind": "active-svg",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"03d0fb11430b773446f756d3afd2966fe640fa205ba5b7809cde6f713e1516d9\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "03d0fb11430b773446f756d3afd2966fe640fa205ba5b7809cde6f713e1516d9",
+        "Bytes": 86,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/svg+xml",
+        "ETag": "\"03d0fb11430b773446f756d3afd2966fe640fa205ba5b7809cde6f713e1516d9\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "03d0fb11430b773446f756d3afd2966fe640fa205ba5b7809cde6f713e1516d9",
+        "Bytes": 86,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "png",
+    "Slug": "new_app",
+    "BodyKind": "png",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      },
+      {
+        "Register": null,
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 200,
+        "Kind": "image/png",
+        "ETag": "\"8f9aae64d410eb9a9ba7a115fec22c431cf937a2a5ca6010dfbca344f8e2dfff\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "8f9aae64d410eb9a9ba7a115fec22c431cf937a2a5ca6010dfbca344f8e2dfff",
+        "Bytes": 74,
+        "Entries": 1
+      },
+      {
+        "Code": 200,
+        "Kind": "image/png",
+        "ETag": "\"8f9aae64d410eb9a9ba7a115fec22c431cf937a2a5ca6010dfbca344f8e2dfff\"",
+        "CacheControl": "private, max-age=86400",
+        "CSP": "default-src 'none'; sandbox",
+        "BodySHA256": "8f9aae64d410eb9a9ba7a115fec22c431cf937a2a5ca6010dfbca344f8e2dfff",
+        "Bytes": 74,
+        "Entries": 1
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "too-many-pixels",
+    "Slug": "new_app",
+    "BodyKind": "huge-png",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": false
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  },
+  {
+    "Name": "cancelled-read",
+    "Slug": "new_app",
+    "BodyKind": "",
+    "Status": 0,
+    "Steps": [
+      {
+        "Register": [
+          {
+            "Slug": "new_app",
+            "Source": ""
+          }
+        ],
+        "AgeSeconds": 0,
+        "Cancel": true
+      }
+    ],
+    "Expected": [
+      {
+        "Code": 404,
+        "Kind": "text/plain; charset=utf-8",
+        "ETag": "",
+        "CacheControl": "no-store",
+        "CSP": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'",
+        "BodySHA256": "7515bf959b73b956ceb967351c7e299cbb3668a53d35f9c770eb72e00d93ced6",
+        "Bytes": 10,
+        "Entries": 0
+      }
+    ],
+    "Requests": [
+      "GET https://logos.composio.dev/api/new_app accept=image/svg+xml,image/png,image/jpeg"
+    ]
+  }
+]

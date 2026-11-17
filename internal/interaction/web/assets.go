@@ -10,12 +10,21 @@ import (
 
 // Bundled, pinned frontend components and Steward artwork and self-hosted fonts. No CDN or second server.
 //
-//go:embed assets/client.js assets/diagrams.js assets/appearance.js assets/widget.css assets/widget-runtime.js assets/preview-runtime.js assets/style.css assets/licenses.txt assets/brand/* assets/apps/*
+//go:embed assets/client.js assets/diagrams.js assets/appearance.js assets/preview-runtime.js assets/style-base.css assets/licenses.txt assets/brand/* legacy-ui/apps-v2/apps.css legacy-ui/memory-v1/memory.css legacy-ui/workbench-v1/style.css
 var assets embed.FS
+
+// Pre-managed UI Runs and explicit unbundled embedders retain the exact native
+// resource generation. Current plugin builds never update these bytes.
+//
+//go:embed legacy-ui/v1/widget.css legacy-ui/v1/widget-runtime.js
+var legacyUI embed.FS
 
 // This fixed allowlist is shared by requests; no user path reaches the filesystem.
 var publicAssets = map[string]struct{ path, contentType string }{
-	"/style.css":                         {"assets/style.css", "text/css"},
+	"/style.css":                         {"legacy-ui/workbench-v1/style.css", "text/css"},
+	"/style-base.css":                    {"assets/style-base.css", "text/css"},
+	"/memory/legacy-v1.css":              {"legacy-ui/memory-v1/memory.css", "text/css; charset=utf-8"},
+	"/apps/legacy-v2.css":                {"legacy-ui/apps-v2/apps.css", "text/css; charset=utf-8"},
 	"/appearance.js":                     {"assets/appearance.js", "text/javascript"},
 	"/app.js":                            {"assets/client.js", "text/javascript"},
 	"/diagrams.js":                       {"assets/diagrams.js", "text/javascript"},

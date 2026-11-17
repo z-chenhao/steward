@@ -1,0 +1,271 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.artifact-workbench",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-012"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.artifact-recipe/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "retention_days": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3650
+          }
+        },
+        "required": [
+          "retention_days"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "retention_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "media_kinds": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "enum": [
+                "image",
+                "audio",
+                "video"
+              ]
+            }
+          },
+          "overflow_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "overflow_media": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "stored_text": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "publish_text": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        },
+        "required": [
+          "retention_days",
+          "media_kinds",
+          "overflow_name",
+          "overflow_media",
+          "stored_text",
+          "publish_text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.artifact-selection/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 4096
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "count",
+          "query",
+          "limit"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "indices": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "indices",
+          "limit"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.artifact-read/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "media_type": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "byte_size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1073741824
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1073741824
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          }
+        },
+        "required": [
+          "media_type",
+          "byte_size",
+          "offset",
+          "limit"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "binary"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "notice": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "limit"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.artifact-cleanup/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "batch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "count",
+          "batch"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "indices": {
+            "type": "array",
+            "maxItems": 10000,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "indices",
+          "limit"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ]
+}

@@ -1,19 +1,21 @@
 import {useCallback,useRef,useSyncExternalStore} from 'react';
+import {readSavedView,saveSavedView} from './host-api';
 
 type Data=Record<string,unknown>;
-type Snapshot={state:Data;model_context:Data;version:number;ready:boolean;error:string};
+export type SavedView={state:Data;model_context:Data;version:number};
+type Snapshot=SavedView & {ready:boolean;error:string};
 type Entry={snapshot:Snapshot;listeners:Set<()=>void>;loaded:boolean;loading?:Promise<void>;saving?:Promise<void>;pending:Data;context:Data;dirty:boolean;timer?:number};
 const entries=new Map<string,Entry>();
 function entry(ref:string):Entry{let e=entries.get(ref);if(!e){e={snapshot:{state:{},model_context:{},version:0,ready:!ref,error:''},listeners:new Set(),loaded:!ref,pending:{},context:{},dirty:false};entries.set(ref,e)}return e}
 const emit=(e:Entry)=>{for(const listener of e.listeners)listener()};
 async function load(ref:string,e:Entry){
- if(e.loaded)return;e.loading??=(async()=>{try{const r=await fetch('/api/ui/state?ref='+encodeURIComponent(ref));if(!r.ok)throw Error('Saved view unavailable.');const data=await r.json();e.context={...data.model_context,...e.context};e.snapshot={...data,state:{...data.state,...e.pending},model_context:e.context,ready:true,error:''};e.loaded=true;emit(e);if(e.dirty)schedule(ref,e)}catch{e.snapshot={...e.snapshot,ready:true,error:'Saved view unavailable. Reload to retry.'};emit(e)}})();await e.loading;
+ if(e.loaded)return;e.loading??=(async()=>{try{const data=await readSavedView(ref);e.context={...data.model_context,...e.context};e.snapshot={...data,state:{...data.state,...e.pending},model_context:e.context,ready:true,error:''};e.loaded=true;emit(e);if(e.dirty)schedule(ref,e)}catch{e.snapshot={...e.snapshot,ready:true,error:'Saved view unavailable. Reload to retry.'};emit(e)}})();await e.loading;
 }
 function schedule(ref:string,e:Entry){if(!ref)return;clearTimeout(e.timer);e.timer=window.setTimeout(()=>void flush(ref,e).catch(()=>{}),150)}
 async function flush(ref:string,e:Entry):Promise<void>{
  clearTimeout(e.timer);if(e.saving){await e.saving;if(e.dirty)return flush(ref,e);return}if(!e.dirty||!ref)return;
  const job=(async()=>{await load(ref,e);if(!e.loaded)throw Error(e.snapshot.error);while(e.dirty){const state=e.snapshot.state,context=e.context,version=e.snapshot.version;e.dirty=false;e.pending={};
-  try{const r=await fetch('/api/ui/state',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({ref,version,state,model_context:context}),keepalive:true});if(!r.ok)throw Error(r.status===409?'Updated in another window. Reload to continue.':'Changes could not be saved. Retry.');const saved=await r.json();e.snapshot={...e.snapshot,version:saved.version,error:''};emit(e)}catch(error){e.dirty=true;e.snapshot={...e.snapshot,error:error instanceof Error?error.message:'Changes could not be saved.'};emit(e);throw error}
+  try{const saved=await saveSavedView(ref,{version,state,model_context:context});e.snapshot={...e.snapshot,version:saved.version,error:''};emit(e)}catch(error){e.dirty=true;e.snapshot={...e.snapshot,error:error instanceof Error?error.message:'Changes could not be saved.'};emit(e);throw error}
  }})();e.saving=job;try{await job}finally{if(e.saving===job)e.saving=undefined}
 }
 export function setUIState(ref:string,patch:Data,context:Data={}){

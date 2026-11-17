@@ -41,7 +41,7 @@
 
 Linux 验证了内核沙箱与受控 Lume 协议、tiny sealed base 和真实 Node runtime。Computer 诊断不启动 Guest，因此不以这份证据声称验证了 macOS/arm64 的实际桌面操作；该边界由 [Computer 测试方案](computer-use.md) 保持。真实外部 MCP/embedding 服务可通过同一 owner 入口按实际凭据测试，未配置时不自动补齐服务或选择默认模型。
 
-普通表单补充：`capability_forms_test.go` 与 `capability_server_test.go` 验证六类往返、未展示字段保留、别名回退、MCP 顺序／权限、明文凭据拒绝、版本冲突、精确候选证明与转义。维护中的 channels_capabilities 浏览器场景覆盖默认记忆、中文／移动端、Preferences 布局、自动保存的失败／成功／修改后重新校验／保存，MCP 原生增删行、无 JavaScript 字段表单。真实工作区／Computer 诊断若因本机环境不可用而失败，必须记录未完成范围并拒绝无效保存，不能用 UI 成功状态替代。
+普通表单补充：owning `forms_test.go` 与 Web `capability_server_test.go` 验证六类往返、未展示字段保留、别名回退、MCP 顺序／权限、明文凭据拒绝、版本冲突、精确候选证明与转义。维护中的 channels_capabilities 浏览器场景覆盖默认记忆、中文／移动端、Preferences 布局、自动保存的失败／成功／修改后重新校验／保存，MCP 原生增删行、无 JavaScript 字段表单。真实工作区／Computer 诊断若因本机环境不可用而失败，必须记录未完成范围并拒绝无效保存，不能用 UI 成功状态替代。
 
 状态与保存回归：`TestDefaultMemoryHasOneEnabledEntryAndPreferenceLayout` 和 `TestPreferenceStyleSaveChecksBeforePersisting` 验证默认启用、一处 Memory 入口、联合关闭、密钥保留、无效连接拒绝与版本冲突。channels 的 `default_capability_settings` 使用显式隔离 SecretStore 启动真实应用，验证默认密钥跨进程重用并输出新设置页截图。
 
@@ -49,3 +49,26 @@ Linux 验证了内核沙箱与受控 Lume 协议、tiny sealed base 和真实 No
 `TestCapabilityStatusDistinguishesConfigurationFromConnectionProof` 以表驱动验证关闭、自动／自定义启用、准备中、不支持、不可用、已保存待重启及未保存候选；各状态分别使用有／无连接检查证明和中英文渲染，防止再次把默认启用误写成未验证，或用启用文案掩盖异常。
 
 维护中的 capability-setup 浏览器场景还验证六类真实字段的失败修复、自动保存、MCP 权限与原生行编辑，无脚本提交；逐页覆盖 1400／390／320px 和明暗主题，测量布尔行标签与开关同排、无横向溢出；断言不包含 YAML 编辑、导入、模板与配置文件路径。服务端回归验证 guided 忽略附带整份文档、字段草稿保留和版本冲突。配置和探测仍使用真实 Manager 及 owned peers。
+
+## 托管表单回归
+
+- 原 `capability_forms_test` 已迁至 owning 包，保留六类默认值、字段校验、SecretStore 引用、MCP 行及高级 YAML 保留场景；两项保留原生 codec 的 Owner 样本校验实际输出。
+- `TestCapabilityFormsActualUpgradeRollbackStopAndCold` 构建独立真实进程，修改 Computer 表单端口默认值，验证激活／精确回退／停用／首次冷读取，不依赖 native 代理。
+- `TestCapabilityFormCandidateRetainsEveryUnshownSetting` 覆盖六类隐藏字段；`TestCapabilityFormCandidateRejectsImplicitYAMLAndForeignProvider` 拒绝隐式展开和跨 provider 高级数据；请求回归拒绝转发伪造文档、版本和无关字段。
+- 原 Web 保存测试同时使用 owning 策略，证明先验证再保存及旧版本拒绝；`TestCapabilityPluginFailureCannotTestSaveOrFallBack` 证明插件故障不能调用 Test／Save，不泄露私有错误。
+- 必需 `capability-form-plugins` 门禁以实际生产 bootstrap 激活默认图，再复用六类浏览器配置／检查／保存／重启场景；fixture 只替代模型生成，保留旧 Run／Child 能力快照及新工具可见性。纳入 core、startup-ui 与 Capability race；未完成的本批门禁不可由局部测试替代。
+
+### 说明与诊断同包迁移
+
+- 六类原说明／示例由修改前实际函数采集，诊断词表逐项对照原固定返回表达，计数仅将原数字位置换为三个明确绑定；同包 owning 输出与保留 oracle 精确比较。
+- `TestCapabilityFormsActualUpgradeRollbackStopAndCold` 同时验证真实独立二进制中的标题和诊断成功文案；Owner 验证对应候选输出，实际 Manager.Detail／Test 消费新版本，随后精确回退。停用保留原已接纳证明，拒绝新诊断；首次关闭重开不恢复 native 说明。
+- Manager 全包 race 覆盖 `TestCapabilityPresentationFailureCannotProbeOrInventFacts`、`TestCapabilityPresentationFreezesBeforeProbeAndRetainsAcceptedOutcome`、`TestCapabilityPresentationCannotChangeDiagnosticState`：无投影不读密钥，不凭文案改变真实结果，效果中版本变化不重读词表，后续 Detail 不改写原证明。
+- 相同六类实际浏览器门禁还须重跑，覆盖标题／检索入口、失败修复、保存／重启以及旧冻结快照；局部 lifecycle 不替代该门禁。
+
+### 同包视图验收
+
+- `TestCapabilityOwnedViewRetainsOriginalFormSurface`／原状态回归执行 owning 模板和中英文词表；原控制形态和启用／连接证明语义不变。
+- 真实进程 lifecycle 同时修改 sealed Computer 标题资源与中文词条，校验确切资源的独立选版、digest 和回退；字段默认值／诊断表达仍走同一包生命周期。
+- `TestCapabilityOwnedViewRejectsEffectEscapesAndPrivateFields` 拒绝脚本、noscript 网络资源、外部表单／链接、私有字段、共享原语重定义、隐藏凭据及错误版本；`TestCapabilityOwnedViewBoundsEmptyHelperExpansionAndIntegerLoops` 覆盖空体指数辅助调用与整数迭代；缺词条回归拒绝借用原生字典。
+- `TestCapabilityInvalidOwnedViewCannotProbeOrSave` 和 `TestCapabilityEncoderCannotSubstituteAuthorizedCredentialReference` 断言非法视图和偷换凭据均在 Test／Save 前拒绝。六类绑定正例包括带点工具名及外部效果权限，负例覆盖权限替换、provider 身份和原高级数据。
+- 必需六类实际浏览器门禁在本批资源更改后重跑，检查无脚本、桌面／移动端及明暗主题，保留原配置证明、旧 Run／Child 和新工具可见性；共享控件所有权扫描包括 owning 视图目录。

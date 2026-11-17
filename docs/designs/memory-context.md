@@ -499,7 +499,7 @@ Runs use the current assembly while preserving Task epochs and role reductions.
 
 - 内置文案放在 `internal/prompt/system/`、`internal/prompt/capability/`、`internal/prompt/summary/` 的 Markdown 文件中，通过 `go:embed` 编入二进制；`internal/prompt` 只提供文案与摘要目标字节数替换。角色选择、冻结能力判断、顺序和动态证据由 Agent 装配代码负责；系统分段在该层已经拼为一条消息，Host 元数据保留有类型的分段。
 - Markdown 使用 UTF-8，Git 属性固定 LF；载入时仅移除单个文件末尾 LF，保留段落、空格和消息边界。修改这些资产需重新构建，只影响新生成的上下文；旧 Run 与已接受请求仍读取各自冻结记录。资源不依赖启动目录，不增加外部 prompt 配置或热加载入口。
-- `internal/agent/context.go` 是唯一初始装配入口。Main、Root、Child 统一使用 role → safety → `<execution_rules>` → `<capability_guidance>`。Main 使用面向用户的角色；Root 将精简身份与 Worker 规则合为角色段，将阶段进度约定归入执行段；Child 使用 Worker 角色。Host 分段中的 `child_text` 冻结 Child 可继承的共享文本，执行段的 `progress` 标记用于 Root 进度接纳；两者不进入 Provider 投影。Child 不继承 Root 的身份与进度约定。MCP/Skill 目录不进入初始 Prompt，分别通过 Code Mode 与 skill_list 按需搜索；项目指令通过执行环境按需读取。
+- `internal/agent/context.go` 是唯一初始装配入口，各角色只产生一条 system。Main 使用面向用户的简短角色、`<tools>` 与 `<rules>`，优先 UI 表达，安全约束并入规则，内部仍保留角色、安全与执行三段快照。Root、Child 同样使用 tools/rules，内部段为 worker_role、capabilities、safety、execution；Root 的角色段冻结独立的 Child 角色文本，阶段进度约定只归入 Root 执行段。Worker 的实际 cwd 和已确认的本地文档入口是受保护的运行时事实，不进入共享系统规则，也不从 Parent 聊天或运行时消息复制。Host 分段中的 `child_text` 冻结 Child 可继承的共享文本，执行段的 `progress` 标记用于 Root 进度接纳；两者不进入 Provider 投影。Child 不继承 Root 的身份与进度约定；Prompt 文案更新不重写已有冻结上下文。MCP/Skill 目录不进入初始 Prompt，分别通过 Code Mode 与 skill_list 按需搜索；项目指令通过执行环境按需读取。
 - Skill 目录与版本保存在 Capability Snapshot 的 Host metadata 中，不注入 system；模型通过 skill_list 搜索名称与用途，再通过 skill_view 按名称读取。provider Tool schema 仅包含名称、接口描述与输入 schema。项目 AGENTS.md 通过执行环境的 builtin__read 按需读取，不读取宿主 cwd。恢复旧 Run 时保留已冻结上下文和原工具结果，不用当前文件覆盖它。项目和 Skill 指令不能扩大权限或授予审批。
 - Root 的 Task 正文和显式 Artifact 引用是一个受保护的逻辑输入。Child 只接收显式子任务和引用，以及从 Parent 冻结的共享规则；不复制聊天、Task 历史或 Parent 的工作状态。
 - 新 Main 从 Conversation 载入语义历史，并交接最近 Main 的工作摘要和可见顶层工具回执；私有摘要原文仅通过显式 Run grant 传递。Forget 屏障之前的执行内容不进入这条交接路径。
@@ -752,3 +752,23 @@ state 51 仅增加原始 intent 的微秒时间索引投影和 Worker 覆盖位�
 memory_manage v6 在原工具内明确 write／retire 的必填字段，缺项错误不回显私有输入；历史 v1–v5 声明及冻结结果保留。 缺项提示由 Host 在最终错误脱敏之后按冻结能力重建，只含字段名；原生调用及 CodeMode 捕获的异常均可读取，普通 Provider 错误继续脱敏。Worker 原文精读只授予新版本能力，历史能力不扩张。维护列表纳入 observe/dream，模型用量、参考费用、未知值与变更／后续曝光经同一所有者投影展示；曝光仍不代表收益。
 
 **取舍与稳定性。** 新游标、索引、修复及证据投影均为 private。必要复杂度来自原文核验、生命周期、分页和崩溃恢复；候选数、工作集和重读上限仍是可逆策略。不增加图数据库、公共多租户协议、自动“有用性”判官或云厂商适配。
+
+版本化上下文策略仅消费角色／保护标记、字节成本与匿名图片键，返回完整前缀和摘要方法；Host 构造确切消息并验证预算。Run 的已迁移服务清单和 Child 继承见插件设计；旧请求、旧压缩解释器和 recall 冻结不重算。 详见[插件边界](../designs/plugins-evolution.md#已提取的上下文边界)与[插件验收](../test-plans/plugins-evolution.md)。
+
+Recall 的独立查询／排序／摘录策略保留原工具、输入冻结和证据顺序；授权候选先冻结，记忆候选加密，Forget 清理快照正文。边界与恢复验收见[召回插件设计](../designs/plugins-evolution.md#已提取的召回边界)和[插件测试](../test-plans/plugins-evolution.md)。
+
+自动记忆形成／Dreaming 的方法与触发配方已接入独立包，完整验收中；私有 intent 固定组合，加密请求记录方法来源，Host 保留引用／候选验证、保留政策、费用及 Forget 裁定。直接用户数据控制不依赖方法插件可用性。详见[自动记忆插件边界](../designs/plugins-evolution.md#已提取的自动记忆边界)与[插件验收](../test-plans/plugins-evolution.md)。
+
+关联证据的独立分页策略、旧页版本与 Host 原文／权限边界见[插件设计](../designs/plugins-evolution.md#已提取的证据分页边界)。相关验证覆盖 `TestEvidencePlugin*` 和 `artifacts` 的实际分发包场景；Main 不接受所有者的 `page_revision` 选版参数。
+
+
+### Context 接纳与插件载体缺失
+
+新 Context 的 DOCX／OCR 服务边界与 Run 的 graph／managed services 来自同一持久激活事实，catalog 缺失不能把已采用服务恢复成 native。明确无激活的执行也写入空图边界；Child 沿用 Parent。schema63 只补历史无载体 Run 的缺失 native 记录，不重建或改写历史 policy、冻结模型请求、checkpoint、Code manifest 与回执。该变化不改变 system→history→recall→input 顺序或继续请求前缀，相关冻结与 store／observability 回归仍为强制验证。
+
+
+### 上下文纯选择的中断与旧 Call 边界
+
+新上下文选择通过既有 `ReadService` 在原 Run 的冻结图上计算；输入仍仅为成本／角色／保护位与匿名图像事实，不传提示词、图像引用或密封记忆。claim、隐私 epoch、停机／隔离围栏覆盖输入释放、结果返回及接纳前检查，候选不能写状态、提案或外部效果。没有新增选择表、重试框架或 Run 状态。
+
+现有 `context_compaction` 事务接纳重建消息、输入／策略哈希及来源，随后冻结的请求继续遵守原字节前缀与逻辑输入身份。纯计算在接纳前中断可重新求值，接纳后先复用该记录。历史 `context-select:<step>` 持久 Call 若已有记录，仍走原输入哈希及完成结果／unknown 判定；完成结果不能改写，无结果不能自动删除、重算或重放。历史分支只服务这些原 Call 消费者，随其退役删除。通用 Call、状态 CAS、工具审批及 unknown 效果不重放语义保持原机制。

@@ -1,0 +1,1276 @@
+[
+  {
+    "Name": "empty-auto",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": null,
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "newest",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_old",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-01",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_new",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_new",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "equal-date-raw-id-tie",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_z",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_a",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_z",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "equal-date-reversed-source",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_a",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_z",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_z",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "ineligible-rows",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_wrong",
+            "Toolkit": "other",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_managed",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": true,
+            "Router": true
+          },
+          {
+            "ID": "ac_disabled",
+            "Toolkit": "example",
+            "Status": "DISABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_no_router",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": false
+          },
+          {
+            "ID": "bad id",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_valid",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_valid",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-enabled",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_override",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_override",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-managed-is-allowed",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_override",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": true,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_override",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-wrong-id",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_other",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 400,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-wrong-toolkit",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_override",
+            "Toolkit": "other",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 400,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-disabled",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_override",
+            "Toolkit": "example",
+            "Status": "DISABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 400,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-no-router",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_override",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": false
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 400,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "explicit-forbidden-no-fallback",
+    "Toolkit": "example",
+    "Override": "ac_override",
+    "Pages": [
+      {
+        "Items": null,
+        "Next": "",
+        "Status": 403
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 403,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs/ac_override"
+      ]
+    }
+  },
+  {
+    "Name": "auto-unauthorized-fallback",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": null,
+        "Next": "",
+        "Status": 401
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "auto-forbidden-fallback",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": null,
+        "Next": "",
+        "Status": 403
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "auto-other-error-no-fallback",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": null,
+        "Next": "",
+        "Status": 502
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 502,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "opaque-pagination",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_old",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-01",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "opaque +/=\u0026",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_new",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_new",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=opaque+%2B%2F%3D%26\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "later-forbidden-discards-earlier-choice",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_first",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "next",
+        "Status": 0
+      },
+      {
+        "Items": null,
+        "Next": "",
+        "Status": 403
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=next\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "repeated-cursor",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": null,
+        "Next": "repeat",
+        "Status": 0
+      },
+      {
+        "Items": null,
+        "Next": "repeat",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 0,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=repeat\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "twenty-page-completion",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_00",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-00",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_1",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_01",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-01",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_2",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_02",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_3",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_03",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-03",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_4",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_04",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-04",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_5",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_05",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-05",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_6",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_06",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-06",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_7",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_07",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-07",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_8",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_08",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-08",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_9",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_09",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-09",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_10",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_10",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-10",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_11",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_11",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-11",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_12",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_12",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-12",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_13",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_13",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-13",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_14",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_14",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-14",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_15",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_15",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-15",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_16",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_16",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-16",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_17",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_17",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-17",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_18",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_18",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-18",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_19",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_19",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-19",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "ac_19",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_1\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_2\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_3\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_4\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_5\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_6\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_7\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_8\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_9\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_10\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_11\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_12\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_13\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_14\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_15\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_16\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_17\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_18\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_19\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "twenty-page-exhaustion",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_00",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-00",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_1",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_01",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-01",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_2",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_02",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-02",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_3",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_03",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-03",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_4",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_04",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-04",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_5",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_05",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-05",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_6",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_06",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-06",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_7",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_07",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-07",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_8",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_08",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-08",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_9",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_09",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-09",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_10",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_10",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-10",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_11",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_11",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-11",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_12",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_12",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-12",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_13",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_13",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-13",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_14",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_14",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-14",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_15",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_15",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-15",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_16",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_16",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-16",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_17",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_17",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-17",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_18",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_18",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-18",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_19",
+        "Status": 0
+      },
+      {
+        "Items": [
+          {
+            "ID": "ac_19",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "2026-19",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "cursor_20",
+        "Status": 0
+      }
+    ],
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 0,
+      "Failed": true,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_1\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_2\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_3\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_4\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_5\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_6\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_7\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_8\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_9\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_10\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_11\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_12\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_13\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_14\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_15\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_16\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_17\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_18\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+        "/auth_configs?cursor=cursor_19\u0026is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ]
+    }
+  },
+  {
+    "Name": "invalid-toolkit",
+    "Toolkit": "bad toolkit",
+    "Override": "",
+    "Pages": null,
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 400,
+      "Failed": true,
+      "Requests": null
+    }
+  },
+  {
+    "Name": "invalid-explicit-id",
+    "Toolkit": "example",
+    "Override": "bad id",
+    "Pages": null,
+    "Expected": {
+      "ID": "",
+      "Readable": false,
+      "ErrorStatus": 400,
+      "Failed": true,
+      "Requests": null
+    }
+  },
+  {
+    "Name": "decoded-created-beyond-ordinary-input",
+    "Toolkit": "example",
+    "Override": "",
+    "Pages": [
+      {
+        "Items": [
+          {
+            "ID": "ac_first",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "",
+            "Managed": false,
+            "Router": true
+          },
+          {
+            "ID": "ac_second",
+            "Toolkit": "example",
+            "Status": "ENABLED",
+            "Created": "0",
+            "Managed": false,
+            "Router": true
+          }
+        ],
+        "Next": "",
+        "Status": 0
+      }
+    ],
+    "Expansion": true,
+    "Expected": {
+      "ID": "ac_first",
+      "Readable": true,
+      "ErrorStatus": 0,
+      "Failed": false,
+      "Requests": [
+        "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example"
+      ],
+      "NormalizedCreatedBytes": 10485760,
+      "NormalizedCreatedSHA256": "27aa8c4f129e960427d6ecd0ba43af4f029af39767c893e09b81cd2b4a968080"
+    }
+  }
+]

@@ -1,0 +1,584 @@
+[
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [],
+      "poll_seconds": 0
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": ""
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "review_comment",
+        "number": 1,
+        "count": 0
+      },
+      "rows": [],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 2
+        }
+      ],
+      "poll_seconds": 0
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": "AAE="
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "review",
+        "number": 1,
+        "count": 0
+      },
+      "rows": [
+        1
+      ],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "review",
+          "number": 1,
+          "count": 3
+        }
+      ],
+      "poll_seconds": 0
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": "AQAB"
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "check_run",
+        "number": 1,
+        "count": 0
+      },
+      "rows": [
+        0,
+        2
+      ],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "review",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "check_run",
+          "number": 1,
+          "count": 1
+        }
+      ],
+      "poll_seconds": 0
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": "AQ=="
+      }
+    ],
+    "expected": {
+      "next": null,
+      "rows": [
+        0
+      ],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 100
+        }
+      ],
+      "poll_seconds": 0
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ=="
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "review_comment",
+        "number": 2,
+        "count": 0
+      },
+      "rows": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 2,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 3,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 4,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 5,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 6,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 7,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 8,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 9,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 10,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 11,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 12,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 13,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 14,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 15,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 16,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 17,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 18,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 19,
+          "count": 100
+        },
+        {
+          "kind": "review_comment",
+          "number": 20,
+          "count": 100
+        }
+      ],
+      "poll_seconds": 0
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ=="
+      }
+    ],
+    "expected": {
+      "next": null,
+      "rows": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60,
+      "error_code": "HISTORY_LIMIT"
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [],
+      "poll_seconds": 5
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": ""
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "review_comment",
+        "number": 1,
+        "count": 0
+      },
+      "rows": [],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 5
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [],
+      "poll_seconds": 3600
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": ""
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "review_comment",
+        "number": 1,
+        "count": 0
+      },
+      "rows": [],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 3600
+    }
+  }
+]

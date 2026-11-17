@@ -1,0 +1,84 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.apps-logos",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-071"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 10000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.apps-logo/1",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slug",
+          "registered",
+          "cached",
+          "age_ns"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "registered": {
+            "type": "boolean"
+          },
+          "cached": {
+            "type": "boolean"
+          },
+          "age_ns": {
+            "type": "integer"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "cache_seconds"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cached",
+              "bundled",
+              "provider",
+              "unavailable"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 699052
+          },
+          "cache_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400
+          }
+        }
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

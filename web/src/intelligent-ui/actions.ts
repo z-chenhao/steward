@@ -1,7 +1,8 @@
 import {flushUIStates} from './state';
+import {postAction,readAction} from './host-api';
 export type ActionReceipt={status:string;message_id?:string;invocation_id?:string;result?:{text:string;artifact_refs?:string[];error?:{code:string;message:string}}};
-export async function startAction(ref:string,source:string){await flushUIStates();const r=await fetch('/api/ui/action',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({ref,source_id:source})});if(!r.ok)throw Error('Action could not be confirmed. Retry.');return r.json()}
-export async function actionResult(ref:string,source:string):Promise<ActionReceipt>{const r=await fetch('/api/ui/action?'+new URLSearchParams({ref,source}));if(!r.ok)throw Error('Action unavailable. Retry.');return r.json()}
+export async function startAction(ref:string,source:string){await flushUIStates();return postAction(ref,source)}
+export async function actionResult(ref:string,source:string):Promise<ActionReceipt>{return readAction(ref,source)}
 
 export function canonical(value:unknown):string{if(Array.isArray(value))return "["+value.map(canonical).join(",")+"]";if(value&&typeof value==="object")return "{"+Object.keys(value).sort().map(key=>JSON.stringify(key)+":"+canonical((value as Record<string,unknown>)[key])).join(",")+"}";return JSON.stringify(value)}
 // Generated code can propose a frozen action. A trusted Host button owns user

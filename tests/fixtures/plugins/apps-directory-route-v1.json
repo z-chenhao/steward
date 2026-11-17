@@ -1,0 +1,41 @@
+[
+  {
+    "query": {
+      "live_configured": true
+    },
+    "route": {
+      "source": "live",
+      "page_size": 40,
+      "on_live_error": "unavailable"
+    }
+  },
+  {
+    "query": {
+      "live_configured": true,
+      "has_cursor": true
+    },
+    "route": {
+      "source": "live",
+      "on_live_error": "unavailable"
+    }
+  },
+  {
+    "query": {
+      "has_cursor": true
+    },
+    "route": {
+      "source": "editorial"
+    }
+  },
+  {
+    "query": {
+      "search": "prefer-local",
+      "live_configured": true
+    },
+    "route": {
+      "source": "live",
+      "page_size": 40,
+      "on_live_error": "unavailable"
+    }
+  }
+]

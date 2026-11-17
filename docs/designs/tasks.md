@@ -27,7 +27,36 @@ flowchart TD
 - 接纳仅限 `tools` phase、完整且未截断的工具调用响应，并要求 Root 冻结的 system 上下文包含进度约定。空白、过长、含控制字符或非法 UTF-8 文本不替换上一条；归一化段落空白后保存。重复摘要不递增 Task version、不改变其更新时间。最终结果、压缩和 Child 文本不进入此路径。
 - `task/sqlite.Reader` 使用同一次只读查询聚合当前 Task epoch 的 Root 状态、等待原因和 Child 数量，并保留 `Last update`。等待审批包含 Child 审批及 Root 的费用授权；未知外部结果显示未确认，失败 Run 保持 Task 开放，ongoing 一轮结束与 Task 完成分开。界面不暴露 Run ID、Child 任务正文或工具参数。
 - 摘要是非授权的模型展示文本，沿现有 HTML 转义展示。它不创建 TaskUpdate、Inbox、Outbox、通知或额外推理；正常 checkpoint 仍保留原有运行时事件。`task_search` 继续返回已保存摘要，不能把展示文本当作已完成或副作用成功的证据。
-- 无数据迁移、工具 schema 或 Bridge 格式变化。新 Root 使用新提示；旧 Run 的冻结请求和提示不重写，无进度约定时不把其历史 assistant 文本改作可见进度。继续工作保留旧摘要作为已标明来源的 Task context，新状态单独计算。
+- 无数据迁移、工具 schema 或 Bridge 格式变化。新 Root 冻结所选进度方法；旧 Run 的冻结请求和提示不重写，无进度约定时不把其历史 assistant 文本改作可见进度。继续工作保留旧摘要作为已标明来源的 Task context，新状态单独计算。
+
+### 阶段方法独立迭代（F-005，私有实验接口）
+
+当前消费者只有 Root 的首次上下文初始化与 checkpoint 接纳。既有 `progress_test.go` 和 CLI 的进度提交前后 SIGKILL 场景是迁移依据；不新增业务状态、工具或模型调用。
+
+```mermaid
+sequenceDiagram
+    participant H as Host／Root
+    participant P as 版本固定的进度插件
+    participant M as 模型回执
+    participant D as 原有事务
+    H->>P: 首次初始化：role=root
+    P-->>H: 进度提示贡献
+    H->>H: 保留角色／安全／Child 共享规则，冻结上下文
+    M-->>H: 完整 assistant 文本＋工具调用
+    H->>H: Root opt-in／512 字节／控制字符／原始回执检查
+    H->>P: 原句归一化后的 summary
+    P-->>H: publish=true／false
+    H->>D: 已持久化的选择＋原始摘要＋checkpoint
+    D-->>H: 同一事务提交，重复文本不递增版本
+```
+
+`steward.task-progress-guidance/1` 仅接收 Root 角色，返回最多 4096 UTF-8 字节的提示贡献。Host 只替换冻结 execution 段中 Root 专有的尾部，ChildText 保持原共享执行规则。`steward.task-progress-selection/1` 仅接收已界定的摘要原句，返回一个布尔筛选结果；插件不能重写摘要、Task 状态或通知。默认提示与原生相同，默认接纳全部合法原句；提示措辞与筛选是可换版政策，不是内核不变量。
+
+身份、完整 generation 来源、长度／控制字符边界、claim／Task／隐私 fencing、重复去重以及 checkpoint 原子投影是领域必需机制，仍由 Host 负责。两个贡献在原有 RSI ledger 先行持久化；进度选择按 generation ID 固定，Task 提交失败后复用同一选择和模型回执。没有新 schema、候选进度存储或第二个模型循环。
+
+新 Root 使用自己的冻结组合，Child 使用继承组合但不能调用 Root 进度贡献。历史未迁移 Run 不改写；已冻结 Root 保留已选择版本，回滚与退役不删除其包。崩溃留下的未完成进度调用保留 unknown 审计且不自动重放，恢复时关闭未完成的提示贡献或略过该次投影，让业务继续；已完成选择仍精确复用。迁移后停用该可选功能时，新 Root 移除进度约定并保留业务执行，仅显示 Host 事实状态；不回退原生摘要方法。隔离／全局停止仍由现有派发控制优先阻止工作，不能通过进度绕开。
+
+开放范围为仓库内部实验服务，未稳定为公开 Task／Checkpoint／Generation API。没有开放领域表、工具参数、Child 正文、来源改写、通用投影 DSL 或新的状态机。拒绝把整个 checkpoint 交给插件以及允许生成替代摘要：这些会扩大数据与写入权限，且当前消费者只需提示和布尔筛选。确定性门禁不证明真实模型的进度质量或摘要绝无语义泄露。
 
 ### 任务工作台只读边界（F-005/F-018）
 
@@ -52,6 +81,34 @@ schema v34 的私有 `task_feedback` 保存确切 Task/epoch、隐私 epoch、�
 持久关联、幂等、原子 ingress 与失效检查是领域必需机制；单个当前待办与七天有效期是本轮默认政策。Tool schema 是受冻结保护的模型契约；CLI 的用户字段与现有 Task/Artifact refs 是窄输入输出，表、Run ID、claim、SQL 与通用工作流协议不开放。没有泛化人类工作流引擎、自动质量验收、Worker 直达用户或新的动作批准通道。
 
 新增 schema 前向迁移不改历史 Task/Run/snapshots。新 Main 冻结扩展后的工具定义；旧 Main 的精确工具定义不被替换，当前 registry 选择不兼容则 fail-closed，升级前用原二进制排空旧 Main。Web 和个人飞书反馈卡复用同一记录与 ingress。飞书的精确投递回执和绑定版本检查加入回答事务，渠道设计见[飞书任务反馈卡](channels.md#feishu-task-question-design)。
+
+### 问答／审阅配方独立迭代（F-004，私有实验接口）
+
+实际消费者是 Main 的 `request_input`／`request_review` 与已接通的 CLI、Web、个人飞书回答入口。现有请求接纳、Artifact pin、Main ingress、到期检查和来源幂等是证据；只提取现有七天有效期政策与回答交 Main 时的续作指引，不新增人工工作流。
+
+```mermaid
+flowchart LR
+    A[Main 已接纳的问答／审阅请求] --> H[Host 校验 Task／原问题／确切成果／来源]
+    H --> P[固定版本的 task-feedback 配方
+输入仅 input 或 review]
+    P --> R[有效秒数＋续作指引]
+    R --> T[原 Task 事务
+问题＋到期时刻＋配方绑定＋回执]
+    T --> U[CLI／Web／飞书的用户回答]
+    U --> V[Host 再验当前 Task／成果／隐私
+固定数据框架＋已接纳指引]
+    V --> M[既有 Main ingress／去重／接续]
+```
+
+`steward.task-feedback-policy/1` 不收到 Task／问题／回答／成果身份，只收到 `kind`；返回 `lifetime_seconds` 和单行 `response_guidance`。当前 Host 上限保持原七天（1–604800 秒），指引限制为 2048 UTF-8 字节且拒绝控制字符。这是本机可逆的当前政策约束，不是永久 SDK 保证。默认与原生期限和指引逐字一致；独立版本可以缩短期限并调整续作方法。
+
+Host 保留问题／成果的原文与引用、原消息来源、权限、审批、隐私／Task epoch、单 pending、过期与陈旧拒绝、第一回答及跨渠道幂等、Artifact pin、飞书签名／路由和完整事务。回答的固定 JSON 数据框架与“不授予外部动作批准”提示由 Host 重建，插件无法改写这些事实。
+
+配方是纯计算，通过既有 `ReadService` 在 writer 之外调用；不允许状态写入、网络、任意执行或演化效果。其结果和原问题在同一个原有 Task 事务中接纳，原 Tool receipt 冻结选择；提交失败可以重新计算尚未接纳的纯结果，不引入另一个可能 unknown 的效果 ledger。提交后直接复用原回执，隔离插件不会重发已接受问题。
+
+schema v57 的私有 `task_feedback_policy_binding` 固定每条问题的图版本和回答指引；旧记录仅补原生配方，不重写原问题、答案、状态、到期时刻或回执。该绑定防替换／修改／删除。回答可跨 Run 和渠道发生，使用已接纳配方，不查询当前插件；回滚、停用、退役后，旧问题仍按原数据和原期限接受回答。新建问题在已迁移边界后缺少配方时明确不可用，不静默回退。暂停／取消／遗忘／新 epoch／新成果等失效条件仍优先。
+
+该接口仅仓库内部实验使用，不开放 Feedback／Task 实体或通用授权、状态机、回答格式 DSL。期限与指引是独立变化轴；其余持久因果和授权属于领域必需机制。拒绝由插件生成替代问题／回答、选择 Task、改成果引用或决定批准；这些既无当前消费者需要，也会扩大权限。没有把用户回答托付给已卸载代码的二次解释器。
 
 ### Go 实现职责（F-040）
 
@@ -652,3 +709,5 @@ Root 失败的安全通知由 Host 在终态事务中经既有 notification_inte
 执行检查复用既有 createSideSheet 外壳、尺寸与焦点行为，页面只拥有 Root 选择、列表内前后导航及历史状态；不另造抽屉皮肤或通用路由器。抽屉读取现有完整页面投影，以相同只读 updates 协议和区域补丁刷新，关闭／切换取消请求并释放投影。背景列表的查询条件固定为打开列表时的条件，避免详情 URL 反向污染筛选。新导航只改变呈现政策，不增加写入权限或第二条执行通道。
 
 执行详情的结果／进展、属性与证据仍使用同一 owner 读取投影；本轮只调整呈现政策：单列阅读替代常驻次级栏、元信息压缩、说明与历史按需展开。原始标题不改写，Task／Root／Main 交付身份不变，未增加过程事件或模型推理。原生 details 的打开状态只在 execution-side 同键区域更新时延续，不覆盖其他受控业务区域的服务端状态。
+
+Task 搜索／默认标题已独立迁移；默认标题通过纯读计算与完整方案冻结恢复，不产生 pending 外部效果，历史已完成选择保留、未知调用不重试；状态、Root、epoch、审批、原始 brief 与回执仍归 Host，已定位任务的安全控制保持独立。契约与恢复取舍见[插件设计](../designs/plugins-evolution.md#已提取的-task-发现与标题边界)。验证为 `TestTaskPlugin*`、`make test-prompts`、`tasks` 和 `task-control` 的实际分发包门禁。

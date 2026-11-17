@@ -135,6 +135,7 @@ func TestWebFeedbackDisabledAnswerHasModelRecoveryRoute(t *testing.T) {
 func TestWebFeedbackAttentionRendersExactEscapedSourceAndBoundSubmission(t *testing.T) {
 	f := &attentionSettings{items: []task.Feedback{{Ref: "feedback:one", TaskRef: "task:visible", TaskTitle: "Finished report", SourceSequence: 7, Kind: "review", Prompt: "Check <script>revision A</script>", ArtifactRefs: []string{"artifact:exact"}}}}
 	s := &Server{Core: attentionCore{&updatesCore{allowed: true, status: "idle"}}, Feedbacks: f, Tasks: workspaceReader{}}
+	s.WebWorkbench = workbenchTestReader(t)
 	get := func(path string) *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+path, nil)
@@ -180,6 +181,7 @@ func TestWebFeedbackRejectsLongUTF8AsKnownInvalidAndKeepsNativeDraft(t *testing.
 	const ref = "feedback:one"
 	f := &attentionSettings{items: []task.Feedback{{Ref: ref, TaskRef: "task:visible", Kind: "input", Prompt: "Which date?"}}}
 	s := &Server{Core: attentionCore{&updatesCore{allowed: true, status: "idle"}}, Feedbacks: f, Tasks: workspaceReader{}}
+	s.WebWorkbench = workbenchTestReader(t)
 	answer := strings.Repeat("中", 6000)
 	for _, accept := range []string{"application/json", "text/html"} {
 		data := url.Values{"source_id": {ref}, "feedback_ref": {ref}, "answer": {answer}, "return_to": {"/tasks/task:visible"}}

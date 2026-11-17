@@ -10,6 +10,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/computer"
 	computerfake "github.com/z-chenhao/assistant/internal/computer/fake"
+	"github.com/z-chenhao/assistant/internal/computer/macosvm"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
@@ -28,10 +29,20 @@ func (p *surfaceProvider) Act(ctx context.Context, i computer.Instance, target c
 	return v, e
 }
 func TestComputerApprovalControlledLeaseResumeAndUnknownNeverDispatchesAgain(t *testing.T) {
+	testComputerApprovalControlledLeaseResumeAndUnknownNeverDispatchesAgain(t, false)
+}
+func TestComputerPluginApprovalControlledLeaseResumeAndUnknownNeverDispatchesAgain(t *testing.T) {
+	testComputerApprovalControlledLeaseResumeAndUnknownNeverDispatchesAgain(t, true)
+}
+func testComputerApprovalControlledLeaseResumeAndUnknownNeverDispatchesAgain(t *testing.T, managed bool) {
 	for _, unknown := range []bool{false, true} {
 		t.Run(map[bool]string{false: "approved", true: "unknown"}[unknown], func(t *testing.T) {
 			ctx := context.Background()
-			s, r, bridges, parents := computerClaims(t)
+			var configure []func(*Store, *Runs)
+			if managed {
+				configure = append(configure, func(s *Store, r *Runs) { installComputerPlugin(t, s, r) })
+			}
+			s, r, bridges, parents := computerClaims(t, configure...)
 			b := bridges[0]
 			provider := &surfaceProvider{unknown: unknown}
 			r.ConfigureComputer(provider, computer.Compatibility{}, computer.RestorationManifest{Version: 1})
@@ -241,4 +252,11 @@ func TestComputerScreenshotNormalizationCommitsArtifactAndReadinessTogether(t *t
 	if json.Unmarshal([]byte(success.Text), &result) != nil || result["screenshot"].(map[string]any)["image"].(map[string]any)["artifactRef"] != success.ArtifactRefs[0] {
 		t.Fatal(success)
 	}
+}
+
+func (p *surfaceProvider) BrowserSnapshotResource(hash string) (computer.BrowserSnapshotter, error) {
+	if hash != macosvm.BrowserSnapshotResourceHash() {
+		return nil, computer.ErrCompatibility
+	}
+	return &p.Driver, nil
 }

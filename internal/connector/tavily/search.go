@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/z-chenhao/assistant/internal/connector/internal/searchhttp"
+	"github.com/z-chenhao/assistant/internal/connector/searchfacts"
 	"github.com/z-chenhao/assistant/internal/llm"
 )
 
@@ -20,7 +21,7 @@ type Request struct {
 	TimeRange      string   `json:"time_range,omitempty"`
 }
 
-func Search(ctx context.Context, c Connection, q Request, secrets llm.SecretStore, client *http.Client) (string, []llm.WebSource, error) {
+func SearchFacts(ctx context.Context, c Connection, q Request, secrets llm.SecretStore, client *http.Client) (searchfacts.Result, error) {
 	// Preserve explicit empty arrays and the existing fixed search policy.
 	if q.IncludeDomains == nil {
 		q.IncludeDomains = []string{}
@@ -37,7 +38,7 @@ func Search(ctx context.Context, c Connection, q Request, secrets llm.SecretStor
 	raw, _ := json.Marshal(payload)
 	request, e := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.tavily.com/search", bytes.NewReader(raw))
 	if e != nil {
-		return "", nil, llm.ModelIncompatible
+		return searchfacts.Result{}, llm.ModelIncompatible
 	}
-	return searchhttp.Do(ctx, request, c.SecretRef, secrets, client)
+	return searchhttp.Read(ctx, request, c.SecretRef, secrets, client)
 }

@@ -23,8 +23,40 @@ from verify_computer import ComputerHarness, request
 from verify_main import require
 
 
+def selected_default_computer(h):
+    # Observe the normal Host-owned bootstrap. Tests do not install, compose,
+    # relax its policy or activate a second Computer-only graph.
+    status = h.command('plugin', 'status')
+    if status['epoch']==0 and not status['stopped']:
+        # Read-only control commands do not prepare the runtime. Start the
+        # ordinary idle worker once; it uses the same bootstrap as real work.
+        h.command('chat', 'work')
+        status = h.command('plugin', 'status')
+    require(status['graph_revision'] and status['epoch']==1 and not status['stopped'], 'default feature composition was not selected')
+    with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT'])/'state.db')) as db:
+        graph=json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?',(status['graph_revision'],)).fetchone()[0])
+        packages={row[0] for row in db.execute("SELECT p.plugin_id FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?",(status['graph_revision'],))}
+    require(len(packages)==40 and {'steward.computer-use','steward.web-access','steward.web-extract','steward.mcp-bridge','steward.connected-apps','steward.tool-discovery','steward.apps-directory','steward.apps-accounts','steward.apps-logos','steward.apps-interface', 'steward.github-pr-followup', 'steward.artifact-workbench'}.issubset(packages), 'Computer replaced the complete default composition')
+    binding=next(b for b in graph['bindings'] if b['instance_id']=='computer-use')
+    source=Path(__file__).resolve().parents[2]
+    upload=hashlib.sha256(b'computer-browser-upload-v1\0playwright-core@1.64.1\0'+(source/'internal/computer/macosvm/browser_upload_v1.mjs').read_bytes()+b'\0'+(source/'internal/computer/macosvm/transfer.py').read_bytes()).hexdigest()
+    snapshot=hashlib.sha256(b'computer-browser-snapshot-v1\0playwright-core@1.64.1\0'+(source/'internal/computer/macosvm/browser_snapshot_v1.mjs').read_bytes()).hexdigest()
+    require(binding['config']=={'browser_upload_driver':upload,'browser_snapshot_driver':snapshot}, 'default graph lost exact fixed resources')
+    h.default_plugin_selection=status
+    h.default_plugin_packages=sorted(packages)
+    return status['graph_revision']
+
+
 @contextmanager
-def launch(binary, root, live_config=None, browser_peer=None):
+def launch(binary, root, live_config=None, browser_peer=None, managed_plugins=False):
+    if not managed_plugins:
+        carrier=root/'native-carrier'/'steward'
+        carrier.parent.mkdir(exist_ok=True)
+        if carrier.exists():
+            require(hashlib.sha256(carrier.read_bytes()).digest()==hashlib.sha256(binary.read_bytes()).digest(),'native carrier source changed during recovery')
+        else:
+            shutil.copy2(binary,carrier)
+        binary=carrier
     source, vm = root / 'source', root / 'vm'
     server = None
     h = ComputerHarness(binary, root, fixture='computer')
@@ -58,7 +90,11 @@ def launch(binary, root, live_config=None, browser_peer=None):
         if not live_config:
             require(h.command('computer', 'prepare-base', str(source))['base'] == 'sealed', 'base not sealed')
         if not h.command('status')['agent_ingress_enabled']:
+            # Full Worker schemas and retained GUI/approval receipts exceed the
+            # generic 8K fixture. Declare the actual workload before first use;
+            # never replace an existing selection during restart/recovery.
             h.setup()
+        h.managed_computer_graph = selected_default_computer(h) if managed_plugins else None
         yield h
     finally:
         h.cleanup()
@@ -93,21 +129,27 @@ def collect_observations(h, report, live_root):
     report['screenshots'] = saved
 
 
-def run(binary, live_config=None, live_root=None, work_root=None, native_only=False, provision=False, browser_live=False):
+def run(binary, live_config=None, live_root=None, work_root=None, native_only=False, provision=False, browser_live=False, managed_plugins=False):
     drive_nonce = str(time.time_ns())
     report = {'version': 1, 'scope': 'real Guest' if live_config else 'offline SSH/Cua/Playwright protocol peers; no real GUI claim', 'checks': [], 'cleanup': False}
     with (nullcontext(work_root) if work_root else nullcontext(tempfile.mkdtemp(prefix='steward25-cua-use-',dir=live_root)) if live_config else tempfile.TemporaryDirectory(prefix='steward-cua-use-')) as temporary:
         root = Path(temporary).resolve()
-        with launch(binary, root, live_config) as h:
+        with launch(binary, root, live_config, managed_plugins=managed_plugins) as h:
+            if managed_plugins:
+                report['managed_computer_graph'] = h.managed_computer_graph
+                report['default_plugin_packages']=h.default_plugin_packages
             state = Path(h.env['STEWARD_DATA_ROOT']) / 'state.db'
-            if native_only or browser_live:
-                metadata={'name':'CUA live evidence','provider_kind':'openai_compatible','endpoint':'http://127.0.0.1:1/v1','wire_api':'openai_completions','model_id':'fixture-model','context_window':65536,'max_output_tokens':4096,'compatibility':{'tool_result_format':'openai'},'capabilities':{'text_input':True,'tool_calls':True,'streaming':True}}
-                h.setup(metadata=metadata)
             if browser_live:
                 config=json.loads((root/'config.yaml').read_text())
                 config['computer']['browser']={'node':'/Users/lume/steward25-runtime/node/bin/node','module':'/Users/lume/steward25-runtime/browser/node_modules/playwright-core/index.mjs','port':9222}
                 (root/'config.yaml').write_text(json.dumps(config))
-            artifact = h.command('artifact', 'save', 'private-fixture.txt', 'text/plain', text='private fixture bytes')
+            # The unbundled carrier exercises historical native Computer Runs.
+            # Its input is explicitly created by the native fixture, while the
+            # managed variant keeps the ordinary production Artifact path.
+            artifact_args = ('artifact', 'save', 'private-fixture.txt', 'text/plain')
+            if not managed_plugins:
+                artifact_args = ('-test-bridge', 'main', *artifact_args)
+            artifact = h.command(*artifact_args, text='private fixture bytes')
             def rows():
                 with closing(sqlite3.connect(state)) as db, db:
                     db.row_factory = sqlite3.Row
@@ -117,10 +159,11 @@ def run(binary, live_config=None, live_root=None, work_root=None, native_only=Fa
                 plan = json.dumps([{'name': 'builtin__codemode_execute', 'arguments': {'source': cell}} for cell in (source if isinstance(source,list) else [source])])
                 key_label = key
                 if live_config: key = key + ':' + drive_nonce
+                # Computer belongs to a real Task Worker; Main delegates the plan.
                 if refs:
-                    h.command('chat', 'send-parts', key, text=json.dumps([{'type':'text','text':'Capabilities: '+plan}, *[{'type':'file','artifact_ref':ref} for ref in refs]]))
+                    h.command('chat', 'send-parts', key, text=json.dumps([{'type':'text','text':'Delegate capabilities: '+plan}, *[{'type':'file','artifact_ref':ref} for ref in refs]]))
                 else:
-                    h.send(key, 'Capabilities: ' + plan)
+                    h.send(key, 'Delegate capabilities: ' + plan)
                 approvals = []
                 for _ in range(40):
                     if live_config and key_label=='inventory-bind-observe-independent-revisions' and _==0:
@@ -181,13 +224,26 @@ def run(binary, live_config=None, live_root=None, work_root=None, native_only=Fa
                         target = next(i for i in before if i['invocation_id'] == target_id)
                         require(target['attempt_count'] == 0, 'effect dispatched before approval')
                         require(target['replay_policy'] == 'never', 'effect became safely retryable')
-                        approvals.append({'tool': target['tool_name'], 'arguments': json.loads(target['arguments_json']), 'hash': a['frozen_arguments_hash']})
+                        normalized = json.loads(a['action_parameters']) if a.get('action_parameters') else None
+                        if managed_plugins and target['tool_name'].startswith('builtin__computer_') and json.loads(target['arguments_json']).get('method') in {'launchApp','createBrowserTab','click','scroll','drag','setValue','selectText','performSecondaryAction','typeText','pressKey','paste','goto','back','forward','reload','close','playwright.click','playwright.fill','playwright.download','playwright.upload','exportArtifact'}:
+                            with closing(sqlite3.connect(state)) as db:
+                                plan = db.execute('SELECT plan_json,plan_hash,graph_revision,request_hash FROM computer_action_plan WHERE invocation_id=?', (target_id,)).fetchone()
+                            require(plan and json.loads(plan[0]) == normalized and hashlib.sha256(plan[0].encode()).hexdigest() == plan[1] and plan[2] == h.managed_computer_graph and plan[3] == target['request_hash'], 'approval is not bound to a complete immutable Computer parameter plan')
+                        approvals.append({'tool': target['tool_name'], 'arguments': json.loads(target['arguments_json']), 'hash': a['frozen_arguments_hash'], 'action_parameters': normalized})
                         h.command('approval', 'approve' if approve else 'deny', a['approval_id'], a['frozen_arguments_hash'])
                 else: raise AssertionError('drive did not settle')
                 invocations = rows()
                 parent = [r for r in invocations if r['tool_name'] == 'builtin__codemode_execute'][-1]
-                require(parent['status'] == 'succeeded', f'cell failed: {parent["result_json"]}')
                 nested = [r for r in invocations if r['parent_invocation_id'] == parent['invocation_id']]
+                require(parent['status'] == 'succeeded', f'cell failed: {parent["result_json"]}; nested=' + json.dumps([dict(tool=r['tool_name'],status=r['status'],attempts=r['attempt_count'],result=(r['result_json'] or '')[:2000]) for r in nested]))
+                with closing(sqlite3.connect(state)) as db:
+                    require(db.execute("SELECT kind FROM run WHERE run_id=?", (parent['run_id'],)).fetchone()[0] == 'worker', 'Computer plan bypassed the actual Task Worker')
+                if managed_plugins:
+                    with closing(sqlite3.connect(state)) as db:
+                        db.execute('BEGIN')
+                        bindings = db.execute("SELECT b.graph_revision,b.managed_services_json FROM tool_invocation i JOIN rsi_run b USING(run_id) WHERE i.parent_invocation_id=? AND i.tool_name LIKE 'builtin__computer_%' AND i.attempt_count>0", (parent['invocation_id'],)).fetchall()
+                        require(bindings and all(revision == h.managed_computer_graph and {'steward.computer-observation/1','steward.computer-wait-recipe/1','steward.computer-documentation/1','steward.computer-text-selection/1','steward.computer-inventory-order/1','steward.computer-target-match/1','steward.computer-action-parameters/1','steward.computer-playwright-parameters/1','steward.computer-transfer-presentation/1','steward.computer-browser-upload/1','steward.computer-browser-projection/1'} <= set(json.loads(services)) for revision,services in bindings), 'Computer call lost frozen managed observation/wait/documentation/selection/inventory/match/action-parameters composition')
+                        require(db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='computer-use'").fetchone()[0] == 0, 'pure Computer methods created a duplicate effect ledger')
                 require(all(json.loads(r['conflict_keys']) for r in nested), 'read/action missed desktop barrier')
                 output = json.loads(json.loads(parent['result_json'])['text'])
                 report['checks'].append({'name': key, 'output': output, 'approvals': approvals,
@@ -200,6 +256,8 @@ def run(binary, live_config=None, live_root=None, work_root=None, native_only=Fa
     const inventory=await cua.getState();
     {('await cua.computer.launchApp({app:"com.steward.fixture"});' if live_config else '')}
     const app=await cua.getApp({json.dumps(app)});
+    const doc=await app.documentation();
+    if(!doc.includes("interface Surface"))throw new Error("versioned surface documentation missing");
     const ax=await app.getAXState({{full:true}});
     const shot=await app.getScreenshot();
     image(shot.image);
@@ -225,6 +283,47 @@ def run(binary, live_config=None, live_root=None, work_root=None, native_only=Fa
                 require(value['stale'] == 'STALE_ELEMENT_REFERENCE' and value['wait']['code'] == 'WAIT_TIMEOUT', 'stale/wait contract missing')
                 require('approved fixture' in value['state'], 'post-action observation did not show input')
                 require(approvals, 'input had no approval')
+
+            if not live_config and not browser_live:
+                output, approvals = execute('discovery-binding-reference-integrity', r'''
+const apps=await cua.listApps();const windows=await cua.listWindows();
+const browsers=await cua.listBrowsers();const tabs=await cua.listTabs({browser:browsers[0].id});
+const byName=await cua.getApp(apps[0].name);const byWindow=await cua.getApp({windowId:windows[0].id,id:"ignored"});
+const browser=await cua.getBrowser();const tab=await cua.getTab({tabId:tabs[0].id});
+const observed=await byWindow.getAXState();
+let missing;try{await cua.getApp("missing-app");}catch(error){missing=error.code;}
+return {app:byName.ref.id,window:byWindow.ref.id,originalWindow:windows[0].id,browser:browser.ref.id,tab:tab.ref.id,
+ originalTab:tabs[0].id,observed:!!observed.revision,missing,privateData:JSON.stringify([...apps,...windows,...browsers,...tabs]).includes('native')};
+''')
+                value=output[-1]['value']
+                require(value['app']=='com.apple.TextEdit' and value['window']==value['originalWindow'] and value['tab']==value['originalTab'] and value['observed'] and value['missing']=='NOT_FOUND' and not value['privateData'], 'discovery/binding changed source identity, window precedence, privacy or missing-target behavior')
+                require(not approvals, 'pure discovery/binding unexpectedly acquired action authority')
+                output, approvals = execute('approved-parameters-and-native-key', r'''
+const app=await cua.getApp("com.apple.TextEdit");
+await app.pressKey("escape");
+const current=await app.getAXState();
+await app.scroll({observationRevision:current.revision,index:0},"down",2.5);
+return {completed:true};
+''')
+                require(output[-1]['value']['completed'] and len(approvals)==2, 'key/scroll did not use their exact original approvals')
+                if managed_plugins:
+                    key=next(a for a in approvals if a['arguments'].get('method')=='pressKey')
+                    scroll=next(a for a in approvals if a['arguments'].get('method')=='scroll')
+                    require(key['action_parameters']=={'text':'escape','key_input':{'keys':['escape']}} and scroll['action_parameters']=={'direction':'down','amount':2.5}, 'actual CLI lost frozen keyboard decomposition or explicit fractional scroll amount')
+                output, approvals = execute('native-selection-exact-approved-span', r'''
+const app=await cua.getApp("com.apple.TextEdit");
+const initial=await app.getAXState();
+await app.setValue({observationRevision:initial.revision,index:0},"one target end");
+const current=await app.getAXState();
+await app.selectText({observationRevision:current.revision,index:0},"target");
+const selected=await app.getAXState();
+let stale;try{await app.selectText({observationRevision:current.revision,index:0},"target");}catch(error){stale=error.code;}
+return {state:selected.state,stale};
+''')
+                value=output[-1]['value']
+                require('selection=4:6' in value['state'] and value['stale']=='STALE_ELEMENT_REFERENCE', 'native selection recipe changed original span or reference freshness')
+                selection_approvals=[entry for entry in approvals if entry['arguments'].get('method')=='selectText']
+                require(len(selection_approvals)==2 and all(entry['arguments']['args'][1]=='target' for entry in selection_approvals), 'native selection lost exact original action approval')
 
             if live_config and not browser_live:
                 output,_=execute('native-elements-secondary-selection-and-coordinates', r'''
@@ -303,6 +402,16 @@ image(observed.screenshot.image);return {exported,stale,coreInput:true,fill:true
                 report['cleanup']=True
                 return report
 
+            output, approvals = execute('browser-projection-original-indices-and-approved-input', r'''const tab=await cua.getTab("fixture-tab");
+const first=await tab.getAXState({full:true});
+await tab.typeText({observationRevision:first.revision,index:0},"bounded-dom-source");
+const second=await tab.getAXState({full:true});
+return {first:first.state,second:second.state,revisionChanged:first.revision!==second.revision};
+''')
+            require(len(approvals)==1 and output[-1]['value']['revisionChanged'] and 'bounded-dom-source' in output[-1]['value']['second'], 'original browser index/input/observation flow lost')
+            if managed_plugins:
+                require('[0] INPUT "Fixture"' in output[-1]['value']['second'], 'managed snapshot source was not reconstructed')
+
             output, approvals = execute('transfer-overwrite-export-and-upload-separate-consent', f'''
 const file=await cua.files.importArtifact({{artifactRef:{json.dumps(artifact['artifact_ref'])},destination:"imports/fixture"}});
 await cua.files.importArtifact({{artifactRef:{json.dumps(artifact['artifact_ref'])},destination:"imports/fixture",overwrite:true}});
@@ -320,6 +429,45 @@ return {{exported,downloaded}};
             readback = subprocess.run(h.args('artifact', 'open', exported), env=h.env, capture_output=True, timeout=20)
             require(readback.returncode == 0 and readback.stdout == b'private fixture bytes', 'transfer roundtrip bytes differ')
 
+            output, approvals = execute('upload-presentation-original-bytes-and-separate-consent', f"""const file=await cua.files.importArtifact({{artifactRef:{json.dumps(artifact['artifact_ref'])},destination:"imports/upload-source.bin"}});
+const tab=await cua.getTab("fixture-tab");await tab.capabilities.list();const pw=await tab.capabilities.get("playwright");
+await pw.locator("#upload").upload(file);return {{observed:await pw.locator("#status").textContent()}};
+""", refs=[artifact['artifact_ref']])
+            digest=hashlib.sha256(b'private fixture bytes').hexdigest()
+            require(output[-1]['value']['observed']==f'uploaded:upload-source.bin;media=application/octet-stream;sha256={digest}', 'upload metadata or original bytes changed')
+            require(len(approvals)==2, 'import authorization became upload consent')
+            if managed_plugins:
+                upload=next(a for a in approvals if a['arguments'].get('method')=='playwright.upload')
+                require(upload['action_parameters']=={'selector':'#upload','timeout_ms':3000,'name_from_source':True,'name':'upload-source.bin','media_type':'application/octet-stream'}, 'upload metadata was not concretely approved')
+
+            output, approvals = execute('transfer-default-presentation-and-explicit-intent', f'''const file=await cua.files.importArtifact({{artifactRef:{json.dumps(artifact['artifact_ref'])},destination:"imports/metadata-source.txt"}});
+const defaulted=await cua.files.exportArtifact({{path:file.path}});
+const explicit=await cua.files.exportArtifact({{path:file.path,name:"explicit.txt",mediaType:"text/plain"}});
+return {{defaulted,explicit}};''',refs=[artifact['artifact_ref']])
+            require(len(approvals)==3,'import/export approvals changed')
+            result=output[-1]['value']
+            require(result['defaulted']['name']=='metadata-source.txt' and result['defaulted']['mediaType']=='application/octet-stream' and result['explicit']['name']=='explicit.txt' and result['explicit']['mediaType']=='text/plain','transfer display intent changed')
+            for item in result.values():
+                content=subprocess.run(h.args('artifact','open',item['artifactId']),env=h.env,capture_output=True,timeout=20)
+                require(content.returncode==0 and content.stdout==b'private fixture bytes','presentation policy replaced exported bytes')
+            if managed_plugins:
+                exports=[a for a in approvals if a['arguments']['method']=='exportArtifact']
+                require(exports[0]['action_parameters']=={'name_from_source':True,'name':'metadata-source.txt','media_type':'application/octet-stream'} and exports[1]['action_parameters']=={'name':'explicit.txt','media_type':'text/plain'},'concrete export metadata missing before original approval')
+
+            output, approvals = execute('playwright-parameters-original-intent-and-reads', r'''const tab=await cua.getTab("fixture-tab");
+await tab.capabilities.list();const pw=await tab.capabilities.get("playwright");
+await pw.locator("#field").fill("exact browser fill");
+const count=await pw.locator("#field").count();
+await pw.locator("#field").waitFor({timeoutMs:7});
+await pw.waitForURL("http://fixture.test/",{timeoutMs:11});
+return {count,completed:true};''')
+            require(len(approvals)==1 and output[-1]['value']=={'count':1,'completed':True},'Playwright read/action behavior changed')
+            if managed_plugins:
+                require(approvals[0]['action_parameters']=={'selector':'#field','timeout_ms':3000,'value':'exact browser fill'},'Playwright approval omitted exact normalized intent')
+                with closing(sqlite3.connect(state)) as db:
+                    plans=[json.loads(row[0]) for row in db.execute("SELECT plan_json FROM computer_action_plan WHERE method IN ('playwright.waitForSelector','playwright.waitForURL')")]
+                require({'selector':'#field','timeout_ms':7} in plans and {'url':'http://fixture.test/','timeout_ms':11} in plans,'explicit read deadlines did not freeze into original domain plans')
+
             output,approvals=execute('registered-files-survive-cell-and-instance-replacement',[
                 'return await cua.files.importArtifact({artifactRef:'+json.dumps(artifact['artifact_ref'])+',destination:"imports/cross-cell"});',
                 'return await cua.files.exportArtifact({path:"imports/cross-cell",name:"cross-cell.txt",mediaType:"text/plain"});'
@@ -330,6 +478,7 @@ return {{exported,downloaded}};
 
             output, _ = execute('navigation-expires-capability-and-screenshotless-pointer', '''
 const tab=await cua.getTab("fixture-tab");await tab.capabilities.list();const pw=await tab.capabilities.get("playwright");
+const doc=await pw.documentation();if(!doc.includes("interface Playwright"))throw new Error("versioned browser documentation missing");
 await tab.goto("http://fixture.test/next");
 let expired;try{await pw.locator("input").count();}catch(e){expired=e.code;}
 let pointer;try{await tab.click([1,1]);}catch(e){pointer=e.code;}
@@ -343,12 +492,15 @@ return {expired,pointer};
             with closing(sqlite3.connect(state)) as db, db:
                 requests=[json.loads(row[0]) for row in db.execute('SELECT request_json FROM model_generation')]
                 selected={ref for req in requests for message in req['messages'] for ref in message.get('image_refs',[])}
-                require(selected=={image_ref},'unselected observation entered model image context')
+                expected_image_ref = image_ref if image_ref.startswith('artifact:') else 'artifact:' + image_ref
+                require(selected=={expected_image_ref},'unselected observation entered model image context: selected='+str(sorted(selected))+' expected='+expected_image_ref)
                 require(all('screenshot_png_b64' not in json.dumps(req) for req in requests),'binary screenshot entered model ledger')
                 artifacts=db.execute("SELECT count(*) FROM artifact WHERE media_type='image/png'").fetchone()[0]
                 require(artifacts>len(selected),'nested screenshots were not retained separately')
                 report['output_selection']={'model_image_refs':list(selected),'internal_screenshots':artifacts,'binary_in_ledger':False}
             require(h.command('computer', 'status')['phase'] == 'checkpointed', 'idle did not release Computer')
+            if managed_plugins:
+                require(h.command('plugin','status')==h.default_plugin_selection,'restart or business work replaced operator selection')
         report['cleanup'] = True
     return report
 
@@ -363,6 +515,7 @@ if __name__ == '__main__':
     parser.add_argument('--native-actions-only', action='store_true')
     parser.add_argument('--provision-browser', action='store_true')
     parser.add_argument('--live-browser', action='store_true')
+    parser.add_argument('--managed-plugins', action='store_true', help='exercise Computer through the complete normal default composition')
     parser.add_argument('--collect-observations', type=Path, help='read an existing live report and its scoped screenshot Artifacts without starting services')
     args = parser.parse_args()
     if args.collect_observations:
@@ -397,7 +550,7 @@ if __name__ == '__main__':
                 try: request(endpoint,'/lume/config');break
                 except (urllib.error.URLError,ConnectionError): time.sleep(.1)
             else: raise RuntimeError('live Lume API did not start')
-        report = run(args.binary.resolve(), args.live_config, args.live_root,args.resume_root,args.native_actions_only,args.provision_browser,args.live_browser)
+        report = run(args.binary.resolve(), args.live_config, args.live_root,args.resume_root,args.native_actions_only,args.provision_browser,args.live_browser,args.managed_plugins)
     finally:
         if server is not None:
             server.send_signal(signal.SIGINT)

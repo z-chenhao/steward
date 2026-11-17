@@ -1,0 +1,63 @@
+{
+  "copy": {
+    "apps_title": "应用",
+    "app_settings": "应用设置",
+    "search_apps": "搜索应用",
+    "search": "搜索",
+    "refresh_apps": "刷新应用",
+    "directory_unavailable": "暂时无法获取实时目录，已保存的连接仍予以保留。",
+    "back_to_apps": "返回应用",
+    "app_views": "应用视图",
+    "discover": "发现",
+    "your_apps": "我的应用",
+    "all_apps": "全部应用",
+    "category": "分类",
+    "all_categories": "全部分类",
+    "filter": "筛选",
+    "view_all": "查看全部",
+    "manage_app": "管理应用",
+    "about_app": "关于应用",
+    "no_apps": "未找到应用。",
+    "more_apps": "更多应用",
+    "connections_unavailable": "应用连接暂不可用。安装所有者可在应用设置中管理此服务。",
+    "your_connections": "你的连接",
+    "no_connections": "尚未连接应用。",
+    "add_account": "添加账户",
+    "service_title": "应用连接服务",
+    "project_title": "Composio 项目",
+    "project_help": "在此统一配置连接服务，使用者在「应用」中连接各自的账户。",
+    "authentication_title": "应用授权",
+    "connected_apps": "已连接的应用"
+  },
+  "page": [
+    "heading",
+    "unavailable",
+    "feedback",
+    "inventory",
+    "body",
+    "dialog"
+  ],
+  "directory": [
+    "tabs",
+    "collection-back",
+    "categories",
+    "groups",
+    "pagination"
+  ],
+  "detail": [
+    "heading",
+    "feedback",
+    "connect",
+    "accounts",
+    "additional"
+  ],
+  "account": [
+    "copy",
+    "actions"
+  ],
+  "service": [
+    "heading",
+    "back",
+    "project"
+  ]
+}

@@ -1,7 +1,11 @@
 import {readFile,writeFile} from 'node:fs/promises';
 export async function uiInteractions(page,context,browser,url,evidence,restart=false){
  const table=page.locator('[data-openintelligentui="Table"]'),line=page.locator('[data-openintelligentui="steward.lineChart"]').filter({hasText:'Trend'}),scatter=page.locator('[data-openintelligentui="steward.scatterChart"]'),form=page.locator('[data-openintelligentui="steward.form"]').first(),cards=page.locator('[data-openintelligentui="steward.cards"]'),action=page.locator('[data-openintelligentui="steward.action"]'),widget=page.locator('.intelligent-widget').filter({has:page.locator('iframe[title="Explorer"]')}),frame=page.frameLocator('iframe[title="Explorer"]');
+ const tableContent=table.frameLocator('iframe[title="Table view"]');
+ const tableRows=async count=>tableContent.locator('tbody').evaluate((node,count)=>new Promise((resolve,reject)=>{const deadline=performance.now()+5000;const check=()=>node.rows.length===count?resolve():performance.now()>deadline?reject(Error('managed Table row count: '+node.rows.length+' expected '+count)):setTimeout(check,25);check()}),count);
  await form.getByRole('textbox',{name:'Notes',exact:true}).waitFor();await frame.locator('#quantity').waitFor();
+ // Enter reading mode before navigating among retained interactive widgets.
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  // Chromium can defer ResizeObserver deliveries during responsive layout.
  // Such browser notifications must retain the live frame and its controls.
  await frame.locator('#quantity').evaluate(()=>{for(const message of ['ResizeObserver loop completed with undelivered notifications.','ResizeObserver loop limit exceeded'])dispatchEvent(new ErrorEvent('error',{message}))});
@@ -39,9 +43,9 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
   await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await multi.scrollIntoViewIfNeeded();
   await numeric.scrollIntoViewIfNeeded();await numeric.locator('.recharts-surface').evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));await verifyIntervals();await multi.scrollIntoViewIfNeeded();
   if(await multi.evaluate(node=>node.scrollWidth>node.clientWidth+2))throw Error('multi-series chart overflowed its container');
-  const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
+  const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname));const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
   try{await multi.screenshot({path:evidence+'/multi-series-'+width+'-'+theme+'.png'})}
-  finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css').deleteRule(index),captureRule)}
+  finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname)).deleteRule(index),captureRule)}
  }}
  await page.setViewportSize({width:1400,height:980});
  await line.locator('.recharts-line-curve').waitFor();await scatter.locator('.recharts-scatter-symbol').first().waitFor();
@@ -55,16 +59,28 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  await bar.locator('.recharts-bar-rectangle').last().hover();
  await bar.locator('.answer-chart-tooltip').getByText('Research department 7',{exact:true}).waitFor();
  await bar.locator('.answer-chart-tooltip').getByText('7,000,000,000',{exact:true}).waitFor();
- for(const width of [1400,390]){await page.setViewportSize({width,height:980});for(const theme of ['light','dark']){await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await bar.scrollIntoViewIfNeeded();const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});try{await bar.screenshot({path:evidence+'/category-chart-'+width+'-'+theme+'.png'})}finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css').deleteRule(index),captureRule)}}}
+ for(const width of [1400,390]){await page.setViewportSize({width,height:980});for(const theme of ['light','dark']){await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await bar.scrollIntoViewIfNeeded();const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname));const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});try{await bar.screenshot({path:evidence+'/category-chart-'+width+'-'+theme+'.png'})}finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname)).deleteRule(index),captureRule)}}}
  await page.setViewportSize({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
- await table.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button').click();
- if(await table.locator('tbody tr').first().innerText().then(text=>!text.includes('10')))throw Error('numeric ascending sort failed');
- await table.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button').click();if(!await table.locator('tbody tr').first().innerText().then(text=>text.includes('42')))throw Error('numeric descending sort failed');
- await menu(table,'Filter');await table.getByRole('searchbox',{name:'Filter rows'}).fill('A');if(await table.locator('tbody tr').count()!==1)throw Error('table filter failed');
+ // Settle the outer frame after responsive captures before one header click.
+ await table.scrollIntoViewIfNeeded();
+ await tableContent.locator('body').evaluate(()=>{window.sortInputEvents=[];for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,event=>window.sortInputEvents.push({type,target:event.target.tagName,text:event.target.textContent?.slice(0,80)}),{capture:true,once:true})});
+ await activate(tableContent.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button'));
+ try{await tableContent.locator('th[aria-sort=ascending]').waitFor()}catch(error){
+  await writeFile(evidence+'/table-sort-failure.json',JSON.stringify({frame:await tableContent.locator('body').evaluate(()=>({events:window.sortInputEvents??null,headers:[...document.querySelectorAll('th')].map(node=>({text:node.textContent,sort:node.getAttribute('aria-sort'),disabled:node.querySelector('button').disabled}))})),host:await table.evaluate(node=>({box:node.getBoundingClientRect().toJSON(),top:scrollY,height:innerHeight}))},null,2));throw error;
+ }
+ if(await tableContent.locator('tbody tr').first().innerText().then(text=>!text.includes('10')))throw Error('numeric ascending sort failed');
+ await activate(tableContent.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button'));await tableContent.locator('th[aria-sort=descending]').waitFor();if(!await tableContent.locator('tbody tr').first().innerText().then(text=>text.includes('42')))throw Error('numeric descending sort failed');
+ await menu(table,'Filter');await table.getByRole('searchbox',{name:'Filter rows'}).fill('A');await tableRows(1);if(await tableContent.locator('tbody tr').count()!==1)throw Error('table filter failed');
  await page.waitForFunction(()=>document.querySelector('[data-openintelligentui="steward.lineChart"] svg .recharts-line')!==null);
  const bytes=await downloaded(table,'Download CSV','.csv');if(!bytes.toString().includes('"A","10"')||bytes.toString().includes('"B","42"'))throw Error('CSV ignored current filter');
- await menu(table,'Reset');await line.locator('[data-chart-label="B"]').click();if(await table.locator('tbody tr').count()!==1||!(await table.locator('tbody tr').innerText()).includes('42'))throw Error('chart point selection did not filter the table');await line.locator('[data-chart-label="B"]').focus();await page.keyboard.press('Enter');if(await table.locator('tbody tr').count()!==3)throw Error('keyboard chart selection did not clear the filter');await downloaded(line,'Download SVG','.svg');await downloaded(scatter,'Download PNG','.png');
- await menu(line,'Zoom');const ranges=line.locator('input[type=range]');await ranges.nth(1).fill('1');if(await line.locator('.recharts-line-dot').count()>2)throw Error('chart range did not update');await menu(line,'Reset');
+ await menu(table,'Reset');await line.locator('[data-chart-label="B"]').click();await tableRows(1);if(await tableContent.locator('tbody tr').count()!==1||!(await tableContent.locator('tbody tr').innerText()).includes('42'))throw Error('chart point selection did not filter the table');await line.locator('[data-chart-label="B"]').focus();await page.keyboard.press('Enter');await tableRows(3);if(await tableContent.locator('tbody tr').count()!==3)throw Error('keyboard chart selection did not clear the filter');await downloaded(line,'Download SVG','.svg');await downloaded(scatter,'Download PNG','.png');
+ await menu(line,'Zoom');const ranges=line.locator('input[type=range]');
+ await line.locator('[data-chart-label="C"]').waitFor();await ranges.nth(1).fill('1');
+ // Managed range decisions and React drawing complete after the input event.
+ // Observe the actual new graphic, including both retained nonempty points.
+ await line.locator('[data-chart-label="C"]').waitFor({state:'detached'});
+ for(const label of ['A','B'])await line.locator('[data-chart-label="'+label+'"]').waitFor();
+ if(await line.locator('.recharts-line-dot').count()!==2)throw Error('chart range did not retain exactly A and B');await menu(line,'Reset');
  // The same live frame must survive every Host display mode.
  await frame.locator('#quantity').fill('7');await frame.locator('#value').getByText('14',{exact:true}).waitFor();
  // Existing generated scroll containers keep their own keyboard and wheel input.
@@ -163,8 +179,9 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  // Server field checks and native no-JS replay use the same accepted identity.
  const formID=await form.getAttribute('data-form-id');
  const plain=await browser.newContext({javaScriptEnabled:false});try{await plain.addCookies(await context.cookies());const p=await plain.newPage();await p.goto(url);const native=p.locator('.native-input-form[data-form-id="'+formID+'"]');if(!await native.locator('button[type=submit]').isDisabled())throw Error('native form failed to restore accepted answer');const feedback=p.locator('.native-input-form').filter({has:p.getByRole('heading',{name:'Feedback',exact:true})});await feedback.getByLabel('Comment',{exact:true}).fill('Native submission');await feedback.getByLabel('Tags',{exact:true}).selectOption(['x','y']);await feedback.getByRole('button',{name:'Send',exact:true}).click();await p.waitForURL('**/?notice=feedback-saved');if(!await p.locator('.native-input-form').filter({has:p.getByRole('heading',{name:'Feedback',exact:true})}).locator('button[type=submit]').isDisabled())throw Error('native multiselect submission did not restore');await p.screenshot({path:evidence+'/native-form.png',fullPage:true})}finally{await plain.close()}
- await cards.getByRole('button',{name:'Next card',exact:true}).click();
- for(const width of [1400,390]){await page.setViewportSize({width,height:980});const controls=await cards.getByRole('button',{name:'Next card',exact:true}).boundingBox(),firstCard=await cards.locator('article').first().boundingBox();if(!controls||!firstCard||controls.y+controls.height>firstCard.y+1)throw Error('carousel controls overlap card content')}
+ const cardsContent=cards.frameLocator('iframe[title="Cards view"]');
+ await cardsContent.getByRole('button',{name:'Next card',exact:true}).click();
+ for(const width of [1400,390]){await page.setViewportSize({width,height:980});const controls=await cardsContent.getByRole('button',{name:'Next card',exact:true}).boundingBox(),firstCard=await cardsContent.locator('article').first().boundingBox();if(!controls||!firstCard||controls.y+controls.height>firstCard.y+1)throw Error('carousel controls overlap card content')}
  await page.setViewportSize({width:1400,height:980});await page.screenshot({path:evidence+'/desktop-light.png',fullPage:true});await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.screenshot({path:evidence+'/desktop-dark.png',fullPage:true});
  for(const [name,scope] of [['line-chart',line],['scatter-chart',scatter],['carousel',cards]]){await scope.evaluate(node=>node.scrollIntoView({block:'center'}));await scope.screenshot({path:evidence+'/'+name+'.png'})}
  await page.setViewportSize({width:390,height:844});await widget.evaluate(node=>node.scrollIntoView({block:'center'}));if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('interaction UI overflowed mobile: '+JSON.stringify(await page.evaluate(()=>({width:innerWidth,content:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(n=>n.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(n).display!=='none').slice(0,12).map(n=>({tag:n.tagName,classes:n.className,right:n.getBoundingClientRect().right}))}))));await page.screenshot({path:evidence+'/mobile.png'});

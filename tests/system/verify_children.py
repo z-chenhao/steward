@@ -14,14 +14,16 @@ from fixture_pool import run_cases
 from terminal_driver import Terminal
 from verify_main import require
 from verify_artifacts import ArtifactHarness
-from verify_tasks import state as task_state
+from verify_tasks import state as task_state, select_managed_tasks
 
 
 def state(h):
     value = task_state(h)
     with closing(sqlite3.connect(Path(h.env["STEWARD_DATA_ROOT"]) / "state.db")) as db, db:
         db.row_factory = sqlite3.Row
+        db.execute('BEGIN')
         for name, query in {
+            "delegation_policies": "SELECT p.*,b.graph_revision run_graph FROM delegation_policy_binding p JOIN rsi_run b ON b.run_id=p.root_run_id ORDER BY p.root_run_id",
             "child_links": "SELECT * FROM agent_invocation ORDER BY invocation_id",
             "trees": "SELECT * FROM run_tree ORDER BY root_run_id",
             "claims": "SELECT * FROM run_claim ORDER BY run_id",
@@ -41,6 +43,7 @@ def check(value, children=2, completed=True):
     caps = {c["snapshot_id"]: c for c in value["capabilities"]}
     child_nodes = [r for r in workers if r["parent_run_id"]]
     require(len(value["tasks"]) == 1 and len(workers) == children + 1, "Task delta or Run count")
+    require(len(value['delegation_policies']) == len(value['trees']) and all(p['available'] and p['graph_revision'] == p['run_graph'] and p['depth'] == t['max_depth'] and p['descendants'] == t['max_descendants'] for p, t in zip(value['delegation_policies'], value['trees'])), 'delegation policy lost its fixed graph or Host ceilings')
     require(len(value["child_links"]) == children == value["trees"][0]["descendants"], "admission counter/link mismatch")
     for c in value["capabilities"]:
         specs = json.loads(c["tools_json"])
@@ -86,6 +89,7 @@ def run(binary, scenario_jobs=1):
                                       "capabilities": {"text_input": True}})
                 else:
                     h.setup()
+                select_managed_tasks(h, delegation=True)
                 return action(h)
             finally:
                 h.cleanup()

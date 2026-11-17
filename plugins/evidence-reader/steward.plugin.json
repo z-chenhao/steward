@@ -1,0 +1,114 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.evidence-reader",
+  "version": "1.0.1",
+  "feature_ids": [
+    "F-010"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.evidence-text-window/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "boundaries": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4096
+            },
+            "maxItems": 4097
+          },
+          "breaks": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4096
+            },
+            "maxItems": 4097
+          }
+        },
+        "required": [
+          "bytes",
+          "boundaries",
+          "breaks"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          }
+        },
+        "required": [
+          "bytes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.evidence-link-window/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 21
+          }
+        },
+        "required": [
+          "candidates"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "take": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "take"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

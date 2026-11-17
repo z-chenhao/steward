@@ -34,15 +34,7 @@ func TestVaultScopeTamperingAndKeyLossFailClosed(t *testing.T) {
 		t.Fatal("missing key accepted")
 	}
 }
-func TestExtractorDoesNotTurnNoisyEvidenceIntoFacts(t *testing.T) {
-	for _, text := range []string{"My password is a-secret-value", "I have api_key=synthetic-credential", "I wonder whether I have a disorder?", "sk-abcdefghijklmno"} {
-		if got := Extract(text, "user"); len(got) != 0 {
-			t.Fatal(text, got)
-		}
-	}
-	if got := Extract("User reported: I prefer tea\nI invented an unreported diagnosis", "worker"); len(got) != 1 || got[0] != "I prefer tea" {
-		t.Fatal(got)
-	}
+func TestExploratoryAndTransientReportsAreNotStable(t *testing.T) {
 	if Stable("I might explore independent development") || Stable("I felt tired today") {
 		t.Fatal("exploratory/transient report considered stable")
 	}

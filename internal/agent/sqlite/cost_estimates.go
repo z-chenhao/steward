@@ -8,13 +8,14 @@ import (
 	"github.com/z-chenhao/assistant/internal/llm"
 )
 
-// ConfigureCostEstimator is startup composition; it does not change spend policy.
-func (s *Store) ConfigureCostEstimator(estimator agent.CostEstimator) {
-	s.costEstimator = estimator
+// ConfigureLegacyReferenceEstimator serves only historical generations and explicit
+// never-managed embeddings. Managed generations use their admitted rate receipt.
+func (s *Store) ConfigureLegacyReferenceEstimator(estimator agent.LegacyReferenceEstimator) {
+	s.legacyCostEstimator = estimator
 }
 
 func (s *Store) estimateCost(ctx context.Context, tx *sql.Tx, req llm.GenerationRequest, usage *llm.TokenUsage) error {
-	if s.costEstimator == nil || usage == nil {
+	if usage == nil {
 		return nil
 	}
 	var configured bool
@@ -24,7 +25,13 @@ func (s *Store) estimateCost(ctx context.Context, tx *sql.Tx, req llm.Generation
 	if configured {
 		return nil
 	}
-	quote, ok := s.costEstimator.Quote(req.Snapshot, *usage)
+	quote, ok, managed, err := frozenReferencePrice(ctx, tx, req, *usage)
+	if err != nil {
+		return err
+	}
+	if !managed && s.legacyCostEstimator != nil {
+		quote, ok = s.legacyCostEstimator.Quote(req.Snapshot, *usage)
+	}
 	if !ok {
 		return nil
 	}

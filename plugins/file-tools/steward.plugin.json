@@ -1,0 +1,156 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.file-tools",
+  "version": "1.0.1",
+  "feature_ids": [
+    "F-026"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.file-window/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8388609
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2000
+          },
+          "output_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 48000
+          },
+          "as_artifact": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "input_id",
+          "offset",
+          "limit",
+          "output_bytes",
+          "as_artifact"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "artifact": {
+            "type": "boolean"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8388608
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8388608
+          },
+          "next_offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8390609
+          }
+        },
+        "required": [
+          "artifact",
+          "start",
+          "end",
+          "next_offset"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.file-edit-span/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "old_text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 65536
+          }
+        },
+        "required": [
+          "input_id",
+          "old_text"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 8388608
+              }
+            },
+            "required": [
+              "start"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "error_code": {
+                "const": "INVALID_ARGUMENT"
+              }
+            },
+            "required": [
+              "error_code"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ]
+}

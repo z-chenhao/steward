@@ -1,0 +1,31 @@
+{{define "conversation-page"}}
+{{template "computer-panel" .}}{{template "worker-panel" .}}
+<section class="thread">
+ <div id="conversation-messages">{{template "conversation" .}}</div>
+ <div id="conversation-outgoing"></div>
+ <div id="agent-processing" class="agent-processing" role="status" aria-label="{{tr "Ghost is working…"}}"><span class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+ <div id="conversation-ui-preview" hidden></div>
+ <article id="conversation-draft" class="reply-draft" aria-label="{{tr "Draft reply from Ghost"}}" aria-busy="true" hidden><div class="reply-draft-label">{{tr "Draft reply"}}</div><div class="semantic" data-draft-text></div></article>
+ <div id="conversation-approvals">{{template "approvals" .}}</div>
+</section>
+<footer class="conversation-footer"><form id="composer-model-form" method="post" action="/model/choose"><input type="hidden" name="consent" value="yes"><input type="hidden" name="config_version" value="{{.Status.ConfigVersion}}"><button type="submit" class="secondary model-native-submit">{{tr "Use model"}}</button></form>
+<div id="composer-root" data-source-id="{{.SourceID}}">
+ <form class="composer" action="/message" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="source_id" value="{{.SourceID}}">
+  {{with .DraftTask}}<div class="task-context-chip"><input type="hidden" name="task_ref" value="{{.Ref}}"><span>{{tr "Regarding"}} <a href="{{taskURL .Ref}}">{{.Title}}</a></span><button class="plain-button" type="button" data-clear-task aria-label="{{tr "Clear task context"}}">×</button></div>{{end}}
+  <label for="message" class="sr-only">{{tr "Message Ghost"}}</label>
+  <textarea class="control-input-embedded" id="message" name="text" placeholder="{{tr "Describe what you have in mind…"}}" required rows="2" maxlength="16384">{{.Draft}}</textarea>
+  <div class="composer-actions"><div class="attachment-controls"><label class="attachment-picker" title="{{tr "Attach a file"}}">{{template "icon-attach"}}<span class="sr-only">{{tr "Attach a file"}}</span><input type="file" name="file" aria-label="{{tr "Attach a file"}}"></label><span class="attachment-status" aria-live="polite"></span><button type="button" class="plain-button" data-remove-file hidden aria-label="{{tr "Remove attachment"}}">×</button></div><div class="composer-secondary-actions">{{$picker:=modelPickerView .ComposerModels .Language}}<div class="composer-model" data-composer-model data-model-picker="{{obsJSON .ComposerModels.Picker}}" data-reader-revision="{{.ComposerModels.ReaderRevision}}" data-current="{{.ComposerModels.Current}}" data-config-version="{{.ComposerModels.ConfigVersion}}"><label for="composer-model" class="sr-only">{{$picker.Label}}</label><select data-control-react id="composer-model" name="choice" form="composer-model-form" aria-label="{{$picker.Label}}">{{if not .ComposerModels.Current}}<option value="">{{$picker.PlaceholderLabel}}</option>{{end}}{{range .ComposerModels.Choices}}<option value="{{.Key}}" {{if eq $.ComposerModels.Current .Key}}selected{{end}}>{{.Label}}</option>{{end}}</select></div><button type="submit" class="send-button" aria-label="{{tr "Send message"}}" {{if not (canSend .Status)}}disabled{{end}}>{{template "icon-send"}}</button></div></div>
+  <p id="composer-feedback" class="composer-feedback" role="status" aria-live="polite"></p>
+ </form>
+</div></footer><button type="button" id="new-messages" hidden>{{tr "Latest messages ↓"}}</button>
+{{end}}
+{{define "attention-summary"}}{{if and .Attention (or .Attention.Feedbacks .Attention.Issues .Attention.Unavailable .Attention.More)}}{{with .Attention}}<a class="button secondary attention-summary" title="{{tr "Open attention items in a new tab"}}" target="_blank" rel="noopener" aria-label="{{tr "Needs your attention"}} · {{.Count}}{{if .More}}+{{end}}" href="/tasks/attention">{{template "icon-attention"}}<span>{{tr "Needs your attention"}}</span>{{if .Count}}<strong>{{.Count}}{{if .More}}+{{end}}</strong>{{else}}<span>{{tr "Check current items"}}</span>{{end}}<span class="sr-only">{{tr "Opens in a new tab"}}</span></a>{{end}}{{else}}{{if .PendingCount}}<a class="button secondary attention-summary" data-pending-jump aria-label="{{tr "Needs your decision"}} · {{.PendingCount}}" href="/#approval-{{.FirstPending}}">{{template "icon-attention"}}<span>{{tr "Pending approval"}}</span><strong>{{.PendingCount}}</strong></a>{{end}}{{end}}{{end}}
+
+{{define "conversation"}}
+{{if not (canSend .Status)}}<div class="setup-callout" data-live-key="setup"><div>{{if eq .Status.Readiness "setup_required"}}<h1>{{tr "Setup required"}}</h1>{{else}}<h1>{{tr "Needs attention"}}</h1>{{end}}</div><a class="button secondary" href="/settings/models">{{tr "Set up Steward →"}}</a></div>{{end}}
+{{if .Before}}<a data-live-key="earlier" class="back-link" href="/?before={{.Before}}">{{tr "Earlier messages"}}</a>{{end}}
+{{$day := ""}}{{range .Messages}}{{if .CreatedAt}}<div class="message-date" data-live-key="date:{{.Sequence}}"{{if eq $day (messageDay .CreatedAt)}} hidden{{end}}>{{localTime .CreatedAt "date"}}</div>{{$day = messageDay .CreatedAt}}{{end}}<article class="message {{.Role}}{{if .Bubbles}} message-split{{end}}" id="message-{{.Sequence}}" data-live-key="message:{{.Sequence}}"{{if .ReplyKey}} data-reply-key="{{.ReplyKey}}"{{end}}{{if .ClientSource}} data-client-source="{{.ClientSource}}"{{end}}><span class="sr-only">{{if eq .Role "user"}}{{tr "You"}}{{else}}Ghost{{end}}</span>{{if .Approval}}{{template "approval-card" .Approval}}{{else if .Bubbles}}{{range .Bubbles}}<div class="message-bubble" data-ui-spec="{{.Spec}}" data-ui-fallback="{{.Fallback}}">{{.HTML}}</div>{{end}}{{else}}<div data-ui-spec="{{.Projection.Spec}}" data-ui-fallback="{{.Projection.Fallback}}">{{.Projection.HTML}}</div>{{end}}{{if .CreatedAt}}<span class="message-time">{{localTime .CreatedAt "message"}}</span>{{end}}</article>
+{{else}}{{if canSend .Status}}<div class="welcome" data-live-key="welcome"><h1>{{tr "What would you like to work on?"}}</h1></div>{{end}}{{end}}
+{{end}}
+{{define "approvals"}}{{range .Approvals}}<div data-live-key="approval:{{.ID}}">{{template "approval-card" .}}</div>{{end}}{{end}}

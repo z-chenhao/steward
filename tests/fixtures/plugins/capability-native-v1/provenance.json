@@ -1,0 +1,20 @@
+{
+  "source": "retained pre-migration guided codec; original regression cases moved unchanged to owning package",
+  "original_file": "internal/interaction/web/capability_forms.go",
+  "original_sha256": "aac1db2035c767f5eb738411b022e9b1dadcf6c2b4b3062e9092dae05cb5e7ec",
+  "capture": "go test ./internal/plugin/capabilityforms -run ^TestCaptureNativeForms$ -count=1",
+  "oracle": "internal/rsi/builtin/capability-forms-owner-v1.json",
+  "oracle_sha256": "28e7db95aff9f3f09b02088746fb6b055059c3e3cae60ae21ef1bcd320f21c56",
+  "scope": "two fixed original prepare/submit outputs; full original codec regressions and actual lifecycle/HTTP/browser scenarios provide broader behavior evidence",
+  "presentation": {
+    "oracle": "internal/rsi/builtin/capability-presentation-owner-v1.json",
+    "description_capture": "executed original description for six kinds; MemoryChild derives from original Web embedding parent/filter rules",
+    "copy_capture": "original fixed diagnostic/view literals; numeric fmt positions replaced only by dimensions/providers/tools bindings",
+    "sha256": {
+      "internal/config/setup/resources.go": "0e3a0757d16fe509d2a973e1c60eed1c6daaa36a3feb2b2169633774dc33971f",
+      "internal/config/setup/manager.go": "da04acf65cab6426531d379f25202786828e6074ba0ee159329b3d5b8274393f",
+      "internal/config/setup/probe.go": "ad84bb3406025ea4429f088c8240df2608626a5c7476ce898c0a49cfc713611c",
+      "internal/interaction/web/capabilities.go": "889008a49012ee023348d9be5634ed761dc3d3f6e3530d7c2fe24ac1c178aee6"
+    }
+  }
+}

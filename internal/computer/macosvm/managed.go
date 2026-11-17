@@ -25,6 +25,7 @@ import (
 )
 
 const defaultImage = "macos-tahoe-cua:26.5.2"
+const managedGuestUser = "lume"
 const defaultImageDigest = "ed1783e80e08e888889b54a8c0387105a37fbcfc995079f76db48e2280081487"
 const legacyPreparationStopped = "Desktop preparation stopped. Check free disk space and network access, then restart Steward to retry."
 
@@ -255,7 +256,7 @@ func (p *Provider) prepareManaged(ctx context.Context) error {
 		return computer.ErrUnavailable
 	}
 	clear(password)
-	p.config.Guest = SSHConfig{User: "lume", Port: 22, PasswordRef: saved.PasswordRef, HostKeySHA256: saved.HostKey}
+	p.config.Guest = SSHConfig{User: managedGuestUser, Port: 22, PasswordRef: saved.PasswordRef, HostKeySHA256: saved.HostKey}
 	if _, err = os.Lstat(filepath.Join(p.config.Root, "steward-computer.json")); os.IsNotExist(err) {
 		m.status("preparing", "Downloading and verifying the private macOS image. The download can take several minutes.")
 		seed := filepath.Join(m.root, "seed", "vms", "default-base")
@@ -436,7 +437,7 @@ func (p *Provider) bootstrapGuest(ctx context.Context, ip string, saved *struct 
 			conn, err := net.DialTimeout("tcp", net.JoinHostPort(ip, "22"), 5*time.Second)
 			if err == nil {
 				_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
-				cfg := &ssh.ClientConfig{User: "lume", HostKeyAlgorithms: []string{ssh.KeyAlgoED25519}, HostKeyCallback: func(_ string, _ net.Addr, key ssh.PublicKey) error {
+				cfg := &ssh.ClientConfig{User: managedGuestUser, HostKeyAlgorithms: []string{ssh.KeyAlgoED25519}, HostKeyCallback: func(_ string, _ net.Addr, key ssh.PublicKey) error {
 					saved.HostKey = ssh.FingerprintSHA256(key)
 					return computer.ErrUnavailable
 				}}

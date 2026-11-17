@@ -30,7 +30,7 @@
 | --- | --- |
 | [tests/system/verify_operations.py](../../tests/system/verify_operations.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |
 | [tests/system/verify_spend.py](../../tests/system/verify_spend.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |
-| [internal/llm/pricing/catalog_test.go](../../internal/llm/pricing/catalog_test.go) | 供应商地址／chat 模型精确匹配、同名 classifier 排除、缓存与长上下文分档、未知模型／代理、订阅参考价、十进制整数转换 |
+| [原生历史报价回归](../../internal/llm/pricing/legacyv1/catalog_test.go) | 供应商地址／chat 模型精确匹配、同名 classifier 排除、缓存与长上下文分档、未知模型／代理、订阅参考价、十进制整数转换 |
 | [internal/agent/sqlite/cost_estimates_test.go](../../internal/agent/sqlite/cost_estimates_test.go) | 接纳事务中的固定估算、只读 Trace 投影、重放不重计、不可改写、缺失 usage、手动覆盖与货币审批隔离 |
 | [internal/operations/service/service_test.go](../../internal/operations/service/service_test.go) | 安装不启用、XML/argv、凭据不复制、持久停止及信号失败、双实例拒绝、独立巡检、健康过期、有限崩溃恢复、提示去重、配置修复/升级与元数据 fail-closed；外部 launchctl 用注册协议 peer，不更改宿主登录会话 |
 | [cmd/steward/service_test.go](../../cmd/steward/service_test.go) | 真 CLI service install/run/status/inspect 与 loopback Web/setup_required；浏览器断开不关闭服务、持久停机被运行时观察到、排队启动不恢复停止意图；macOS 才执行实际后台 CLI，其他平台验证明确拒绝 |
@@ -82,8 +82,13 @@ out-of-order events, approval/side-effect crash windows, cancel fences and
 query-only unknown handling. No separate execution or replay pipeline is added.
 `TestOperationsPriorSchemaRollbackAndActiveWorkUpgrade` reconstructs real v25,
 retains accepted work/snapshots, rejects partial migration, upgrades and drains
-the work exactly once. Operations harness cleanup joins processes and removes
-its isolated roots, ciphertext archive and restored state.
+the work exactly once. The v25 operations and v29 inspection fixtures temporarily
+seed the current Main constructor's GitHub columns, including source methods,
+before admitting retained work. Shared cleanup then removes those dependencies;
+both assert the original schema version and absence of later GitHub/RSI tables
+before forward migration. Old work is not retrofitted with current metadata.
+Operations harness cleanup joins processes and removes its isolated roots,
+ciphertext archive and restored state.
 
 The capacity sampler runs the unchanged 100-item batch/fairness/cancel/restart
 harness three times by default. Compare the same machine, fixture, binary
@@ -122,3 +127,12 @@ duration or model-quality certification.
 需求完成需要对应入口可用、正常与相关失败/恢复场景有证据、使用说明与技术方案一致。报告沿用现有 evidence/流程；不为本方案建立另一套测试平台或复制历史评测资产。
 
 `TestOfflineRestoreUsesSourceFileKeyAndNewDestination` 在真实 SQLite/维护锁/加密归档上，以源数据根中的文件密钥备份并恢复到新目录；核对目标数据文件、凭据排除及源密钥不变。
+
+### 参考报价插件迁移
+
+- 候选前执行的原生对照保存在 `tests/fixtures/plugins/reference-pricing-native-v1/`，记录原源码 hash、账户／端点、未知模型、负 usage 及长上下文临界点。默认四项 Owner 预期由该原始输出生成，不调用候选生成期望。
+- `TestOriginalExecutedQuotesKeepExactTierAndSource` 保护原汇率、来源与分档；`TestReferencePricingActualRatesAndDeactivationNeverRestoreNative` 使用真实插件与 usage 接纳，停用后不借历史估价器恢复报价，普通工作仍完成，费用授权不变。
+- `TestReferencePricingIndependentUpgradeRollbackRetainedRunAndCold` 通过真实独立二进制改变 input 费率，并核对旧 Run、新 Run、精确回退与退役版本首次冷执行的实际金额和原图。
+- `TestReferencePricingPendingColdUsesOriginalRatesWithoutProducer` 在真实派发前已接纳费率后关闭 Store；新建 Store／Catalog、停用且移除运行器后的首次 Drain 仍使用原费率、只派发原请求一次。没有重新选择或补修恢复 fixture。
+- `TestReferencePricingRatesAndGenerationAcceptAtomically` 在真实接纳处注入失败，要求 generation、费率回执与 provider dispatch 均不泄漏；旧 generation／显式价格／未知 usage 保留原回归。Schema 81 同步共享系统版本与迁移目录检查。
+- 跨模块最终检查使用固定源码 `make test lint`，并运行真实 `spend` 系统门禁；独立费率改变只是观察价演进，不代表供应商账单或费用授权变更。

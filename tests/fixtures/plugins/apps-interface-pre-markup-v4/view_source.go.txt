@@ -1,0 +1,37 @@
+package appsinterface
+
+import (
+	"fmt"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
+	"io"
+	"os"
+	"path/filepath"
+)
+
+type viewSource struct {
+	Program []string `json:"program"`
+}
+
+func readOwnViewSource(name string) ([]byte, viewSource, error) {
+	var source viewSource
+	executable, err := os.Executable()
+	if err != nil {
+		return nil, source, err
+	}
+	file, err := os.Open(filepath.Join(filepath.Dir(executable), name))
+	if err != nil {
+		return nil, source, err
+	}
+	defer file.Close()
+	raw, err := io.ReadAll(io.LimitReader(file, 4097))
+	if err != nil {
+		return nil, source, err
+	}
+	if len(raw) > 4096 {
+		return nil, source, fmt.Errorf("view resource exceeds limit")
+	}
+	if err = rsiplugin.Decode(raw, &source); err != nil {
+		return nil, source, err
+	}
+	return raw, source, nil
+}

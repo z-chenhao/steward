@@ -1,0 +1,78 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.reference-pricing",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-029"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.reference-pricing/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "provider_kind": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "endpoint_hash": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "wire_api": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "model_id": {
+            "type": "string",
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "provider_kind",
+          "endpoint_hash",
+          "wire_api",
+          "model_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "oneOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

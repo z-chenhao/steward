@@ -1,0 +1,322 @@
+[
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 0,
+      "offset": 0,
+      "connected": false
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": ""
+      }
+    ],
+    "expected": {
+      "total": 0,
+      "items": []
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 0,
+      "offset": 0,
+      "connected": true
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": ""
+      }
+    ],
+    "expected": {
+      "total": 0,
+      "items": []
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 1,
+      "offset": 0,
+      "connected": false
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "CQUAAAAAAAAAZ21haWwFAAAAAAAAAEdtYWls"
+      }
+    ],
+    "expected": {
+      "total": 1,
+      "items": [
+        {
+          "row": 0,
+          "active": 0
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 1,
+      "offset": 0,
+      "connected": true
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "CQUAAAAAAAAAZ21haWwFAAAAAAAAAEdtYWls"
+      }
+    ],
+    "expected": {
+      "total": 1,
+      "items": [
+        {
+          "row": 0,
+          "active": 0
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 4,
+      "offset": 0,
+      "connected": false
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "FAUAAAAAAAAAZ21haWwFAAAAAAAAAGZpcnN0AgUAAAAAAAAAZ21haWwGAAAAAAAAAHNlY29uZAkFAAAAAAAAAGdtYWlsBQAAAAAAAAB0aGlyZAEFAAAAAAAAAGdtYWlsBgAAAAAAAABmb3VydGg="
+      }
+    ],
+    "expected": {
+      "total": 1,
+      "items": [
+        {
+          "row": 1,
+          "active": 3,
+          "pending": 1
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 4,
+      "offset": 0,
+      "connected": true
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "FAUAAAAAAAAAZ21haWwFAAAAAAAAAGZpcnN0AgUAAAAAAAAAZ21haWwGAAAAAAAAAHNlY29uZAkFAAAAAAAAAGdtYWlsBQAAAAAAAAB0aGlyZAEFAAAAAAAAAGdtYWlsBgAAAAAAAABmb3VydGg="
+      }
+    ],
+    "expected": {
+      "total": 1,
+      "items": [
+        {
+          "row": 1,
+          "active": 3,
+          "pending": 1
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 3,
+      "offset": 0,
+      "connected": false
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "FAQAAAAAAAAAZ29uZQQAAAAAAAAAR29uZQQEAAAAAAAAAGtlZXAEAAAAAAAAAEtlZXAABQAAAAAAAABvdGhlcgUAAAAAAAAAT3RoZXI="
+      }
+    ],
+    "expected": {
+      "total": 2,
+      "items": [
+        {
+          "row": 1
+        },
+        {
+          "row": 2
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 3,
+      "offset": 0,
+      "connected": true
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "FAQAAAAAAAAAZ29uZQQAAAAAAAAAR29uZQQEAAAAAAAAAGtlZXAEAAAAAAAAAEtlZXAABQAAAAAAAABvdGhlcgUAAAAAAAAAT3RoZXI="
+      }
+    ],
+    "expected": {
+      "total": 2,
+      "items": [
+        {
+          "row": 1
+        },
+        {
+          "row": 2
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 4,
+      "offset": 0,
+      "connected": false
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "AgEAAAAAAAAAegQAAAAAAAAAU2FtZQEBAAAAAAAAAGEEAAAAAAAAAHNhbWUAAQAAAAAAAABjBQAAAAAAAABBTFBIQQkBAAAAAAAAAGQGAAAAAAAAAOS4reaWhw=="
+      }
+    ],
+    "expected": {
+      "total": 4,
+      "items": [
+        {
+          "row": 2
+        },
+        {
+          "row": 0,
+          "pending": 0
+        },
+        {
+          "row": 1,
+          "active": 1
+        },
+        {
+          "row": 3,
+          "active": 3
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 4,
+      "offset": 0,
+      "connected": true
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "AgEAAAAAAAAAegQAAAAAAAAAU2FtZQEBAAAAAAAAAGEEAAAAAAAAAHNhbWUAAQAAAAAAAABjBQAAAAAAAABBTFBIQQkBAAAAAAAAAGQGAAAAAAAAAOS4reaWhw=="
+      }
+    ],
+    "expected": {
+      "total": 4,
+      "items": [
+        {
+          "row": 2
+        },
+        {
+          "row": 1,
+          "active": 1
+        },
+        {
+          "row": 0,
+          "pending": 0
+        },
+        {
+          "row": 3,
+          "active": 3
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 3,
+      "offset": 0,
+      "connected": false
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "AQUAAAAAAAAAYmxhbmsAAAAAAAAAAAIDAAAAAAAAAG51bA0AAAAAAAAAcHJpdmF0ZQBsYWJlbAQHAAAAAAAAAHVuaWNvZGUEAAAAAAAAAMOEw5Y="
+      }
+    ],
+    "expected": {
+      "total": 3,
+      "items": [
+        {
+          "row": 0,
+          "active": 0
+        },
+        {
+          "row": 1,
+          "pending": 1
+        },
+        {
+          "row": 2
+        }
+      ]
+    }
+  },
+  {
+    "instance_id": "apps-accounts",
+    "contract": "steward.apps-account-inventory/1",
+    "input": {
+      "count": 3,
+      "offset": 0,
+      "connected": true
+    },
+    "inputs": [
+      {
+        "id": "account-inventory",
+        "data": "AQUAAAAAAAAAYmxhbmsAAAAAAAAAAAIDAAAAAAAAAG51bA0AAAAAAAAAcHJpdmF0ZQBsYWJlbAQHAAAAAAAAAHVuaWNvZGUEAAAAAAAAAMOEw5Y="
+      }
+    ],
+    "expected": {
+      "total": 3,
+      "items": [
+        {
+          "row": 0,
+          "active": 0
+        },
+        {
+          "row": 1,
+          "pending": 1
+        },
+        {
+          "row": 2
+        }
+      ]
+    }
+  }
+]

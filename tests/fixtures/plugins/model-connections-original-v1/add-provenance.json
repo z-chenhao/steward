@@ -1,0 +1,6 @@
+{
+  "source": "Executed unchanged Server.addModel before policy migration",
+  "native_source_sha256": "5e0838bf71c1c99293b0d6721ae64f12640617cb8d5f946eb2139f62d7fa7f42",
+  "fixture_sha256": "e25c12fca95696277ed7e1a4749c49bf9d1c49b29b2ecbee7b481755d4ed6026",
+  "cases": 12
+}

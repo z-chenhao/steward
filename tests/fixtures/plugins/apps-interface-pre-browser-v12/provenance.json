@@ -1,0 +1,15 @@
+{
+  "accepted_parent": "apps61-pages-accepted-receipt.json",
+  "files": {
+    "README.md": "d9c8449ed539c099544c964a8ba59e14bd1959fd957a1af22c90f8d90ab2844e",
+    "app-connections.ts.txt": "4bc46400f6b521ecd064914099dafb62d47bb5e47b3793bfd34a98fa1f84e4b7",
+    "apps.css": "7865a70efe6e3efc623afd876b7b557ca236f2037a5475e44b674693e704d0c1",
+    "localization.go.txt": "6c4cfe800ba55ad5212c448fbb2914859341312e4779a8a2bae0454db30eb065",
+    "manifest.json": "7334528dfc2a813986abe13c9fd38b9aa454e9a23e63fada6a187075e876a9e0",
+    "markup.go.txt": "aa62c665660d4f65b369937fe75564eb7915aed7229946ea73a4d67a5e9a27f2",
+    "profile.go.txt": "609ce3316b5693a70d5f6582c8012e4c89e8cfe204c9ffd9971667c3cb395358",
+    "views/card.json": "49a3e75ad12bb0db07e21df166d65eb53448baabf194901682e2d2a0ab811cb4",
+    "views/markup.json": "0559677684524f67765caa40d8070a11dc3086dec400987084ea7c5092020301",
+    "views/sidebar.json": "aaf10bf426c453872ab0a84addfdb4fecfb8452460c670632701159af14685c9"
+  }
+}

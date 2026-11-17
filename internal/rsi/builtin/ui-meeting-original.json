@@ -1,0 +1,49 @@
+[
+  {
+    "contract": "steward.ui-document/1",
+    "document": "{\"title\":\"Times\",\"fallback\":\"Two actual options\",\"components\":[{\"name\":\"scheduleTime\",\"props\":{\"reasonForScheduling\":\"Review\",\"meetingDuration\":30,\"timeSlots\":[{\"date\":\"2026-11-17\",\"time\":\"09:15\"},{\"date\":\"2026-11-18\",\"time\":\"14:00\"}]}}]}",
+    "expected": {
+      "meeting_views": [
+        {
+          "component": 0,
+          "title": "Review",
+          "slots": [
+            {
+              "choice": 0,
+              "date": "2026-11-17",
+              "time": "09:15",
+              "duration": "30 min"
+            },
+            {
+              "choice": 1,
+              "date": "2026-11-18",
+              "time": "14:00",
+              "duration": "30 min"
+            }
+          ],
+          "decline_label": "None of these work",
+          "selected_title": "Time Selected",
+          "declined_title": "No Time Selected",
+          "saving_label": "Saving selection…",
+          "select_error": "Your selection was not confirmed. Retry the same time.",
+          "decline_error": "Your selection was not confirmed. Retry the same choice.",
+          "saved_label": "Time preference saved."
+        }
+      ],
+      "component_text": [
+        "Review\n2026-11-17 09:15 (30 min)\n2026-11-18 14:00 (30 min)"
+      ],
+      "document_json": "{\"title\":\"Times\",\"fallback\":\"Two actual options\",\"components\":[{\"name\":\"scheduleTime\",\"props\":{\"reasonForScheduling\":\"Review\",\"meetingDuration\":30,\"timeSlots\":[{\"date\":\"2026-11-17\",\"time\":\"09:15\"},{\"date\":\"2026-11-18\",\"time\":\"14:00\"}]}}]}",
+      "readable": "Two actual options",
+      "error_code": ""
+    }
+  },
+  {
+    "contract": "steward.ui-preview/1",
+    "document": "{\"title\":\"Times\",\"fallback\":\"Two actual options\",\"components\":[{\"name\":\"scheduleTime\",\"props\":{\"reasonForScheduling\":\"Review\",\"meetingDuration\":30,\"timeSlots\":[{\"date\":\"2026-11-17\",\"time\":\"09:15\"},{\"date\":\"2026-11-18\",\"time\":\"14:00\"}]}}",
+    "expected": {
+      "valid": true,
+      "preview_json": "{\"meeting_views\":[{\"component\":0,\"title\":\"Review\",\"slots\":[{\"choice\":0,\"date\":\"2026-11-17\",\"time\":\"09:15\",\"duration\":\"30 min\"},{\"choice\":1,\"date\":\"2026-11-18\",\"time\":\"14:00\",\"duration\":\"30 min\"}],\"decline_label\":\"None of these work\",\"selected_title\":\"Time Selected\",\"declined_title\":\"No Time Selected\",\"saving_label\":\"Saving selection…\",\"select_error\":\"Your selection was not confirmed. Retry the same time.\",\"decline_error\":\"Your selection was not confirmed. Retry the same choice.\",\"saved_label\":\"Time preference saved.\"}],\"title\":\"Times\",\"components\":[{\"name\":\"scheduleTime\",\"props\":{\"meetingDuration\":30,\"reasonForScheduling\":\"Review\",\"timeSlots\":[{\"date\":\"2026-11-17\",\"time\":\"09:15\"},{\"date\":\"2026-11-18\",\"time\":\"14:00\"}]}}]}"
+    }
+  }
+]

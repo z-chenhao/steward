@@ -81,12 +81,13 @@ const progressCTE = `WITH current_runs AS (
  (coalesce(c.approval,0) OR EXISTS(SELECT 1 FROM spend_approval a WHERE a.root_run_id=root.run_id AND a.status='pending')) approval,
  coalesce(c.input,0) input,
  EXISTS(SELECT 1 FROM tool_invocation i JOIN current_runs r USING(run_id) WHERE r.task_id=t.task_id AND i.status='unknown') unknown
- ,coalesce(a.automation_id,'') schedule_id,coalesce(a.instruction,'') schedule_instruction,coalesce(a.trigger_type,'') trigger_type,coalesce(a.trigger_spec,'') trigger_spec,coalesce(a.timezone,'') timezone,coalesce(a.version,0) schedule_revision,coalesce(a.enabled,0) schedule_enabled,a.next_fire_at,a.below_value,coalesce(a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=t.agent_id),0),0) schedule_visible
+ ,coalesce(a.automation_id,'') schedule_id,coalesce(a.instruction,'') schedule_instruction,coalesce(a.trigger_type,'') trigger_type,coalesce(a.trigger_spec,'') trigger_spec,coalesce(a.timezone,'') timezone,coalesce(a.version,0) schedule_revision,coalesce(a.enabled,0) schedule_enabled,a.next_fire_at,a.below_value,a.presentation_json schedule_presentation,
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-display/1') schedule_display_managed,coalesce(a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=t.agent_id),0),0) schedule_visible
  FROM task t LEFT JOIN counts c USING(task_id) LEFT JOIN current_runs root ON root.task_id=t.task_id AND root.worker_position='root' LEFT JOIN automation a ON a.task_id=t.task_id AND a.agent_id=t.agent_id
  WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
 )
 `
-const columns = `task_ref,title,status,progress_summary,activity_at,created_at,task_epoch,root_status,wait_reason,queued,running,succeeded,failed,waiting,approval,input,unknown,anchor_task,completion_policy,schedule_id,schedule_instruction,trigger_type,trigger_spec,timezone,schedule_revision,schedule_enabled,next_fire_at,below_value,schedule_visible`
+const columns = `task_ref,title,status,progress_summary,activity_at,created_at,task_epoch,root_status,wait_reason,queued,running,succeeded,failed,waiting,approval,input,unknown,anchor_task,completion_policy,schedule_id,schedule_instruction,trigger_type,trigger_spec,timezone,schedule_revision,schedule_enabled,next_fire_at,below_value,schedule_presentation,schedule_display_managed,schedule_visible`
 
 type scanner interface{ Scan(...any) error }
 
@@ -96,13 +97,21 @@ func scan(row scanner) (task.Entry, int64, error) {
 	p := &v.Progress
 	var schedule task.Schedule
 	var scheduleID string
-	var visible bool
+	var visible, displayManaged bool
+	var presentation sql.NullString
 	var next, below sql.NullInt64
-	err := row.Scan(&v.TaskRef, &v.Title, &v.Status, &v.ProgressSummary, &at, &created, &v.Epoch, &p.Root, &p.Wait, &p.Queued, &p.Running, &p.Succeeded, &p.Failed, &p.Waiting, &p.Approval, &p.Input, &p.Unknown, &v.GoalSummary, &v.CompletionPolicy, &scheduleID, &schedule.Instruction, &schedule.Type, &schedule.Spec, &schedule.Timezone, &schedule.Version, &schedule.Enabled, &next, &below, &visible)
+	err := row.Scan(&v.TaskRef, &v.Title, &v.Status, &v.ProgressSummary, &at, &created, &v.Epoch, &p.Root, &p.Wait, &p.Queued, &p.Running, &p.Succeeded, &p.Failed, &p.Waiting, &p.Approval, &p.Input, &p.Unknown, &v.GoalSummary, &v.CompletionPolicy, &scheduleID, &schedule.Instruction, &schedule.Type, &schedule.Spec, &schedule.Timezone, &schedule.Version, &schedule.Enabled, &next, &below, &presentation, &displayManaged, &visible)
+	if err != nil {
+		return v, created, err
+	}
 	if scheduleID != "" {
 		if !visible {
 			schedule = task.Schedule{Version: schedule.Version, Enabled: schedule.Enabled, Restricted: true}
 		} else {
+			schedule.Presentation, err = decodeSchedulePresentation(presentation, displayManaged, schedule.Type)
+			if err != nil {
+				return v, created, err
+			}
 			if next.Valid {
 				schedule.NextAt = stamp(next.Int64)
 			}

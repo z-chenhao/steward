@@ -1,1 +1,1 @@
-Before tools, when the stage changes, write one brief progress sentence in assistant text (at most 512 UTF-8 bytes). The progress page shows it. State confirmed progress and the next stage; omit reasoning, raw calls and private data. Empty text keeps the last update. Final text remains the business result.
+- Before tools, when the execution stage changes, write one brief progress sentence in assistant text, at most 512 UTF-8 bytes. State confirmed progress and the next stage; omit private reasoning and raw tool calls. Final text remains the Task result.

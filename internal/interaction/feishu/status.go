@@ -9,16 +9,22 @@ import (
 	"time"
 )
 
-type ConnectionStatus struct {
+// StatusFacts are authoritative credential/transport observations, without
+// replaceable repair instructions or presentation policy.
+type StatusFacts struct {
 	Channel   string     `json:"channel"`
 	Mode      string     `json:"mode"`
 	State     string     `json:"state"`
-	Action    string     `json:"action,omitempty"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 }
+type ConnectionStatus struct {
+	StatusFacts
+	Action              string `json:"action,omitempty"`
+	GuidanceUnavailable bool   `json:"guidance_unavailable,omitempty"`
+}
 
-func (c Client) ConnectionStatus() ConnectionStatus {
-	status := ConnectionStatus{Channel: "feishu", Mode: "external_token", State: "unchecked", Action: "Run channel check to verify credentials without sending a message."}
+func (c Client) ConnectionFacts() StatusFacts {
+	status := StatusFacts{Channel: "feishu", Mode: "external_token", State: "unchecked"}
 	if c.Config.AppSecretRef != "" {
 		status.Mode = "app_credentials"
 	}
@@ -30,37 +36,36 @@ func (c Client) ConnectionStatus() ConnectionStatus {
 			status.ExpiresAt = &expires
 		}
 		if c.tokens.lastErr != nil {
-			status.State, status.Action = credentialState(c.tokens.lastErr)
+			status.State = credentialState(c.tokens.lastErr)
 		}
 	}
 	return status
 }
-func credentialState(err error) (string, string) {
+func credentialState(err error) string {
 	switch {
 	case errors.Is(err, ErrCredentialsRejected), errors.Is(err, ErrAuthentication):
-		return "credentials_rejected", "Check the configured application credentials or replace the external access token."
+		return "credentials_rejected"
 	case errors.Is(err, ErrCredentialsUnavailable):
-		return "credentials_unavailable", "Check SecretStore access and connectivity to the Feishu API."
+		return "credentials_unavailable"
 	default:
-		return "unavailable", "Check connectivity, application activation and bot permissions."
+		return "unavailable"
 	}
 }
 
 // Check only issues a credential and reads the bot's own information. It never
 // changes bindings, sends a message or reconciles an unknown delivery.
-func (c Client) Check(ctx context.Context) ConnectionStatus {
-	status := c.ConnectionStatus()
+func (c Client) CheckFacts(ctx context.Context) StatusFacts {
+	status := c.ConnectionFacts()
 	err := c.checkBot(ctx)
 	if errors.Is(err, ErrAuthentication) && c.Config.AppSecretRef != "" {
 		err = c.checkBot(ctx)
 	} // A read-only query can safely refresh once.
-	status = c.ConnectionStatus()
+	status = c.ConnectionFacts()
 	if err != nil {
-		status.State, status.Action = credentialState(err)
+		status.State = credentialState(err)
 		return status
 	}
 	status.State = "ready"
-	status.Action = ""
 	return status
 }
 func (c Client) checkBot(ctx context.Context) error {

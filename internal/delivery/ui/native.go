@@ -170,20 +170,32 @@ func nativeHTML(c Component) string {
 	if c.Name != "scheduleTime" || c.FormID == "" {
 		return `<p class="semantic">` + template.HTMLEscapeString(c.Text) + `</p>`
 	}
-	var p nativeProps
-	_ = json.Unmarshal(c.Props, &p)
+	if c.MeetingManaged {
+		if c.MeetingView == nil {
+			return `<p class="semantic">` + template.HTMLEscapeString(c.Text) + `</p>`
+		}
+		return meetingViewHTML(c)
+	}
+	return legacyMeetingHTML(c)
+}
+
+// Fixed escaped form driver; owning labels and original choices arrive from
+// the accepted normalizer receipt. No plugin code runs in the browser.
+func meetingViewHTML(c Component) string {
+	v := c.MeetingView
+	esc := template.HTMLEscapeString
 	disabled := ""
 	if c.Disabled || c.Submitted {
 		disabled = " disabled"
 	}
 	var out strings.Builder
-	fmt.Fprintf(&out, `<form class="native-meeting-fallback" method="post" action="/ui/form" data-form-id="%s" data-submitted="%t"><p>%s</p><input type="hidden" name="message_id" value="%s"><input type="hidden" name="form_id" value="%s"><fieldset%s>`, c.FormID, c.Submitted, template.HTMLEscapeString(p.Reason), template.HTMLEscapeString(c.MessageID), c.FormID, disabled)
-	for i, slot := range p.TimeSlots {
-		fmt.Fprintf(&out, `<button name="field.choice" value="%d">%s · %s (%g min)</button>`, i, template.HTMLEscapeString(slot.Date), template.HTMLEscapeString(slot.Time), p.Duration)
+	fmt.Fprintf(&out, `<form class="native-meeting-fallback" method="post" action="/ui/form" data-form-id="%s" data-submitted="%t"><p>%s</p><input type="hidden" name="message_id" value="%s"><input type="hidden" name="form_id" value="%s"><fieldset%s>`, esc(c.FormID), c.Submitted, esc(v.Title), esc(c.MessageID), esc(c.FormID), disabled)
+	for _, slot := range v.Slots {
+		fmt.Fprintf(&out, `<button name="field.choice" value="%d">%s · %s (%s)</button>`, slot.Choice, esc(slot.Date), esc(slot.Time), esc(slot.Duration))
 	}
-	out.WriteString(`<button name="field.choice" value="decline">None of these work</button></fieldset>`)
+	fmt.Fprintf(&out, `<button name="field.choice" value="decline">%s</button></fieldset>`, esc(v.DeclineLabel))
 	if c.Submitted {
-		out.WriteString(`<p role="status">Time preference saved.</p>`)
+		fmt.Fprintf(&out, `<p role="status">%s</p>`, esc(v.SavedLabel))
 	}
 	out.WriteString(`</form>`)
 	return out.String()

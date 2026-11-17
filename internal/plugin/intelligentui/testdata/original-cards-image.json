@@ -1,0 +1,21 @@
+{
+  "props": {
+    "title": "Card choices",
+    "items": [
+      {
+        "title": "Alpha",
+        "text": "Ship safe core <script>not executable</script>",
+        "url": "https://example.com/alpha",
+        "label": "Details",
+        "image_ref": "artifact:0f51d8d57d9af653eb6c7f64840fc27e283a5f0ab2cd0dd5e6131fbffad08e59"
+      },
+      {
+        "title": "Beta",
+        "text": "Second choice"
+      }
+    ]
+  },
+  "original_html": "<section class=\"native-carousel\"><div class=\"native-carousel-heading\"><h3 class=\"native-answer-title\">Card choices</h3><div class=\"native-carousel-controls\"><button class=\"answer-icon-button\" type=\"button\" aria-label=\"Previous card\" disabled=\"\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 5-7 7 7 7\"></path></svg></button><span>1 / 2</span><button class=\"answer-icon-button\" type=\"button\" aria-label=\"Next card\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></button></div></div><div class=\"native-carousel-list\"><article data-slot=\"card\" class=\"native-result-card\" data-selected=\"false\"><img loading=\"lazy\" alt=\"\" src=\"/ui/image?ref=artifact%3A0f51d8d57d9af653eb6c7f64840fc27e283a5f0ab2cd0dd5e6131fbffad08e59\"><button type=\"button\" class=\"native-card-title\" aria-pressed=\"false\">Alpha</button><p>Ship safe core &lt;script&gt;not executable&lt;/script&gt;</p><a href=\"https://example.com/alpha\" target=\"_blank\" rel=\"noopener noreferrer\">Details</a></article><article data-slot=\"card\" class=\"native-result-card\" data-selected=\"false\"><button type=\"button\" class=\"native-card-title\" aria-pressed=\"false\">Beta</button><p>Second choice</p></article></div></section>",
+  "opaque_html": "<section class=\"native-carousel\"><div class=\"native-carousel-heading\"><h3 class=\"native-answer-title\">Card choices</h3><div class=\"native-carousel-controls\"><button class=\"answer-icon-button\" type=\"button\" aria-label=\"Previous card\" disabled=\"\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 5-7 7 7 7\"></path></svg></button><span>1 / 2</span><button class=\"answer-icon-button\" type=\"button\" aria-label=\"Next card\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></button></div></div><div class=\"native-carousel-list\"><article data-slot=\"card\" class=\"native-result-card\" data-selected=\"false\"><img loading=\"lazy\" alt=\"\" data-card-image=\"0\"><button type=\"button\" class=\"native-card-title\" aria-pressed=\"false\">Alpha</button><p>Ship safe core &lt;script&gt;not executable&lt;/script&gt;</p><a href=\"https://example.com/alpha\" target=\"_blank\" rel=\"noopener noreferrer\">Details</a></article><article data-slot=\"card\" class=\"native-result-card\" data-selected=\"false\"><button type=\"button\" class=\"native-card-title\" aria-pressed=\"false\">Beta</button><p>Second choice</p></article></div></section>",
+  "normalization": "Only original image transport becomes component-local data-card-image=0; layout and text remain the pre-producer Chrome DOM."
+}

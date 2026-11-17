@@ -15,12 +15,14 @@ from terminal_driver import Terminal
 from verify_artifacts import ArtifactHarness
 from verify_children import state as child_state, check
 from verify_main import require
+from verify_tasks import select_managed_tasks
 
 
 def state(h):
     value = child_state(h)
     with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db, db:
         db.row_factory = sqlite3.Row
+        db.execute('BEGIN')
         for name, query in {
             'scheduler': 'SELECT * FROM scheduler_tree ORDER BY root_run_id',
             'health': 'SELECT * FROM scheduler_provider ORDER BY provider_key',
@@ -61,6 +63,7 @@ def setup(h):
                       'max_output_tokens': 8192, 'generation_defaults': {},
                       'compatibility': {'tool_result_format': 'openai'},
                       'capabilities': {'text_input': True}})
+    select_managed_tasks(h, delegation=True)
 
 
 def run(binary, evidence=None):

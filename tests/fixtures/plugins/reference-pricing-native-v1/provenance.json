@@ -1,0 +1,5 @@
+{
+  "capture": "executed original Catalog.Quote before candidate implementation",
+  "sha256": "ddf77ffaec035bfdbf0b311bbf7e0782cc50f6276193cc298b84eafc6101fc79",
+  "source": "internal/llm/pricing/catalog.go"
+}

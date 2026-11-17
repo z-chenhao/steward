@@ -1,4 +1,6 @@
 /bin/
+/bin-*/
+/bin[0-9]*/
 /evidence/
 /tmp/
 

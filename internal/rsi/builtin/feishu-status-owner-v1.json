@@ -1,0 +1,80 @@
+[
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-status/1",
+    "input": {
+      "state": "credentials_rejected"
+    },
+    "expected": {
+      "action": "Check the configured application credentials or replace the external access token."
+    }
+  },
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-status/1",
+    "input": {
+      "state": "credentials_unavailable"
+    },
+    "expected": {
+      "action": "Check SecretStore access and connectivity to the Feishu API."
+    }
+  },
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-status/1",
+    "input": {
+      "state": "not_configured"
+    },
+    "expected": {
+      "action": "Configure feishu and bind the exact owner and chat through channel manage."
+    }
+  },
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-status/1",
+    "input": {
+      "state": "ready"
+    },
+    "expected": {
+      "action": ""
+    }
+  },
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-status/1",
+    "input": {
+      "state": "unavailable"
+    },
+    "expected": {
+      "action": "Check connectivity, application activation and bot permissions."
+    }
+  },
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-status/1",
+    "input": {
+      "state": "unchecked"
+    },
+    "expected": {
+      "action": "Run channel check to verify credentials without sending a message."
+    }
+  },
+  {
+    "instance_id": "feishu-chat",
+    "contract": "steward.feishu-card/1",
+    "input": {
+      "fallback": "Full answer",
+      "components": [],
+      "linked": false,
+      "feedback": false,
+      "review": false
+    },
+    "expected": {
+      "mode": "plain",
+      "text": "Full answer",
+      "link_label": "",
+      "placeholder": "",
+      "submit_label": ""
+    }
+  }
+]

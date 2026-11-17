@@ -31,7 +31,7 @@ func (l *agentLoop) beginUIPreview(r Run) {
 			l.publish(e)
 			return
 		}
-		preview, ok := ui.ParsePreview(raw)
+		preview, ok := l.projectUIPreview(raw)
 		if !ok || execution.Err() != nil {
 			return
 		}
@@ -78,4 +78,20 @@ func (l *agentLoop) endUIPreview(r Run, kind, generation string) {
 	l.execution = l.uiBase
 	l.uiBase = nil
 	l.publish(e)
+}
+
+// Stores without the managed projection port retain their explicit historical
+// native boundary. A managed port failure never falls back to native parsing.
+func (l *agentLoop) projectUIPreview(raw string) (ui.Preview, bool) {
+	return l.projectUIPreviewContext(l.execution, raw)
+}
+
+func (l *agentLoop) projectUIPreviewContext(ctx context.Context, raw string) (ui.Preview, bool) {
+	if store, ok := l.options.Store.(interface {
+		UIPreview(context.Context, RunClaim, string) (ui.Preview, bool, error)
+	}); ok {
+		preview, valid, err := store.UIPreview(ctx, l.claim, raw)
+		return preview, valid && err == nil
+	}
+	return ui.ParsePreview(raw)
 }

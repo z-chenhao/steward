@@ -138,3 +138,27 @@ func TestUIPreviewRestoredAndNewSectionsKeepPrivateAcceptedOrder(t *testing.T) {
 		t.Fatal("private order metadata reached the browser", string(raw))
 	}
 }
+
+func TestUICardsPreviewPrivateBytesCountTowardSessionBound(t *testing.T) {
+	s := &Server{}
+	emit := func(kind string, p *ui.Preview) {
+		s.observeUIPreview(agent.Event{RunKind: "main", RunID: "run", PreviewID: "session", PreviewKey: "cards", Kind: kind, UIPreview: p})
+	}
+	emit("ui_preview_start", nil)
+	preview := ui.Preview{Title: "Draft", CardsManaged: true, CardsViews: map[int]ui.CardsView{1: {HTML: "PRIVATE_CARDS", CSS: "article{}", CompactMaxWidth: 760}}}
+	emit("ui_preview_update", &preview)
+	var cursor uint64
+	frame, _ := s.uiPreviews.read(&cursor)
+	wire, _ := json.Marshal(frame)
+	if len(frame.Items) != 1 || !strings.Contains(string(wire), `"cards_view":true`) || strings.Contains(string(wire), "PRIVATE_CARDS") {
+		t.Fatal("private view broadcast or marker missing", string(wire))
+	}
+	originalRevision := frame.Revision
+	preview.CardsViews = map[int]ui.CardsView{1: {HTML: strings.Repeat("x", uiPreviewMaxBytes+1), CSS: "article{}", CompactMaxWidth: 760}}
+	emit("ui_preview_update", &preview)
+	s.uiPreviews.mu.Lock()
+	defer s.uiPreviews.mu.Unlock()
+	if s.uiPreviews.frame.Revision != originalRevision || s.uiPreviews.frame.Items[0].CardsViews[1].HTML != "PRIVATE_CARDS" {
+		t.Fatal("oversized private view bypassed session bound")
+	}
+}

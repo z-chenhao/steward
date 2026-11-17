@@ -1,10 +1,32 @@
 package evidence
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"unicode/utf8"
 )
+
+func TestOwnerDocxCursorCannotChangeMainReader(t *testing.T) {
+	revision := "sha256:" + strings.Repeat("a", 64)
+	raw, _ := json.Marshal(Request{Ref: "artifact:document", ReaderRevision: revision, Offset: 4, Limit: 32})
+	if q, err := ParseOwner(string(raw)); err != nil || q.ReaderRevision != revision {
+		t.Fatal(q, err)
+	}
+	if _, err := Parse(string(raw)); err == nil {
+		t.Fatal("Main gained an operator interpreter selector")
+	}
+	for _, value := range []string{"sha256:" + strings.Repeat("g", 64), "/private/host/file", revision + "x"} {
+		raw, _ = json.Marshal(Request{Ref: "artifact:document", ReaderRevision: value})
+		if _, err := ParseOwner(string(raw)); err == nil {
+			t.Fatal("invalid reader identity accepted", value)
+		}
+	}
+	raw, _ = json.Marshal(Request{Ref: "conversation:message", ReaderRevision: revision})
+	if _, err := ParseOwner(string(raw)); err == nil {
+		t.Fatal("document cursor applied to another source kind")
+	}
+}
 
 func TestMemoryEvidenceReferenceIsOwnerOnly(t *testing.T) {
 	const valid = `{"ref":"memory:fact","offset":4,"limit":32,"links_offset":20}`
@@ -72,5 +94,24 @@ func TestEvidenceRequestAndUTF8Windows(t *testing.T) {
 	}
 	if err := Window(&Page{}, text, Request{Offset: 1, Limit: 4096}); err == nil {
 		t.Fatal("accepted a cursor inside UTF-8 character")
+	}
+}
+
+func TestOwnerPageRevisionCannotChangeMainReader(t *testing.T) {
+	revision := "sha256:" + strings.Repeat("a", 64)
+	for _, ref := range []string{"conversation:message", "task:task", "artifact:file", "memory:fact", "github:42"} {
+		raw, _ := json.Marshal(Request{Ref: ref, PageRevision: revision})
+		if q, err := ParseOwner(string(raw)); err != nil || q.PageRevision != revision {
+			t.Fatal(q, err)
+		}
+		if _, err := Parse(string(raw)); err == nil {
+			t.Fatal("Main could select an owner page interpreter", ref)
+		}
+	}
+	for _, value := range []string{revision + "x", "sha256:" + strings.Repeat("G", 64), "/private/source"} {
+		raw, _ := json.Marshal(Request{Ref: "task:x", PageRevision: value})
+		if _, err := ParseOwner(string(raw)); err == nil {
+			t.Fatal("invalid page revision accepted", value)
+		}
 	}
 }

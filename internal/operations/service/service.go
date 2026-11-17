@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,19 +31,23 @@ type Manager struct {
 }
 
 type settings struct {
-	Version        int    `json:"version"`
-	Installed      bool   `json:"installed"`
-	Enabled        bool   `json:"enabled"`
-	ConfigPath     string `json:"config_path,omitempty"`
-	LastRestart    int64  `json:"last_restart,omitempty"`
-	Restarts       int    `json:"restarts"`
-	Notice         string `json:"notice"`
-	NoticeSequence int64  `json:"notice_sequence"`
+	Deployment     int64           `json:"deployment,omitempty"`
+	RecipeStatus   string          `json:"restart_recipe_status,omitempty"`
+	Recipe         *RestartReceipt `json:"restart_recipe,omitempty"`
+	Version        int             `json:"version"`
+	Installed      bool            `json:"installed"`
+	Enabled        bool            `json:"enabled"`
+	ConfigPath     string          `json:"config_path,omitempty"`
+	LastRestart    int64           `json:"last_restart,omitempty"`
+	Restarts       int             `json:"restarts"`
+	Notice         string          `json:"notice"`
+	NoticeSequence int64           `json:"notice_sequence"`
 }
 
 type heartbeat struct {
-	Code string `json:"code"`
-	At   int64  `json:"at"`
+	Deployment int64  `json:"deployment,omitempty"`
+	Code       string `json:"code"`
+	At         int64  `json:"at"`
 }
 
 // Status exposes fixed diagnostic codes, never configuration or provider text.
@@ -178,10 +183,24 @@ func (m *Manager) load() (settings, error) {
 	var s settings
 	err := readJSON(filepath.Join(m.dir(), "settings.json"), &s)
 	if os.IsNotExist(err) {
-		return settings{Version: 1}, nil
+		return settings{Version: 2, RecipeStatus: recipePending}, nil
 	}
-	if err != nil || s.Version != 1 || s.Restarts < 0 || s.NoticeSequence < 0 || s.LastRestart < 0 || s.ConfigPath != "" && !filepath.IsAbs(s.ConfigPath) {
+	if err != nil || (s.Version != 1 && s.Version != 2) || s.Deployment < 0 || s.Restarts < 0 || s.NoticeSequence < 0 || s.LastRestart < 0 || s.ConfigPath != "" && !filepath.IsAbs(s.ConfigPath) {
 		return s, errors.New("invalid or incompatible service settings")
+	}
+	if s.Version == 2 {
+		switch s.RecipeStatus {
+		case recipePending, recipeUnavailable:
+			if s.Recipe != nil {
+				return s, errors.New("invalid service restart state")
+			}
+		case recipeAccepted:
+			if s.Recipe == nil || !validRestartReceipt(*s.Recipe) {
+				return s, errors.New("invalid service restart state")
+			}
+		default:
+			return s, errors.New("invalid service restart state")
+		}
 	}
 	return s, nil
 }
@@ -240,6 +259,7 @@ func (m *Manager) Install(ctx context.Context, configPath string) error {
 		return err
 	}
 	wasInstalled := s.Installed
+	s.Version, s.RecipeStatus, s.Recipe = 2, recipePending, nil
 	s.Installed, s.ConfigPath = true, configPath
 	m.notify(&s, "stopped")
 	// Record ownership before publishing either job. If installation is killed
@@ -296,10 +316,15 @@ func (m *Manager) Start(ctx context.Context) error {
 			return nil
 		}
 	}
+	if s.Deployment == math.MaxInt64 {
+		return errors.New("service deployment exhausted")
+	}
+	s.Deployment++
+	s.Version, s.RecipeStatus, s.Recipe = 2, recipePending, nil
 	s.Enabled, s.Restarts, s.LastRestart = true, 0, 0
 	m.notify(&s, "starting")
 	// Clear prior fatal health before accepting a new explicit start.
-	if err := writeJSON(filepath.Join(m.dir(), "heartbeat.json"), heartbeat{Code: "starting", At: m.now().UnixMicro()}); err != nil {
+	if err := writeJSON(filepath.Join(m.dir(), "heartbeat.json"), heartbeat{Deployment: s.Deployment, Code: "starting", At: m.now().UnixMicro()}); err != nil {
 		return err
 	}
 	if err := m.save(s); err != nil {
@@ -383,15 +408,15 @@ func (m *Manager) status(s settings) (Status, error) {
 	case !v.Running:
 		v.Code = "process_exited"
 		var h heartbeat
-		if readJSON(filepath.Join(m.dir(), "heartbeat.json"), &h) == nil && (h.Code == "configuration_error" || h.Code == "startup_failed") {
+		if m.readHeartbeat(s, &h) == nil && (h.Code == "configuration_error" || h.Code == "startup_failed") {
 			v.Code = h.Code
 		}
-		if s.Notice == "restart_limit" {
-			v.Code = "restart_limit"
+		if s.Notice == "restart_limit" || s.Notice == "restart_policy_unavailable" {
+			v.Code = s.Notice
 		}
 	default:
 		var h heartbeat
-		if readJSON(filepath.Join(m.dir(), "heartbeat.json"), &h) != nil || h.At <= 0 || !healthCode(h.Code) {
+		if m.readHeartbeat(s, &h) != nil || h.At <= 0 || !healthCode(h.Code) {
 			v.Code = "health_unavailable"
 		} else {
 			v.Code = h.Code
@@ -439,14 +464,17 @@ func (m *Manager) Inspect(ctx context.Context) (Status, error) {
 		return v, nil
 	}
 	code := v.Code
+	recipe, hasRecipe := s.restartRecipe()
 	if !v.Running {
 		var h heartbeat
-		_ = readJSON(filepath.Join(m.dir(), "heartbeat.json"), &h)
-		if h.Code == "configuration_error" || h.Code == "startup_failed" {
+		healthErr := m.readHeartbeat(s, &h)
+		if healthErr == nil && (h.Code == "configuration_error" || h.Code == "startup_failed") {
 			code = h.Code
-		} else if s.Restarts >= 3 {
+		} else if !hasRecipe {
+			code = "restart_policy_unavailable"
+		} else if s.Restarts >= int(recipe.Attempts) {
 			code = "restart_limit"
-		} else if m.now().Sub(time.UnixMicro(s.LastRestart)) >= time.Minute {
+		} else if m.now().Sub(time.UnixMicro(s.LastRestart)) >= time.Duration(recipe.RetryDelayMS)*time.Millisecond {
 			s.Restarts++
 			s.LastRestart = m.now().UnixMicro()
 			// Persist retry admission before dispatch, so inspector crashes cannot
@@ -476,8 +504,10 @@ func (m *Manager) Inspect(ctx context.Context) (Status, error) {
 }
 
 type Session struct {
-	manager *Manager
-	lock    *os.File
+	deployment    int64
+	recipePending bool
+	manager       *Manager
+	lock          *os.File
 }
 
 // Begin checks persistent human intent and holds the OS lifetime lock before
@@ -499,7 +529,7 @@ func (m *Manager) Begin() (*Session, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	session := &Session{manager: m, lock: lock}
+	session := &Session{manager: m, lock: lock, deployment: s.Deployment, recipePending: s.Version == 2 && s.RecipeStatus == recipePending}
 	if err := session.Heartbeat("starting"); err != nil {
 		lock.Close()
 		return nil, "", err
@@ -511,7 +541,7 @@ func (s *Session) Heartbeat(code string) error {
 	if !healthCode(code) {
 		return errors.New("invalid service health code")
 	}
-	return writeJSON(filepath.Join(s.manager.dir(), "heartbeat.json"), heartbeat{Code: code, At: s.manager.now().UnixMicro()})
+	return writeJSON(filepath.Join(s.manager.dir(), "heartbeat.json"), heartbeat{Deployment: s.deployment, Code: code, At: s.manager.now().UnixMicro()})
 }
 
 func healthCode(code string) bool {

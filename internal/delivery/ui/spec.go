@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/z-chenhao/assistant/internal/plugin/intelligentui/contract"
 	"html/template"
 	"strings"
 
@@ -22,8 +23,15 @@ type Field struct {
 	Value string `json:"value"`
 }
 type Component struct {
+	ActionView     *contract.ActionView  `json:"-"`
+	ActionManaged  bool                  `json:"action_view,omitempty"`
+	MeetingView    *contract.MeetingView `json:"-"`
+	MeetingManaged bool                  `json:"meeting_view,omitempty"`
+	// Authorized server-side display only; never part of frozen identity or wire.
+	FormView    *FormView       `json:"-"`
 	Title       string          `json:"title,omitempty"`
 	WidgetRef   string          `json:"widget_ref,omitempty"`
+	ViewRef     string          `json:"view_ref,omitempty"`
 	Type        string          `json:"type,omitempty"`
 	Name        string          `json:"name,omitempty"`
 	Props       json.RawMessage `json:"props,omitempty"`
@@ -42,9 +50,11 @@ type Component struct {
 	Disabled    bool            `json:"disabled,omitempty"`
 }
 type Spec struct {
-	SchemaVersion int         `json:"schema_version"`
-	Fallback      string      `json:"fallback"`
-	Components    []Component `json:"components"`
+	ActionViews   map[string]contract.ActionView  `json:"action_views,omitempty"`
+	MeetingViews  map[string]contract.MeetingView `json:"meeting_views,omitempty"`
+	SchemaVersion int                             `json:"schema_version"`
+	Fallback      string                          `json:"fallback"`
+	Components    []Component                     `json:"components"`
 }
 
 func Hash(v any) string {
@@ -79,7 +89,9 @@ func Compose(e delivery.Envelope) Spec {
 	s.Fallback = strings.TrimSpace(s.Fallback)
 	return s
 }
-func valid(c Component) bool {
+
+// ValidComponent checks the controlled semantic component grammar.
+func ValidComponent(c Component) bool {
 	if len(c.Text) > 128<<10 {
 		return false
 	}
@@ -127,13 +139,29 @@ var component = template.Must(template.New("component").Parse(`{{if eq .Type "wi
 // HTML's only trusted source is this fixed escaped template. A component failure
 // degrades locally. Unknown versions and malformed projections retain semantics.
 func HTML(raw json.RawMessage, fallback string) template.HTML {
+	return HTMLWithFormDisplays(raw, fallback, nil)
+}
+
+// HTMLWithFormDisplays accepts only Host-authorized display data from the
+// private Web projection envelope; it never changes the serialized component.
+func HTMLWithFormDisplays(raw json.RawMessage, fallback string, displays map[string]FormView) template.HTML {
 	var s Spec
 	if json.Unmarshal(raw, &s) != nil || s.SchemaVersion != Version || len(s.Components) > 128 {
 		return template.HTML(template.HTMLEscapeString(fallback))
 	}
 	var out bytes.Buffer
 	for _, c := range s.Components {
-		if !valid(c) {
+		if c.MeetingManaged {
+			if view, ok := s.MeetingViews[c.FormID]; ok {
+				c.MeetingView = &view
+			}
+		}
+		if c.Name == "steward.form" && c.ViewRef != "" && c.FormID != "" {
+			if view, ok := displays[c.FormID]; ok {
+				c.FormView = &view
+			}
+		}
+		if !ValidComponent(c) {
 			out.WriteString(`<p class="semantic">` + template.HTMLEscapeString(fallback) + `</p>`)
 			continue
 		}
@@ -165,7 +193,7 @@ func Card(s Spec) map[string]any {
 	if s.SchemaVersion == Version {
 		parts := []string{}
 		for _, c := range s.Components {
-			if !valid(c) {
+			if !ValidComponent(c) {
 				parts = append(parts, s.Fallback)
 				continue
 			}

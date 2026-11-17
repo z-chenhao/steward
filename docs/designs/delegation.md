@@ -17,6 +17,35 @@ flowchart TD
     C --> R
 ```
 
+## 独立委派方法与递归政策（私有实验接口）
+
+当前消费者是 Root 首次上下文初始化与既有 Direct Tool／Code Mode Child admission。原 `children_test.go` 的真实接纳、去重、预算、权限削减、暂停／审批与结果回传构成提取依据。只提取委派提示和当前树下可选择的深度／数量政策，不引入新任务对象或调度器。
+
+```mermaid
+sequenceDiagram
+    participant R as Root 初始化
+    participant P as 固定版本 delegation 插件
+    participant H as Host
+    participant C as Child／更深 Child
+    R->>P: 冻结的深度／后代数量上限
+    P-->>R: 更窄预算＋委派方法
+    R->>H: 同一事务保存方法绑定＋ContextReady
+    H->>H: 原 run_tree 上限／计数保持不变
+    H->>C: 原子接纳显式子任务／成果引用
+    C->>H: 仍使用原树计数，并同时受更窄政策限制
+    C-->>H: 仅向直接 Parent 返回原结果
+```
+
+`steward.delegation-policy/1` 只接收冻结 `depth`／`descendants` 上限，返回不超过这些上限的预算与最多 4096 UTF-8 字节的 `instructions`。不传 Task、Parent/Child 正文、模型、工具或成果身份。默认返回原配置与原提示；独立版本可收紧递归／数量并改进委派方法。全局并发、Tool／模型调用预算、深度／后代数的硬上限始终属于 Host。
+
+`run_tree` 的原冻结上限和单次接纳计数不改写。schema v58 增加私有、不可替换／修改／删除的 `delegation_policy_binding`；Root 初始化通过纯 `ReadService` 在 writer 外选择方法，再把该绑定与已初始化 checkpoint 原子提交。绑定是方法和已初始化上下文不可分离所需的领域状态，不能用可变设置或解析模型提示来充当安全预算。Child 的 admission 同时满足原树上限与该树固定的更窄政策。
+
+Host 依据精确冻结工具集重建 capability 提示，角色、安全、执行规则和原输入逐字保留。仅已管理的 Root 保存 typed `DelegationText` 贡献；Child 继承它，并依据自身削减后的工具重建能力段，不加载当前插件或 Parent 对话。Root 专属阶段进度仍不进入 Child。原模型和工具声明、可访问成果、父子关系、claim／epoch、重复接纳、计数和回执事务、unknown 传播与结果归一化保持原 Host 裁决。
+
+Root／Child 的图固定，旧树不追随当前激活。历史 native 树不回溯启用；回滚、退役保留在途 Root 的方法和包。已迁移功能停用后，新 Root 保留自身工作能力，但明确提示委派不可用，Child admission 返回 PROVIDER_UNAVAILABLE，不复活原生委派政策；没有给旧快照增加工具。隔离、停止、暂停和 Forget 仍优先。无效候选不能扩张 Host 上限：在模型／Child 工作前以 MODEL_INCOMPATIBLE 终结该 Root，Task 保持原可续作状态，由既有 Reporter 通知 Main，避免初始化热重试。
+
+公开范围限于仓库内部实验契约，不开放 Tree、Task、Run、SQL、模型选择、权限扩大、Tool 转发或通用调度政策。保留原不可变树上限，而增设有界绑定，避免为方法换版松开原数据库安全约束；未采用每次 Child 接纳都在持有 writer 时调用插件，也未让方法返回替代子任务或成果引用。纯计算未接纳时可重算，已接纳方法不重新选择；没有第二份外部效果 ledger。确定性测试证明控制与恢复机制，不能证明真实模型一定能把复杂工作拆好。
+
 ## 当前流程与目标差异
 
 父 Worker 提交显式 task/refs → Host 验证能力与限额 → 原子创建 Child → Child 执行 → 保存最终结果 → Parent 采用结果并继续。
@@ -41,7 +70,7 @@ flowchart TD
 
 #### 3.8 Main、Root Worker 与 Child 的 Prompt 组装
 
-Prompt 使用可组合片段，不为三种 Run 维护三份彼此分叉的完整 System Prompt。三者统一按 role → safety → `<execution_rules>` → `<capability_guidance>` 拼成一条 system message；Root 身份属于 role，阶段进度要求属于 execution。Child 继承 Parent 冻结的共享 Worker 角色、安全与执行规则，Host 保存的 Child 专用文本排除 Root 身份及进度要求：
+Prompt 使用可组合片段，不为三种 Run 维护三份彼此分叉的完整 System Prompt。Main 使用简短角色、`<tools>` 与 `<rules>`，工具说明优先 UI 表达，授权边界并入规则；内部仍保存 main_role、safety、execution 三段冻结元数据。Root 与 Child 同样使用角色 → `<tools>` → `<rules>`；内部段顺序为 worker_role、capabilities、safety、execution。Root 角色与 Child 角色分别维护，共享执行和授权规则；Root 的角色段通过 child_text 冻结可供 Child 继承的角色，阶段进度只加入 Root 执行段。所有角色各拼成一条 system message。Child 继承 Parent 冻结的共享 Worker 角色、安全与执行规则，Host 保存的 Child 专用文本排除 Root 身份及进度要求；文案调整不改变工具权限或已有 Run 快照：
 
 | Prompt 片段 | Main Run | Root Worker Run | Child Worker Run |
 |---|---:|---:|---:|
@@ -580,3 +609,11 @@ semantic Golden Case or M5 JavaScript/Durable Replay claim.
 ## 当前设计取舍
 
 Worker 使用最小 task/artifactRefs 接口，不共享可变运行上下文或同级消息。上下文交接只选择旧 Root 业务结果与顶层可见输出，排除 Child 原始模型轨迹及嵌套未输出结果；未知外部效果通过不含 Child 参数的 Host 状态保留。Task 正文与附件属于受保护输入，Child 继承冻结共享规则和 context version。
+
+### 大目录的不可扩权检查
+
+子级接纳在同一事务验证原身份与工具子集。Schema67 用完整工具定义的 SQL 集合差保持原包含关系，避免对每个子项重新遍历父级大目录；NULL 不授予匹配权，工具同名但描述符变化仍拒绝。祖先、Task epoch、模型、scope、权限、原预算和不可变快照不变；没有新增 Host 配置、可跳过校验的证明或权限表。当前作用域为内部 SQL 机制；候选不得修改该 guard。
+
+### 旧树保留与实际冷恢复
+
+独立换版测试在回退、退役后实际关闭 Store，并创建新 Store／Catalog；第一项操作直接推进原排队 Root，不补 select／binding。Root／Child 保留原冻结方法及更窄预算，原 Host 树上限不变；停用后再次重开拒绝新 Child。旧 native 方法只保留给没有迁移标记的历史树及明确 never-managed 嵌入，随这些消费者退役删除；当前选择失败不是兼容入口。

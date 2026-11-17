@@ -58,6 +58,7 @@ export function assertSharedControls(repositoryRoot){
  };
  visit(join(repositoryRoot,'web/src'));
  visit(join(repositoryRoot,'internal/interaction/web/templates'));
+ visit(join(repositoryRoot,'internal/plugin'));
  const errors=files.flatMap(path=>controlViolations(relative(repositoryRoot,path).replaceAll('\\','/'),readFileSync(path,'utf8')));
  if(errors.length)throw new Error('Shared control ownership violations:\n'+errors.join('\n'));
 }

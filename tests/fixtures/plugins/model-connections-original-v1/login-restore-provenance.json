@@ -1,0 +1,8 @@
+{
+  "method": "Executed native selectAccountModelAfterLogin before migration, observed versioned SelectAccount and runtime-wait effects",
+  "source": "internal/interaction/web/composer_models.go",
+  "source_sha256": "3b4b19f91d467aff95e1e8a329d8ef03c6ee9c4ca102f0522cc03a19c98fc76d",
+  "capture_sha256": "9110194cdd6f77ea71b1dd2c5afbaa21dfbfdf24c1a47665c3b2046a300872bb",
+  "fixture_sha256": "ee45553377f6ca33cfbe2161de61aab5a69bf9b7f5ac1770f18001b9e903f94c",
+  "cases": 2
+}

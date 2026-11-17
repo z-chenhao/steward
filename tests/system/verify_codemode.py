@@ -29,10 +29,24 @@ class CodeHarness(CapabilityHarness):
                 'compatibility': {'tool_result_format': 'openai'},
                 'capabilities': {'text_input': True},
             }
-        return super().setup(model=model, metadata=metadata)
+        profile = super().setup(model=model, metadata=metadata)
+        from verify_tasks import select_managed_tasks
+        self.code_graph = select_managed_tasks(self, delegation=True, codemode=True)
+        return profile
 
 from verify_main import require
 
+
+
+def check_managed_code(h, descriptions=False):
+    with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db:
+        db.execute('BEGIN')
+        rows = db.execute("SELECT m.request_json,b.graph_revision,b.managed_services_json FROM code_manifest m JOIN tool_invocation i ON i.invocation_id=m.execution_id JOIN rsi_run b USING(run_id)").fetchall()
+        require(rows and all(r[1] == h.code_graph and {'steward.codemode-limits/1', 'steward.codemode-input-type/1'} <= set(json.loads(r[2])) and json.loads(r[0])['limits']['pendingCalls'] == 128 for r in rows), 'Code Mode did not use the selected frozen policy')
+        replies = db.execute('SELECT count(*) FROM code_description_reply').fetchone()[0]
+        require(not descriptions or replies > 0, 'actual description formatter did not run')
+        require(db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='codemode'").fetchone()[0] == 0, 'pure code policy added unknown effect ledger')
+        return dict(graph=h.code_graph, manifests=len(rows), frozen_descriptions=replies)
 
 def run(binary):
     report = {'version': 1, 'scope': 'QuickJS/ToolInvocation contract; full fixed-source kill/restart gates are verify_code_recovery.py',
@@ -109,8 +123,8 @@ return {ref,found,read,descriptor,errors,tools:ALL_TOOLS.filter(t=>t.name.starts
             require(p['status'] == 'succeeded', 'Artifact/Memory cell failed: ' + str(p))
             output = json.loads(json.loads(p['result_json'])['text'])[-1]['value']
             require(output['found'][0]['artifact_ref'] == output['ref'] and output['read']['text'] == 'inspectable' and output['descriptor']['name'] == 'surface.md', 'Artifact managed bytes/search differ')
-            require(output['errors'] == ['PROVIDER_UNAVAILABLE', 'TypeError'], 'unconfigured Memory cell falsely succeeded')
-            require(sorted(t['name'] for t in output['tools']) == ['builtin__artifact_manage','builtin__artifact_search','builtin__memory_search'], 'Code Mode surface drift')
+            require(output['errors'] == ['PROVIDER_UNAVAILABLE', 'PROVIDER_UNAVAILABLE'], 'unconfigured Memory cell falsely succeeded: ' + str(output['errors']))
+            require(sorted(t['name'] for t in output['tools']) == ['builtin__artifact_manage','builtin__artifact_search','builtin__memory_manage','builtin__memory_search'], 'Code Mode surface drift')
             require('"publish"' in output['declaration']['declaration'] and output['cua']['name'] == 'cua', 'progressive Tool/CUA documentation missing')
             require(all(i['tool_name'] in ('builtin__artifact_manage','builtin__artifact_search','builtin__memory_manage','builtin__memory_search') for i in nested), 'parallel execution pipeline appeared')
             report['checks'].append({'name':'artifact-memory-surface-and-readback','output':output,'nested':nested})
@@ -173,20 +187,21 @@ text(observation);
 let rejected = false;
 try { store("forbidden", {app}); } catch { rejected = true; }
 return {computer: state.computerId, rejected, privateBridge: !ALL_TOOLS.some(t=>t.name.startsWith("builtin__computer_"))};
-''')
+''', worker=True)
             require(p['status'] == 'succeeded' and len(nested) == 3, f'CUA bridge missing {p} {nested}')
             output = json.loads(json.loads(p['result_json'])['text'])
             require(output[-1]['value'] == {'computer': 'fixture-computer', 'rejected': True, 'privateBridge': True}, 'Surface persisted or inventory wrong')
             report['checks'].append({'name': 'cua-discover-bind-invoke', 'nested': [i['tool_name'] for i in nested], 'output': output})
 
-            plan = json.dumps([{'name': 'builtin__codemode_execute', 'arguments': {'source': 'return "MAIN_MUST_NOT_EXECUTE";'}}])
-            h.send('main-exposure', 'Direct Capabilities: ' + plan)
-            h.command('chat', 'work')
+            # Main owns Code Mode, while file/Computer/delegation authority is
+            # Worker-only. Inspect the actual frozen catalog and try a bypass.
+            p, nested = execute('main-exposure', 'let denied=false;try{await tools.builtin__read({path:"AGENTS.md"})}catch{denied=true}return {denied,file:ALL_TOOLS.some(t=>t.name==="builtin__read"),agent:typeof agent};')
+            require(p['status'] == 'succeeded' and not nested, 'Main dispatched a Worker-only file call')
+            output = json.loads(json.loads(p['result_json'])['text'])[-1]['value']
+            require(output == {'denied': True, 'file': False, 'agent': 'undefined'}, 'Main inherited Worker authority: ' + str(output))
             with closing(sqlite3.connect(db_path)) as db:
-                denied = db.execute("SELECT i.invocation_id,i.status,i.result_json FROM tool_invocation i JOIN run r USING(run_id) WHERE r.kind='main' AND i.tool_name='builtin__codemode_execute' ORDER BY i.created_at DESC LIMIT 1").fetchone()
-                require(denied and denied[1] == 'failed' and json.loads(denied[2])['error']['code'] == 'NOT_FOUND', 'Main obtained Code Mode')
-                require(db.execute('SELECT count(*) FROM code_execution WHERE execution_id=?', (denied[0],)).fetchone()[0] == 0, 'Main started a JavaScript runtime')
-            report['checks'].append({'name': 'main-excludes-codemode', 'invocation': denied[0]})
+                require(db.execute('SELECT count(*) FROM code_execution WHERE execution_id=?', (p['invocation_id'],)).fetchone()[0] == 1, 'Main did not use the actual VM')
+            report['checks'].append({'name': 'main-codemode-without-worker-authority', 'invocation': p['invocation_id'], 'output': output})
 
             p, nested = execute('worker-exposure', 'return {agent: typeof agent.run, ns: await describeNamespace("agent")};', worker=True)
             require(p['status'] == 'succeeded', f'worker cell {p}')
@@ -275,6 +290,7 @@ return {computer: state.computerId, rejected, privateBridge: !ALL_TOOLS.some(t=>
                 report['events'] = [json.loads(r[0]) for r in db.execute('SELECT message_json FROM code_event ORDER BY execution_id,attempt_id,sequence')]
                 report['schema_version'] = db.execute('PRAGMA user_version').fetchone()[0]
             require(report['events'] and report['schema_version'] == STATE_SCHEMA_VERSION, 'durable events/migration missing')
+            report['managed_code'] = check_managed_code(h, descriptions=True)
         finally:
             h.cleanup()
     report['cleanup'] = not root.exists()

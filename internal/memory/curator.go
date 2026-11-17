@@ -209,41 +209,6 @@ func Fingerprint(s string) string {
 	return hex.EncodeToString(h[:])
 }
 
-// Extract is deliberately conservative: retain short attributed reports, never
-// turn a question, Tool trace or a diagnosis inferred by a Worker into a fact.
-// It is deterministic so retry/restart cannot change the candidate set.
-func Extract(text, author string) []string {
-	if HasSecret(text) || len(text) > 16<<10 {
-		return nil
-	}
-	var out []string
-	for _, sentence := range strings.FieldsFunc(text, func(r rune) bool { return r == '\n' || r == '。' || r == '!' || r == '！' }) {
-		sentence = strings.TrimSpace(sentence)
-		lower := strings.ToLower(sentence)
-		if len(sentence) < 4 || len(sentence) > 1024 || strings.ContainsAny(sentence, "?？") {
-			continue
-		}
-		attributed := false
-		if author == "worker" && strings.HasPrefix(sentence, "User reported: ") {
-			sentence = strings.TrimSpace(strings.TrimPrefix(sentence, "User reported: "))
-			lower = strings.ToLower(sentence)
-			attributed = true
-		}
-		personal := strings.Contains(sentence, "我") || strings.HasPrefix(lower, "i ") || strings.HasPrefix(lower, "my ")
-		if (author != "user" && !attributed) || !personal {
-			continue
-		}
-		if strings.Contains(lower, "forget") || strings.Contains(sentence, "忘记") || strings.Contains(sentence, "不要记") {
-			continue
-		}
-		out = append(out, sentence)
-		if len(out) == 8 {
-			break
-		}
-	}
-	return out
-}
-
 func Stable(s string) bool {
 	s = strings.ToLower(s)
 	for _, term := range []string{"maybe", "might", "perhaps", "explor", "today", "recent", "tired", "sleepy", "也许", "可能", "探索", "只是想", "今天", "近期", "好困", "昨晚", "you said", "you suggested", "apparently", "你说", "他说", "她说", "听说", "好像"} {

@@ -124,31 +124,4 @@ func (s *Server) inspectionAPI(w http.ResponseWriter, r *http.Request, relations
 	}
 }
 
-func runRole(role string) string {
-	switch role {
-	case "main":
-		return "Main"
-	case "root":
-		return "Root Worker"
-	case "child":
-		return "Child Worker"
-	}
-	return "Execution"
-}
-func taskAction(operation string) string {
-	switch operation {
-	case "create":
-		return "Created Task"
-	case "append":
-		return "Appended instruction"
-	case "pause":
-		return "Paused Task"
-	case "cancel":
-		return "Cancelled Task"
-	case "complete":
-		return "Completed Task"
-	}
-	return "Recorded Task action"
-}
-
 func treeIndent(depth int) []struct{} { return make([]struct{}, max(0, min(depth, 16))) }

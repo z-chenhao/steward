@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -160,7 +161,21 @@ func TestContinuationPreservesUnknownExternalOutcome(t *testing.T) {
 }
 
 func TestSemanticCompactionRecoversAcceptedSummaryWithoutToolReplay(t *testing.T) {
+	testSemanticCompactionRecovery(t, false)
+}
+
+func testSemanticCompactionRecovery(t *testing.T, managed bool) {
+	var selectionReads atomic.Int64
 	s, r, _, a, p := loopFixture(t)
+	if managed {
+		installContextPlugin(t, s, r)
+		s.MainBoundary = func(point string) {
+			if point == "after_context_policy_read" {
+				selectionReads.Add(1)
+			}
+		}
+		defer func() { s.MainBoundary = nil }()
+	}
 	ctx := context.Background()
 	summaryCalls := 0
 	var userStream strings.Builder
@@ -233,6 +248,9 @@ func TestSemanticCompactionRecoversAcceptedSummaryWithoutToolReplay(t *testing.T
 			t.Fatal("accepted generation dispatched again", request.GenerationID)
 		}
 		seenGenerations[request.GenerationID] = true
+	}
+	if managed && (selectionReads.Load() == 0 || scalar(t, s, `SELECT count(*) FROM context_compaction WHERE run_id=?`, rc.RunID) == 0) {
+		t.Fatal("semantic summary bypassed plugin")
 	}
 	if summaryCalls < 1 || firstDispatches != 1 || scalar(t, s, `SELECT count(*) FROM tool_invocation`) != 1 {
 		t.Fatal("summary/effects replayed", summaryCalls)

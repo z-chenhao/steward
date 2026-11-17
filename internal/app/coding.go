@@ -13,12 +13,22 @@ func (a *App) CodeReport(ctx context.Context, ref string, withDiff bool) (coding
 }
 
 func (a *App) SaveCodeReport(ctx context.Context, ref string) (artifact.Descriptor, error) {
+	if a.prepareArtifactPlugins != nil {
+		if err := a.prepareArtifactPlugins(ctx); err != nil {
+			return artifact.Descriptor{}, err
+		}
+	}
 	return a.store.SaveCodeReport(ctx, ref)
 }
 
 func (a *App) SaveCodePRReport(ctx context.Context, ref, head string) (artifact.Descriptor, error) {
 	if a.github == nil {
 		return artifact.Descriptor{}, agent.ErrConflict
+	}
+	if a.prepareArtifactPlugins != nil {
+		if err := a.prepareArtifactPlugins(ctx); err != nil {
+			return artifact.Descriptor{}, err
+		}
 	}
 	return a.store.SaveCodePRReport(ctx, ref, a.github.Config, head)
 }

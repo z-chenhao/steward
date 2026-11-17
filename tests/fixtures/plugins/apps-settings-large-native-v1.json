@@ -1,0 +1,14 @@
+[
+  {
+    "Name": "windows16387",
+    "Count": 16387,
+    "LargeBytes": 3145728,
+    "AppsSHA256": "78665ee012f14cfe6ebc762ef49f380568bf4eb551442ad8aa95bd8550761603"
+  },
+  {
+    "Name": "single9MiB",
+    "Count": 1,
+    "LargeBytes": 9437184,
+    "AppsSHA256": "164cb9308a2fa6c3a0098bdeb9b1f16c1ee422edad7e54d3adcafa9b60b2351a"
+  }
+]

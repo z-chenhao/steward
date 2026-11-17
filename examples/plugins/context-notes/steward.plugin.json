@@ -1,0 +1,17 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.context-notes",
+  "version": "1.0.0",
+  "runtime": {"entry": "plugin", "timeout_ms": 5000},
+  "files": [],
+  "provides": [{
+    "contract": "steward.text-normalize/1",
+    "input_schema": {"type":"object","properties":{"text":{"type":"string","maxLength":8192}},"required":["text"],"additionalProperties":false},
+    "output_schema": {"type":"object","properties":{"text":{"type":"string","maxLength":8192}},"required":["text"],"additionalProperties":false}
+  }],
+  "hooks": [{"stage":"before_model_request"}],
+  "tools": [{"name":"plugin__normalize_text","description":"Trim whitespace from explicitly supplied text.","contract":"steward.text-normalize/1"}],
+  "config_schema": {"type":"object","properties":{"note":{"type":"string","maxLength":2048}},"required":["note"],"additionalProperties":false},
+  "state": {"version":1,"schema":{"type":"object","additionalProperties":false},"initial":{}},
+  "requests": []
+}

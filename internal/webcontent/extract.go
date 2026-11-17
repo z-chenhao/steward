@@ -1,22 +1,13 @@
 package webcontent
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"mime"
 	"net/http"
-	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
-	"syscall"
 	"time"
-	"unicode/utf8"
 )
 
 type Config struct {
@@ -32,57 +23,10 @@ func (c Config) Validate() error {
 }
 
 func extractDocument(ctx context.Context, c Config, source, kind string, data []byte) (string, string, error) {
-	if c.ExtractScript == "" {
-		if kind == "text/html" {
-			title, text := extractHTML(string(data))
-			return title, text, nil
-		}
-		return "", "", errors.New("WEB_EXTRACTOR_UNAVAILABLE")
+	if decoder, ok := ctx.Value(documentParserKey{}).(documentDecoder); ok {
+		return decoder.parse(ctx, source, kind, data)
 	}
-	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
-	defer cancel()
-	root, e := os.MkdirTemp("", "steward-web-extract-")
-	if e != nil {
-		return "", "", e
-	}
-	defer os.RemoveAll(root)
-	raw, _ := json.Marshal(struct {
-		URL       string `json:"url"`
-		MediaType string `json:"mediaType"`
-		Data      []byte `json:"data"`
-	}{source, kind, data})
-	command := exec.CommandContext(ctx, c.ExtractCommand, c.ExtractScript)
-	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	command.Cancel = func() error { return syscall.Kill(-command.Process.Pid, syscall.SIGKILL) }
-	command.WaitDelay = time.Second
-	command.Dir = root
-	command.Env = []string{"HOME=" + root, "TMPDIR=" + root, "PATH=" + filepath.Dir(c.ExtractCommand) + ":/usr/bin:/bin", "LANG=C.UTF-8"}
-	command.Stdin = bytes.NewReader(raw)
-	command.Stderr = io.Discard
-	stdout, e := command.StdoutPipe()
-	if e != nil {
-		return "", "", e
-	}
-	if command.Start() != nil {
-		return "", "", errors.New("WEB_EXTRACTOR_UNAVAILABLE")
-	}
-	defer func() { _ = command.Cancel(); _ = command.Wait() }()
-	result, e := io.ReadAll(io.LimitReader(stdout, (8<<20)+1))
-	if ctx.Err() != nil {
-		return "", "", ctx.Err()
-	}
-	if e != nil || len(result) > 8<<20 {
-		return "", "", errors.New("RESOURCE_LIMIT")
-	}
-	var response struct {
-		Title string `json:"title"`
-		Text  string `json:"text"`
-		Error string `json:"error"`
-	}
-	if json.Unmarshal(result, &response) != nil || response.Error != "" || response.Text == "" {
-		return "", "", errors.New("WEB_EXTRACTION_FAILED")
-	}
-	return response.Title, response.Text, nil
+	return extractDocumentLegacyV1(ctx, c, source, kind, data)
 }
 func FetchContent(ctx context.Context, c Config, raw, mode string) (Page, error) {
 	return fetchContent(ctx, c, raw, mode, publicClient())
@@ -125,47 +69,5 @@ func fetchContent(ctx context.Context, c Config, raw, mode string, client interf
 	page.URL = response.Request.URL.String()
 	page.MediaType = kind
 	page.RetrievedAt = time.Now().UTC().Format(time.RFC3339)
-	if strings.HasPrefix(kind, "image/") {
-		if mode == "raw" || mode == "answer" {
-			return page, errors.New("WEB_UNSUPPORTED_CONTENT")
-		}
-		image, e := NormalizeImage(base64.StdEncoding.EncodeToString(data), kind)
-		if e != nil {
-			return page, e
-		}
-		page.Image = image
-		page.Text = fmt.Sprintf("Image fetched (%d x %d)", image.Width, image.Height)
-		return page, nil
-	}
-	switch kind {
-	case "text/html", "application/pdf":
-		if kind == "text/html" && !utf8.Valid(data) {
-			return page, errors.New("WEB_UNSUPPORTED_ENCODING")
-		}
-		if mode == "raw" {
-			if kind != "text/html" {
-				return page, errors.New("WEB_UNSUPPORTED_CONTENT")
-			}
-			if !utf8.Valid(data) {
-				return page, errors.New("WEB_UNSUPPORTED_ENCODING")
-			}
-			page.Text = string(data)
-		} else {
-			page.Title, page.Text, e = extractDocument(ctx, c, page.URL, kind, data)
-			if e != nil {
-				return page, e
-			}
-		}
-	case "text/plain", "text/markdown":
-		if !utf8.Valid(data) {
-			return page, errors.New("WEB_UNSUPPORTED_ENCODING")
-		}
-		page.Text = string(data)
-	default:
-		return page, errors.New("WEB_UNSUPPORTED_CONTENT")
-	}
-	if strings.TrimSpace(page.Text) == "" {
-		return page, errors.New("WEB_EMPTY_OR_DYNAMIC_PAGE")
-	}
-	return page, nil
+	return DecodePage(ctx, c, page, "content", mode, data)
 }

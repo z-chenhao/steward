@@ -1,0 +1,9 @@
+{
+  "method": "Executed original retainAccountChoices and refresh/ack selection in Node vm before migration",
+  "source": "web/src/composer-models.tsx",
+  "source_sha256": "9457b924fc5adfaa60521bbf1564f2a16601381d89317388f66c3fd04f99ab8f",
+  "fragment_sha256": "2ebc5b77b7241e4ea91382f45ee8fe340b66f348f539231bd83be9cb7b53068a",
+  "cases": 48,
+  "fixture_sha256": "a8ee2390c36e72e913e96fccd2bf0e562148039c3b815a074502fbe0d0e96de1",
+  "normalization": "Sort keys captured using original Node ECMAScript String.toLowerCase; expected ordering from executed native function."
+}

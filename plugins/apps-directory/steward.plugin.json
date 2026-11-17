@@ -1,0 +1,606 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.apps-directory",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-071"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 10000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.apps-editorial/1",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "search": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "live_configured": {
+            "type": "boolean"
+          },
+          "has_cursor": {
+            "type": "boolean"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "maxLength": 160
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                "category_id": {
+                  "type": "string",
+                  "maxLength": 160
+                },
+                "category_name": {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "description",
+                "category_id",
+                "category_name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "discovery": {
+            "type": "object",
+            "properties": {
+              "home": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "title": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "slugs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 160
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "slugs"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "collections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "title": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "slugs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 160
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "slugs"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "home",
+              "collections"
+            ],
+            "additionalProperties": false
+          },
+          "filter": {
+            "type": "object",
+            "properties": {
+              "slugs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 160
+                }
+              },
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "name": {
+                      "type": "string",
+                      "maxLength": 512
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "slugs",
+              "categories"
+            ],
+            "additionalProperties": false
+          },
+          "route": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "editorial",
+                  "live"
+                ]
+              },
+              "page_size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "on_live_error": {
+                "type": "string",
+                "enum": [
+                  "unavailable",
+                  "editorial"
+                ]
+              }
+            },
+            "required": [
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "lookup": {
+            "type": "object",
+            "properties": {
+              "prefer_live": {
+                "type": "boolean"
+              },
+              "local_first": {
+                "type": "string",
+                "enum": [
+                  "editorial",
+                  "connection"
+                ]
+              },
+              "on_live_error": {
+                "type": "string",
+                "enum": [
+                  "local",
+                  "unavailable"
+                ]
+              }
+            },
+            "required": [
+              "prefer_live",
+              "local_first",
+              "on_live_error"
+            ],
+            "additionalProperties": false
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "named": {
+                "type": "object",
+                "properties": {
+                  "name_source": {
+                    "type": "string",
+                    "enum": [
+                      "name",
+                      "slug"
+                    ]
+                  },
+                  "upper_initial": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name_source",
+                  "upper_initial"
+                ],
+                "additionalProperties": false
+              },
+              "unnamed": {
+                "type": "object",
+                "properties": {
+                  "name_source": {
+                    "type": "string",
+                    "enum": [
+                      "name",
+                      "slug"
+                    ]
+                  },
+                  "upper_initial": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name_source",
+                  "upper_initial"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "named",
+              "unnamed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "items",
+          "discovery",
+          "filter",
+          "route",
+          "lookup",
+          "labels"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-category-options/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2097152
+          },
+          "has_requested": {
+            "type": "boolean"
+          },
+          "requested_key": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2097152
+          }
+        },
+        "required": [
+          "count",
+          "has_requested",
+          "requested_key"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "keep": {
+            "type": "string"
+          },
+          "append_requested": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "keep",
+          "append_requested"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-card-captions/1",
+      "input_schema": {
+        "type": "array",
+        "maxItems": 64,
+        "items": {
+          "type": "object",
+          "properties": {
+            "editorial_runes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "provider_runes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "editorial_runes",
+            "provider_runes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "output_schema": {
+        "type": "array",
+        "maxItems": 64,
+        "items": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "editorial",
+                "provider",
+                "literal"
+              ]
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "source",
+            "end",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "contract": "steward.apps-catalogue-order/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4194304
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4194304
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "named": {
+                "type": "object",
+                "properties": {
+                  "name_source": {
+                    "type": "string",
+                    "enum": [
+                      "name",
+                      "slug"
+                    ]
+                  },
+                  "upper_initial": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name_source",
+                  "upper_initial"
+                ],
+                "additionalProperties": false
+              },
+              "unnamed": {
+                "type": "object",
+                "properties": {
+                  "name_source": {
+                    "type": "string",
+                    "enum": [
+                      "name",
+                      "slug"
+                    ]
+                  },
+                  "upper_initial": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name_source",
+                  "upper_initial"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "named",
+              "unnamed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "labels"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "indices": {
+            "type": "array",
+            "maxItems": 16384,
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4194303
+            }
+          }
+        },
+        "required": [
+          "indices"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-card-states/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "prior": {
+            "type": "object",
+            "properties": {
+              "managed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "active": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "pending": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "prior"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "managed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "active": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pending": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-inventory-order/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "connected": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "connected"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "indices": {
+            "type": "array",
+            "maxItems": 16384,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "required": [
+          "indices"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ]
+}

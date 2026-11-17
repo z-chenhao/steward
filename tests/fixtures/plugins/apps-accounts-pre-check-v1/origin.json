@@ -1,0 +1,9 @@
+{
+  "source": "/private/var/folders/_h/65wkv4dn2m51ch2p4y9tpjm40000gn/T/steward-apps-account-check-2py5rjo8/source",
+  "files": {
+    "intent.go.txt": "93fd353558d3a0665ec7f25de5306ad26f9663d6cb771e8a999443847fa15ab0",
+    "steward.plugin.json": "90cdd315ff787ebf36e2422f9e90a3703bb36307ee95b95e5aa3f37d42edb441"
+  },
+  "retention": "Exact pre-check handler/manifest before independent opt-in and in-flight interpretation. Delete with those consumers.",
+  "not_a_full_old_release_compiler_claim": true
+}

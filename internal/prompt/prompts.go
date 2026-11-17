@@ -18,6 +18,9 @@ var main string
 //go:embed system/main-execution.md
 var mainExecution string
 
+//go:embed system/main-safety.md
+var mainSafety string
+
 //go:embed system/identity.md
 var identity string
 
@@ -60,6 +63,7 @@ func text(value string) string { return strings.TrimSuffix(value, "\n") }
 
 func Safety() string        { return text(safety) }
 func MainExecution() string { return text(mainExecution) }
+func MainSafety() string    { return text(mainSafety) }
 func Main() string          { return text(main) }
 func Identity() string      { return text(identity) }
 func Worker() string        { return text(worker) }

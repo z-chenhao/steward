@@ -1,0 +1,194 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.github-pr-followup",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-042",
+    "F-045"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.github-pr-followup/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "review_comment",
+                    "review",
+                    "check_run"
+                  ]
+                },
+                "number": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000
+                }
+              },
+              "required": [
+                "kind",
+                "number",
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 60
+          },
+          "poll_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3600
+          }
+        },
+        "required": [
+          "history",
+          "poll_seconds"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "review_comment",
+                      "review",
+                      "check_run"
+                    ]
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000
+                  }
+                },
+                "required": [
+                  "kind",
+                  "number",
+                  "count"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 99999
+            },
+            "maxItems": 100000
+          },
+          "display_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4194304
+          },
+          "display_suffix": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "followup": {
+            "type": "object",
+            "properties": {
+              "observation_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65536
+              },
+              "goal_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65536
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "method": {
+                "type": "string",
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "observation_bytes",
+              "goal_bytes",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "interval_seconds": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 3600
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "HISTORY_LIMIT"
+            ]
+          }
+        },
+        "required": [
+          "next",
+          "rows",
+          "display_bytes",
+          "display_suffix",
+          "followup",
+          "interval_seconds"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "requests": [
+    "input.read"
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  }
+}

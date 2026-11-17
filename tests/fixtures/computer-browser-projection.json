@@ -1,0 +1,42 @@
+{
+  "playwright": "1.64.1",
+  "chromium": "156.0.8078.4",
+  "program_sha256": "3fb9f874f3e9fe3afa101884564186724e89fcfc435422d75bc20f019cc5210f",
+  "source": {
+    "version": 1,
+    "body": "n1OHZT7Y7d3QY6RO",
+    "rows": [
+      {
+        "role": "SQBOAFAAVQBUAA==",
+        "aria": "DVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UDVQNVA1UPtg=",
+        "inner": "",
+        "placeholder": "YFNNTwdofns=",
+        "value": "YQAA2GIAPtjt3Q=="
+      },
+      {
+        "role": "QgBVAFQAVABPAE4A",
+        "aria": "",
+        "inner": "0GOkTg==",
+        "placeholder": "",
+        "value": ""
+      },
+      {
+        "role": "VABFAFgAVABBAFIARQBBAA==",
+        "aria": "",
+        "inner": "",
+        "placeholder": "ZQBtAHAAdAB5AA==",
+        "value": ""
+      }
+    ]
+  },
+  "expected": "\u539f\u6587\ud83e\udded\u63d0\u4ea4\n[0] INPUT \"\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\u540d\\ud83e\" = \"a\\ud800b\ud83e\udded\"\n[1] BUTTON \"\u63d0\u4ea4\" = \"\"\n[2] TEXTAREA \"empty\" = \"\"",
+  "checks": [
+    "default matches frozen facade-v1 byte for byte",
+    "isolated and clipped UTF16 retained",
+    "same-document replacement changes native identity",
+    "password/hidden role=button cannot bypass disclosure fence",
+    "screenshot-only omits source data",
+    "unknown original tab rejected"
+  ],
+  "provenance": "Observed on pinned Playwright1.64.1 / real Chromium; expected state is the unchanged facade-v1 program output. Native IDs and endpoints omitted."
+}

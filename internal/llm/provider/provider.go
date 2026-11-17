@@ -16,18 +16,6 @@ func APIKeyEnv(provider string) []string {
 	return append([]string(nil), keys[provider]...)
 }
 
-// Provider exposes data and executable protocol support separately. Applications
-// can add an endpoint/model without adding a vendor SDK or a global credential.
-type Provider struct {
-	ID     string
-	Models []Model
-}
-
-func GetProvider(id string) (Provider, bool) {
-	models := Models(id)
-	return Provider{ID: id, Models: models}, len(models) > 0
-}
-
 func (o Options) Resolve(m Model) Options {
 	get := func(names ...string) string {
 		for _, name := range names {

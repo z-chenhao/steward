@@ -26,6 +26,10 @@ type evidenceAccess struct {
 	conversation string
 	githubScope  string
 	docxText     bool
+	docxPlugin   bool
+	pluginGraph  string
+	pagePlugin   bool
+	pageGraph    string
 	epoch, floor int64
 	claim        agent.RunClaim
 }
@@ -54,12 +58,37 @@ func (r *Runs) evidenceAccess(ctx context.Context, tx *sql.Tx, c agent.RunClaim)
 			return
 		}
 		var kind string
-		err = tx.QueryRowContext(ctx, `SELECT kind,agent_id,conversation_id,coalesce((SELECT json_extract(policy_json,'$.docx_text') FROM run_context_policy WHERE run_id=run.run_id),0)
-		 FROM run WHERE run_id=?`, c.RunID()).Scan(&kind, &a.scope.AgentID, &a.conversation, &a.docxText)
+		err = tx.QueryRowContext(ctx, `SELECT kind,agent_id,conversation_id,coalesce((SELECT json_extract(policy_json,'$.docx_text') FROM run_context_policy WHERE run_id=run.run_id),0),coalesce((SELECT json_extract(policy_json,'$.docx_plugin') FROM run_context_policy WHERE run_id=run.run_id),0)
+		 FROM run WHERE run_id=?`, c.RunID()).Scan(&kind, &a.scope.AgentID, &a.conversation, &a.docxText, &a.docxPlugin)
 		if err == nil && kind != "main" {
 			err = artifact.ErrNotFound
 		}
 		a.scope.RunID = c.RunID()
+	}
+	if err != nil {
+		return
+	}
+	if r.plugins != nil {
+		if c == nil {
+			a.docxPlugin, err = managedDocx(ctx, tx)
+			if err != nil {
+				return
+			}
+			err = tx.QueryRowContext(ctx, `SELECT coalesce(active_graph,'') FROM rsi_control WHERE singleton=1`).Scan(&a.pluginGraph)
+		} else {
+			err = tx.QueryRowContext(ctx, `SELECT coalesce(graph_revision,'') FROM rsi_run WHERE run_id=?`, c.RunID()).Scan(&a.pluginGraph)
+		}
+		if err != nil {
+			return
+		}
+	}
+	if c == nil {
+		a.pagePlugin, err = managedService(ctx, tx, "steward.evidence-text-window/1")
+		if err == nil {
+			err = tx.QueryRowContext(ctx, `SELECT coalesce(active_graph,'') FROM rsi_control WHERE singleton=1`).Scan(&a.pageGraph)
+		}
+	} else {
+		err = tx.QueryRowContext(ctx, `SELECT coalesce((SELECT graph_revision FROM rsi_run WHERE run_id=?),''),EXISTS(SELECT 1 FROM rsi_run r,json_each(r.managed_services_json) s WHERE r.run_id=? AND s.value='steward.evidence-text-window/1')`, c.RunID(), c.RunID()).Scan(&a.pageGraph, &a.pagePlugin)
 	}
 	if err != nil {
 		return
@@ -91,7 +120,7 @@ func (r *Runs) ReadEvidence(ctx context.Context, q evidence.Request) (evidence.P
 	if err != nil {
 		return evidence.Page{}, evidence.ErrInvalid
 	}
-	if q, err = evidence.Parse(raw); err != nil {
+	if q, err = evidence.ParseOwner(raw); err != nil {
 		return evidence.Page{}, err
 	}
 	page, err := r.readEvidence(ctx, q, nil)
@@ -102,7 +131,7 @@ func evidenceReadError(err error) error {
 	if errors.Is(err, artifact.ErrIntegrity) {
 		return artifact.ErrNotFound
 	}
-	if err == nil || errors.Is(err, evidence.ErrInvalid) || errors.Is(err, artifact.ErrNotFound) || errors.Is(err, artifact.ErrLimit) || errors.Is(err, agent.ErrClaimLost) || errors.Is(err, agent.ErrStorage) {
+	if err == nil || errors.Is(err, evidence.ErrInvalid) || errors.Is(err, evidence.ErrUnavailable) || errors.Is(err, artifact.ErrNotFound) || errors.Is(err, artifact.ErrLimit) || errors.Is(err, agent.ErrClaimLost) || errors.Is(err, agent.ErrStorage) {
 		return err
 	}
 	return &agent.OperationError{Operation: "linked evidence read", Category: agent.ErrStorage, Cause: err}
@@ -137,6 +166,9 @@ func (t *tools) readLinkedEvidence(ctx context.Context, inv tool.Invocation) (to
 		return tool.Failure("INVALID_ARGUMENT"), nil
 	}
 	page, err := t.runs.readEvidence(ctx, q, t.claim)
+	if errors.Is(err, evidence.ErrUnavailable) {
+		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+	}
 	if errors.Is(err, evidence.ErrInvalid) {
 		return tool.Failure("INVALID_ARGUMENT"), nil
 	}
@@ -191,7 +223,22 @@ func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c age
 	if err != nil {
 		return
 	}
+	if q.ReaderRevision != "" {
+		if c != nil || !access.docxPlugin {
+			return evidence.Page{}, evidence.ErrInvalid
+		}
+		access.pluginGraph = q.ReaderRevision
+	}
+	if q.PageRevision != "" {
+		if c != nil || !access.pagePlugin {
+			return evidence.Page{}, evidence.ErrInvalid
+		}
+		access.pageGraph = q.PageRevision
+	}
 	page = evidence.Page{Ref: q.Ref, Links: []evidence.Link{}}
+	if access.pagePlugin {
+		page.PageRevision = access.pageGraph
+	}
 	var parts []conversation.ContentPart
 	switch {
 	case strings.HasPrefix(q.Ref, "conversation:"):
@@ -210,7 +257,7 @@ func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c age
 				text = append(text, part.Text)
 			}
 		}
-		err = evidence.Window(&page, strings.Join(text, "\n"), q)
+		err = r.evidenceWindow(ctx, access, &page, strings.Join(text, "\n"), q)
 	case strings.HasPrefix(q.Ref, "task:"):
 		var text string
 		var at int64
@@ -227,7 +274,7 @@ func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c age
 		if err == nil {
 			page.Kind = "task"
 			page.OccurredAt = time.UnixMicro(at).UTC()
-			err = evidence.Window(&page, text, q)
+			err = r.evidenceWindow(ctx, access, &page, text, q)
 		}
 	case strings.HasPrefix(q.Ref, "artifact:"):
 		err = r.evidenceArtifact(ctx, access, q, &page)
@@ -340,8 +387,11 @@ func (r *Runs) evidenceArtifact(ctx context.Context, a evidenceAccess, q evidenc
 	page.Offset = q.Offset
 	page.TotalBytes = d.ByteSize
 	media, _, _ := mime.ParseMediaType(d.MediaType)
+	if q.ReaderRevision != "" && media != docx.MediaType {
+		return evidence.ErrInvalid
+	}
 	if a.docxText && media == docx.MediaType {
-		text, err := docx.Text(ctx, f)
+		text, err := r.docxText(ctx, a, q.Ref, f)
 		switch {
 		case errors.Is(err, docx.ErrInvalid):
 			return fmt.Errorf("%w: %s", evidence.ErrInvalid, err)
@@ -351,7 +401,10 @@ func (r *Runs) evidenceArtifact(ctx context.Context, a evidenceAccess, q evidenc
 			return err
 		}
 		page.Representation = "docx_text"
-		return evidence.Window(page, text, q)
+		if a.claim == nil && a.docxPlugin {
+			page.ReaderRevision = a.pluginGraph
+		}
+		return r.evidenceWindow(ctx, a, page, text, q)
 	}
 	if !strings.HasPrefix(media, "text/") && media != "application/json" && !strings.HasSuffix(media, "+json") {
 		if q.Offset != 0 {
@@ -382,6 +435,9 @@ func (r *Runs) evidenceArtifact(ctx context.Context, a evidenceAccess, q evidenc
 	}
 	if end == 0 && len(b) > 0 {
 		return evidence.ErrInvalid
+	}
+	if a.pagePlugin {
+		return r.evidenceTextChunk(ctx, a, page, string(b[:end]), d.ByteSize, q)
 	}
 	page.Text = string(b[:end])
 	page.Bytes = end

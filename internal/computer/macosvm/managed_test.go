@@ -62,6 +62,9 @@ func TestManagedDesktopIsLazyAndUnsupportedHostsDoNotDownload(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
+	if p.WorkingDirectory() != "/Users/"+managedGuestUser+"/StewardWorkspace" {
+		t.Fatal("managed workspace depends on unprepared Guest state", p.WorkingDirectory())
+	}
 	_, _ = ManagedState(root)
 	if _, err = os.Stat(root); !os.IsNotExist(err) {
 		t.Fatal("construction or settings read initialized desktop")

@@ -1,0 +1,11 @@
+{{define "app-card-atom-begin-card"}}<article class="app-tile" data-app-tile="{{.Card.Slug}}">{{end}}
+{{define "app-card-atom-begin-summary"}}<a class="app-summary" href="{{.Card.URL}}" data-app-open="{{.Card.Slug}}">{{end}}
+{{define "app-card-atom-icon"}}{{template "app-icon" .Card}}{{end}}
+{{define "app-card-atom-begin-copy"}}<span class="app-copy">{{end}}
+{{define "app-card-atom-name"}}<strong>{{.Card.Name}}</strong>{{end}}
+{{define "app-card-atom-description"}}<span>{{tr .Card.Description}}</span>{{end}}
+{{define "app-card-atom-end-copy"}}</span>{{end}}
+{{define "app-card-atom-end-summary"}}</a>{{end}}
+{{define "app-card-atom-manage"}}<a class="control-icon-button" href="{{.Card.URL}}" data-app-open="{{.Card.Slug}}" data-app-manage {{if (appCardUI .Apps .Card).ManageHidden}}hidden{{end}} aria-label="{{appCopyText .Apps .Apps.Copy.ManageApp}}: {{.Card.Name}}" title="{{appCopyText .Apps .Apps.Copy.ManageApp}}">{{template "app-more"}}</a>{{end}}
+{{define "app-card-atom-connect"}}{{if (appCardUI .Apps .Card).Unavailable}}<a class="control-icon-button" href="{{.Card.URL}}" data-app-open="{{.Card.Slug}}" data-app-add {{if (appCardUI .Apps .Card).AddHidden}}hidden{{end}} aria-label="{{appCopyText .Apps .Apps.Copy.AboutApp}}: {{.Card.Name}}">{{template "app-plus"}}</a>{{else}}<form method="post" action="/apps/configure" data-app-action data-app-toolkit="{{.Card.Slug}}" data-app-quick {{if (appCardUI .Apps .Card).AddHidden}}hidden{{end}}>{{template "app-interface-reference" .Apps}}<input type="hidden" name="action" value="connect"><input type="hidden" name="toolkit" value="{{.Card.Slug}}"><button class="control-icon-button" type="submit" aria-label="{{tr "Connect"}} {{.Card.Name}}" title="{{tr "Connect"}}">{{template "app-plus"}}</button></form>{{end}}{{end}}
+{{define "app-card-atom-end-card"}}</article>{{end}}

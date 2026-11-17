@@ -1,0 +1,52 @@
+{
+  "id": "codemode-system-owner",
+  "allowed_contracts": [
+    "steward.codemode-limits/1",
+    "steward.codemode-input-type/1"
+  ],
+  "allowed_requests": [
+    "input.read"
+  ],
+  "cases": [
+    {
+      "instance_id": "codemode",
+      "contract": "steward.codemode-limits/1",
+      "input": {
+        "role": "main",
+        "ceilings": {
+          "timeout_ms": 30000,
+          "memory_bytes": 33554432,
+          "output_bytes": 65536,
+          "pending_calls": 128,
+          "interrupt_budget": 100000
+        }
+      },
+      "expected": {
+        "limits": {
+          "timeout_ms": 30000,
+          "memory_bytes": 33554432,
+          "output_bytes": 65536,
+          "pending_calls": 128,
+          "interrupt_budget": 100000
+        }
+      }
+    },
+    {
+      "instance_id": "codemode",
+      "contract": "steward.codemode-input-type/1",
+      "input": {
+        "input_id": "schema"
+      },
+      "inputs": [
+        {
+          "id": "schema",
+          "data": "eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJxIjp7InR5cGUiOiJzdHJpbmcifSwiY291bnQiOnsidHlwZSI6ImludGVnZXIifX0sInJlcXVpcmVkIjpbInEiXSwiYWRkaXRpb25hbFByb3BlcnRpZXMiOmZhbHNlfQ=="
+        }
+      ],
+      "expected": {
+        "input_type": "{ \"count\"?: number; \"q\": string }",
+        "guidance": ""
+      }
+    }
+  ]
+}

@@ -2,17 +2,16 @@ package webcontent
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"image"
-	"image/color"
 	_ "image/gif"
-	"image/jpeg"
+	_ "image/jpeg"
 	_ "image/png"
-	"math"
 
 	"github.com/z-chenhao/assistant/internal/media"
-	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
 )
 
@@ -23,40 +22,48 @@ type Image struct {
 	Height   int    `json:"height"`
 }
 
-// Decode before allocation, bound both pixels and bytes, and return a portable
-// JPEG. The source image never becomes a host path or a model credential.
-func resizeImage(input *Image) (*Image, error) {
-	if input == nil || len(input.Data) > base64.StdEncoding.EncodedLen(media.MaxImageBytes) {
-		return nil, errors.New("RESOURCE_LIMIT")
-	}
-	data, err := base64.StdEncoding.DecodeString(input.Data)
-	if err != nil {
-		return nil, errors.New("INVALID_IMAGE")
+type imageParserKey struct{}
+type ImageParser func(context.Context, []byte, string) (*Image, string, error)
+
+// WithImageParser binds only the original public-page image decoding operation.
+func WithImageParser(ctx context.Context, parse ImageParser) context.Context {
+	return context.WithValue(ctx, imageParserKey{}, parse)
+}
+
+// ImageSource validates allocation limits before releasing original bytes to a
+// decoder. Detected GIF/WebP remain supported even if the response MIME differs.
+func ImageSource(data []byte) (image.Config, string, error) {
+	if len(data) > media.MaxImageBytes {
+		return image.Config{}, "", errors.New("RESOURCE_LIMIT")
 	}
 	cfg, format, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil || cfg.Width < 1 || cfg.Height < 1 || int64(cfg.Width) > media.MaxImagePixels/int64(cfg.Height) {
-		return nil, errors.New("INVALID_IMAGE")
+		return image.Config{}, "", errors.New("INVALID_IMAGE")
 	}
 	if format != "png" && format != "jpeg" && format != "gif" && format != "webp" {
-		return nil, errors.New("INVALID_IMAGE")
+		return image.Config{}, "", errors.New("INVALID_IMAGE")
 	}
-	src, _, err := image.Decode(bytes.NewReader(data))
-	if err != nil {
-		return nil, errors.New("INVALID_IMAGE")
-	}
-	scale := math.Min(1, math.Min(2000/float64(cfg.Width), 2000/float64(cfg.Height)))
-	width, height := max(1, int(float64(cfg.Width)*scale)), max(1, int(float64(cfg.Height)*scale))
-	dst := image.NewRGBA(image.Rect(0, 0, width, height))
-	draw.Draw(dst, dst.Bounds(), image.NewUniform(color.White), image.Point{}, draw.Src)
-	draw.CatmullRom.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
-	var output bytes.Buffer
-	if err = jpeg.Encode(&output, dst, &jpeg.Options{Quality: 85}); err != nil {
-		return nil, err
-	}
-	return &Image{Data: base64.StdEncoding.EncodeToString(output.Bytes()), MIMEType: "image/jpeg", Width: width, Height: height}, nil
+	return cfg, format, nil
 }
 
-// NormalizeImage validates untrusted image bytes before Artifact persistence.
-func NormalizeImage(data, mime string) (*Image, error) {
-	return resizeImage(&Image{Data: data, MIMEType: mime})
+// ParseImage never uses the historical recipe after a managed decoder failure.
+func ParseImage(ctx context.Context, data []byte, kind string) (*Image, string, error) {
+	_, format, err := ImageSource(data)
+	if err != nil {
+		return nil, "", err
+	}
+	if parse, ok := ctx.Value(imageParserKey{}).(ImageParser); ok {
+		return parse(ctx, data, "image/"+format)
+	}
+	out, err := NormalizeImage(base64.StdEncoding.EncodeToString(data), kind)
+	if err != nil {
+		return nil, "", err
+	}
+	return out, fmt.Sprintf("Image fetched (%d x %d)", out.Width, out.Height), nil
+}
+
+// NormalizeImage is only the explicit historical/native decoder entry retained
+// by pre-service/unbundled carriers and original-byte compatibility fixtures.
+func NormalizeImage(data, kind string) (*Image, error) {
+	return resizeImageLegacyV1(&Image{Data: data, MIMEType: kind})
 }

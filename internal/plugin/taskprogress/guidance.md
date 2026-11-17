@@ -1,0 +1,1 @@
+- Before tools, when the execution stage changes, write one brief progress sentence in assistant text, at most 512 UTF-8 bytes. State confirmed progress and the next stage; omit private reasoning and raw tool calls. Final text remains the Task result.

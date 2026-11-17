@@ -61,6 +61,11 @@ and does not load model declarations. Hidden and model-only tools are absent
 from scripts. Canonical bracket calls always work; an escaped alias
 is available only when unambiguous. Discovery searches only the frozen Run
 view. New Main Runs use Code Mode for their own frozen tools; Computer and native workspace work remains delegated through Task.
+Connected Apps uses one exact account namespace, `apps__b__<binding>` or
+`mcp__apps__b__<binding>`, for its original `search_tools` and `execute` tools.
+`describeNamespace` and namespace search filters never combine accounts under
+a broad `apps` namespace. Ordinary configured MCP server names keep their
+existing matching behavior.
 Workers with the frozen capability get exactly
 `agent.run({task, artifactRefs?}) -> Promise<{text, artifactRefs}>`. No Run ID,
 usage, output schema, agent selector or control handle enters this API.
@@ -123,3 +128,9 @@ Memory configuration is explicit in their descriptions.
 ## 实现与验证依据
 
 代码入口、最新架构与取舍见 [技术方案](../designs/codemode.md)；已有检查、未覆盖场景和验收方法见 [测试方案](../test-plans/codemode.md)。
+
+## 版本化执行配方与工具说明
+
+标准分发包含独立 `codemode` Go 插件：在 Host 原上限内选择执行资源，格式化已授权工具的参数说明。新 Run 固定组合；旧 Run、已接受脚本和说明继续复用原版本及字节。升级／回退不改源或 Tool 回执，停用后新执行明确不可用，已提交事实保留。迁移验收已完成；固定 VM、具体工具权限、审批、恢复与凭据仍由 Host 持有。机制及刻意保留的边界见[技术方案](../designs/codemode.md#独立执行配方与参数说明私有实验接口)。
+
+工具发现的原 BM25／分词／摘要选择已由独立托管插件持有，原生 tool_search 与 Code Mode searchTools 共享已授权的原快照，插件只能选择原候选。已接纳 Code Mode 回复先持久化，原生嵌入、所有者 prior23 选择及旧 Run 边界明确保留；当前标准分发已接入，真实独立排序换版、回退／退役／停用、原 VM 冷恢复及原生／Code Mode 两个入口已有本地验收证据；协议仍为仓库内部实验级，Linux 平台证据由必需 CI 另行证明。见[工具发现设计](../designs/codemode.md#工具发现排序的私有托管边界)。

@@ -1,0 +1,76 @@
+{
+  "purpose": "Captured before first managed Memory Inspector implementation; original behavior oracle, not a second production implementation or generic native fallback",
+  "source_snapshot_sha256": "d4207457790c2c6d5d5936a095681311ea8d5950c288dee5a93afa75c29f3100",
+  "files": [
+    {
+      "source": "internal/interaction/web/memory.go",
+      "capture": "memory.go.txt",
+      "sha256": "e382f6addd82e03586b9ea99276f46e07265211fa2045ddc8b17fa7b2340df13"
+    },
+    {
+      "source": "internal/interaction/web/templates/memory.html",
+      "capture": "memory.html.txt",
+      "sha256": "1125769ba6032f20fd57442253d424d6fd19a438a646fa74714b9ccc480b9372"
+    },
+    {
+      "source": "web/src/memory.ts",
+      "capture": "memory.ts.txt",
+      "sha256": "70d8352c609c78a2ce25f4ef6d8bd98e20a8e7a2ee9a10e1127d069c32c1cd85"
+    },
+    {
+      "source": "web/src/memory.css",
+      "capture": "memory.css.txt",
+      "sha256": "31ddd641bffff7833770d3e4a5c157ce5acec96a329cf4c512c5690494e0e36d"
+    }
+  ],
+  "behavior": {
+    "capture": "behavior.json",
+    "sha256": "2934e5b3a1d624768f38e760e38bb0013afb2ec77a26168bc60397c4b61bb80d",
+    "url_cases": 17,
+    "label_cases": 23,
+    "executed_original_functions": true,
+    "capture_log": "memory64-original-behavior-capture.log",
+    "capture_program": "memory64-original-capture-test.go.txt"
+  },
+  "managed_view_baseline": {
+    "capture": "managed-memory-v1.html.txt",
+    "sha256": "d8d8161aaaa5d78b4980bb1555c279a238ac290ee7ce1e24349b09aa0104333d",
+    "derived_from": "original memory.html plus Host inspector_revision hidden field and frozen maintenance navigation; developer-navigation remains shared Host composition",
+    "captured_before_plugin_view_implementation": true
+  },
+  "localization": {
+    "capture": "localization-v1.json",
+    "sha256": "ac66e1117e1ef48bda42cc41e1e718f0f1c80ab28cc8fee5ccabf4c6f5e9a2a6",
+    "entries": 130,
+    "original_dictionary_sha256": "30fc6622caa7402a5683e2ece3acc9ab4c4abffcbb8ec00e733c96b5d581da40",
+    "consumers": [
+      "captured Memory template literals",
+      "captured navigation/source/origin/layer labels",
+      "captured Memory client labels",
+      "original inspector maintenance states/purposes",
+      "Host-defined proposal diagnostic reasons",
+      "shared identifier/help slots invoked by Memory",
+      "original facts/dream purpose and clipped/tool-call diagnostic reasons"
+    ],
+    "captured_before_owning_localization_producer": true
+  },
+  "client_decisions": {
+    "capture": "client-decisions.json",
+    "sha256": "1965575f3e14b515b65ba432e9303e471675cacd2383254d36cad9b6b0d393c3",
+    "original_execution_log": "memory64-original-client-decisions-capture.log",
+    "capture_script": "memory64-original-client-decisions-capture.mjs",
+    "captured_before_worker_implementation": true
+  },
+  "reviewed_worker_resource": {
+    "capture": "worker-v1.js.txt",
+    "sha256": "c019694b388019f085911860b3285bfdaf6624007ca1f60ff60c608d754d3bb8",
+    "previous_review_sha256": "a4115893d279ae5108ebdac7fe38b56d4fd7dc0d5ef85ef761a405d3dec61269",
+    "kind": "reviewed unreleased managed Worker byte allowlist; not native behavior oracle",
+    "reason": "Complete private feature ownership of four original client labels and adjacent visibility",
+    "semantic_oracles_unchanged": [
+      "memory.ts.txt",
+      "client-decisions.json",
+      "localization-v1.json"
+    ]
+  }
+}

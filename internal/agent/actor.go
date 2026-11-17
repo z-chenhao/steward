@@ -196,7 +196,13 @@ func (a Actor) execute(ctx context.Context, id string, claim RunClaim) error {
 			err = loadErr
 		} else {
 			var registry *tool.Registry
-			registry, err = a.Registry.Select(run.Tools)
+			base := a.Registry
+			if plugins, ok := a.Store.(RunRegistry); ok {
+				base, err = plugins.RegistryForRun(execution, claim, base)
+			}
+			if err == nil {
+				registry, err = base.Select(run.Tools)
+			}
 			if err == nil {
 				executor := tool.Executor{Registry: registry, Store: a.Store.ToolStore(claim), Concurrency: 4, Sink: func(e tool.Event) {
 					emit(Event{Kind: e.Kind, InvocationID: e.InvocationID, RunID: id, OccurredAt: time.Now().UTC(), ToolCallID: e.Call.ID})

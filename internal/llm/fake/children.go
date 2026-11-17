@@ -19,9 +19,9 @@ func childrenReply(req llm.GenerationRequest) (llm.GenerationResult, error) {
 	input := ""
 	var prior llm.ToolCall
 	for _, m := range req.Messages {
-		worker = worker || strings.Contains(m.Text, "general Worker executing")
+		worker = worker || workerMessage(m)
 		root = root || strings.Contains(m.Text, "Task anchor:")
-		if m.Role == "user" && input == "" {
+		if m.Role == "user" && m.Origin == "" && input == "" {
 			input = m.Text
 			input, _, _ = strings.Cut(input, "\nExplicit artifact references: ")
 			input, _, _ = strings.Cut(input, "\nExplicit artifact IDs: ")

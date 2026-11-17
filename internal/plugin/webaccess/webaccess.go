@@ -27,6 +27,31 @@ type Config struct {
 	ExtractScript    string   `yaml:"extract_script" json:"extract_script,omitempty"`
 }
 
+// ScopeIdentity authorizes Tools whose graph owns immutable parser code.
+// The complete live configuration remains the authority for their IO.
+func (c Config) ScopeIdentity() string {
+	raw, _ := json.Marshal(c)
+	sum := sha256.Sum256(raw)
+	return "web-access-v3:" + hex.EncodeToString(sum[:])
+}
+
+// A pure parser has no endpoint/credential/source-order authority. Keep only
+// its selected command/script source in this binding; the original Tool still
+// freezes and rechecks the complete live network/config scope for every Run.
+func (c Config) ParserSourceIdentity() string {
+	raw, _ := json.Marshal(struct{ Command, Script string }{c.ExtractCommand, c.ExtractScript})
+	sum := sha256.Sum256(raw)
+	return "web-parser-source-v1:" + hex.EncodeToString(sum[:])
+}
+
+func (c Config) MatchesParserSource(identity string) bool {
+	if identity == c.ParserSourceIdentity() {
+		return true
+	}
+	// Exact historical experimental binding; no reinterpretation of old graphs.
+	return identity == c.ScopeIdentity()
+}
+
 func (c Config) Identity() string {
 	b, _ := json.Marshal(c)
 	hash := sha256.New()
@@ -68,10 +93,10 @@ type SearchResult struct {
 	Untrusted   bool            `json:"untrusted"`
 }
 
-func fallbackAllowed(err error) bool {
+func SourceFallbackAllowed(err error) bool {
 	return errors.Is(err, errFiltersUnsupported) || errors.Is(err, llm.ModelIncompatible) || errors.Is(err, llm.ProviderUnavailable) || errors.Is(err, llm.RateLimited)
 }
-func errorCode(err error) string {
+func SourceAttemptCode(err error) string {
 	if errors.Is(err, errFiltersUnsupported) {
 		return errFiltersUnsupported.Error()
 	}

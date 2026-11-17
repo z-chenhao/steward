@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"sync"
 	"testing"
@@ -252,6 +253,9 @@ func TestChannelMigrationV24PreservesDataRollbackAndProjection(t *testing.T) {
 	mustSubmit(t, a, "projection", "safe <text>")
 	mustDrain(t, a)
 	row := deliveryRows(t, s)[0]
+	if raw, found, e := s.LoadProjection(ctx, row.DeliveryID, "frozen"); e != nil || found || raw != nil {
+		t.Fatal("read fabricated projection", found, e)
+	}
 	raw, e := s.SaveProjection(ctx, row.DeliveryID, "frozen", 1, map[string]string{"text": "safe"})
 	if e != nil || !json.Valid(raw) {
 		t.Fatal(e)
@@ -263,6 +267,29 @@ func TestChannelMigrationV24PreservesDataRollbackAndProjection(t *testing.T) {
 	if _, e = s.SaveProjection(ctx, row.DeliveryID, "drift", 1, map[string]string{}); e == nil {
 		t.Fatal("envelope drift accepted")
 	}
+	if read, found, e := s.LoadProjection(ctx, row.DeliveryID, "frozen"); e != nil || !found || string(read) != string(raw) {
+		t.Fatal("read changed frozen projection", string(read), found, e)
+	}
+	if read, found, e := s.LoadProjection(ctx, row.DeliveryID, "drift"); !errors.Is(e, delivery.ErrConflict) || !found || read != nil {
+		t.Fatal("read accepted drift or exposed another envelope", read, found, e)
+	}
+	root := filepath.Dir(s.path)
+	if e = s.Close(); e != nil {
+		t.Fatal(e)
+	}
+	recovered, e := Open(ctx, root)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer recovered.Close()
+	// Observe directly after the real reopen, without another save or selection.
+	if read, found, e := recovered.LoadProjection(ctx, row.DeliveryID, "frozen"); e != nil || !found || string(read) != string(raw) {
+		t.Fatal("reopen lost original frozen identity", string(read), found, e)
+	}
+	if read, found, e := recovered.LoadProjection(ctx, row.DeliveryID, "drift"); !errors.Is(e, delivery.ErrConflict) || !found || read != nil {
+		t.Fatal("reopen dropped envelope fence", read, found, e)
+	}
+
 }
 
 func TestChannelApprovalRacesAndSteeringFrozenHash(t *testing.T) {

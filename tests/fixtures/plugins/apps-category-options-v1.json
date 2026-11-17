@@ -1,0 +1,107 @@
+[
+  {
+    "name": "first-label",
+    "facts": [
+      {
+        "id": "a",
+        "name": "First A"
+      },
+      {
+        "id": "b",
+        "name": "B"
+      },
+      {
+        "id": "a",
+        "name": "Last A"
+      }
+    ],
+    "selected": "",
+    "expected": [
+      {
+        "id": "a",
+        "name": "First A"
+      },
+      {
+        "id": "b",
+        "name": "B"
+      }
+    ]
+  },
+  {
+    "name": "empty-identity",
+    "facts": [
+      {
+        "id": "",
+        "name": "Ignored"
+      },
+      {
+        "id": "b",
+        "name": "B"
+      }
+    ],
+    "selected": "",
+    "expected": [
+      {
+        "id": "b",
+        "name": "B"
+      }
+    ]
+  },
+  {
+    "name": "selected-present",
+    "facts": [
+      {
+        "id": "a",
+        "name": "First A"
+      },
+      {
+        "id": "a",
+        "name": "Last A"
+      }
+    ],
+    "selected": "a",
+    "expected": [
+      {
+        "id": "a",
+        "name": "First A"
+      }
+    ]
+  },
+  {
+    "name": "selected-missing",
+    "facts": [
+      {
+        "id": "b",
+        "name": "B"
+      }
+    ],
+    "selected": "odd + 汉",
+    "expected": [
+      {
+        "id": "b",
+        "name": "B"
+      },
+      {
+        "id": "odd + 汉",
+        "name": "odd + 汉"
+      }
+    ]
+  },
+  {
+    "name": "empty-source",
+    "facts": null,
+    "selected": "a",
+    "expected": [
+      {
+        "id": "a",
+        "name": "a"
+      }
+    ]
+  },
+  {
+    "name": "all-empty",
+    "facts": null,
+    "selected": "",
+    "expected": null
+  }
+]

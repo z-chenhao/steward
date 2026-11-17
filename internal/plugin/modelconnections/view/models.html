@@ -1,0 +1,65 @@
+{{define "model-list"}}
+<section class="model-resources" aria-label="{{modelTr "Models"}}">
+ <div class="page-heading"><div><h1>{{modelTr "Models"}}</h1></div></div>
+ <section class="model-connections" aria-label="{{modelTr "Accounts"}}">
+ <div class="list-heading"><h2>{{modelTr "Accounts"}}</h2><a class="button secondary setting-action account-add" href="/settings/models/new?method=account">{{if .Accounts}}{{modelTr "Add another account"}}{{else}}{{modelTr "Sign in with an account"}}{{end}}</a></div>
+ <div id="signin-status">{{template "signin" .}}</div>
+ {{range .Accounts}}<div class="setting-row model-connection-row" role="group" aria-label="ChatGPT · {{.AccountLabel}}" data-account-connection="{{.ConnectionID}}">
+ <span class="connection-name">ChatGPT · {{.AccountLabel}}</span><div class="connection-meta"><span class="status-pill" data-status="{{.Status}}">{{if eq .Status "logged_out"}}{{modelTr "Signed out"}}{{else if eq .Status "reauth_required"}}{{modelTr "Needs attention"}}{{else}}{{modelTr .Status}}{{end}}</span>
+ <details data-form-menu><summary class="control-icon-button" aria-label="{{modelTr "Manage connection"}}: {{.AccountLabel}}">{{template "icon-more-v1"}}</summary><div class="actions">
+ <form method="post" action="/auth/login" data-open-signin><input type="hidden" name="account" value="{{.ConnectionID}}"><input type="hidden" name="provider" value="chatgpt"><button class="secondary setting-action">{{modelTr "Reconnect account"}}</button></form>
+ {{if ne .Status "logged_out"}}<form method="post" action="/auth/logout" data-settings-confirm="{{modelTr "Sign out of provider"}}" data-confirm-description="{{modelTr "Signing out disconnects all saved models using this account."}}"><input type="hidden" name="account" value="{{.ConnectionID}}"><button class="secondary setting-action danger-text">{{modelTr "Sign out of provider"}}</button></form>{{end}}
+ </div></details></div></div>{{end}}
+ </section>
+ <section class="model-connections" aria-label="{{modelTr "API connections"}}"><div class="list-heading"><h2>{{modelTr "API connections"}}</h2><a class="button secondary setting-action" href="/settings/models/new">{{modelTr "Connect with an API key"}}</a></div>
+ {{range .Settings.DirectModels}}{{template "model-resource" .}}{{end}}
+ </section>
+</section>
+{{end}}
+
+{{define "model-new"}}
+<div class="model-connect">
+ <a class="back-link" href="/settings/models">{{modelTr "Models"}}</a>
+ {{if eq .Settings.ConnectionMethod "account"}}
+ <h1>{{modelTr "Sign in with an account"}}</h1>
+ <div class="setting-row"><span class="setting-name">ChatGPT</span><form action="/auth/login" method="post" data-open-signin><input type="hidden" name="provider" value="chatgpt"><input type="hidden" name="return_to" value="/settings/models"><button class="secondary setting-action">{{modelTr "Sign in with ChatGPT"}}</button></form></div>
+ {{else}}
+ <h1>{{modelTr "Connect with an API key"}}</h1>
+ <form class="model-connect-form" action="/model/add" method="post" data-api-connection data-model-owner-connection>
+ <label>{{modelTr "Provider"}}<select name="service" id="api-service"><option value="openai" data-model-owner-key-required="true" data-model-owner-endpoint-readonly="true" data-model-owner-expand-advanced="false" data-model-owner-endpoint-default="https://api.openai.com/v1" data-model-owner-endpoint-force="true" data-model-owner-endpoint-replace="" {{if eq .Settings.Service "openai"}}selected{{end}}>OpenAI</option><option value="custom" data-model-owner-key-required="false" data-model-owner-endpoint-readonly="false" data-model-owner-expand-advanced="true" data-model-owner-endpoint-default="http://127.0.0.1:8000/v1" data-model-owner-endpoint-force="false" data-model-owner-endpoint-replace="https://api.openai.com/v1" {{if eq .Settings.Service "custom"}}selected{{end}}>{{modelTr "Custom endpoint"}}</option></select></label>
+ <label><span class="control-field-label">{{modelTr "API key"}}{{template "help" (help "api-key-help" (modelTr "API key") (modelTr "Local endpoints may not require an API key."))}}</span><input type="password" aria-label="{{modelTr "API key"}}" name="api_key" maxlength="16384" autocomplete="new-password" spellcheck="false" autocapitalize="off"></label>
+ <label>{{modelTr "Model ID"}}<input name="model" value="{{.Settings.Model}}" required autocomplete="off"></label>
+ <details class="model-connection-advanced" {{if eq .Settings.Service "custom"}}open{{end}}><summary>{{modelTr "Advanced"}}</summary>
+ <label>{{modelTr "Endpoint URL"}}<input type="url" name="endpoint" value="{{.Settings.Endpoint}}" required></label>
+ <label>{{modelTr "Protocol"}}<select name="wire_api"><option value="openai_completions" {{if eq .Settings.WireAPI "openai_completions"}}selected{{end}}>Chat Completions</option><option value="openai_responses" {{if eq .Settings.WireAPI "openai_responses"}}selected{{end}}>Responses</option></select></label>
+ <label><span>{{modelTr "Display name"}} <span class="muted">{{modelTr "optional"}}</span></span><input name="name" value="{{.Settings.Name}}" placeholder="{{modelTr "My local model"}}"></label>
+ </details>
+ <button class="secondary setting-action">{{modelTr "Connect"}}</button>
+ </form>
+ {{end}}
+</div>
+{{end}}
+
+{{define "model-resource"}}
+<div class="setting-row model-connection-row resource-model" id="model-{{.ProfileID}}">
+ <details class="connection-details" {{if .Open}}open{{end}}><summary class="connection-name">{{.Name}}</summary><dl class="facts"><div><dt>{{modelTr "Model ID"}}</dt><dd>{{.ModelID}}</dd></div><div><dt>{{modelTr "Endpoint URL"}}</dt><dd>{{.Endpoint}}</dd></div></dl></details>
+ <div class="connection-meta"><span class="status-pill" data-status="{{.ConnectionStatus}}">{{if eq .ConnectionStatus "logged_out"}}{{modelTr "Disconnected"}}{{else}}{{modelTr .ConnectionStatus}}{{end}}</span>
+ {{if or .KeyAuth (not .Verified)}}<details data-form-menu><summary class="control-icon-button" aria-label="{{modelTr "Manage connection"}}: {{.Name}}">{{template "icon-more-v1"}}</summary><div class="actions">
+ {{if and (ne .ConnectionStatus "logged_out") (not .Verified)}}<form method="post" action="/model/reconnect" data-model-verify><input type="hidden" name="profile" value="{{.ProfileID}}"><input type="hidden" name="profile_version" value="{{.Version}}"><input type="hidden" name="config_version" value="{{.ConfigVersion}}"><button class="secondary setting-action" name="consent" value="yes">{{modelTr "Reconnect"}}</button></form>{{end}}
+ {{if and .KeyAuth (ne .ConnectionStatus "logged_out")}}<form method="post" action="/model/disconnect" data-settings-confirm="{{modelTr "Disconnect"}}" data-confirm-description="{{modelTr "Disconnect this model connection?"}}"><input type="hidden" name="profile" value="{{.ProfileID}}"><input type="hidden" name="profile_version" value="{{.Version}}"><input type="hidden" name="auth_version" value="{{.AuthVersion}}"><button class="secondary setting-action danger-text" name="confirm" value="yes">{{modelTr "Disconnect"}}</button></form>{{end}}
+ {{if eq .ConnectionStatus "logged_out"}}<a class="button secondary setting-action" href="/settings/models/new?source={{.ProfileID}}">{{modelTr "Reconnect"}}</a>{{end}}
+ </div></details>{{end}}
+ </div>
+</div>
+{{end}}
+
+{{define "signin"}}
+{{if eq .Auth.Status "pending"}}<div class="signin-progress" data-signin-pending>
+ <div class="setting-row"><span class="setting-copy"><strong>ChatGPT</strong><span role="status">{{modelTr "Waiting for sign-in"}}</span></span>
+
+ <form method="post" action="/auth/cancel">{{if .AuthOnResources}}<input type="hidden" name="return_to" value="/settings/models">{{end}}<button class="secondary setting-action">{{modelTr "Cancel sign-in"}}</button></form></div>
+ {{range .Auth.Events}}{{if .URL}}<a data-signin-fallback href="{{authURL .URL}}" target="_blank" rel="noreferrer">{{modelTr "Continue sign-in in your browser ↗"}}</a>{{end}}{{if .DeviceCode}}<span>{{modelTr "Device code:"}} <code>{{.DeviceCode}}</code></span>{{end}}{{end}}
+</div>
+{{else if eq .Auth.Status "connected"}}<span hidden data-account-reconnected></span>{{if .AuthError}}<p class="feedback warning">{{modelTr .AuthError}}</p>{{end}}
+{{else if eq .Auth.Status "reauth_required"}}<p class="feedback warning">{{if .AuthError}}{{modelTr .AuthError}}{{else}}{{modelTr "Sign-in was not completed. Reconnect when you are ready."}}{{end}}</p>{{end}}
+{{end}}

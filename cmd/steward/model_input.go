@@ -13,11 +13,11 @@ import (
 func readModelInput(command command, flags *flag.FlagSet, in io.Reader) (llm.ProfileInput, error) {
 	var input llm.ProfileInput
 	if command.kind == commandModel && flags.Arg(1) == "add" && flags.NArg() >= 4 {
-		input = llm.ProfileInput{Name: flags.Arg(3), ProviderKind: "openai_compatible", Endpoint: flags.Arg(2), WireAPI: "openai_completions", ModelID: flags.Arg(3), ContextWindow: 8192, MaxOutputTokens: 1024, Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true}}
+		input = llm.ProfileInput{Name: flags.Arg(3), ProviderKind: "openai_compatible", Endpoint: flags.Arg(2), ModelID: flags.Arg(3)}
 		if flags.NArg() == 5 {
 			input.AuthConnectionID = flags.Arg(4)
 		}
-		if err := input.Validate(); err != nil {
+		if err := input.ValidateIdentity(); err != nil {
 			return input, err
 		}
 	}

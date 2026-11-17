@@ -3,7 +3,6 @@ package setup
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/z-chenhao/assistant/internal/computer/environment"
 	"github.com/z-chenhao/assistant/internal/computer/macosvm"
@@ -15,73 +14,78 @@ import (
 	"github.com/z-chenhao/assistant/internal/tool/mcp"
 )
 
-func (m *Manager) probe(ctx context.Context, c config.Config, id string) (string, string) {
+func (m *Manager) probe(ctx context.Context, c config.Config, id string) probeResult {
 	if c.Automatic(id) {
-		return "ready", "Steward will manage this capability automatically. Save and restart to apply the default."
+		return probeResult{State: "ready", Code: "ProbeAutomatic"}
 	}
 	if id == "execution" && c.Computer != nil {
-		return "unavailable", "File tools use Computer. Configure and test that backend instead."
+		return probeResult{State: "unavailable", Code: "ProbeExecutionConflict"}
 	}
 	if resource(c, id) == nil {
-		return "ready", "This candidate disables the capability. Save and restart to apply it; existing work keeps its original capabilities."
+		return probeResult{State: "ready", Code: "ProbeDisabled"}
 	}
 	switch id {
 	case "memory":
 		if _, e := (memory.Vault{Secrets: m.secrets, Ref: c.Memory.EncryptionKeyRef}).Digest(ctx, "Steward memory connection test"); e != nil {
-			return "unavailable", "Memory key unavailable. Provide the referenced 32-byte key in SecretStore or the process environment."
+			return probeResult{State: "unavailable", Code: "ProbeMemoryFailed"}
 		}
-		return "ready", "The referenced 32-byte encryption key is available. No memory was read or written."
+		return probeResult{State: "ready", Code: "ProbeMemoryReady"}
 	case "embedding":
 		v, e := (embedding.Client{Config: *c.Embedding, Secrets: m.secrets}).Embed(ctx, "Steward embedding connection test")
 		if e != nil {
-			return "unavailable", "Embedding connection failed. Check the endpoint, model, dimensions and credential reference; redirects and invalid vectors are rejected."
+			return probeResult{State: "unavailable", Code: "ProbeEmbeddingFailed"}
 		}
-		return "ready", fmt.Sprintf("Embedding endpoint returned a valid %d-dimensional vector for a fixed diagnostic sentence.", len(v))
+		return probeResult{State: "ready", Code: "ProbeEmbeddingReady", Dimensions: len(v)}
 	case "skills":
 		defs, e := skill.Definitions(*c.Skills)
 		if e != nil {
-			return "unavailable", "Skill catalog unavailable. Prepare a readable catalog with valid SKILL.md files and bounded resources at the configured root."
+			return probeResult{State: "unavailable", Code: "ProbeSkillsFailed"}
 		}
-		return "ready", fmt.Sprintf("The actual Skill catalog and its resources passed validation (%d discovery/read tools).", len(defs))
+		return probeResult{State: "ready", Code: "ProbeSkillsReady", Tools: len(defs)}
 	case "mcp":
 		total := 0
 		for _, server := range c.MCP {
 			defs, e := mcp.Definitions(ctx, server)
 			if e != nil {
-				return "unavailable", "MCP discovery failed. Check absolute executable/private directory paths, the kernel sandbox, protocol and allowlisted tool names."
+				return probeResult{State: "unavailable", Code: "ProbeMCPFailed"}
 			}
 			total += len(defs)
 		}
-		return "ready", fmt.Sprintf("%d isolated provider(s) advertised %d allowed tools. No advertised tool was invoked.", len(c.MCP), total)
+		return probeResult{State: "ready", Code: "ProbeMCPReady", Providers: len(c.MCP), Tools: total}
 	case "execution":
 		r := (environment.Local{Config: c.ExecutionConfig()}).Execute(ctx, "builtin__bash", `{"command":"printf steward-connection-test","timeout":5}`)
 		if r.Error != nil {
-			return "unavailable", "Workspace diagnostic failed. Check private directory permissions, Python 3, bash, kernel sandbox permissions and read-only toolchain paths."
+			return probeResult{State: "unavailable", Code: "ProbeExecutionFailed"}
 		}
 		var result struct {
 			ExitCode int    `json:"exit_code"`
 			Text     string `json:"output"`
 		}
 		if json.Unmarshal([]byte(r.ModelText()), &result) != nil || result.ExitCode != 0 || result.Text != "steward-connection-test" {
-			return "unavailable", "The isolated diagnostic command did not complete successfully."
+			return probeResult{State: "unavailable", Code: "ProbeExecutionInvalid"}
 		}
-		return "ready", "A fixed diagnostic command completed in the configured kernel sandbox. No user command or network access was used."
+		return probeResult{State: "ready", Code: "ProbeExecutionReady"}
 	case "computer":
 		if c.JavaScript == nil {
-			return "unavailable", "Computer requires the JavaScript runtime configuration."
+			return probeResult{State: "unavailable", Code: "ProbeJavaScriptMissing"}
 		}
 		if e := (&codemode.Sidecar{Command: c.JavaScript.Command, Script: c.JavaScript.Script}).Check(ctx); e != nil {
-			return "unavailable", "JavaScript runtime unavailable. Check the absolute Node/sidecar paths and install the pinned runtime dependencies."
+			return probeResult{State: "unavailable", Code: "ProbeJavaScriptFailed"}
 		}
 		p, e := macosvm.New(*c.Computer, macosvm.SSHGuest{Config: c.Computer.Guest, Secrets: m.secrets})
 		if e != nil {
-			return "unavailable", "Computer store unavailable. Provision the private Lume store and sealed base before testing."
+			return probeResult{State: "unavailable", Code: "ProbeComputerStoreFailed"}
 		}
 		defer p.Close()
 		if e = p.Probe(ctx); e != nil {
-			return "unavailable", "Computer connection failed. Check the Lume endpoint/version, sealed base compatibility/integrity and Guest credential reference. The diagnostic does not boot or modify a VM."
+			return probeResult{State: "unavailable", Code: "ProbeComputerFailed"}
 		}
-		return "ready", "Lume version, sealed base and credential availability verified. Guest runtime identity is checked when a Run first opens its Computer."
+		return probeResult{State: "ready", Code: "ProbeComputerReady"}
 	}
-	return "unavailable", "Capability not available."
+	return probeResult{State: "unavailable", Code: "ProbeUnknown"}
+}
+
+type probeResult struct {
+	State, Code                  string
+	Dimensions, Providers, Tools int
 }

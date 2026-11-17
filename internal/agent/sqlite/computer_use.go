@@ -21,11 +21,22 @@ type computerUseStore struct {
 	version int64
 }
 
-func (s *computerUseStore) Fence(ctx context.Context) error { return s.b.computerStore().Fence(ctx) }
+func (s *computerUseStore) Fence(ctx context.Context) error {
+	if err := s.b.computerStore().Fence(ctx); err != nil {
+		return err
+	}
+	return s.b.t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error { return s.fence(ctx, tx) })
+}
+func (s *computerUseStore) fence(ctx context.Context, tx *sql.Tx) error {
+	if err := s.b.fence(ctx, tx); err != nil {
+		return err
+	}
+	return s.b.t.runs.pluginDispatchFence(ctx, tx, s.b.t.claim.RunID())
+}
 func (s *computerUseStore) Load(ctx context.Context) (computer.UseState, error) {
 	var state computer.UseState
 	err := s.b.t.runs.write(ctx, func(tx *sql.Tx) error {
-		if err := s.b.fence(ctx, tx); err != nil {
+		if err := s.fence(ctx, tx); err != nil {
 			return err
 		}
 		var raw string
@@ -65,7 +76,7 @@ func (s *computerUseStore) Load(ctx context.Context) (computer.UseState, error) 
 }
 func (s *computerUseStore) Save(ctx context.Context, state computer.UseState) error {
 	err := s.b.t.runs.write(ctx, func(tx *sql.Tx) error {
-		if err := s.b.fence(ctx, tx); err != nil {
+		if err := s.fence(ctx, tx); err != nil {
 			return err
 		}
 		raw, err := encoded(state)
@@ -117,8 +128,44 @@ func (s *computerUseStore) OpenArtifact(ctx context.Context, ref string) (io.Rea
 	})
 	return file, err
 }
-func (t *tools) executeComputerUse(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
+func (t *tools) executeComputerUse(ctx context.Context, inv tool.Invocation) (result tool.Result, err error) {
 	b := t.codeOwner
+	project, err := t.computerObservationProjector(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	wait, err := t.computerWaitPolicy(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	documentation, err := t.computerDocumentationReader(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	selection, err := t.computerSelectionPlanner(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	order, err := t.computerInventoryOrderer(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	matcher, err := t.computerTargetMatcher(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	parameters, err := t.computerActionParameterReader(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	upload, err := t.computerBrowserUploader(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
+	snapshot, browserProject, err := t.computerBrowserProjection(ctx, inv)
+	if err != nil {
+		return environmentMethodFailure(err)
+	}
 	instance, err := b.computer().Ensure(ctx)
 	if err != nil {
 		if errors.Is(err, agent.ErrClaimLost) || errors.Is(err, agent.ErrStorage) {
@@ -138,6 +185,7 @@ func (t *tools) executeComputerUse(ctx context.Context, inv tool.Invocation) (to
 	live, stop := context.WithCancel(ctx)
 	joined := make(chan struct{})
 	done := make(chan struct{})
+	var fenceErr error
 	go func() {
 		defer close(done)
 		tick := time.NewTicker(50 * time.Millisecond)
@@ -149,18 +197,31 @@ func (t *tools) executeComputerUse(ctx context.Context, inv tool.Invocation) (to
 			case <-live.Done():
 				return
 			case <-tick.C:
-				if store.Fence(live) != nil {
+				if err := store.Fence(live); err != nil {
+					if live.Err() == nil {
+						fenceErr = err
+					}
 					stop()
 					return
 				}
 			}
 		}
 	}()
-	defer func() { close(joined); stop(); <-done }()
-	runtime := computer.UseRuntime{Driver: driver, Store: store, Instance: instance, Lease: b.req.ExecutionID}
-	result, err := runtime.Call(live, inv.Call.Name, inv.Call.Arguments)
+	defer func() {
+		close(joined)
+		stop()
+		<-done
+		if fenceErr != nil {
+			result, err = environmentMethodFailure(fenceErr)
+		}
+	}()
+	runtime := computer.UseRuntime{Driver: driver, Store: store, Instance: instance, Lease: b.req.ExecutionID, ProjectObservation: project, WaitPolicy: wait, ReadDocumentation: documentation, PlanSelection: selection, OrderInventory: order, MatchTargets: matcher, ReadActionParameters: parameters, UploadBrowser: upload, SnapshotBrowser: snapshot, ProjectBrowser: browserProject}
+	result, err = runtime.Call(live, inv.Call.Name, inv.Call.Arguments)
 	if err != nil {
-		return tool.Result{}, err
+		if errors.Is(err, computer.ErrInvalid) {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
+		return environmentMethodFailure(err)
 	}
 	if err = store.Fence(ctx); err != nil {
 		return tool.Result{}, err
@@ -175,6 +236,9 @@ func (t *tools) commitObservation(ctx context.Context, tx *sql.Tx, receipt compu
 		return agent.ErrClaimLost
 	}
 	if err := t.codeOwner.fence(ctx, tx); err != nil {
+		return err
+	}
+	if err := t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID()); err != nil {
 		return err
 	}
 	var raw string

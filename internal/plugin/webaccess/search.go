@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/connector/exa"
+	"github.com/z-chenhao/assistant/internal/connector/searchfacts"
 	"github.com/z-chenhao/assistant/internal/connector/searxng"
 	"github.com/z-chenhao/assistant/internal/connector/tavily"
 	"github.com/z-chenhao/assistant/internal/llm"
@@ -46,17 +47,123 @@ func SearchQueryWith(ctx context.Context, c Config, q SearchQuery, hosted QueryS
 	return searchQueryWith(ctx, c, q, hosted, secrets, nil)
 }
 func searchQueryWith(ctx context.Context, c Config, q SearchQuery, hosted QuerySearch, secrets llm.SecretStore, client *http.Client) (SearchResult, error) {
-	out := SearchResult{Query: q.Query, Sources: []llm.WebSource{}, Attempts: []Attempt{}, Untrusted: true, Freshness: "provider_managed_unknown", Cost: "provider controlled; external search fees are outside the model-token budget"}
-	if q.Validate() != nil {
-		return out, errors.New("INVALID_ARGUMENT")
+	return LegacySearch(ctx, c, q, func(ctx context.Context, source string, q SearchQuery) (SourceObservation, error) {
+		return ReadSource(ctx, c, source, q, hosted, secrets, client)
+	})
+}
+
+// LegacySearch is the explicit native/pre-service business boundary. Managed
+// searches execute this policy in their frozen plugin, never as a fallback.
+func LegacySearch(ctx context.Context, c Config, q SearchQuery, request func(context.Context, string, SearchQuery) (SourceObservation, error)) (SearchResult, error) {
+	if c.Validate() != nil {
+		out, err := legacySearchPolicyV2(ctx, nil, q, nil)
+		if err != nil && err.Error() == "INVALID_ARGUMENT" {
+			return out, err
+		}
+		return out, llm.ModelIncompatible
+	}
+	return legacySearchPolicyV2(ctx, c.Order(), q, request)
+}
+
+// SourceObservation contains provider facts, not a research/routing decision.
+// Configuration, credential references and model state never cross this seam.
+type SourceObservation struct {
+	Format      string
+	Rows        []SourceRow
+	Text        string
+	Sources     []llm.WebSource
+	Usage       *llm.TokenUsage
+	RetrievedAt string
+}
+
+type SourceRow = searchfacts.Row
+
+// ReadSource retains the original pre-normalizer interpretation for explicit
+// native/pre-format-service consumers. Managed format calls use ReadSourceFacts.
+// Remove when no retained Run/reference/unbundled carrier needs V2 formatting.
+func ReadSource(ctx context.Context, c Config, source string, q SearchQuery, hosted QuerySearch, secrets llm.SecretStore, client *http.Client) (SourceObservation, error) {
+	facts, err := ReadSourceFacts(ctx, c, source, q, hosted, secrets, client)
+	if err != nil {
+		return facts, err
+	}
+	return LegacyFormatSourceV2(facts)
+}
+
+// ReadSourceFacts is a single fixed provider operation. The caller owns the accepted
+// query, configured provider/endpoint, model receipt, budget and original replay.
+// It makes no default, fallback, ranking, soft display limit or research decision.
+func ReadSourceFacts(ctx context.Context, c Config, source string, q SearchQuery, hosted QuerySearch, secrets llm.SecretStore, client *http.Client) (SourceObservation, error) {
+	var observed SourceObservation
+	if q.Validate() != nil || q.NumResults < 1 {
+		return observed, errors.New("INVALID_ARGUMENT")
 	}
 	if c.Validate() != nil {
-		return out, llm.ModelIncompatible
+		return observed, llm.ModelIncompatible
+	}
+	allowed := false
+	for _, candidate := range c.Order() {
+		allowed = allowed || candidate == source
+	}
+	if !allowed {
+		return observed, errors.New("PERMISSION_DENIED")
+	}
+	var err error
+	var facts searchfacts.Result
+	switch source {
+	case "native":
+		if hosted == nil {
+			err = llm.ModelIncompatible
+			break
+		}
+		var result llm.GenerationResult
+		result, err = hosted(ctx, q)
+		if err == nil && (result.WebSearch == nil || result.Clipped || len(result.ToolCalls) > 0) {
+			err = llm.InvalidProviderResponse
+		}
+		if err == nil {
+			observed.Text = result.Text
+			observed.Sources = result.WebSearch.Sources
+			observed.Usage = result.Usage
+		}
+	case "exa":
+		if len(q.DomainFilter) > 0 || q.RecencyFilter != "" {
+			err = errFiltersUnsupported
+			break
+		} // No pretending query hints are strict Exa filters.
+		facts, err = exa.SearchFacts(ctx, q.Query, q.NumResults, client)
+	case "searxng":
+		facts, err = searxng.SearchFacts(ctx, searxng.Connection{URL: c.SearXNGURL, SecretRef: c.SearXNGSecretRef}, q.Query, q.RecencyFilter, secrets, client)
+	case "tavily":
+		request := tavily.Request{Query: q.Query, NumResults: q.NumResults, TimeRange: q.RecencyFilter}
+		for _, domain := range q.DomainFilter {
+			if strings.HasPrefix(domain, "-") {
+				request.ExcludeDomains = append(request.ExcludeDomains, domain[1:])
+			} else {
+				request.IncludeDomains = append(request.IncludeDomains, domain)
+			}
+		}
+		facts, err = tavily.SearchFacts(ctx, tavily.Connection{SecretRef: c.TavilySecretRef}, request, secrets, client)
+	}
+	if source != "native" {
+		observed.Format, observed.Text, observed.Rows = facts.Format, facts.Text, facts.Rows
+	}
+	if err == nil {
+		observed.RetrievedAt = time.Now().UTC().Format(time.RFC3339)
+	}
+	return observed, err
+}
+
+// searchQueryPolicy owns the current source selection, absent result count,
+// fallback and source presentation. Its resource function is supplied either by
+// the isolated plugin transport or the explicit historical/native caller.
+func searchQueryPolicy(ctx context.Context, order []string, q SearchQuery, request func(context.Context, string, SearchQuery) (SourceObservation, error)) (SearchResult, error) {
+	out := SearchResultBase(q.Query)
+	if q.Validate() != nil {
+		return out, errors.New("INVALID_ARGUMENT")
 	}
 	if q.NumResults == 0 {
 		q.NumResults = 5
 	}
-	order := c.Order()
 	if q.Provider != "" && q.Provider != "auto" {
 		allowed := false
 		for _, source := range order {
@@ -74,44 +181,14 @@ func searchQueryWith(ctx context.Context, c Config, q SearchQuery, hosted QueryS
 		if ctx.Err() != nil {
 			return out, llm.GenerationCancelled
 		}
-		switch source {
-		case "native":
-			if hosted == nil {
-				err = llm.ModelIncompatible
-				break
-			}
-			var result llm.GenerationResult
-			result, err = hosted(ctx, q)
-			if err == nil && (result.WebSearch == nil || result.Clipped || len(result.ToolCalls) > 0) {
-				err = llm.InvalidProviderResponse
-			}
-			if err == nil {
-				out.Text = result.Text
-				out.Sources = result.WebSearch.Sources
-				out.Usage = result.Usage
-			}
-		case "exa":
-			if len(q.DomainFilter) > 0 || q.RecencyFilter != "" {
-				err = errFiltersUnsupported
-				break
-			} // No pretending query hints are strict Exa filters.
-			out.Text, out.Sources, err = exa.Search(ctx, q.Query, q.NumResults, client)
-		case "searxng":
-			out.Text, out.Sources, err = searxng.Search(ctx, searxng.Connection{URL: c.SearXNGURL, SecretRef: c.SearXNGSecretRef}, q.Query, q.RecencyFilter, secrets, client)
-		case "tavily":
-			request := tavily.Request{Query: q.Query, NumResults: q.NumResults, TimeRange: q.RecencyFilter}
-			for _, domain := range q.DomainFilter {
-				if strings.HasPrefix(domain, "-") {
-					request.ExcludeDomains = append(request.ExcludeDomains, domain[1:])
-				} else {
-					request.IncludeDomains = append(request.IncludeDomains, domain)
-				}
-			}
-			out.Text, out.Sources, err = tavily.Search(ctx, tavily.Connection{SecretRef: c.TavilySecretRef}, request, secrets, client)
+		var observed SourceObservation
+		observed, err = request(ctx, source, q)
+		if err == nil {
+			out.Text, out.Sources, out.Usage = observed.Text, observed.Sources, observed.Usage
 		}
 		outcome := "completed"
 		if err != nil {
-			outcome = errorCode(err)
+			outcome = SourceAttemptCode(err)
 		}
 		out.Attempts = append(out.Attempts, Attempt{source, outcome})
 		if err == nil {
@@ -123,15 +200,16 @@ func searchQueryWith(ctx context.Context, c Config, q SearchQuery, hosted QueryS
 					out.Text += source.Title + "\n" + source.URL + "\n"
 				}
 			}
-			out.RetrievedAt = time.Now().UTC().Format(time.RFC3339)
+			out.RetrievedAt = observed.RetrievedAt
 			return out, nil
 		}
-		if !fallbackAllowed(err) {
+		if !SourceFallbackAllowed(err) {
 			return out, err
 		}
 	}
 	return out, err
 }
+
 func filterSources(sources []llm.WebSource, filters []string, limit int) []llm.WebSource {
 	out := []llm.WebSource{}
 	seen := map[string]bool{}
@@ -164,4 +242,10 @@ func filterSources(sources []llm.WebSource, filters []string, limit int) []llm.W
 		}
 	}
 	return out
+}
+
+// SearchResultBase supplies mandatory provenance/billing facts. It contains no
+// default routing, result selection, filtering or workflow policy.
+func SearchResultBase(query string) SearchResult {
+	return SearchResult{Query: query, Sources: []llm.WebSource{}, Attempts: []Attempt{}, Untrusted: true, Freshness: "provider_managed_unknown", Cost: "provider controlled; external search fees are outside the model-token budget"}
 }

@@ -182,16 +182,16 @@ func TestArtifactQuotaRetentionAndReferences(t *testing.T) {
 	if _, err := p.Open(ctx, a, ref); !errors.Is(err, artifact.ErrNotFound) {
 		t.Fatal("expired read", err)
 	}
-	report, err := p.Cleanup(ctx, a, true)
+	report, err := p.CleanupLegacy(ctx, a, true)
 	if err != nil || len(report.Artifacts) != 0 {
 		t.Fatal("referenced cleanup", report, err)
 	}
 	s.db.Exec(`DELETE FROM artifact_reference`)
-	report, err = p.Cleanup(ctx, a, true)
+	report, err = p.CleanupLegacy(ctx, a, true)
 	if err != nil || !reflect.DeepEqual(report.Artifacts, []string{ref}) || scalar(t, s, `SELECT count(*) FROM artifact WHERE deleted_at IS NOT NULL`) != 0 {
 		t.Fatal(report, err)
 	}
-	report, err = p.Cleanup(ctx, a, false)
+	report, err = p.CleanupLegacy(ctx, a, false)
 	if err != nil || len(report.Artifacts) != 1 || report.Objects != 1 {
 		t.Fatal(report, err)
 	}
@@ -300,14 +300,14 @@ func TestArtifactTaskVisibilityConcurrentChildWritersAndPublication(t *testing.T
 	if _, err := s.db.Exec(`DROP TRIGGER artifact_immutable; UPDATE artifact SET expires_at=1`); err != nil {
 		t.Fatal(err)
 	}
-	report, err := s.Artifacts().Cleanup(ctx, artifactOwner(t, s), true)
+	report, err := s.Artifacts().CleanupLegacy(ctx, artifactOwner(t, s), true)
 	if err != nil || len(report.Artifacts) != 0 {
 		t.Fatal("active Task collected", report, err)
 	}
 	if _, err = s.db.Exec(`UPDATE task SET status='paused',task_epoch=task_epoch+1,version=version+1 WHERE task_id=?`, taskID); err != nil {
 		t.Fatal(err)
 	}
-	report, err = s.Artifacts().Cleanup(ctx, artifactOwner(t, s), false)
+	report, err = s.Artifacts().CleanupLegacy(ctx, artifactOwner(t, s), false)
 	if err != nil || len(report.Artifacts) != 0 {
 		t.Fatal("paused Task collected", report, err)
 	}
@@ -449,7 +449,13 @@ func TestArtifactPublicationValidatesSetBeforeMutation(t *testing.T) {
 	}
 }
 
-func TestArtifactTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) {
+func TestArtifactTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) { artifactTaskLifetime(t, false) }
+func TestArtifactWorkbenchTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) {
+	artifactTaskLifetime(t, true)
+}
+
+func artifactTaskLifetime(t *testing.T, managed bool) {
+	t.Helper()
 	ctx := context.Background()
 	s, r, a := controlFixture(t, nil)
 	controlMain(t, r, a, "create", "create")
@@ -458,7 +464,29 @@ func TestArtifactTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) {
 		t.Fatal(err)
 	}
 	scope := artifact.Scope{UserID: artifact.LocalUser, AgentID: idAgent(t, s), TaskID: taskID, RunID: runID}
-	ref := putArtifact(t, s, scope, "recoverable Task output")
+	var ref string
+	if managed {
+		host := installArtifactWorkbench(t, s, r)
+		s.ConfigureArtifactHost(host.Catalog)
+		input, err := s.PrepareArtifactInput(ctx, artifact.Input{Name: "task-output.txt", MediaType: "text/plain"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		owner := artifactOwner(t, s)
+		owner.TaskID = taskID
+		ref, err = s.Artifacts().Put(ctx, owner, input, strings.NewReader("recoverable Task output"))
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		ref = putArtifact(t, s, scope, "recoverable Task output")
+	}
+	cleanup := func(dry bool) (artifact.CleanupReport, error) {
+		if managed {
+			return s.CleanupArtifacts(ctx, dry)
+		}
+		return s.Artifacts().CleanupLegacy(ctx, artifactOwner(t, s), dry)
+	}
 	// Advance the synthetic object clock two hours, with a frozen one-hour TTL.
 	now := time.Now().UnixMicro()
 	hour := time.Hour.Microseconds()
@@ -479,7 +507,13 @@ func TestArtifactTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) {
 			t.Fatal("protected object has finite expiry", d, err)
 		}
 		if err := s.Transaction(ctx, func(tx *sql.Tx) error {
-			list, err := s.Artifacts().ListTx(ctx, tx, scope)
+			var list []artifact.Descriptor
+			var err error
+			if managed {
+				list, err = s.Artifacts().CandidatesTx(ctx, tx, scope)
+			} else {
+				list, err = s.Artifacts().SearchLegacyTx(ctx, tx, scope, "", 50)
+			}
 			if err != nil {
 				return err
 			}
@@ -504,7 +538,7 @@ func TestArtifactTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) {
 	if readArtifact(t, s, scope, ref) != "recoverable Task output" {
 		t.Fatal("retention read failed")
 	}
-	report, err := s.Artifacts().Cleanup(ctx, artifactOwner(t, s), true)
+	report, err := cleanup(true)
 	if err != nil || len(report.Artifacts) != 0 {
 		t.Fatal("retained Task output collected", report, err)
 	}
@@ -514,7 +548,7 @@ func TestArtifactTaskLifetimeAndRetentionAfterTaskEnd(t *testing.T) {
 	if _, err := s.Artifacts().Open(ctx, scope, ref); !errors.Is(err, artifact.ErrNotFound) {
 		t.Fatal("expired Task output opened", err)
 	}
-	report, err = s.Artifacts().Cleanup(ctx, artifactOwner(t, s), false)
+	report, err = cleanup(false)
 	if err != nil || len(report.Artifacts) != 1 {
 		t.Fatal("expired unreferenced output not collected", report, err)
 	}
@@ -704,16 +738,28 @@ func TestArtifactFinalSelectionFitsConversationEnvelope(t *testing.T) {
 		t.Fatal("legal maximum cannot be delivered", err)
 	}
 	for media, kind := range map[string]string{"IMAGE/PNG": "image", "audio/wav; rate=16000": "audio", "video/mp4": "video", "application/pdf": "file", "text/markdown": "file"} {
-		if artifact.ContentType(media) != kind {
-			t.Fatal(media, artifact.ContentType(media), kind)
+		if (artifact.Descriptor{MediaType: media}).ContentType() != kind {
+			t.Fatal(media, (artifact.Descriptor{MediaType: media}).ContentType(), kind)
 		}
 	}
 }
 
 func TestArtifactManageSearchExecutionAndReplay(t *testing.T) {
+	for _, managed := range []bool{false, true} {
+		t.Run(fmt.Sprintf("managed=%v", managed), func(t *testing.T) { testArtifactManageSearchExecutionAndReplay(t, managed) })
+	}
+}
+
+func testArtifactManageSearchExecutionAndReplay(t *testing.T, managed bool) {
 	ctx := context.Background()
 	save := []llm.ToolCall{{ID: "save", Name: artifacttools.Manage, Arguments: `{"operation":"save","name":"Évidence.md","mediaType":"text/markdown","text":"verified bytes"}`}}
-	s, r, claim, e, exchange := admitPolicy(t, artifacttools.Definitions(), save)
+	s, r, claim, e, exchange := admitPolicyRun(t, artifacttools.Definitions(), save, false, func(s *Store, r *Runs) {
+		if managed {
+			installArtifactWorkbench(t, s, r)
+		}
+	})
+	// Direct executor fixture owns the same live heartbeat as the production Actor.
+	defer keepWebReadClaim(r, claim)()
 	// This contract checks sequential operations; capacity suspension is tested separately.
 	e.Concurrency = 1
 	results, err := e.Execute(ctx, exchange, save)
@@ -731,13 +777,17 @@ func TestArtifactManageSearchExecutionAndReplay(t *testing.T) {
 		putArtifact(t, s, runScope, "newer unrelated file")
 	}
 	// A newer matching file outside this Run must not consume the limit.
-	foreign, err := s.Artifacts().Put(ctx, artifactOwner(t, s), artifact.Input{Name: "Évidence.md", MediaType: "text/markdown"}, strings.NewReader("foreign marker"))
+	foreignInput, err := s.PrepareArtifactInput(ctx, artifact.Input{Name: "Évidence.md", MediaType: "text/markdown"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreign, err := s.Artifacts().Put(ctx, artifactOwner(t, s), foreignInput, strings.NewReader("foreign marker"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, query := range []string{"Évidence.md", "évidence.md", "ÉVIDENCE.MD", "vidence.md", "TEXT/MARKDOWN"} {
 		err = s.Transaction(ctx, func(tx *sql.Tx) error {
-			matches, e := s.Artifacts().SearchTx(ctx, tx, runScope, query, 1)
+			matches, e := s.Artifacts().SearchLegacyTx(ctx, tx, runScope, query, 1)
 			if e != nil {
 				return e
 			}

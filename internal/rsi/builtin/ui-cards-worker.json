@@ -1,0 +1,46 @@
+{
+  "facts": {
+    "cards": [
+      {
+        "component": 0,
+        "props": {
+          "title": "Card choices",
+          "items": [
+            {
+              "title": "Alpha",
+              "text": "Ship safe core <script>not executable</script>",
+              "url": "https://example.com/alpha",
+              "label": "Details"
+            },
+            {
+              "title": "Beta",
+              "text": "Second choice"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "expected": {
+    "views": [
+      {
+        "component": 0,
+        "html": "<section class=\"native-carousel\"><div class=\"native-carousel-heading\"><h3 class=\"native-answer-title\" data-card-text=\"Q2FyZCBjaG9pY2Vz\">Card choices</h3><div class=\"native-carousel-controls\"><button class=\"answer-icon-button\" type=\"button\" aria-label=\"Previous card\" disabled=\"\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 5-7 7 7 7\"></path></svg></button><span>1 / 2</span><button class=\"answer-icon-button\" type=\"button\" aria-label=\"Next card\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"></path></svg></button></div></div><div class=\"native-carousel-list\"><article data-slot=\"card\" class=\"native-result-card\" data-selected=\"false\"><button type=\"button\" class=\"native-card-title\" aria-pressed=\"false\" data-card-text=\"QWxwaGE=\">Alpha</button><p data-card-text=\"U2hpcCBzYWZlIGNvcmUgPHNjcmlwdD5ub3QgZXhlY3V0YWJsZTwvc2NyaXB0Pg==\">Ship safe core &lt;script&gt;not executable&lt;/script&gt;</p><a data-card-text=\"RGV0YWlscw==\" href=\"https://example.com/alpha\" target=\"_blank\" rel=\"noopener noreferrer\">Details</a></article><article data-slot=\"card\" class=\"native-result-card\" data-selected=\"false\"><button type=\"button\" class=\"native-card-title\" aria-pressed=\"false\" data-card-text=\"QmV0YQ==\">Beta</button><p data-card-text=\"U2Vjb25kIGNob2ljZQ==\">Second choice</p></article></div></section>",
+        "css": "/* Cards rules retained from the original Steward component cascade. */\n.ogui-theme .native-answer-title{font:600 14px/1.5 var(--font-ui);margin:0 0 5px;overflow-wrap:anywhere;color:var(--foreground)}\n.ogui-theme button.answer-icon-button{font:14px/1.6 var(--font-ui);display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;min-height:32px;margin:0;padding:7px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted-foreground);cursor:pointer;box-shadow:none;transform:none}\n.ogui-theme button.answer-icon-button:hover{background:var(--hover);color:var(--foreground)}\n.ogui-theme button.answer-icon-button:disabled{opacity:.4;cursor:default}\n.ogui-theme button.answer-icon-button svg{width:16px;height:16px;flex:none}\n.ogui-theme .native-carousel{position:relative;min-width:0}\n.ogui-theme .native-carousel-controls{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:0 36px 12px 0;min-height:32px;font-size:12px;color:var(--muted-foreground)}\n.ogui-theme .native-carousel-list{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,calc(50% - 8px));gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;padding:2px 0 6px}\n.ogui-theme .native-carousel-list::-webkit-scrollbar{display:none}\n.ogui-theme .native-result-card{display:flex;flex-direction:column;gap:10px;min-width:0;scroll-snap-align:start;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--card);transition:border-color .15s}\n.ogui-theme .native-result-card:hover{border-color:var(--control-border)}\n.ogui-theme .native-result-card[data-selected=true]{border-color:var(--foreground);background:var(--card)}\n.ogui-theme .native-result-card img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:7px}\n.ogui-theme button.native-card-title{padding:0;margin:0;border:0;border-radius:0;background:transparent;color:var(--foreground);font:600 14px/1.5 var(--font-ui);text-align:start;cursor:pointer;justify-content:flex-start;align-self:flex-start;min-height:24px;line-height:1.5}\n.ogui-theme button.native-card-title:hover{background:transparent;color:var(--foreground);text-decoration:underline;text-underline-offset:3px}\n.ogui-theme .native-result-card p{margin:0;font-size:13px;color:var(--muted-foreground);line-height:1.6}\n.ogui-theme .native-result-card a{align-self:flex-start;margin-top:auto;font-size:13px;text-underline-offset:3px}\n.ogui-theme .native-carousel-heading{display:flex;align-items:center;gap:12px;min-width:0;min-height:32px;padding-inline-end:42px;margin-bottom:10px}\n.ogui-theme .native-carousel .native-carousel-heading>.native-answer-title{flex:1;min-width:0;margin:0;padding:0}\n.ogui-theme .native-carousel-heading .native-carousel-controls{flex:none;margin:0;min-height:32px;margin-inline-start:auto}\nhtml.ogui-theme[data-host-compact] .answer-icon-button{width:44px;height:44px;min-height:44px}\nhtml.ogui-theme[data-host-compact] .native-carousel-list{grid-auto-columns:minmax(220px,88%)}\nhtml.ogui-theme[data-host-compact] .native-result-card a{display:inline-flex;align-items:center;min-height:44px}\nhtml.ogui-theme[data-host-compact] .native-carousel-heading{min-height:44px;padding-inline-end:54px}\nhtml.ogui-theme[data-host-compact] .native-carousel-heading .native-carousel-controls{min-height:44px}\n",
+        "compact_max_width": 760,
+        "contexts": [
+          {
+            "title": "Card choices",
+            "visible_item": "Alpha"
+          },
+          {
+            "title": "Card choices",
+            "visible_item": "Beta"
+          }
+        ],
+        "worker": "// Private owning Cards policy. No DOM, parent handles, image bytes or refs.\n'use strict';\n(()=>{\n  let titles,positions,index=0,selected='',restored=false;\n  const requested=new Set();\n  const projection=()=>({index,previousDisabled:!restored||index===0,nextDisabled:!restored||index===titles.length-1,counter:`${index+1} / ${titles.length}`,selected:titles.map(title=>title===selected)});\n  const reply=(type,seq,extra={})=>postMessage({type,seq,projection:projection(),...extra});\n  onmessage=event=>{\n    const value=event.data,seq=value.seq;\n    if(value.type==='init'&&!titles){titles=value.titles;positions=value.positions;reply('ready',seq,{prefetchMargin:240});return}\n    if(!titles)return;\n    if(Array.isArray(value.positions))positions=value.positions;\n    if(value.type==='restore'&&!restored){\n      index=Number.isSafeInteger(value.state?.index)?Math.max(0,Math.min(titles.length-1,value.state.index)):0;\n      selected=typeof value.selected==='string'?value.selected:'';restored=true;\n      reply('restored',seq,{scroll:{left:positions[index],behavior:'instant'}});return;\n    }\n    if(!restored)return;\n    if(value.type==='move'){\n      const next=Math.max(0,Math.min(titles.length-1,index+value.delta)),changed=index!==next;\n      index=next;reply(changed?'view-state':'paint',seq,{scroll:{left:positions[index],behavior:'smooth'}});return;\n    }\n    if(value.type==='resize'){positions=value.positions;reply('paint',seq,{scroll:{left:positions[index],behavior:'instant'}});return}\n    if(value.type==='scroll'){\n      const distance=item=>Math.abs(positions[item]-value.left);\n      const nearest=titles.reduce((best,_,i)=>distance(i)<distance(best)?i:best,index),changed=index!==nearest;\n      index=nearest;reply(changed?'view-state':'paint',seq);return;\n    }\n    if(value.type==='group'){selected=value.selected;reply('paint',seq);return}\n    if(value.type==='select'){reply('select',seq,{item:value.item});return}\n    if(value.type==='capture'){reply('view-state',seq);return}\n    if(value.type==='visible'){\n      const items=value.items.filter(item=>!requested.has(item));for(const item of items)requested.add(item);\n      reply('images',seq,{items});\n    }\n  };\n})();\n"
+      }
+    ],
+    "error_code": ""
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Illustrative comparison",
+  "fallback": "Illustrative values: option A costs 10; option B costs 20. Replace these with verified user data.",
+  "components": [
+    {
+      "name": "Table",
+      "props": {
+        "title": "Illustrative comparison",
+        "columns": [
+          "Option",
+          "Cost"
+        ],
+        "rows": [
+          [
+            "A",
+            "10"
+          ],
+          [
+            "B",
+            "20"
+          ]
+        ],
+        "source": "Illustrative template values; replace with verified source data."
+      }
+    }
+  ]
+}

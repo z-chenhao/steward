@@ -2,9 +2,11 @@
 """Artifact CLI launch/doctor/drive/evidence/cleanup; transport and recovery.
 
 The scripted Fake proves storage, publication and access contracts. It does not
-prove OCR, visa advice, model reasoning or the complete multimodal product case.
+prove visa advice, model reasoning or the complete multimodal product case.
+The OCR migration case uses actual local engine pixels; no quality score is implied.
 """
 import argparse
+import base64
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 from io import BytesIO
@@ -12,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import shutil
 from contextlib import closing
 import sqlite3
 import subprocess
@@ -140,7 +143,7 @@ def run_recovery(binary, scenario_jobs=1):
     return report
 
 
-def run(binary, scenario_jobs=1, docx_only=False):
+def run(binary, scenario_jobs=1, docx_only=False, ocr_only=False):
     repo = Path(__file__).resolve().parents[2]
     fixture = json.loads((repo / 'tests/fixtures/m3-artifact-v1.json').read_text())
     lock = json.loads((repo / 'tests/fixtures/m3-artifact-v1.lock.json').read_text())
@@ -185,6 +188,27 @@ def run(binary, scenario_jobs=1, docx_only=False):
 
             data = package(body)
             ref = h.save('brief.docx', media, data)['artifact_ref']
+            # Install the actual distributed feature, with independent Host
+            # gates. The model-facing evidence API and source grants stay fixed.
+            plugin_root = h.binary.parent / 'plugins/docx-reader'
+            require((plugin_root / 'steward.plugin.json').is_file(),
+                    'DOCX plugin bundle missing; build with make build')
+            installed = h.command('plugin', 'install', str(plugin_root))
+            graph = h.command('plugin', 'prepare', text=json.dumps(dict(
+                protocol='steward-rsi-plugins/0.1', bindings=[dict(
+                    instance_id='docx-reader', package_digest=installed['digest'], config={},
+                    state_namespace='docx-reader', state_version=1)])))
+            gate_input = package(start + paragraph.format('Independent fixture') + '</w:body></w:document>')
+            h.command('plugin', 'policy', text=json.dumps(dict(
+                id='docx-system-gates', allowed_contracts=['steward.docx-text/1'], allowed_requests=['input.read'],
+                allowed_hooks=[], cases=[dict(instance_id='docx-reader', contract='steward.docx-text/1',
+                    input=dict(input_id='document'), inputs=[dict(id='document', data=base64.b64encode(gate_input).decode())],
+                    expected=dict(text='Independent fixture'))])))
+            h.command('plugin', 'propose', text=json.dumps(dict(candidate_id='docx-system', baseline='',
+                      target=graph['revision'], policy_id='docx-system-gates', goal='Verify the migrated DOCX workflow')))
+            decision = h.command('plugin', 'verify', 'docx-system')
+            h.command('plugin', 'activate', text=json.dumps(dict(operation_id='activate-docx-system',
+                      expected_graph_revision='', target_graph_revision=graph['revision'], decision_ref=decision['decision_ref'])))
 
             def actor_read(key, target, offset=0, attach=True, legacy=False):
                 args = dict(operation='evidence', artifactRef=target, offset=offset, limit=6)
@@ -200,7 +224,7 @@ def run(binary, scenario_jobs=1, docx_only=False):
                         db.execute('BEGIN IMMEDIATE')
                         trigger, = db.execute("SELECT sql FROM sqlite_schema WHERE name='context_policy_immutable'").fetchone()
                         db.execute('DROP TRIGGER context_policy_immutable')
-                        db.execute("UPDATE run_context_policy SET policy_json=json_remove(policy_json,'$.docx_text') WHERE run_id=?",
+                        db.execute("UPDATE run_context_policy SET policy_json=json_remove(policy_json,'$.docx_text','$.docx_plugin') WHERE run_id=?",
                                    (receipt['run_id'],))
                         db.execute(trigger)
                 h.command('chat', 'work')
@@ -233,7 +257,8 @@ def run(binary, scenario_jobs=1, docx_only=False):
             require(''.join(pages) == expected and page['total_bytes'] == len(expected.encode()),
                     'DOCX body or table sequence changed')
             owner = h.command('evidence', 'read', text=json.dumps(dict(ref=ref)))
-            require(owner['text'] == expected and owner['representation'] == 'docx_text' and h.output(ref) == data,
+            require(owner['text'] == expected and owner['representation'] == 'docx_text' and
+                    owner['reader_revision'] == graph['revision'] and h.output(ref) == data,
                     'owner read or original bytes changed')
 
             for name, blob, error in (
@@ -246,21 +271,141 @@ def run(binary, scenario_jobs=1, docx_only=False):
             value = h.state()
             require(len(value['artifact']) == len(value['objects']) == 3 and not value['artifact_publication'],
                     'document read wrote or published a derivative')
+            with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db, db:
+                extracted, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='docx-reader' AND result_json IS NOT NULL").fetchone()
+            require(extracted > 0, 'evidence path bypassed the independent DOCX plugin')
             h.command('memory', 'manage', 'forget-docx', text=json.dumps(dict(operation='forget', category='all')))
             hidden = h.command('evidence', 'read', text=json.dumps(dict(ref=ref)), ok=False)
             require(hidden.returncode != 0 and not hidden.stdout and 'NOT_FOUND' in hidden.stderr,
                     'DOCX text remained visible through evidence after Forget')
+            with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db, db:
+                retained, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='docx-reader' AND result_json IS NOT NULL").fetchone()
+            require(retained == 0, 'Forget retained derived plugin text')
             return {'name': 'docx_evidence', 'source': ref, 'pages': len(pages), 'source_preserved': True,
-                    'legacy_metadata_only': True, 'scope_and_forget': True, 'errors': ['INVALID_ARGUMENT', 'RESOURCE_LIMIT']}
+                    'legacy_metadata_only': True, 'scope_and_forget': True, 'plugin_graph': graph['revision'],
+                    'plugin_receipts': extracted, 'errors': ['INVALID_ARGUMENT', 'RESOURCE_LIMIT']}
         # The multi-page workload keeps prior receipts and the frozen catalog.
         docx_model = dict(name='DOCX fixture', provider_kind='openai_compatible',
                           endpoint='http://127.0.0.1:1/v1', wire_api='openai_completions',
                           model_id='fixture-model', context_window=16384, max_output_tokens=1024,
                           compatibility=dict(tool_result_format='openai'), capabilities=dict(text_input=True))
-        report['checks'].append(scenario('docx-evidence', docx_evidence, docx_model))
+        if not ocr_only:
+            report['checks'].append(scenario('docx-evidence', docx_evidence, docx_model))
         if docx_only:
             report['cleanup'] = 'all child processes joined; isolated roots removed'
             return report
+
+        def managed_ocr(h):
+            doctor = h.raw('doctor').stdout.decode()
+            if 'OK   image OCR:' not in doctor:
+                return dict(name='managed_ocr', skipped='actual native engine/language/kernel unavailable', doctor=doctor)
+            node = shutil.which('node')
+            require(node, 'OCR Code Mode verification requires pinned Node')
+            script = repo / 'runtime/javascript/src/sidecar.mjs'
+            (h.root / 'tool-config.yaml').write_text('version: 1\nmemory:\n  encryption_key_ref: env:OCR_FIXTURE_KEY\njavascript:\n  command: ' + json.dumps(node) + '\n  script: ' + json.dumps(str(script)) + '\n')
+            h.env['OCR_FIXTURE_KEY'] = 'O' * 32
+            source = h.save('ocr-pixels.png', 'image/png', (repo / 'internal/media/ocr/testdata/text.png').read_bytes())['artifact_ref']
+            installed = h.command('plugin', 'install', str(h.binary.parent / 'plugins/image-ocr'))
+            graph = h.command('plugin', 'prepare', text=json.dumps(dict(protocol='steward-rsi-plugins/0.1', bindings=[dict(instance_id='image-ocr', package_digest=installed['digest'], config={}, state_namespace='image-ocr', state_version=1)])))
+            header = 'level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n'
+            tsv = header + '5\t1\t1\t1\t1\t1\t4\t8\t20\t10\t98.5\tIndependent\n'
+            cases = [dict(instance_id='image-ocr', contract='steward.ocr-tsv/1', input=dict(input_id='tsv', width=100, height=50, languages=['eng']), inputs=[dict(id='tsv', data=base64.b64encode(tsv.encode()).decode())], expected=dict(document=dict(method='ocr', languages=['eng'], width=100, height=50, text='Independent', words=[dict(text='Independent', x=4, y=8, width=20, height=10, confidence=98.5)], truncated=False))),
+                     dict(instance_id='image-ocr', contract='steward.image-ocr/1', input=dict(input_id='image', media_type='image/png', languages=[]), inputs=[dict(id='image', data=base64.b64encode(b'invalid image').decode())], expected=dict(error_code='INVALID_ARGUMENT'))]
+            h.command('plugin', 'policy', text=json.dumps(dict(id='ocr-system-policy', allowed_contracts=['steward.image-ocr/1','steward.ocr-tsv/1'], allowed_requests=['input.read','compute.ocr'], allowed_hooks=[], cases=cases)))
+            h.command('plugin', 'propose', text=json.dumps(dict(candidate_id='ocr-system', baseline='', target=graph['revision'], policy_id='ocr-system-policy', goal='Migrate real OCR without widening process privileges')))
+            decision = h.command('plugin', 'verify', 'ocr-system')
+            h.command('plugin', 'activate', text=json.dumps(dict(operation_id='ocr-select', expected_graph_revision='', target_graph_revision=graph['revision'], decision_ref=decision['decision_ref'])))
+            dbpath = Path(h.env['STEWARD_DATA_ROOT']) / 'state.db'
+
+            def recognize(key, code=False, attach=True):
+                parts = [dict(type='text', text=json.dumps(dict(operation='ocr', artifactRef=source, code=code)))]
+                if attach:
+                    parts.append(dict(type='image', artifact_ref=source))
+                receipt = h.command('chat', 'send-parts', key, text=json.dumps(parts))
+                h.command('chat', 'work')
+                with closing(sqlite3.connect(dbpath)) as db:
+                    rows = db.execute("SELECT result_json FROM tool_invocation WHERE run_id=? AND tool_name='builtin__image_ocr'", (receipt['run_id'],)).fetchall()
+                require(len(rows) == 1, key + ': native OCR tool receipt missing')
+                return json.loads(rows[0][0])
+
+            require(recognize('no-grant', attach=False)['error']['code'] == 'NOT_FOUND', 'OCR plugin acquired an unattached image')
+            for code in (False, True):
+                result = recognize('ocr-code' if code else 'ocr-direct', code=code)
+                require(not result.get('error'), 'actual OCR tool failed: ' + json.dumps(result))
+                preview = json.loads(result['text'])
+                require('OCR 12345' in preview['text'] and preview['method'] == 'ocr', 'OCR plugin did not read real pixels')
+                full = json.loads(h.output(preview['document_ref']))
+                require(full['source_ref'] == source and full['width'] == 640 and full['height'] == 120 and 'OCR 12345' in full['text'], 'OCR derivative lost original source/dimensions')
+            with closing(sqlite3.connect(dbpath)) as db:
+                count, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='image-ocr' AND result_json IS NOT NULL").fetchone()
+            require(count == 2, 'Direct/Code Mode did not use versioned OCR extraction')
+            h.command('chat', 'work')
+            with closing(sqlite3.connect(dbpath)) as db:
+                replayed, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='image-ocr' AND result_json IS NOT NULL").fetchone()
+            require(replayed == count, 'completed OCR was re-extracted')
+            h.command('memory', 'manage', 'forget-ocr', text=json.dumps(dict(operation='forget', category='all')))
+            with closing(sqlite3.connect(dbpath)) as db:
+                retained, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='image-ocr' AND result_json IS NOT NULL").fetchone()
+            require(retained == 0, 'Forget retained plugin-derived OCR text')
+            return dict(name='managed_ocr', actual_pixels=True, direct=True, codemode=True, receipts=count, scope_and_forget=True, plugin_graph=graph['revision'])
+
+        report['checks'].append(scenario('managed-ocr', managed_ocr, docx_model))
+        if ocr_only:
+            report['cleanup'] = 'all child processes joined; isolated roots removed'
+            return report
+
+        def managed_evidence(h):
+            (h.root / 'tool-config.yaml').write_text('version: 1\nmemory:\n  encryption_key_ref: env:EVIDENCE_FIXTURE_KEY\n')
+            h.env['EVIDENCE_FIXTURE_KEY'] = 'E' * 32
+            installed = h.command('plugin', 'install', str(h.binary.parent / 'plugins/evidence-reader'))
+            graph = h.command('plugin', 'prepare', text=json.dumps(dict(protocol='steward-rsi-plugins/0.1', bindings=[dict(instance_id='evidence-reader', package_digest=installed['digest'], config={}, state_namespace='evidence-reader', state_version=1)])))
+            policy = json.loads((repo / 'tests/fixtures/plugins/evidence-reader-policy.json').read_text())
+            h.command('plugin', 'policy', text=json.dumps(policy))
+            h.command('plugin', 'propose', text=json.dumps(dict(candidate_id='evidence-system', baseline='', target=graph['revision'], policy_id=policy['id'], goal='Verify scoped evidence pagination')))
+            decision = h.command('plugin', 'verify', 'evidence-system')
+            h.command('plugin', 'activate', text=json.dumps(dict(operation_id='evidence-select', expected_graph_revision='', target_graph_revision=graph['revision'], decision_ref=decision['decision_ref'])))
+            original = ('Original 原始证据🧭\n' * 3).encode()
+            ref = h.save('original.txt', 'text/plain', original)['artifact_ref']
+            dbpath = Path(h.env['STEWARD_DATA_ROOT']) / 'state.db'
+
+            def actor_page(key, offset=0, attach=True):
+                parts = [dict(type='text', text=json.dumps(dict(operation='evidence', artifactRef=ref, offset=offset, limit=23)))]
+                if attach:
+                    parts.append(dict(type='file', artifact_ref=ref))
+                receipt = h.command('chat', 'send-parts', key, text=json.dumps(parts))
+                h.command('chat', 'work')
+                with closing(sqlite3.connect(dbpath)) as db, db:
+                    rows = db.execute("SELECT result_json FROM tool_invocation WHERE run_id=? AND tool_name='builtin__evidence_read'", (receipt['run_id'],)).fetchall()
+                require(len(rows) == 1, 'managed evidence receipt missing')
+                result = json.loads(rows[0][0])
+                return result['error'] if result.get('error') else json.loads(result['text'])
+
+            require(actor_page('evidence-no-grant', attach=False)['code'] == 'NOT_FOUND', 'paging policy granted source access')
+            offset, chunks = 0, []
+            while True:
+                page = actor_page('evidence-page-' + str(offset), offset)
+                require(page['page_revision'] == graph['revision'] and page['offset'] == offset and 0 < page['bytes'] <= 23 and page['text'].encode() == original[offset:offset + page['bytes']], 'independent page changed source bytes or version')
+                chunks.append(page['text'].encode())
+                if 'next_offset' not in page:
+                    break
+                require(page['next_offset'] == offset + page['bytes'], 'managed page skipped/replayed bytes')
+                offset = page['next_offset']
+            require(b''.join(chunks) == original and h.output(ref) == original, 'managed reader lost original bytes')
+            owner = h.command('evidence', 'read', text=json.dumps(dict(ref=ref, page_revision=graph['revision'])))
+            require(owner['text'].encode() == original and owner['page_revision'] == graph['revision'], 'owner could not retain exact reader revision')
+            with closing(sqlite3.connect(dbpath)) as db, db:
+                before = db.execute("SELECT invocation_id,result_json FROM tool_invocation WHERE tool_name='builtin__evidence_read' ORDER BY invocation_id").fetchall()
+                pure_calls, = db.execute("SELECT count(*) FROM rsi_call WHERE instance_id='evidence-reader'").fetchone()
+            h.command('chat', 'work')
+            with closing(sqlite3.connect(dbpath)) as db, db:
+                after = db.execute("SELECT invocation_id,result_json FROM tool_invocation WHERE tool_name='builtin__evidence_read' ORDER BY invocation_id").fetchall()
+            require(before == after and pure_calls == 0, 'pure paging changed accepted receipts or wrote redundant Run calls')
+            h.command('memory', 'manage', 'forget-evidence', text=json.dumps(dict(operation='forget', category='all')))
+            hidden = h.command('evidence', 'read', text=json.dumps(dict(ref=ref, page_revision=graph['revision'])), ok=False)
+            require(hidden.returncode != 0 and not hidden.stdout and 'NOT_FOUND' in hidden.stderr, 'pinned paging version revived forgotten evidence')
+            return dict(name='managed_evidence', plugin_graph=graph['revision'], actual_main_pages=len(chunks), exact_utf8=True, no_implicit_grant=True, accepted_replay=True, owner_pinned=True, forget=True)
+
+        report['checks'].append(scenario('managed-evidence', managed_evidence, docx_model))
 
         def lifecycle(h):
             data = bytes(range(256)) * 2048
@@ -435,10 +580,11 @@ if __name__ == '__main__':
     scope = parser.add_mutually_exclusive_group()
     scope.add_argument('--recovery-only', action='store_true', help='drive both binary Query receipt recovery paths')
     scope.add_argument('--docx-only', action='store_true', help='verify authorized DOCX evidence through CLI and Actor')
+    scope.add_argument('--ocr-only', action='store_true', help='verify actual versioned OCR through Direct/Code Mode and Forget')
     parser.add_argument("--scenario-jobs", type=int, choices=[1,2,4], default=int(os.environ.get("STEWARD_VERIFY_CASE_JOBS","1")))
     args = parser.parse_args(); args.evidence.unlink(missing_ok=True)
     report = (run_recovery(args.binary.resolve(), args.scenario_jobs) if args.recovery_only else
-              run(args.binary.resolve(), args.scenario_jobs, args.docx_only))
+              run(args.binary.resolve(), args.scenario_jobs, args.docx_only, args.ocr_only))
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print('Artifact contracts/recovery verified:', args.evidence)

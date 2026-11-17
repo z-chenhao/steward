@@ -144,6 +144,13 @@ func runModel(ctx context.Context, application *app.App, flags *flag.FlagSet, in
 		}
 		return json.NewEncoder(out).Encode(profiles)
 	}
+	if flags.Arg(1) == "add" && flags.NArg() >= 4 {
+		var err error
+		input, err = application.PrepareModelShortcut(ctx, input)
+		if err != nil {
+			return err
+		}
+	}
 	profile, err := application.Models().AddProfile(ctx, input)
 	if err != nil {
 		return err

@@ -16,12 +16,21 @@ import (
 )
 
 func TestExperienceRequiresIndependentVerifiedRunsAndCAS(t *testing.T) {
+	testExperienceLifecycle(t, false)
+}
+func TestExperiencePluginKeepsEvidenceCASAndPublicationRecovery(t *testing.T) {
+	testExperienceLifecycle(t, true)
+}
+func testExperienceLifecycle(t *testing.T, managed bool) {
 	ctx := context.Background()
 	spec := tool.Spec{Name: "builtin__bash", Version: 1, Permission: "external_effect", Risk: "high", ReplayPolicy: "never", TimeoutMS: 10000, OutputBytes: 16384, Provider: "fixture", ConflictPolicy: "none", InputSchema: `{"type":"object","properties":{"command":{"type":"string"}},"required":["command"],"additionalProperties":false}`}
 	definition := tool.Definition{Spec: spec, Invoke: func(context.Context, tool.Request) tool.Outcome {
 		return tool.Outcome{Result: tool.Result{Text: `{"exit_code":0,"timed_out":false,"command":"go test -race ./...","truncated":false}`}}
 	}}
 	s, r, a, p := childFixture(t, definition)
+	if managed {
+		installExperiencePlugin(t, s, r)
+	}
 	execute := func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if req.Messages[len(req.Messages)-1].Role == "tool" {
 			return llm.GenerationResult{Text: "Verified correction"}, nil

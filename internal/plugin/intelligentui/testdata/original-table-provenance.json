@@ -1,0 +1,48 @@
+{
+  "scope": "independent original compiled React/Chrome before Table producer; original actual App distribution and SIGKILL confirmation",
+  "original_component_sha256": "adefd0d0601d69c1d21a4ce83b7e8506759f5fa6675a71555c188de11b27cf87",
+  "fixture_report_sha256": "f3e5c4c12d16c3dbf53af982d5b5ff6b58f2c704e742291206ef7ea3d8d3e4d9",
+  "actual_app_report_sha256": "b4d70286122671c8d3149d8cd503dd9fb7abba7171277da2bbc9949b44f8cdaf",
+  "actual_app_binary_sha256": "0b8309f6172ae6dc7060cc82533f0aee9c1232f463b3225f69e5d2ebb36c6ed1",
+  "actual_app_state": {
+    "version": 3,
+    "state": {
+      "sort": 1,
+      "direction": -1,
+      "query": "same",
+      "selected": ""
+    },
+    "model_context": {
+      "title": "Original table evidence",
+      "sort": "Amount",
+      "direction": -1,
+      "filter": "same",
+      "selection": ""
+    }
+  },
+  "actual_app_recovery_assertions": {
+    "original_facts_unchanged": true,
+    "selection_unchanged": true,
+    "no_model_regeneration": true,
+    "csv_unchanged": true
+  },
+  "runtime_numeric_boundary": "Numeric classification is intentionally painted by owning JavaScript using original Number semantics; browser parity compares every original data-numeric attribute after ready.",
+  "legacy_scope": "current Table has no managed Table view declaration; existing published/in-flight refs keep original renderer until explicitly retired",
+  "locales": [
+    "en-US",
+    "zh-CN",
+    "sv-SE"
+  ],
+  "generated_from_candidate": false,
+  "text_boundaries": {
+    "original_reference_report_sha256": "b4be0e842a16050fb6dc7b7e641aa6409315fd6f7343af7853807e79db9c79f8",
+    "source_unchanged": true,
+    "generated_from_candidate": false,
+    "cases": [
+      "CRLF",
+      "NUL",
+      "FEFF-prefixed hex numeric string"
+    ],
+    "scope": "compiled unchanged original React implementation, independent of producer; raw textContent retained in stage rows"
+  }
+}

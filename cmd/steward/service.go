@@ -156,6 +156,18 @@ func runBackground(ctx context.Context, manager *service.Manager, root string, o
 	if err = options.configureExecution(ctx, application, out); err != nil {
 		return err
 	}
+	if session.NeedsRestartRecipe() {
+		// Failure disables automatic restarts for this deployment. Manual control
+		// and the ordinary Agent runtime remain independent of this optional policy.
+		recipe, recipeErr := application.ServiceRestartRecipe(ctx)
+		if recipeErr != nil {
+			recipe = nil
+		}
+		if err = session.FreezeRestartRecipe(recipe); err != nil {
+			return err
+		}
+	}
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	healthDone := make(chan error, 1)

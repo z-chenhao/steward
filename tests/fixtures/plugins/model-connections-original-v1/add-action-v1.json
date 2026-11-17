@@ -1,0 +1,22 @@
+[
+  {
+    "has_current": false,
+    "account_backed": false,
+    "action": "activate"
+  },
+  {
+    "has_current": false,
+    "account_backed": true,
+    "action": "activate"
+  },
+  {
+    "has_current": true,
+    "account_backed": false,
+    "action": "probe"
+  },
+  {
+    "has_current": true,
+    "account_backed": true,
+    "action": "save"
+  }
+]

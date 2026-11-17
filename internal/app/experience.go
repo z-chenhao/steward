@@ -11,5 +11,7 @@ func (a *App) ReviewExperience(ctx context.Context, q skill.ReviewRequest) (map[
 	if a.skillConfig == nil {
 		return nil, agent.ErrNotFound
 	}
-	return a.runtimeRuns().ReviewExperience(ctx, *a.skillConfig, q)
+	runs := a.store.Runs(a.history, nil)
+	runs.ConfigurePlugins(a.Plugins().Catalog)
+	return runs.ReviewExperience(ctx, *a.skillConfig, q)
 }

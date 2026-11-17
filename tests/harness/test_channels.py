@@ -74,3 +74,23 @@ class ChannelSnapshotTests(unittest.TestCase):
                         reader.execute('SELECT 1')
                 finally:
                     reader.close()
+
+    def test_plugin_bootstrap_uses_control_flags_and_restores_runtime_fixture(self):
+        for fails in (False,True):
+            with self.subTest(fails=fails):
+                self.harness.fixture='terminal-input'
+                self.harness.production_events=True
+                def command(*args):
+                    self.assertEqual(args,('channel','status'))
+                    self.assertEqual(self.harness.fixture,'')
+                    self.assertFalse(self.harness.production_events)
+                    if fails:
+                        raise RuntimeError('controlled bootstrap failure')
+                self.harness.command=command
+                if fails:
+                    with self.assertRaises(RuntimeError):
+                        self.harness.enable_default_plugins()
+                else:
+                    self.harness.enable_default_plugins()
+                self.assertEqual(self.harness.fixture,'terminal-input')
+                self.assertTrue(self.harness.production_events)

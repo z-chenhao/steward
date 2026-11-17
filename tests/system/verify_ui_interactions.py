@@ -13,6 +13,29 @@ from feishu_sandbox import Sandbox
 from provider_endpoint import Endpoint
 from verify_channels import ChannelHarness,require
 
+def accepted_form_facts(db):
+ # Observe the actual Main/HTTP result, not a producer-generated expectation.
+ rows=db.execute("SELECT f.form_id,f.graph_revision,f.result_json,m.message_json,EXISTS(SELECT 1 FROM rsi_run r,json_each(r.managed_services_json) s WHERE r.run_id=f.source_run_id AND r.graph_revision=f.graph_revision AND s.value='steward.ui-form/1') AND EXISTS(SELECT 1 FROM rsi_run r,json_each(r.managed_services_json) s WHERE r.run_id=f.source_run_id AND r.graph_revision=f.graph_revision AND s.value='steward.ui-form-view/1') AND EXISTS(SELECT 1 FROM ui_form_view_snapshot p JOIN ui_widget w USING(invocation_id) WHERE w.run_id=f.source_run_id AND w.message_id=f.source_message_id AND p.graph_revision=f.graph_revision AND json_array_length(p.result_json,'$.views')>0) FROM ui_form_answer f JOIN main_input m ON m.message_id=f.accepted_message_id ORDER BY f.form_id").fetchall()
+ require(len(rows)==2,'typed and native submissions must each retain one managed answer')
+ for form_id,graph,result_json,message_json,managed in rows:
+  result,message=json.loads(result_json),json.loads(message_json)
+  require(managed and graph,'form answer did not retain its original managed Run graph')
+  require(result['error_code']=='' and message['content']==[dict(type='text',text=text) for text in result['parts']],'accepted message differs from frozen form policy output')
+  require(message['source']=='web' and message['source_event_id']=='ui-form:'+form_id,'form bypassed ordinary source admission')
+ views=db.execute("SELECT w.ui_ref,p.graph_revision,p.result_json FROM ui_form_view_snapshot p JOIN ui_widget w USING(invocation_id) WHERE json_array_length(p.result_json,'$.views')>0 ORDER BY p.invocation_id").fetchall()
+ require(views,'actual native form view snapshot missing')
+ return dict(answers=db.execute('SELECT * FROM ui_form_answer ORDER BY form_id').fetchall(),views=views)
+
+def accepted_action_feedback(db):
+ rows=db.execute("SELECT w.ui_ref,c.result_json,b.graph_revision FROM ui_widget w JOIN rsi_call c ON c.run_id=w.run_id AND c.operation_id='ui-normalize:'||w.invocation_id JOIN rsi_run b ON b.run_id=w.run_id WHERE w.message_id IS NOT NULL AND json_array_length(c.result_json,'$.action_views')>0 ORDER BY w.invocation_id").fetchall()
+ require(rows,'actual action feedback absent from original normalizer receipt')
+ for ref,raw,graph in rows:
+  result=json.loads(raw);document=json.loads(result['document_json'])
+  for view in result['action_views']:
+   require(document['components'][view['component']]['name']=='steward.action' and view['working_label']=='Working' and view['success_indicator'] is True and graph,'action feedback lost original slot/package policy')
+   require(not any(key in view for key in ['tool','arguments','source','source_id','message_id','url','worker']),'feedback descriptor acquired execution authority')
+ return rows
+
 def run(binary,evidence):
  with tempfile.TemporaryDirectory(prefix='steward-ui-interactions-') as temp,Sandbox() as platform,Broker(Path(temp)) as broker:
   server=ThreadingHTTPServer(('127.0.0.1',0),Endpoint);server.requests=[];server.mode='success';thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start();h=ChannelHarness(binary,Path(temp),platform,'')
@@ -26,17 +49,24 @@ def run(binary,evidence):
    components.append(dict(name='barChart',props=dict(title='Large category comparison',description='Illustrative annual USD values',data=[dict(label='研究与创新部门一号' if i==1 else 'Research department '+str(i),value=i*1000000000) for i in range(1,8)])))
    components.append(dict(name='steward.lineChart',props=dict(title='Uneven usage',description='Illustrative monthly cost; X: units, Y: yuan',unit='元',labels=['0','1000','10000'],xValues=[0,1000,10000],series=[dict(name='A',values=[99,179,899]),dict(name='B',values=[299,329,599])])) )
    server.widgets=[dict(title='Explorer',fallback='A: 10. B: 42. C: 25.',components=components)]
-   h.start();h.wait_state(lambda status:status['readiness']=='ready','UI ready',lambda _:h.http('/api/status'));h.http('/api/message',dict(source_id='ui-extensions',content=[dict(type='text',text='SHOW_UI_INTERACTIONS')]));h.wait(lambda s:len(s['deliveries'])==1 and s['deliveries'][0]['status']=='sent','native UI delivered')
+   h.start();h.wait_runtime_ready('UI ready');h.http('/api/message',dict(source_id='ui-extensions',content=[dict(type='text',text='SHOW_UI_INTERACTIONS')]));h.wait(lambda s:len(s['deliveries'])==1 and s['deliveries'][0]['status']=='sent','native UI delivered')
    h.browser(evidence.parent/'browser','ui-interactions')
    with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
+    db.execute('BEGIN')
+    form_facts=accepted_form_facts(db)
+    action_feedback=accepted_action_feedback(db)
     require(db.execute('SELECT count(*) FROM ui_action_request').fetchone()[0]==2,'action lost acknowledgement or refresh duplicated an input')
     require(db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__tool_search' AND status='succeeded'").fetchone()[0]==2,'UI action did not use actual durable tool invocations')
     require([r[0] for r in db.execute("SELECT json_extract(arguments_json,'$.query') FROM ui_action_request ORDER BY rowid")] == ['task','memory'],'action arguments did not follow the declared current UI binding')
     require(db.execute('SELECT count(*) FROM ui_view_state').fetchone()[0]>=4,'view state was not stored')
     initial=db.execute('SELECT count(*) FROM ui_widget').fetchone()[0]
    h.stop(kill=True);h.start();h.browser(evidence.parent/'restart','ui-interactions-restart')
-   with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:require(db.execute('SELECT count(*) FROM ui_widget').fetchone()[0]==initial,'restart regenerated presentation')
-   return dict(checks=['real Main-generated native extensions','sort/filter/chart linking and zoom','typed form validation, drafts, native fallback and accepted replay','CAS persistence and frozen model context','UI actions use existing Main and durable tool ledger with retry identity','local CSV/SVG/PNG exports','fullscreen/modal/PiP with retained frame and keyboard/mobile layouts','SIGKILL/restart restores state without regeneration'])
+   with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
+    db.execute('BEGIN')
+    require(db.execute('SELECT count(*) FROM ui_widget').fetchone()[0]==initial,'restart regenerated presentation')
+    require(accepted_form_facts(db)==form_facts,'restart changed or recomputed accepted form results')
+    require(accepted_action_feedback(db)==action_feedback,'restart recomputed original action feedback')
+   return dict(checks=['real Main-generated native extensions','sort/filter/chart linking and zoom','typed/native form validation and drafts; managed answer and ordinary input commit together; restart retains exact frozen results','managed native form view dispatch and immutable original view snapshots across cold recovery','CAS persistence and frozen model context','UI actions use existing Main and durable tool ledger with retry identity; owning feedback is frozen in original normalizer receipt across cold recovery','local CSV/SVG/PNG exports','fullscreen/modal/PiP with retained frame and keyboard/mobile layouts','SIGKILL/restart restores state without regeneration'])
   finally:
    with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
     db.row_factory=sqlite3.Row

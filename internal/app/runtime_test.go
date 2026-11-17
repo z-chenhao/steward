@@ -51,7 +51,7 @@ func TestProductionToolSurfaceKeepsOnlyFrequentControlsDirect(t *testing.T) {
 					t.Errorf("unintended native capability: %s", spec.Name)
 				}
 			}
-			found := tool.SearchTools(agent.MainTools(registry.Describe()), nil, "builtin__web_search", 1)
+			found := tool.SearchToolsLegacyV1(agent.MainTools(registry.Describe()), nil, "builtin__web_search", 1)
 			if len(found.Tools) != 1 || found.Tools[0].Name != "builtin__web_search" || len(found.Loaded) != 0 {
 				t.Fatalf("native search must discover a Code Mode tool without declaring it: %+v", found)
 			}

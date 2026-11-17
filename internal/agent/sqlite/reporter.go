@@ -11,23 +11,23 @@ import (
 	"github.com/z-chenhao/assistant/internal/event"
 	eventsqlite "github.com/z-chenhao/assistant/internal/event/sqlite"
 	"github.com/z-chenhao/assistant/internal/task"
-	"github.com/z-chenhao/assistant/internal/tool"
 )
 
-func (r *Runs) searchTasks(ctx context.Context, tx *sql.Tx, runID string, request task.SearchRequest) (tool.Result, error) {
-	rows, err := tx.QueryContext(ctx, `SELECT t.task_ref,t.title,t.anchor_task,t.status,t.progress_summary,t.updated_at,coalesce((SELECT group_concat(i.instruction,char(10)) FROM task_instruction i WHERE i.task_id=t.task_id),'') FROM task t JOIN run r ON t.agent_id=r.agent_id AND t.conversation_id=r.conversation_id WHERE r.run_id=? AND t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0) ORDER BY t.updated_at DESC,t.task_ref`, runID)
+func (r *Runs) taskCandidates(ctx context.Context, tx *sql.Tx, runID string, request task.SearchRequest, budget int) ([]task.Candidate, error) {
+	rows, err := tx.QueryContext(ctx, `SELECT t.task_ref,t.title,t.anchor_task,t.status,t.progress_summary,t.updated_at,CASE WHEN ?=0 OR (SELECT coalesce(sum(length(CAST(i.instruction AS BLOB)))+count(*),0) FROM task_instruction i WHERE i.task_id=t.task_id)<=? THEN coalesce((SELECT group_concat(i.instruction,char(10)) FROM task_instruction i WHERE i.task_id=t.task_id),'') ELSE NULL END FROM task t JOIN run r ON t.agent_id=r.agent_id AND t.conversation_id=r.conversation_id WHERE r.run_id=? AND t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0) ORDER BY t.updated_at DESC,t.task_ref`, budget, budget, runID)
 	if err != nil {
-		return tool.Result{}, err
+		return nil, err
 	}
 	defer rows.Close()
 	candidates := []task.Candidate{}
 	recent := 0
+	bytes := 0
 	for rows.Next() {
 		var s task.Summary
-		var instructions string
+		var instructions sql.NullString
 		var updated int64
 		if err = rows.Scan(&s.TaskRef, &s.Title, &s.GoalSummary, &s.Status, &s.ProgressSummary, &updated, &instructions); err != nil {
-			return tool.Result{}, err
+			return nil, err
 		}
 		if request.Scope == "active" && s.Status != "active" {
 			continue
@@ -47,8 +47,15 @@ func (r *Runs) searchTasks(ctx context.Context, tx *sql.Tx, runID string, reques
 		if !match {
 			continue
 		}
+		if !instructions.Valid {
+			return nil, agent.ErrResourceLimit
+		}
+		bytes += len(s.Title) + len(s.GoalSummary) + len(s.ProgressSummary) + len(instructions.String)
+		if budget > 0 && bytes > budget {
+			return nil, agent.ErrResourceLimit
+		}
 		s.UpdatedAt = time.UnixMicro(updated).UTC().Format("2006-01-02T15:04:05.000000Z")
-		text := s.Title + "\n" + s.GoalSummary + "\n" + instructions
+		text := s.Title + "\n" + s.GoalSummary + "\n" + instructions.String
 		// Search returns a bounded goal summary, not the full private execution context.
 		rs := []rune(s.GoalSummary)
 		if len(rs) > 240 {
@@ -57,10 +64,9 @@ func (r *Runs) searchTasks(ctx context.Context, tx *sql.Tx, runID string, reques
 		candidates = append(candidates, task.Candidate{Summary: task.BoundSummary(s), Text: text})
 	}
 	if err = rows.Err(); err != nil {
-		return tool.Result{}, err
+		return nil, err
 	}
-	raw, err := encoded(task.Rank(candidates, request.Query, request.Limit))
-	return tool.Result{Text: raw}, err
+	return candidates, nil
 }
 
 // finishTask participates in the terminal Run transaction. Progress never enters

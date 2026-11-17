@@ -9,6 +9,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/evidence"
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/observer/github"
+	"github.com/z-chenhao/assistant/internal/rsi"
 )
 
 // Evidence control uses the normal data-root startup checks without attaching
@@ -23,6 +24,7 @@ func OpenEvidenceControl(ctx context.Context, cfg config.Config, fixture, secret
 	a, err := OpenControl(ctx, cfg, fixture, secretsPath)
 	if err == nil {
 		a.evidenceVault = &memory.Vault{Secrets: a.control.Secrets, Ref: keyRef}
+		a.runtimeRuns().ConfigurePlugins(rsi.NewCatalog(cfg.App.DataRoot))
 	}
 	return a, err
 }

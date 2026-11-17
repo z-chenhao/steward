@@ -1,0 +1,10 @@
+.native-plan summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;color:var(--muted-foreground);font-size:13px;cursor:pointer;min-height:32px}
+.native-plan summary::-webkit-details-marker{display:none}
+.native-plan summary svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;transition:transform .15s ease}
+.native-plan[open] summary svg{transform:rotate(90deg)}
+.native-plan-body{padding:12px 0 0;font-size:13px}.native-plan-body p{margin:0 0 10px}.native-plan-body ul{list-style:disc;padding-inline-start:20px;margin:0;color:var(--muted-foreground)}
+.native-plan{border:1px solid var(--border);border-radius:8px;background:var(--card)}
+.native-plan summary{padding:10px 12px;color:var(--foreground)}
+.native-plan summary:hover{background:var(--hover);border-radius:8px}
+.native-plan-body{padding:0 12px 12px}
+html[data-host-compact] .native-plan summary{min-height:44px}

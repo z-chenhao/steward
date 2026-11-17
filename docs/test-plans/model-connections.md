@@ -117,3 +117,51 @@ Models 将账户与 API 连接分组；账户入口先呈现实际支持的 Chat
 `TestNativeFragmentedTextWithinByteLimitPreservesLongReport` 用真实独立 Bridge 与 HTTP peer 返回 5,000 个短文本增量，验证完整报告不因分块超过旧阈值被拒绝；既有 Burst/Event 回归继续拒绝非法 RPC 序号、重放漂移及事件超限。此回归进入 `make test-memory` 的 Bridge race 检查。
 
 Local-provider 的真实 Node 边界检查保留 Worker 模型仅走 CodeMode 的约束，同时验证宿主冻结 memory_manage v6 和文档 list/read/write/retire 能力。旧的“Worker 完全没有 memory_manage”断言已被四层设计替代；Main 专属 remember/forget/dream 的拒绝仍由 memory-maintenance 与 Worker 权限回归验证，不能从可发现的 schema 推断操作授权。
+
+## 模型连接插件迁移
+
+本包现有 28 项 Owner（菜单 8、Settings 6、连接策略 14），当前默认组合共 35 包／369 项。修改前输出须由原实现实际执行捕获，保留 fixture／provenance；不能调用候选代码生成期望。通过某一投影不等于整个 F-001／F-002 完成。
+
+| 范围 | 行为对照与边界 | 真实链路 |
+| --- | --- | --- |
+| 菜单、Settings 行、来源预填 | 96 组菜单、64 组行与 24 组草稿；来源引用、未知／重复引用和原选择围栏 | `model-menu-plugins` 实际默认装配、HTTP、新建与来源页面 |
+| 候选配置与首次账户选模 | 12 组 Web 配置、5 组目录选择；Host 再验目录成员／能力和完整 Profile | 实际 HTTP、OAuth Manager／Bridge／SecretStore |
+| 模板、文案与 Provider 表单 | 48 组模板、41 项文案和 32 种浏览器规则；资源声明／摘要、未知字段、越权表单与出站 URL 拒绝 | 原共享控件、双语、明暗、宽窄屏、API 密钥与无脚本流程 |
+| CLI 配方 | 10 项原解析／错误；身份先拒绝、显式 JSON 保持、无隐式 native 回退 | 实际解析→分发→存储及 CLI 换版／回退／停用／冷读 |
+| 生命周期 | 实际进程与资源变化；精确回退、停止和第一次冷读取，非法结果／缺失资源拒绝接纳 | `TestModelMenuActualDefaultUpgradeRollbackDeactivationAndCold` 与必需 `model-menu-plugins` |
+
+### 托管重连动作
+
+`TestModelConnectionManagedReconnectMatchesExecutedNativeActions` 对照修改前实际重连的三种副作用；覆盖独立仅测试、拒绝覆盖其他当前选择、缺失／停止策略和原 Profile／配置版本围栏。
+
+### 托管新增连接动作
+
+`TestModelConnectionManagedAddedConnectionMatchesExecutedNativeActions` 对照四种原动作；配方和动作只读取一次，错误／停用不得先落库，保存后失败继续使用原资源恢复入口。实际 HTTP 独立版本新增候选不发 Probe 请求，回退后恢复 Probe，原当前选择／配置版本保持。
+
+### 模型选择器托管列表合并
+
+`TestModelConnectionBrowserMatches48ExecutedNativeCases` 对照旧 JS 输出，包括部分失败、确认、旧 Profile 和 Unicode。`TestModelConnectionBrowserRejectsInvalidPolicyWithoutNativeFallback` 检查越界／重复／未知来源、伪造当前状态／标签、缺失和停止策略。真实 Host 与 HTTP 验证独立保留策略及回退。
+
+`TestComposerModelsBrowserLoadingAndRefresh` 和实际 App 的 composer 流程使用 owning 投影与共享 Select，验证延迟／取消、旧版本围栏、丢失确认回读、草稿／附件、双语／明暗／1400 与 320 屏宽。夹具以原 SSR 的真实配置版本与原生选项为起点，不写死另一夹具的模型身份。
+
+### 登录重连后的自动恢复
+
+`TestModelConnectionLoginRestoreMatchesNativeAndRetainsHostFences` 对照原实现的本账户恢复／其他账户不动；覆盖独立不恢复、缺失／停用／改选和 Profile／配置冲突。`TestAccountReconnectRestoresOnlyItsCurrentModelThroughVersionedActivation` 保持目录、凭据和版本变化后的立即行为。
+
+真实 OAuth 回归必须在实际重连后直接验证原模型就绪、原选择与版本围栏、零伪造 Probe 及凭据隔离；不能增加 select／update／reload 修复夹具。首次冷启动的所属插件准备发生在运行时接纳前，保持原超时。
+
+### 终端连接配方
+
+`TestModelConnectionTerminalSetupMatches4NativeProfilesAndPrompts` 对照旧 setup 的配置与输出，验证独立配方、显式参数与目录能力保持，以及非法／缺失／停止策略先于账户和目录读取拒绝。Host 生命周期和实际 PTY 验证默认、独立版本、回退与取消保留原选择；相关回归纳入必需 ModelConnection race，包含 `internal/tui`。
+
+`verify_tui.py` 覆盖真实 PTY 建模、冷 Probe、明确激活、SIGKILL 恢复、原 Run 模型冻结、每个排队输入各自回复，以及账户取消／目录接纳／退出／凭据隔离。账户模型不得伪造 Probe 或生成推理后才允许激活。运行表以只读事务读取；会话来自另一存储时，先按原消息 ID 核对输入、回复及投递，不以混合快照断言恢复失败。只等待持久结果，不补做任何产品动作，不放宽既有期限。
+
+执行结果、源码／二进制摘要与失败尝试保留在对应验收证据。配方验证不能代替终端其余交互或整个模型来源功能的迁移审计。
+
+### 完整聊天选择器展示与冻结读版本
+
+`TestModelPickerMatches256ExecutedNativeStates`、`web/model-picker-view.test.mjs` 对照迁移前执行的中英文组合，核对标签、busy／disabled、空选项、加载和结果文案；拒绝缺失、重复、非法或超界的结果，不从候选输出生成基线。`TestModelPickerOwnedShapeCannotUseNativeFallback` 验证当前托管结果错误不能恢复普通实现，合并请求的原图标注不能进入候选输入。
+
+`TestModelPickerActualIndependentUpgradePinnedReaderRollbackAndCold` 运行实际二进制，验证默认1.1、独立1.2、原图读取、精确回退、退役、Guardian 停机／恢复、停用后真实重开，以及明确 pre-picker1.0 的原解释；实际模型事实和效果账本不变。原图标注不赋予激活权限。相关 App／Web 回归进入必需 race。
+
+`model-menu-plugins` 必需 CLI／HTTP／浏览器门禁覆盖默认37包／381项 Owner、新展示的实际标签／首次加载／busy 及精确回退，期间不得发模型激活请求；默认流程继续覆盖单一读取、迟到响应、完整目录、部分／失败读取、版本递增、响应丢失与不可用核实、不重发效果、草稿／附件，以及无脚本回退。桌面／窄屏、中英文、明暗截图与实际共享控件检查保留。

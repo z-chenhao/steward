@@ -1,0 +1,982 @@
+[
+  {
+    "english": "Accepted model result; missing output is unknown",
+    "chinese": "已接纳的模型结果；缺少输出视为未知"
+  },
+  {
+    "english": "Accepted response",
+    "chinese": "已接纳的回复"
+  },
+  {
+    "english": "Active filters",
+    "chinese": "已应用的筛选"
+  },
+  {
+    "english": "Actual nesting · HTTP time ends at headers. Markers show points in time; dashed bars are ongoing.",
+    "chinese": "保留真实层级；HTTP 耗时截至响应头。标记表示时间点，虚线表示仍在执行。"
+  },
+  {
+    "english": "Adjacent input diff",
+    "chinese": "相邻输入差异"
+  },
+  {
+    "english": "After SDK conversion, before HTTP fetch. Headers and credentials are excluded; image pixels are replaced.",
+    "chinese": "SDK 转换后、HTTP 请求发出前的内容。不包含请求头和凭据；图片像素已替换。"
+  },
+  {
+    "english": "After [",
+    "chinese": "之后 ["
+  },
+  {
+    "english": "All agents",
+    "chinese": "全部执行角色"
+  },
+  {
+    "english": "All statuses",
+    "chinese": "全部状态"
+  },
+  {
+    "english": "All time",
+    "chinese": "全部时间"
+  },
+  {
+    "english": "Answer from page",
+    "chinese": "基于页面回答"
+  },
+  {
+    "english": "Any start",
+    "chinese": "不限起始时间"
+  },
+  {
+    "english": "Appended instruction",
+    "chinese": "追加任务说明"
+  },
+  {
+    "english": "Apply filters",
+    "chinese": "应用筛选"
+  },
+  {
+    "english": "Apply range",
+    "chinese": "应用时间范围"
+  },
+  {
+    "english": "Approval interval; not provider time",
+    "chinese": "审批时段；并非服务商处理耗时"
+  },
+  {
+    "english": "Before [",
+    "chinese": "之前 ["
+  },
+  {
+    "english": "Best-effort execution/wait evidence; missing intervals remain unknown",
+    "chinese": "尽力采集的执行与等待证据；缺失时段仍视为未知"
+  },
+  {
+    "english": "Cache write tokens",
+    "chinese": "缓存写入 Token"
+  },
+  {
+    "english": "Cached input tokens",
+    "chinese": "缓存读取 Token"
+  },
+  {
+    "english": "Cancelled Task",
+    "chinese": "取消任务"
+  },
+  {
+    "english": "Child Worker",
+    "chinese": "子执行者"
+  },
+  {
+    "english": "Clear all",
+    "chinese": "清除全部"
+  },
+  {
+    "english": "Clear session filter",
+    "chinese": "清除会话筛选"
+  },
+  {
+    "english": "Click a bar or drag to filter time",
+    "chinese": "点击柱条或拖选时间范围进行筛选"
+  },
+  {
+    "english": "Collapse node",
+    "chinese": "收起节点"
+  },
+  {
+    "english": "Columns",
+    "chinese": "列"
+  },
+  {
+    "english": "Compact context",
+    "chinese": "压缩上下文"
+  },
+  {
+    "english": "Compare",
+    "chinese": "比较"
+  },
+  {
+    "english": "Compare inputs",
+    "chinese": "对比输入"
+  },
+  {
+    "english": "Compare section",
+    "chinese": "比较分区"
+  },
+  {
+    "english": "Completed Task",
+    "chinese": "完成任务"
+  },
+  {
+    "english": "Computer operation",
+    "chinese": "Computer 操作"
+  },
+  {
+    "english": "Context",
+    "chinese": "上下文"
+  },
+  {
+    "english": "Continue full request →",
+    "chinese": "继续读取完整请求 →"
+  },
+  {
+    "english": "Continue input →",
+    "chinese": "继续读取输入 →"
+  },
+  {
+    "english": "Continue output →",
+    "chinese": "继续读取输出 →"
+  },
+  {
+    "english": "Copy input",
+    "chinese": "复制输入"
+  },
+  {
+    "english": "Copy output",
+    "chinese": "复制输出"
+  },
+  {
+    "english": "Created Task",
+    "chinese": "创建任务"
+  },
+  {
+    "english": "Created after",
+    "chinese": "创建于此后"
+  },
+  {
+    "english": "Created before",
+    "chinese": "创建于此前"
+  },
+  {
+    "english": "Created time",
+    "chinese": "创建时间"
+  },
+  {
+    "english": "Custom range",
+    "chinese": "自定义时间"
+  },
+  {
+    "english": "Data format",
+    "chinese": "数据格式"
+  },
+  {
+    "english": "Details",
+    "chinese": "详情"
+  },
+  {
+    "english": "Each continuation creates a separate Root epoch. Main creation is a causal link, not Worker ancestry.",
+    "chinese": "每次接续都会创建独立的根执行轮次。主 Agent 的创建关系表示因果关系，不是执行者的父子层级。"
+  },
+  {
+    "english": "Estimated",
+    "chinese": "估算"
+  },
+  {
+    "english": "Execution",
+    "chinese": "执行"
+  },
+  {
+    "english": "Explore this window",
+    "chinese": "查看此时段"
+  },
+  {
+    "english": "Failed observations",
+    "chinese": "失败节点"
+  },
+  {
+    "english": "Filter traces",
+    "chinese": "筛选执行轨迹"
+  },
+  {
+    "english": "Filters",
+    "chinese": "筛选"
+  },
+  {
+    "english": "Final SDK body, sanitized before storage. Timing measures fetch to response headers, not model inference.",
+    "chinese": "最终 SDK 请求体，存储前已脱敏。计时范围为请求发出至响应头到达，并非模型推理耗时。"
+  },
+  {
+    "english": "Final provider request",
+    "chinese": "最终服务商请求"
+  },
+  {
+    "english": "First model call: request start to first text, reasoning or tool-call output, including retries. Missing timing displays unknown.",
+    "chinese": "第一轮模型请求从发起到首段文本、推理或工具调用输出的耗时，包含重试；缺少计时证据时显示未知。"
+  },
+  {
+    "english": "First model text",
+    "chinese": "首段模型文本"
+  },
+  {
+    "english": "First model tool call",
+    "chinese": "首个模型工具调用"
+  },
+  {
+    "english": "First response data",
+    "chinese": "首段响应数据"
+  },
+  {
+    "english": "Fit timeline",
+    "chinese": "显示完整时间范围"
+  },
+  {
+    "english": "Focus selected observation",
+    "chinese": "定位所选节点"
+  },
+  {
+    "english": "Formatted",
+    "chinese": "格式化"
+  },
+  {
+    "english": "Frozen Host input; before Bridge/provider conversion",
+    "chinese": "冻结的 Host 输入；位于 Bridge 或服务商转换之前"
+  },
+  {
+    "english": "Frozen context",
+    "chinese": "冻结上下文"
+  },
+  {
+    "english": "Frozen context, tools & sources",
+    "chinese": "冻结上下文、工具与来源"
+  },
+  {
+    "english": "Frozen monetary authorization interval; not a model dispatch",
+    "chinese": "冻结的费用授权时段；并非模型调用"
+  },
+  {
+    "english": "Frozen retrieval; current Memory is not queried",
+    "chinese": "冻结的检索结果；不会查询当前记忆"
+  },
+  {
+    "english": "Generation time limit reached",
+    "chinese": "整轮生成超时"
+  },
+  {
+    "english": "Generations",
+    "chinese": "模型生成"
+  },
+  {
+    "english": "HTTP request failed",
+    "chinese": "HTTP 请求失败"
+  },
+  {
+    "english": "HTTP request sent",
+    "chinese": "已发出 HTTP 请求"
+  },
+  {
+    "english": "Hide internal observations",
+    "chinese": "隐藏内部记录"
+  },
+  {
+    "english": "Hosted web search",
+    "chinese": "托管网页搜索"
+  },
+  {
+    "english": "Input",
+    "chinese": "输入"
+  },
+  {
+    "english": "Input / Output",
+    "chinese": "输入 / 输出"
+  },
+  {
+    "english": "Input / output",
+    "chinese": "输入 / 输出"
+  },
+  {
+    "english": "Input evidence",
+    "chinese": "输入证据"
+  },
+  {
+    "english": "Input exceeds the inline reading limit. Use JSON pagination or Frozen context for complete content.",
+    "chinese": "输入超出内联阅读上限，可通过 JSON 分页或冻结上下文阅读完整内容。"
+  },
+  {
+    "english": "Input tokens",
+    "chinese": "输入 Token"
+  },
+  {
+    "english": "Internal model call for the parent tool; not an Agent loop turn.",
+    "chinese": "所属工具的内部模型调用，不是 Agent Loop 的执行轮次。"
+  },
+  {
+    "english": "Last 24 hours",
+    "chinese": "最近 24 小时"
+  },
+  {
+    "english": "Last 30 days",
+    "chinese": "最近 30 天"
+  },
+  {
+    "english": "Last 7 days",
+    "chinese": "最近 7 天"
+  },
+  {
+    "english": "Latency",
+    "chinese": "耗时"
+  },
+  {
+    "english": "Main",
+    "chinese": "主智能体"
+  },
+  {
+    "english": "Max output tokens",
+    "chinese": "最大输出 Token"
+  },
+  {
+    "english": "Messages",
+    "chinese": "消息"
+  },
+  {
+    "english": "Model",
+    "chinese": "模型"
+  },
+  {
+    "english": "Model & timing",
+    "chinese": "模型与时间"
+  },
+  {
+    "english": "Model call",
+    "chinese": "模型调用"
+  },
+  {
+    "english": "Model call metrics",
+    "chinese": "本次模型调用指标"
+  },
+  {
+    "english": "Model configuration",
+    "chinese": "模型配置"
+  },
+  {
+    "english": "Model cost",
+    "chinese": "模型费用"
+  },
+  {
+    "english": "Model cost includes recorded charges when available; otherwise reference API price estimates. Estimates are not invoices; subscription charges may differ.",
+    "chinese": "优先使用已记录的模型费用，否则按参考 API 价格估算。估算并非账单，订阅实际收费可能不同。"
+  },
+  {
+    "english": "More changes →",
+    "chinese": "更多变化 →"
+  },
+  {
+    "english": "More observations →",
+    "chinese": "更多观测记录 →"
+  },
+  {
+    "english": "No accepted output",
+    "chinese": "暂无已接纳的输出"
+  },
+  {
+    "english": "No accepted output recorded. Pending, failed and unknown results are not successful empty responses.",
+    "chinese": "尚无已接纳的输出。等待、失败和未知结果不代表成功但内容为空的回复。"
+  },
+  {
+    "english": "No differences on this page.",
+    "chinese": "本页没有差异。"
+  },
+  {
+    "english": "No final request capture.",
+    "chinese": "未记录最终请求。"
+  },
+  {
+    "english": "No final request capture. Older data, cancellation or capture failure may leave this unknown.",
+    "chinese": "未采集到最终请求。旧数据、取消或采集失败可能使该信息保持未知。"
+  },
+  {
+    "english": "No matching traces",
+    "chinese": "没有匹配的 Trace"
+  },
+  {
+    "english": "No per-segment output saved; inspect the parent Tool for its accepted result",
+    "chinese": "未保存分段输出；请检查父工具已接纳的结果"
+  },
+  {
+    "english": "No price or usage is available for these calls.",
+    "chinese": "这些调用尚无可用的价格或用量，无法计价。"
+  },
+  {
+    "english": "No saved body for this field",
+    "chinese": "此字段没有已保存的正文"
+  },
+  {
+    "english": "No saved input.",
+    "chinese": "没有已保存的输入。"
+  },
+  {
+    "english": "No traces in this time range.",
+    "chinese": "此时间范围内没有 Trace。"
+  },
+  {
+    "english": "Not priced",
+    "chinese": "未计价"
+  },
+  {
+    "english": "Now",
+    "chinese": "现在"
+  },
+  {
+    "english": "Observation details",
+    "chinese": "观测详情"
+  },
+  {
+    "english": "Observation tabs",
+    "chinese": "观测视图"
+  },
+  {
+    "english": "Observation tree and timeline",
+    "chinese": "观测树与时间线"
+  },
+  {
+    "english": "Older traces →",
+    "chinese": "更早的 Trace →"
+  },
+  {
+    "english": "Open task →",
+    "chinese": "打开任务 →"
+  },
+  {
+    "english": "Original task brief from the first frozen model request; current task edits are not substituted",
+    "chinese": "首个冻结模型请求中的原始任务说明，不使用当前任务编辑内容替代"
+  },
+  {
+    "english": "Output",
+    "chinese": "输出"
+  },
+  {
+    "english": "Output speed",
+    "chinese": "输出速率"
+  },
+  {
+    "english": "Output tokens",
+    "chinese": "输出 Token"
+  },
+  {
+    "english": "Parent",
+    "chinese": "父级"
+  },
+  {
+    "english": "Parent outside page ·",
+    "chinese": "父级不在本页 ·"
+  },
+  {
+    "english": "Paused Task",
+    "chinese": "暂停任务"
+  },
+  {
+    "english": "Provider",
+    "chinese": "服务商"
+  },
+  {
+    "english": "Provider HTTP",
+    "chinese": "服务商 HTTP 请求"
+  },
+  {
+    "english": "Provider request",
+    "chinese": "服务商请求"
+  },
+  {
+    "english": "Provider stream terminal event",
+    "chinese": "响应流终止事件"
+  },
+  {
+    "english": "Provider timing",
+    "chinese": "模型请求时间线"
+  },
+  {
+    "english": "Provider timing was not recorded for this generation.",
+    "chinese": "这一轮没有记录模型请求时间线。"
+  },
+  {
+    "english": "Raw observation",
+    "chinese": "原始观测记录"
+  },
+  {
+    "english": "Read full message →",
+    "chinese": "查看完整消息 →"
+  },
+  {
+    "english": "Reasoning effort",
+    "chinese": "推理强度"
+  },
+  {
+    "english": "Recorded Task action",
+    "chinese": "已记录的任务操作"
+  },
+  {
+    "english": "Recorded charge",
+    "chinese": "已记录费用"
+  },
+  {
+    "english": "Recorded event; result reuse never adds usage or an external call",
+    "chinese": "已记录事件；结果复用不会新增用量或外部调用"
+  },
+  {
+    "english": "Refresh",
+    "chinese": "刷新"
+  },
+  {
+    "english": "Remove filter",
+    "chinese": "移除筛选"
+  },
+  {
+    "english": "Requests",
+    "chinese": "请求"
+  },
+  {
+    "english": "Response headers received",
+    "chinese": "已收到响应头"
+  },
+  {
+    "english": "Response headers timed out",
+    "chinese": "等待响应头超时"
+  },
+  {
+    "english": "Response stream idle timeout",
+    "chinese": "响应流空闲超时"
+  },
+  {
+    "english": "Role",
+    "chinese": "角色"
+  },
+  {
+    "english": "Root Worker",
+    "chinese": "根执行者"
+  },
+  {
+    "english": "Root Worker · epoch",
+    "chinese": "根执行者 · 执行轮次"
+  },
+  {
+    "english": "Sanitized final HTTP request(s); headers excluded, image pixels replaced. Missing capture does not prove no dispatch.",
+    "chinese": "脱敏后的最终 HTTP 请求；不含请求头，图片像素已替换。缺少采集记录不代表没有发出请求。"
+  },
+  {
+    "english": "Saved context preparation and omission references",
+    "chinese": "已保存的上下文准备与省略引用"
+  },
+  {
+    "english": "Saved evidence",
+    "chinese": "保存的证据"
+  },
+  {
+    "english": "Saved incoming messages / last accepted model result; not a delivery receipt",
+    "chinese": "保存的输入消息／最后接受的模型结果，不代表交付回执"
+  },
+  {
+    "english": "Saved output was clipped; this is not a complete upstream answer.",
+    "chinese": "已保存的输出被截断，并非完整的上游回复。"
+  },
+  {
+    "english": "Saved tool input/result; unknown effects are never retried by inspection",
+    "chinese": "已保存的工具输入与结果；检查不会重试结果未知的外部操作"
+  },
+  {
+    "english": "Search",
+    "chinese": "搜索"
+  },
+  {
+    "english": "Search name, ID or model…",
+    "chinese": "搜索名称、ID 或模型…"
+  },
+  {
+    "english": "Search observations",
+    "chinese": "搜索节点"
+  },
+  {
+    "english": "Search traces",
+    "chinese": "搜索 Trace"
+  },
+  {
+    "english": "Select a generation to read its complete context.",
+    "chinese": "选择一次模型生成以读取完整上下文。"
+  },
+  {
+    "english": "Session",
+    "chinese": "会话"
+  },
+  {
+    "english": "Show column",
+    "chinese": "显示列"
+  },
+  {
+    "english": "Show internal observations",
+    "chinese": "显示内部记录"
+  },
+  {
+    "english": "Status",
+    "chinese": "状态"
+  },
+  {
+    "english": "Step",
+    "chinese": "步骤"
+  },
+  {
+    "english": "Summarize search results",
+    "chinese": "整理搜索结果"
+  },
+  {
+    "english": "TTFT includes retries and tool-call output. Output speed uses first output to stream terminal in the terminal attempt. Input tokens include cache read and write; missing evidence remains unknown.",
+    "chinese": "TTFT 包含重试及工具调用输出。输出速率按结束该调用的请求中首个输出至流终止的时间计算。输入 Token 包含缓存读取与写入；缺少证据时显示未知。"
+  },
+  {
+    "english": "Task",
+    "chinese": "任务"
+  },
+  {
+    "english": "Task created by",
+    "chinese": "任务创建者"
+  },
+  {
+    "english": "Task root · no parent Worker. A Main-created Task is a causal link, not a parent/child Run relationship.",
+    "chinese": "任务根节点 · 无父执行者。主 Agent 创建任务属于因果关联，不是执行的父子关系。"
+  },
+  {
+    "english": "This is the first saved round; there is no earlier input to compare.",
+    "chinese": "这是首个已保存的轮次，没有更早的输入可供比较。"
+  },
+  {
+    "english": "Time since trace start",
+    "chinese": "距 Trace 开始的时间"
+  },
+  {
+    "english": "Timeline shows loaded observations.",
+    "chinese": "时间线展示当前已加载的节点。"
+  },
+  {
+    "english": "Tokens",
+    "chinese": "Token"
+  },
+  {
+    "english": "Tool model call",
+    "chinese": "工具内部模型调用"
+  },
+  {
+    "english": "Tools",
+    "chinese": "工具"
+  },
+  {
+    "english": "Total",
+    "chinese": "合计"
+  },
+  {
+    "english": "Trace",
+    "chinese": "执行轨迹"
+  },
+  {
+    "english": "Trace ID",
+    "chinese": "Trace ID"
+  },
+  {
+    "english": "Trace activity",
+    "chinese": "Trace 活动"
+  },
+  {
+    "english": "Trace count over time",
+    "chinese": "按时间统计的 Trace 数量"
+  },
+  {
+    "english": "Trace overview",
+    "chinese": "Trace 概览"
+  },
+  {
+    "english": "Trace results",
+    "chinese": "Trace 结果"
+  },
+  {
+    "english": "Trace tree",
+    "chinese": "轨迹树"
+  },
+  {
+    "english": "Traces",
+    "chinese": "执行轨迹"
+  },
+  {
+    "english": "Traces over time",
+    "chinese": "Trace 时间分布"
+  },
+  {
+    "english": "Tracing",
+    "chinese": "执行追踪"
+  },
+  {
+    "english": "Try another search or adjust your filters.",
+    "chinese": "请尝试其他搜索词或调整筛选条件。"
+  },
+  {
+    "english": "Type",
+    "chinese": "类型"
+  },
+  {
+    "english": "Usage unknown",
+    "chinese": "用量未知"
+  },
+  {
+    "english": "Visible columns",
+    "chinese": "显示的列"
+  },
+  {
+    "english": "Wait for approval",
+    "chinese": "等待审批"
+  },
+  {
+    "english": "Wait for spend approval",
+    "chinese": "等待费用批准"
+  },
+  {
+    "english": "Wall time",
+    "chinese": "总耗时"
+  },
+  {
+    "english": "Worker",
+    "chinese": "Worker"
+  },
+  {
+    "english": "Zoom in timeline",
+    "chinese": "放大时间线"
+  },
+  {
+    "english": "Zoom out timeline",
+    "chinese": "缩小时间线"
+  },
+  {
+    "english": "added",
+    "chinese": "新增"
+  },
+  {
+    "english": "admission to acceptance",
+    "chinese": "接纳至结果提交"
+  },
+  {
+    "english": "agent",
+    "chinese": "智能体执行"
+  },
+  {
+    "english": "assistant",
+    "chinese": "助手"
+  },
+  {
+    "english": "cancelled",
+    "chinese": "已取消"
+  },
+  {
+    "english": "chain",
+    "chinese": "执行链"
+  },
+  {
+    "english": "changed",
+    "chinese": "更改"
+  },
+  {
+    "english": "child",
+    "chinese": "子执行者"
+  },
+  {
+    "english": "completed",
+    "chinese": "已完成"
+  },
+  {
+    "english": "content",
+    "chinese": "内容"
+  },
+  {
+    "english": "context",
+    "chinese": "上下文"
+  },
+  {
+    "english": "currency",
+    "chinese": "币种"
+  },
+  {
+    "english": "diff",
+    "chinese": "差异"
+  },
+  {
+    "english": "event",
+    "chinese": "事件"
+  },
+  {
+    "english": "failed",
+    "chinese": "失败"
+  },
+  {
+    "english": "generation",
+    "chinese": "模型生成"
+  },
+  {
+    "english": "headers_received",
+    "chinese": "已接收响应头"
+  },
+  {
+    "english": "http_error",
+    "chinese": "HTTP 错误"
+  },
+  {
+    "english": "items",
+    "chinese": "项"
+  },
+  {
+    "english": "lifecycle",
+    "chinese": "生命周期"
+  },
+  {
+    "english": "main",
+    "chinese": "主智能体"
+  },
+  {
+    "english": "messages",
+    "chinese": "消息"
+  },
+  {
+    "english": "messages · complete saved content",
+    "chinese": "条消息 · 完整保存内容"
+  },
+  {
+    "english": "moved",
+    "chinese": "移动"
+  },
+  {
+    "english": "nodes",
+    "chinese": "个节点"
+  },
+  {
+    "english": "open parent",
+    "chinese": "打开父级"
+  },
+  {
+    "english": "overview",
+    "chinese": "概览"
+  },
+  {
+    "english": "pending",
+    "chinese": "待确认"
+  },
+  {
+    "english": "provenance",
+    "chinese": "来源"
+  },
+  {
+    "english": "queued",
+    "chinese": "排队中"
+  },
+  {
+    "english": "reason",
+    "chinese": "原因"
+  },
+  {
+    "english": "recall",
+    "chinese": "召回"
+  },
+  {
+    "english": "recorded",
+    "chinese": "已记录"
+  },
+  {
+    "english": "removed",
+    "chinese": "移除"
+  },
+  {
+    "english": "response",
+    "chinese": "回复"
+  },
+  {
+    "english": "retriever",
+    "chinese": "检索"
+  },
+  {
+    "english": "reused",
+    "chinese": "已复用"
+  },
+  {
+    "english": "root",
+    "chinese": "根执行者"
+  },
+  {
+    "english": "running",
+    "chinese": "运行中"
+  },
+  {
+    "english": "system",
+    "chinese": "系统"
+  },
+  {
+    "english": "text",
+    "chinese": "文本"
+  },
+  {
+    "english": "tool",
+    "chinese": "工具"
+  },
+  {
+    "english": "tools",
+    "chinese": "工具"
+  },
+  {
+    "english": "total",
+    "chinese": "项"
+  },
+  {
+    "english": "traces",
+    "chinese": "条 Trace"
+  },
+  {
+    "english": "traces on this page",
+    "chinese": "条 Trace（当前页）"
+  },
+  {
+    "english": "unknown",
+    "chinese": "未知"
+  },
+  {
+    "english": "user",
+    "chinese": "用户"
+  },
+  {
+    "english": "waiting",
+    "chinese": "等待中"
+  },
+  {
+    "english": "wire",
+    "chinese": "请求"
+  },
+  {
+    "english": "worker",
+    "chinese": "执行者"
+  },
+  {
+    "english": "· Task execution",
+    "chinese": "· 任务执行"
+  },
+  {
+    "english": "· epoch",
+    "chinese": "· 执行轮次"
+  },
+  {
+    "english": "· exact saved",
+    "chinese": "· 完整保存的"
+  },
+  {
+    "english": "← Traces",
+    "chinese": "← 执行轨迹"
+  }
+]

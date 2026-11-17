@@ -24,7 +24,7 @@
 
 **需求**：用户能完成模型设置、交代工作、查历史和状态。
 
-**当前实现**：标准启动/TUI/CLI、输入与已交付回复投影已接通。
+**当前实现**：标准启动/TUI/CLI、输入与已交付回复投影已接通。 终端的 56 项提示／展示格式及选模规则已接入独立版本化 `terminal-interface`；输入、实际控制和交付事实仍由 Host 持有。
 
 **边界与剩余工作**：终端输出没有远端确认协议，不宣称屏幕显示 exactly-once。
 
@@ -361,3 +361,17 @@ Models 为 Settings 的独立分类，包含「Sign in with an account」和「C
 浏览器请求标识在 HTTPS 使用原生 UUID，在 HTTP 来源使用 Web Crypto 加密随机源生成同格式的 UUIDv4；聊天发送、Intelligent UI 交互／导出和图表渲染不依赖 HTTPS 专属的 `randomUUID` 接口。重试继续复用原请求标识，不改动 Host 授权或监听策略。
 
 Developer Traces 的状态前置，Trace 识别列合并原 Name／Input；固定倒序不展示排序操作图标。费用口径集中在标题帮助，首轮仅工具调用也计算 TTFT，缺失计时证据才保持未知。工具内模型调用按归属与用途展示，工具 Preview 展示业务内容，原始回执仍可读取。Session／Run／Trace／Task 和来源 ID 使用共享完整值复制，包含局域网 HTTP 与手动回退。
+
+Computer 实验参数审批沿原 Web／CLI／通知入口展示已固化的点击／滚动选项及 Playwright 超时；原决定 hash 和表单保留，手机表单操作共用至少 44px 的尺寸变体。详细授权与兼容见[Computer](computer-use.md)。
+
+
+Computer 实验导出审批同时展示已固化的名称／媒体类型，沿原 hash、决定 API 和共享控件；原文件授权与具体参数校验仍由 Host 执行。
+
+
+## 飞书插件迁移边界
+
+F-020 的现有业务已归属 `feishu-chat`：状态修复指引使用托管 `steward.feishu-status/1`，当前分发 37 包／381 项 Owner。Host 保留 Channel／Mode／State／Expiry、凭据刷新、只读 bot 检查和所有发送权限；插件只接收状态枚举、返回普通指引文本。停用或非法投影时，原事实仍可诊断，以 `guidance_unavailable` 表示指引缺失，不回退普通原生文案。
+
+普通原生指引已移除，单一 legacyv1 解释器仅供从未激活该服务的历史图和诊断嵌入；随这些消费者退役删除。卡片和反馈表单表现已接入同包托管读取；回调回执提示也通过同一服务在提交效果前固定，飞书专项和对应固定源码的完整 test／lint 已通过。实际入口、独立换版与诊断围栏见[测试方案](../test-plans/channels.md#飞书状态插件验收)。
+
+飞书卡片表现现也使用同包 `steward.feishu-card/1`：组件文字、链接摘要及反馈表单文案通过托管读取；Host 绑定可信链接与反馈引用，并保存精确 wire projection。8 项已执行原生样本覆盖完整／链接／Unicode／审批／未排序消息／附件／问题／审阅。回调提示已同包托管，错误分类、身份校验与反馈事务仍归 Host；对应固定源码的完整验收已通过。

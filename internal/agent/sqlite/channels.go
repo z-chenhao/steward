@@ -223,6 +223,24 @@ func applyMessageRoute(ctx context.Context, tx *sql.Tx, r *delivery.Request) err
 	return err
 }
 
+// LoadProjection reads an already accepted envelope without preparing a new
+// presentation or writing state. The immutable envelope identity is checked even
+// when the caller only reconciles a remote receipt after restart.
+func (s *Store) LoadProjection(ctx context.Context, id, hash string) (json.RawMessage, bool, error) {
+	var savedHash, raw string
+	err := s.db.QueryRowContext(ctx, `SELECT envelope_hash,spec_json FROM delivery_projection WHERE delivery_id=?`, id).Scan(&savedHash, &raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+	if savedHash != hash {
+		return nil, true, delivery.ErrConflict
+	}
+	return json.RawMessage(raw), true, nil
+}
+
 // Projections and transport receipts are Host-owned and immutable. They never
 // become model context. No adapter can change a frozen envelope under its key.
 func (s *Store) SaveProjection(ctx context.Context, id, hash string, version int, spec any) (json.RawMessage, error) {
@@ -359,6 +377,10 @@ func (s *Store) ImportChannelArtifact(ctx context.Context, e interaction.Inbound
 		return "", artifact.ErrStorage
 	}
 	d, err := s.Diagnostics(ctx)
+	if err != nil {
+		return "", err
+	}
+	input, err = s.PrepareArtifactInput(ctx, input)
 	if err != nil {
 		return "", err
 	}

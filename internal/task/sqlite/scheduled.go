@@ -3,6 +3,8 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"github.com/z-chenhao/assistant/internal/automation"
 
 	"github.com/z-chenhao/assistant/internal/task"
 )
@@ -13,7 +15,10 @@ func (r *Reader) Scheduled(ctx context.Context, query string) ([]task.ScheduledW
 	if len(query) > 300 {
 		return nil, task.ErrInvalid
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT a.automation_id,coalesce(t.task_ref,''),a.instruction,a.trigger_type,a.trigger_spec,a.timezone,a.version,a.enabled,a.next_fire_at,a.below_value,a.created_at,a.updated_at,
+	rows, err := r.db.QueryContext(ctx, `SELECT a.automation_id,coalesce(t.task_ref,''),a.instruction,a.trigger_type,a.trigger_spec,a.timezone,a.version,a.enabled,a.next_fire_at,a.below_value,a.created_at,a.updated_at,a.owner_frequency_json,a.owner_local_json,a.presentation_json,
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-display/1'),
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-editor/1'),
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-defaults/1'),
  a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0)
  FROM automation a LEFT JOIN task t ON t.task_id=a.task_id AND t.agent_id=a.agent_id
  WHERE a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
@@ -37,9 +42,10 @@ func (r *Reader) Scheduled(ctx context.Context, query string) ([]task.ScheduledW
 func scanScheduled(row scanner) (task.ScheduledWork, error) {
 	var v task.ScheduledWork
 	var next, below sql.NullInt64
-	var visible bool
+	var frequency, local, presentation sql.NullString
+	var visible, editorManaged, displayManaged, defaultsManaged bool
 	var created, updated int64
-	if err := row.Scan(&v.Ref, &v.TaskRef, &v.Instruction, &v.Type, &v.Spec, &v.Timezone, &v.Version, &v.Enabled, &next, &below, &created, &updated, &visible); err != nil {
+	if err := row.Scan(&v.Ref, &v.TaskRef, &v.Instruction, &v.Type, &v.Spec, &v.Timezone, &v.Version, &v.Enabled, &next, &below, &created, &updated, &frequency, &local, &presentation, &displayManaged, &editorManaged, &defaultsManaged, &visible); err != nil {
 		return v, err
 	}
 	v.CreatedAt = stamp(created)
@@ -47,6 +53,31 @@ func scanScheduled(row scanner) (task.ScheduledWork, error) {
 	if !visible {
 		v.Schedule = task.Schedule{Ref: v.Ref, Version: v.Version, Enabled: v.Enabled, Restricted: true, CreatedAt: v.CreatedAt, UpdatedAt: v.UpdatedAt}
 	} else {
+		var err error
+		v.Presentation, err = decodeSchedulePresentation(presentation, displayManaged, v.Type)
+		if err != nil {
+			return v, err
+		}
+		if defaultsManaged && (v.Presentation == nil || v.Presentation.EditorDefaults == nil || v.Presentation.EditorDefaults.Validate() != nil) {
+			return v, task.ErrInvalid
+		}
+		if local.Valid {
+			var facts automation.OwnerLocal
+			if err := json.Unmarshal([]byte(local.String), &facts); err != nil {
+				return v, err
+			}
+			v.OwnerLocal = &facts
+		}
+		if frequency.Valid {
+			var facts automation.OwnerFrequency
+			if err := json.Unmarshal([]byte(frequency.String), &facts); err != nil {
+				return v, err
+			}
+			v.OwnerFrequency = &facts
+		}
+		if editorManaged && ((v.Type == "at" && v.OwnerLocal == nil) || (v.Type == "cron" && v.OwnerFrequency == nil)) {
+			return v, task.ErrInvalid
+		}
 		if next.Valid {
 			v.NextAt = stamp(next.Int64)
 		}
@@ -64,7 +95,10 @@ func (r *Reader) ScheduledDetail(ctx context.Context, ref string) (task.Schedule
 	if len(ref) > 256 {
 		return task.ScheduledWork{}, task.ErrInvalid
 	}
-	v, err := scanScheduled(r.db.QueryRowContext(ctx, `SELECT a.automation_id,coalesce(t.task_ref,''),a.instruction,a.trigger_type,a.trigger_spec,a.timezone,a.version,a.enabled,a.next_fire_at,a.below_value,a.created_at,a.updated_at,
+	v, err := scanScheduled(r.db.QueryRowContext(ctx, `SELECT a.automation_id,coalesce(t.task_ref,''),a.instruction,a.trigger_type,a.trigger_spec,a.timezone,a.version,a.enabled,a.next_fire_at,a.below_value,a.created_at,a.updated_at,a.owner_frequency_json,a.owner_local_json,a.presentation_json,
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-display/1'),
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-editor/1'),
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-defaults/1'),
  a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0)
  FROM automation a LEFT JOIN task t ON t.task_id=a.task_id AND t.agent_id=a.agent_id
  WHERE a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND a.automation_id=?`, ref))
@@ -72,4 +106,21 @@ func (r *Reader) ScheduledDetail(ctx context.Context, ref string) (task.Schedule
 		return v, task.ErrNotFound
 	}
 	return v, err
+}
+
+func decodeSchedulePresentation(raw sql.NullString, required bool, kind string) (*automation.SchedulePresentation, error) {
+	if !raw.Valid {
+		if required {
+			return nil, task.ErrInvalid
+		}
+		return nil, nil
+	}
+	var value automation.SchedulePresentation
+	if err := json.Unmarshal([]byte(raw.String), &value); err != nil {
+		return nil, err
+	}
+	if value.FrequencyEnglish == "" || value.FrequencyChinese == "" || (kind == "at" && (value.TimeEnglish == "" || value.TimeChinese == "")) {
+		return nil, task.ErrInvalid
+	}
+	return &value, nil
 }

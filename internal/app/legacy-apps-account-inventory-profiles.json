@@ -1,0 +1,1880 @@
+[
+  {
+    "consumer": "apps-accounts-pre-auth-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  },
+  {
+    "consumer": "apps-accounts-pre-check-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-auth-config/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "result",
+                  "error"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "explicit": {
+                "type": "boolean"
+              },
+              "saved": {
+                "type": "boolean"
+              },
+              "override": {
+                "type": "boolean"
+              },
+              "no_hosted": {
+                "type": "boolean"
+              },
+              "has_next": {
+                "type": "boolean"
+              },
+              "cursor_seen": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step",
+              "count",
+              "page",
+              "explicit",
+              "saved",
+              "override",
+              "no_hosted",
+              "has_next",
+              "cursor_seen",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "fetch",
+                  "next",
+                  "done",
+                  "unreadable",
+                  "reject",
+                  "requires_config"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "explicit",
+                  "saved",
+                  "auto"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-session-flow/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "toolkit",
+                  "auth",
+                  "session",
+                  "link"
+                ]
+              },
+              "no_auth": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "no_auth"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "toolkit",
+                  "public",
+                  "auth",
+                  "session",
+                  "link",
+                  "pending",
+                  "reject"
+                ]
+              },
+              "ttl_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  },
+  {
+    "consumer": "apps-accounts-pre-close-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-auth-config/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "result",
+                  "error"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "explicit": {
+                "type": "boolean"
+              },
+              "saved": {
+                "type": "boolean"
+              },
+              "override": {
+                "type": "boolean"
+              },
+              "no_hosted": {
+                "type": "boolean"
+              },
+              "has_next": {
+                "type": "boolean"
+              },
+              "cursor_seen": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step",
+              "count",
+              "page",
+              "explicit",
+              "saved",
+              "override",
+              "no_hosted",
+              "has_next",
+              "cursor_seen",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "fetch",
+                  "next",
+                  "done",
+                  "unreadable",
+                  "reject",
+                  "requires_config"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "explicit",
+                  "saved",
+                  "auto"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-session-flow/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "toolkit",
+                  "auth",
+                  "session",
+                  "link"
+                ]
+              },
+              "no_auth": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "no_auth"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "toolkit",
+                  "public",
+                  "auth",
+                  "session",
+                  "link",
+                  "pending",
+                  "reject"
+                ]
+              },
+              "ttl_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-check/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "public": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "initializing": {
+                "type": "boolean"
+              },
+              "initiated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "public",
+              "disabled",
+              "active",
+              "initializing",
+              "initiated"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "refresh",
+                  "active",
+                  "pending",
+                  "expired"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  },
+  {
+    "consumer": "apps-accounts-pre-reconnect-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-auth-config/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "result",
+                  "error"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "explicit": {
+                "type": "boolean"
+              },
+              "saved": {
+                "type": "boolean"
+              },
+              "override": {
+                "type": "boolean"
+              },
+              "no_hosted": {
+                "type": "boolean"
+              },
+              "has_next": {
+                "type": "boolean"
+              },
+              "cursor_seen": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step",
+              "count",
+              "page",
+              "explicit",
+              "saved",
+              "override",
+              "no_hosted",
+              "has_next",
+              "cursor_seen",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "fetch",
+                  "next",
+                  "done",
+                  "unreadable",
+                  "reject",
+                  "requires_config"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "explicit",
+                  "saved",
+                  "auto"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-session-flow/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "toolkit",
+                  "auth",
+                  "session",
+                  "link"
+                ]
+              },
+              "no_auth": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "no_auth"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "toolkit",
+                  "public",
+                  "auth",
+                  "session",
+                  "link",
+                  "pending",
+                  "reject"
+                ]
+              },
+              "ttl_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-check/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "public": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "initializing": {
+                "type": "boolean"
+              },
+              "initiated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "public",
+              "disabled",
+              "active",
+              "initializing",
+              "initiated"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "refresh",
+                  "active",
+                  "pending",
+                  "expired"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-close/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "closed",
+                  "account",
+                  "revoked",
+                  "deleted"
+                ]
+              },
+              "matched": {
+                "type": "boolean"
+              },
+              "failed": {
+                "type": "boolean"
+              },
+              "revoked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "matched",
+              "failed",
+              "revoked"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "account",
+                  "revoke",
+                  "delete",
+                  "done"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  },
+  {
+    "consumer": "apps-accounts-pre-session-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-auth-config/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "result",
+                  "error"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "explicit": {
+                "type": "boolean"
+              },
+              "saved": {
+                "type": "boolean"
+              },
+              "override": {
+                "type": "boolean"
+              },
+              "no_hosted": {
+                "type": "boolean"
+              },
+              "has_next": {
+                "type": "boolean"
+              },
+              "cursor_seen": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step",
+              "count",
+              "page",
+              "explicit",
+              "saved",
+              "override",
+              "no_hosted",
+              "has_next",
+              "cursor_seen",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "fetch",
+                  "next",
+                  "done",
+                  "unreadable",
+                  "reject",
+                  "requires_config"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "explicit",
+                  "saved",
+                  "auto"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  },
+  {
+    "consumer": "apps-accounts-pre-settings-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-auth-config/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "result",
+                  "error"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "explicit": {
+                "type": "boolean"
+              },
+              "saved": {
+                "type": "boolean"
+              },
+              "override": {
+                "type": "boolean"
+              },
+              "no_hosted": {
+                "type": "boolean"
+              },
+              "has_next": {
+                "type": "boolean"
+              },
+              "cursor_seen": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step",
+              "count",
+              "page",
+              "explicit",
+              "saved",
+              "override",
+              "no_hosted",
+              "has_next",
+              "cursor_seen",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "fetch",
+                  "next",
+                  "done",
+                  "unreadable",
+                  "reject",
+                  "requires_config"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "explicit",
+                  "saved",
+                  "auto"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-session-flow/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "toolkit",
+                  "auth",
+                  "session",
+                  "link"
+                ]
+              },
+              "no_auth": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "no_auth"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "toolkit",
+                  "public",
+                  "auth",
+                  "session",
+                  "link",
+                  "pending",
+                  "reject"
+                ]
+              },
+              "ttl_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-check/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "public": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "initializing": {
+                "type": "boolean"
+              },
+              "initiated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "public",
+              "disabled",
+              "active",
+              "initializing",
+              "initiated"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "refresh",
+                  "active",
+                  "pending",
+                  "expired"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-close/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "closed",
+                  "account",
+                  "revoked",
+                  "deleted"
+                ]
+              },
+              "matched": {
+                "type": "boolean"
+              },
+              "failed": {
+                "type": "boolean"
+              },
+              "revoked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "matched",
+              "failed",
+              "revoked"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "account",
+                  "revoke",
+                  "delete",
+                  "done"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-reconnect/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "closed"
+                ]
+              },
+              "pending": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "pending"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "deny",
+                  "close",
+                  "connect"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  },
+  {
+    "consumer": "apps-accounts-pre-inventory-v1",
+    "manifest": {
+      "protocol": "steward-rsi-plugins/0.1",
+      "plugin_id": "steward.apps-accounts",
+      "version": "1.0.0",
+      "feature_ids": [
+        "F-071"
+      ],
+      "runtime": {
+        "entry": "plugin",
+        "timeout_ms": 10000
+      },
+      "files": [],
+      "provides": [
+        {
+          "contract": "steward.apps-connect-intent/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "count",
+              "alias"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "pending",
+                  "alias_required",
+                  "conflict"
+                ]
+              },
+              "alias": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-auth-config/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "result",
+                  "error"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "explicit": {
+                "type": "boolean"
+              },
+              "saved": {
+                "type": "boolean"
+              },
+              "override": {
+                "type": "boolean"
+              },
+              "no_hosted": {
+                "type": "boolean"
+              },
+              "has_next": {
+                "type": "boolean"
+              },
+              "cursor_seen": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step",
+              "count",
+              "page",
+              "explicit",
+              "saved",
+              "override",
+              "no_hosted",
+              "has_next",
+              "cursor_seen",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "fetch",
+                  "next",
+                  "done",
+                  "unreadable",
+                  "reject",
+                  "requires_config"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "explicit",
+                  "saved",
+                  "auto"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "row": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-session-flow/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "toolkit",
+                  "auth",
+                  "session",
+                  "link"
+                ]
+              },
+              "no_auth": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "no_auth"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "toolkit",
+                  "public",
+                  "auth",
+                  "session",
+                  "link",
+                  "pending",
+                  "reject"
+                ]
+              },
+              "ttl_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-check/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "public": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "initializing": {
+                "type": "boolean"
+              },
+              "initiated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "public",
+              "disabled",
+              "active",
+              "initializing",
+              "initiated"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "refresh",
+                  "active",
+                  "pending",
+                  "expired"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-account-close/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "closed",
+                  "account",
+                  "revoked",
+                  "deleted"
+                ]
+              },
+              "matched": {
+                "type": "boolean"
+              },
+              "failed": {
+                "type": "boolean"
+              },
+              "revoked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "matched",
+              "failed",
+              "revoked"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "account",
+                  "revoke",
+                  "delete",
+                  "done"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-reconnect/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "string",
+                "enum": [
+                  "begin",
+                  "closed"
+                ]
+              },
+              "pending": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "step",
+              "pending"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "deny",
+                  "close",
+                  "connect"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "contract": "steward.apps-settings/1",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "saved",
+                  "keep",
+                  "add",
+                  "remove"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "remove": {
+                "type": "integer",
+                "minimum": -1
+              }
+            },
+            "required": [
+              "mode",
+              "count",
+              "offset",
+              "remove"
+            ],
+            "additionalProperties": false
+          },
+          "output_schema": {
+            "type": "object",
+            "properties": {
+              "indices": {
+                "type": "array",
+                "maxItems": 16384,
+                "items": {
+                  "type": "integer",
+                  "minimum": -1
+                }
+              }
+            },
+            "required": [
+              "indices"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "config_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "state": {
+        "version": 1,
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "initial": {}
+      },
+      "requests": [
+        "input.read"
+      ]
+    }
+  }
+]

@@ -1,0 +1,73 @@
+[
+  {
+    "channel": "feishu",
+    "mode": "external_token",
+    "state": "unchecked",
+    "action": "Run channel check to verify credentials without sending a message."
+  },
+  {
+    "channel": "feishu",
+    "mode": "external_token",
+    "state": "credentials_rejected",
+    "action": "Check the configured application credentials or replace the external access token."
+  },
+  {
+    "channel": "feishu",
+    "mode": "external_token",
+    "state": "credentials_rejected",
+    "action": "Check the configured application credentials or replace the external access token."
+  },
+  {
+    "channel": "feishu",
+    "mode": "external_token",
+    "state": "credentials_unavailable",
+    "action": "Check SecretStore access and connectivity to the Feishu API."
+  },
+  {
+    "channel": "feishu",
+    "mode": "external_token",
+    "state": "unavailable",
+    "action": "Check connectivity, application activation and bot permissions."
+  },
+  {
+    "channel": "feishu",
+    "mode": "app_credentials",
+    "state": "unchecked",
+    "action": "Run channel check to verify credentials without sending a message."
+  },
+  {
+    "channel": "feishu",
+    "mode": "app_credentials",
+    "state": "credentials_rejected",
+    "action": "Check the configured application credentials or replace the external access token."
+  },
+  {
+    "channel": "feishu",
+    "mode": "app_credentials",
+    "state": "credentials_rejected",
+    "action": "Check the configured application credentials or replace the external access token."
+  },
+  {
+    "channel": "feishu",
+    "mode": "app_credentials",
+    "state": "credentials_unavailable",
+    "action": "Check SecretStore access and connectivity to the Feishu API."
+  },
+  {
+    "channel": "feishu",
+    "mode": "app_credentials",
+    "state": "unavailable",
+    "action": "Check connectivity, application activation and bot permissions."
+  },
+  {
+    "channel": "feishu",
+    "mode": "external_token",
+    "state": "ready"
+  },
+  {
+    "channel": "feishu",
+    "mode": "disabled",
+    "state": "not_configured",
+    "action": "Configure feishu and bind the exact owner and chat through channel manage."
+  }
+]

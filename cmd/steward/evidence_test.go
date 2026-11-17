@@ -27,7 +27,11 @@ func TestEvidenceCLIReadsOriginalAcrossReopenedBoundedPages(t *testing.T) {
 	t.Setenv("STEWARD_DATA_ROOT", filepath.Join(root, "data"))
 	text := strings.Repeat("original 中文 🧭\n", 1000)
 	var saved, errOut bytes.Buffer
-	if err := run(context.Background(), []string{"artifact", "save", "original.txt", "text/plain"}, strings.NewReader(text), &saved, &errOut); err != nil {
+	// This fixture represents a retained original reference. Its explicit
+	// native test carrier is limited to creation; every evidence command below
+	// uses the ordinary owner control path with broken execution configuration.
+	// Fresh stock creation is covered by the mandatory full30 Artifact CLI gate.
+	if err := run(context.Background(), []string{"-test-bridge", "main", "artifact", "save", "original.txt", "text/plain"}, strings.NewReader(text), &saved, &errOut); err != nil {
 		t.Fatal(err, errOut.String())
 	}
 	var descriptor artifact.Descriptor

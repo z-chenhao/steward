@@ -55,8 +55,16 @@ func (st *Staged) Close() {
 // Stage consumes no state transaction while reading, syncing or hashing bytes.
 // The short creation transaction closes the create/lock/recovery race.
 func (s *Store) Stage(ctx context.Context, in artifact.Input, src io.Reader) (_ *Staged, err error) {
-	if src == nil || !validInput(in) || s.Policy.Validate() != nil {
+	if src == nil || in.Validate() != nil || s.Policy.Validate() != nil {
 		return nil, artifact.ErrInvalid
+	}
+	if in.Creation != nil {
+		if !in.Creation.Valid() {
+			return nil, artifact.ErrInvalid
+		}
+		copy := *in.Creation
+		copy.MediaKinds = append([]string{}, copy.MediaKinds...)
+		in.Creation = &copy
 	}
 	st := &Staged{store: s, object: token(), input: in}
 	err = s.transaction(ctx, func(*sql.Tx) error {
@@ -128,6 +136,10 @@ func (s *Store) CommitTx(ctx context.Context, tx *sql.Tx, a artifact.Scope, st *
 			return "", artifact.ErrStorage
 		}
 	}
+	creation, err := s.creationTx(ctx, tx, a, st.input)
+	if err != nil {
+		return "", err
+	}
 	var used int64
 	if tx.QueryRowContext(ctx, `SELECT coalesce(sum(byte_size),0) FROM artifact WHERE owner_user_id=? AND deleted_at IS NULL`, a.UserID).Scan(&used) != nil {
 		return "", artifact.ErrStorage
@@ -159,7 +171,7 @@ func (s *Store) CommitTx(ctx context.Context, tx *sql.Tx, a artifact.Scope, st *
 	if key != "" {
 		putKey = key
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO artifact(artifact_id,artifact_ref,owner_user_id,owner_agent_id,task_id,run_id,media_type,name,byte_size,content_hash,storage_key,visibility,retention_class,created_at,expires_at,put_key) VALUES(?,?,?,?,nullif(?,''),nullif(?,''),?,?,?,?,?,?,'standard',?,?,?)`, id, ref, a.UserID, a.AgentID, a.TaskID, a.RunID, st.input.MediaType, st.input.Name, st.size, st.sum, st.object, visibility, now.UnixMicro(), now.Add(time.Duration(s.Policy.RetentionDays)*24*time.Hour).UnixMicro(), putKey)
+	_, err = tx.ExecContext(ctx, `INSERT INTO artifact(artifact_id,artifact_ref,owner_user_id,owner_agent_id,task_id,run_id,media_type,name,byte_size,content_hash,storage_key,visibility,retention_class,created_at,expires_at,put_key,method_graph,semantic_kind) VALUES(?,?,?,?,nullif(?,''),nullif(?,''),?,?,?,?,?,?,'standard',?,?,?,nullif(?,''),nullif(?,''))`, id, ref, a.UserID, a.AgentID, a.TaskID, a.RunID, st.input.MediaType, st.input.Name, st.size, st.sum, st.object, visibility, now.UnixMicro(), now.Add(time.Duration(creation.days)*24*time.Hour).UnixMicro(), putKey, creation.graph, creation.kind)
 	if err != nil {
 		return "", artifact.ErrStorage
 	}

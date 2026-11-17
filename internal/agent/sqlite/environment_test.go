@@ -3,11 +3,15 @@ package sqlite
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/z-chenhao/assistant/internal/computer"
 	"github.com/z-chenhao/assistant/internal/computer/environment"
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/task"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
@@ -17,6 +21,57 @@ type environmentGuest struct {
 	seen            computer.Instance
 	unknown         bool
 	name, arguments string
+}
+
+func (g *environmentGuest) WorkingDirectory() string { return "/Users/fixture/StewardWorkspace" }
+
+func TestWorkerGuestContextUsesGuestDirectoryWithoutStartingComputer(t *testing.T) {
+	_, r, a, p := taskFixture(t)
+	defs := environment.Definitions("guest-fixture")
+	for _, spec := range a.Registry.Describe() {
+		definition, _ := a.Registry.Resolve(spec.Name)
+		defs = append(defs, definition)
+	}
+	registry, err := tool.NewRegistry(defs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.registry, a.Registry = registry, registry
+	hostDirectory := t.TempDir()
+	if err := os.WriteFile(filepath.Join(hostDirectory, "README.md"), []byte("Host-only documentation"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	r.ConfigureLocalEnvironment(environment.Config{Root: hostDirectory})
+	guest := &environmentGuest{}
+	r.ConfigureComputer(guest, computer.Compatibility{ProviderVersion: "fixture"}, computer.RestorationManifest{Version: 1})
+	observed := false
+	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		if isRoot(req) {
+			observed = true
+			found := 0
+			for _, message := range req.Messages {
+				if message.Source != nil && message.Source.Kind == "execution_environment" {
+					found++
+					if !strings.Contains(message.Text, guest.WorkingDirectory()) || strings.Contains(message.Text, `"docs"`) || strings.Contains(message.Text, hostDirectory) {
+						t.Fatal("Guest context exposed Host environment", message.Text)
+					}
+				}
+			}
+			if found != 1 {
+				t.Fatal("missing or duplicated Guest environment", found)
+			}
+			return llm.GenerationResult{Text: "Task result"}, nil
+		}
+		if isFollowup(req) || req.Messages[len(req.Messages)-1].Role == "tool" {
+			return llm.GenerationResult{Text: "Delivered"}, nil
+		}
+		return calls(task.ManageName, `{"operation":"create","task":"Inspect the execution context"}`), nil
+	}
+	mustSubmit(t, a, "guest-context", "Delegate a task")
+	mustDrain(t, a)
+	if !observed || guest.calls != 0 || guest.ensures != 0 {
+		t.Fatal("context assembly started a Computer", observed, guest)
+	}
 }
 
 func (g *environmentGuest) ExecuteEnvironment(_ context.Context, i computer.Instance, name, args string) tool.Result {

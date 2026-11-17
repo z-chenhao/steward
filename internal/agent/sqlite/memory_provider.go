@@ -23,6 +23,9 @@ func (p guardedProvider) guarded(req llm.GenerationRequest) llm.GenerationReques
 		if e == nil {
 			e = fence(ctx, tx, &claim{id: req.RunID, token: req.OwnerToken, epoch: epoch})
 		}
+		if e == nil {
+			e = p.runs.pluginDispatchFence(ctx, tx, req.RunID)
+		}
 		if e != nil {
 			tx.Rollback()
 			return nil, agent.ErrClaimLost

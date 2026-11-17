@@ -1,0 +1,1857 @@
+[
+  {
+    "Name": "pending",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_new",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_new"
+      },
+      "TTLSeconds": 600,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "expired",
+    "Previous": "expired",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_new",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_new"
+      },
+      "TTLSeconds": 600,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "unknown-historical-status",
+    "Previous": "old-source-state",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_new",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_new"
+      },
+      "TTLSeconds": 600,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "active-denied",
+    "Previous": "active",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "denied",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "disconnected-denied",
+    "Previous": "disconnected",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "denied",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "missing",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": true,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "denied",
+      "Connections": [],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": ""
+    }
+  },
+  {
+    "Name": "reader-unavailable",
+    "Previous": "pending",
+    "Selection": "error",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "intent-unavailable",
+    "Previous": "pending",
+    "Selection": "intent",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "session-unavailable",
+    "Previous": "pending",
+    "Selection": "session",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "close-unavailable",
+    "Previous": "pending",
+    "Selection": "close",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 0,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "no-key-after-old-local-close",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": true,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "173436c0973d2a5549cb075b0bfd55a92b328760af6d7431b771ff7a56967f3c"
+    }
+  },
+  {
+    "Name": "old-account-get-502-new-connect-still-explicit",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 502,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_new",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_new"
+      },
+      "TTLSeconds": 600,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "old-account-identity-mismatch",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": true,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_new",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_new"
+      },
+      "TTLSeconds": 600,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "old-revoke-502-no-retry",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 502,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        },
+        {
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_new",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "connection_id": "generated",
+        "redirect_url": "https://connect.composio.dev/link/original",
+        "connected_account_id": "account_new"
+      },
+      "TTLSeconds": 600,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "new-public-no-auth",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": true,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "public": true,
+          "id": "generated",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 3,
+      "Saves": 3,
+      "Changed": 2,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "new-toolkit-502",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 502,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "new-auth-401",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 401,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "new-session-502",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 502,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "new-link-502",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 502,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "unavailable",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "old-first-write-conflict",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 1,
+    "Expected": {
+      "Error": "conflict",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 0,
+      "Saves": 1,
+      "Changed": 0,
+      "Requests": [],
+      "ContinueError": "denied",
+      "SecondError": "",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "old-final-write-conflict",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 2,
+    "Expected": {
+      "Error": "conflict",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 1,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "new-pending-write-conflict",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 3,
+    "Expected": {
+      "Error": "conflict",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 3,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Body": null
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs/ac_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Body": {
+            "auth_configs": {
+              "example": "ac_original"
+            },
+            "execute": {
+              "enable_multi_execute": false
+            },
+            "instant": false,
+            "manage_connections": {
+              "enabled": false
+            },
+            "multi_account": {
+              "enable": true,
+              "require_explicit_selection": true
+            },
+            "proxy_execute": {
+              "enable": false
+            },
+            "toolkits": {
+              "enabled": [
+                "example"
+              ]
+            },
+            "user_id": "owner",
+            "workbench": {
+              "enable": false
+            }
+          }
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_original/link",
+          "Body": {
+            "alias": "work",
+            "toolkit": "example"
+          }
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "old-refresh-error-no-new-create",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": true,
+    "DuplicateAlias": false,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "callback",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  },
+  {
+    "Name": "other-active-alias-conflict",
+    "Previous": "pending",
+    "Selection": "",
+    "Missing": false,
+    "NoKey": false,
+    "WrongIdentity": false,
+    "NoAuth": false,
+    "ChangedFail": false,
+    "DuplicateAlias": true,
+    "AccountStatus": 0,
+    "RevokeStatus": 0,
+    "ToolkitStatus": 0,
+    "AuthStatus": 0,
+    "SessionStatus": 0,
+    "LinkStatus": 0,
+    "FailSave": 0,
+    "Expected": {
+      "Error": "conflict",
+      "Connections": [
+        {
+          "id": "connection_original",
+          "toolkit": "example",
+          "name": "Original",
+          "alias": "work",
+          "account_id": "account_original",
+          "status": "disconnected",
+          "revocation_confirmed": true
+        },
+        {
+          "id": "other",
+          "toolkit": "example",
+          "name": "",
+          "alias": "work",
+          "account_id": "other_account",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "TTLSeconds": 0,
+      "RevisionDelta": 2,
+      "Saves": 2,
+      "Changed": 1,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        },
+        {
+          "Method": "POST",
+          "URI": "/connected_accounts/account_original/revoke",
+          "Body": null
+        },
+        {
+          "Method": "DELETE",
+          "URI": "/connected_accounts/account_original",
+          "Body": null
+        }
+      ],
+      "ContinueError": "denied",
+      "SecondError": "denied",
+      "SecondRequests": 0,
+      "SecondSaves": 0,
+      "OriginalBindingHash": "eb395b6d6fe4df54398f8c30c5dc23bac6c4e5cc8f716f80df2ac956dc34969c"
+    }
+  }
+]

@@ -1,1 +1,1 @@
-Code Mode: use the frozen catalog to discover authorized capabilities; its tool description defines the execution interface.
+Code Mode: batch independent tool calls, chain dependent operations, and filter large results. Use directly available tools for simple calls; follow the tool description for the execution interface and available capabilities.

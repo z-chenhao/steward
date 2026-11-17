@@ -1,0 +1,9 @@
+{
+  "instance_id": "service-watchdog",
+  "contract": "steward.service-watchdog/1",
+  "input": {},
+  "expected": {
+    "attempts": 3,
+    "retry_delay_ms": 60000
+  }
+}

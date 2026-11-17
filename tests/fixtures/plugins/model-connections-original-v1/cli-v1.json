@@ -1,0 +1,352 @@
+[
+  {
+    "args": [
+      "model",
+      "add",
+      "http://localhost:8080/v1",
+      "fixture-model"
+    ],
+    "error": "",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "http://localhost:8080/v1",
+      "fixture-model",
+      "original-auth"
+    ],
+    "error": "",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-auth",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "https://api.example.test/v1",
+      "fixture-model"
+    ],
+    "error": "",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "https://api.example.test/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "https://api.example.test/v1",
+      "fixture-model",
+      "original-auth"
+    ],
+    "error": "",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "https://api.example.test/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-auth",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "ftp://invalid.test",
+      "fixture-model"
+    ],
+    "error": "endpoint must be an HTTP(S) URL without credentials, query, or fragment",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "ftp://invalid.test",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "ftp://invalid.test",
+      "fixture-model",
+      "original-auth"
+    ],
+    "error": "endpoint must be an HTTP(S) URL without credentials, query, or fragment",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "ftp://invalid.test",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-auth",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "https://user:password@example.test/v1",
+      "fixture-model"
+    ],
+    "error": "endpoint must be an HTTP(S) URL without credentials, query, or fragment",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "https://user:password@example.test/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "https://user:password@example.test/v1",
+      "fixture-model",
+      "original-auth"
+    ],
+    "error": "endpoint must be an HTTP(S) URL without credentials, query, or fragment",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "https://user:password@example.test/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-auth",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "https://example.test/v1?key=invalid",
+      "fixture-model"
+    ],
+    "error": "endpoint must be an HTTP(S) URL without credentials, query, or fragment",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "https://example.test/v1?key=invalid",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  },
+  {
+    "args": [
+      "model",
+      "add",
+      "https://example.test/v1?key=invalid",
+      "fixture-model",
+      "original-auth"
+    ],
+    "error": "endpoint must be an HTTP(S) URL without credentials, query, or fragment",
+    "input": {
+      "name": "fixture-model",
+      "provider_kind": "openai_compatible",
+      "endpoint": "https://example.test/v1?key=invalid",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-auth",
+      "context_window": 8192,
+      "max_output_tokens": 1024,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    }
+  }
+]

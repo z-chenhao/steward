@@ -1,0 +1,689 @@
+[
+  {
+    "Name": "new-default",
+    "Alias": "",
+    "Rows": null,
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "$created",
+        "redirect_url": "https://connect.composio.dev/link/fixture",
+        "connected_account_id": "account_created"
+      },
+      "NewRows": [
+        {
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal",
+          "account_id": "account_created",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_fixture/link",
+          "Alias": "personal"
+        }
+      ],
+      "Saves": 1,
+      "Changed": 0,
+      "OriginalRowsSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  {
+    "Name": "explicit-alias",
+    "Alias": "work",
+    "Rows": null,
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "$created",
+        "redirect_url": "https://connect.composio.dev/link/fixture",
+        "connected_account_id": "account_created"
+      },
+      "NewRows": [
+        {
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "work",
+          "account_id": "account_created",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_fixture/link",
+          "Alias": "work"
+        }
+      ],
+      "Saves": 1,
+      "Changed": 0,
+      "OriginalRowsSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  {
+    "Name": "active-private-requires-label",
+    "Alias": "",
+    "Rows": [
+      {
+        "id": "active",
+        "toolkit": "example",
+        "name": "",
+        "alias": "personal",
+        "account_id": "",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "alias_required",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "ad608c110f7f2fde6cad52061a583aa2e3dae8c2ae9fb438e654232ef3fd28b0"
+    }
+  },
+  {
+    "Name": "public-active-does-not-require-label",
+    "Alias": "",
+    "Rows": [
+      {
+        "public": true,
+        "id": "public",
+        "toolkit": "example",
+        "name": "",
+        "alias": "public",
+        "account_id": "",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": null,
+    "NoAuth": true,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": [
+        {
+          "public": true,
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        }
+      ],
+      "Saves": 1,
+      "Changed": 1,
+      "OriginalRowsSHA256": "0cb376911085cec78288bcb54f8a7b7e70d3cf08a31633a51e48b1ca7ef253a8"
+    }
+  },
+  {
+    "Name": "last-pending-is-reused",
+    "Alias": "",
+    "Rows": [
+      {
+        "id": "older",
+        "toolkit": "example",
+        "name": "",
+        "alias": "older",
+        "account_id": "",
+        "status": "pending",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "foreign",
+        "toolkit": "other",
+        "name": "",
+        "alias": "",
+        "account_id": "",
+        "status": "active",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "newer",
+        "toolkit": "example",
+        "name": "",
+        "alias": "newer",
+        "account_id": "",
+        "status": "pending",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": [
+      "older",
+      "newer"
+    ],
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "newer",
+        "redirect_url": "https://connect.composio.dev/link/newer",
+        "connected_account_id": "account_newer"
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "a905bd33b1acd7212ccb920bd833f8733931c98d5d0bd3eb835a12e7178e4983"
+    }
+  },
+  {
+    "Name": "explicit-pending-is-reused",
+    "Alias": "older",
+    "Rows": [
+      {
+        "id": "older",
+        "toolkit": "example",
+        "name": "",
+        "alias": "older",
+        "account_id": "",
+        "status": "pending",
+        "revocation_confirmed": false
+      },
+      {
+        "id": "newer",
+        "toolkit": "example",
+        "name": "",
+        "alias": "newer",
+        "account_id": "",
+        "status": "pending",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": [
+      "older",
+      "newer"
+    ],
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "older",
+        "redirect_url": "https://connect.composio.dev/link/older",
+        "connected_account_id": "account_older"
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "3c67fb28c125ef85ee3684fbd941f8fd8418e63e038418ea06888a40af3d32ee"
+    }
+  },
+  {
+    "Name": "missing-pending-cache-does-not-create",
+    "Alias": "",
+    "Rows": [
+      {
+        "id": "expired",
+        "toolkit": "example",
+        "name": "",
+        "alias": "personal",
+        "account_id": "",
+        "status": "pending",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "link_expired",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "633a41c6da6635fe04aca7fddcef790e910c8093df5f35f0cbb1a636e9a78486"
+    }
+  },
+  {
+    "Name": "active-alias-conflict",
+    "Alias": "work",
+    "Rows": [
+      {
+        "id": "active",
+        "toolkit": "example",
+        "name": "",
+        "alias": "work",
+        "account_id": "",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "conflict",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "66e9c6972dc3a99f193e11e30ac39adbaf30a4fc82bce7117772ee82c50bae11"
+    }
+  },
+  {
+    "Name": "unknown-alias-conflict",
+    "Alias": "work",
+    "Rows": [
+      {
+        "id": "unknown",
+        "toolkit": "example",
+        "name": "",
+        "alias": "work",
+        "account_id": "",
+        "status": "other",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "conflict",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "f25384afbd584698293a9d587eaea668524ee017d8d324ee293841197fe814ad"
+    }
+  },
+  {
+    "Name": "disconnected-explicit-alias-reusable",
+    "Alias": "personal",
+    "Rows": [
+      {
+        "id": "closed",
+        "toolkit": "example",
+        "name": "",
+        "alias": "personal",
+        "account_id": "",
+        "status": "disconnected",
+        "revocation_confirmed": true
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "$created",
+        "redirect_url": "https://connect.composio.dev/link/fixture",
+        "connected_account_id": "account_created"
+      },
+      "NewRows": [
+        {
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal",
+          "account_id": "account_created",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_fixture/link",
+          "Alias": "personal"
+        }
+      ],
+      "Saves": 1,
+      "Changed": 0,
+      "OriginalRowsSHA256": "49396b37192113b0c6d4dfb40691c36efaf49c877d207e53bef8f5c4f267653d"
+    }
+  },
+  {
+    "Name": "disconnected-default-alias-still-gets-random-suffix",
+    "Alias": "",
+    "Rows": [
+      {
+        "id": "closed",
+        "toolkit": "example",
+        "name": "",
+        "alias": "personal",
+        "account_id": "",
+        "status": "disconnected",
+        "revocation_confirmed": true
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "$created",
+        "redirect_url": "https://connect.composio.dev/link/fixture",
+        "connected_account_id": "account_created"
+      },
+      "NewRows": [
+        {
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal_\u003cnonce\u003e",
+          "account_id": "account_created",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_fixture/link",
+          "Alias": "personal_\u003cnonce\u003e"
+        }
+      ],
+      "Saves": 1,
+      "Changed": 0,
+      "OriginalRowsSHA256": "49396b37192113b0c6d4dfb40691c36efaf49c877d207e53bef8f5c4f267653d"
+    }
+  },
+  {
+    "Name": "other-toolkit-does-not-require-label",
+    "Alias": "",
+    "Rows": [
+      {
+        "id": "foreign",
+        "toolkit": "other",
+        "name": "",
+        "alias": "personal",
+        "account_id": "",
+        "status": "active",
+        "revocation_confirmed": false
+      }
+    ],
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "connection_id": "$created",
+        "redirect_url": "https://connect.composio.dev/link/fixture",
+        "connected_account_id": "account_created"
+      },
+      "NewRows": [
+        {
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal",
+          "account_id": "account_created",
+          "status": "pending",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session/session_fixture/link",
+          "Alias": "personal"
+        }
+      ],
+      "Saves": 1,
+      "Changed": 0,
+      "OriginalRowsSHA256": "7078596f3e8f385a312032f1190e3baf6c32a0ce898c932c63b81f60a7853dd6"
+    }
+  },
+  {
+    "Name": "invalid-alias-denied",
+    "Alias": "not a valid alias",
+    "Rows": null,
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": false,
+    "Expected": {
+      "Error": "invalid",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": null,
+      "Requests": null,
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  {
+    "Name": "source-session-failure-is-not-retried",
+    "Alias": "",
+    "Rows": null,
+    "Pending": null,
+    "NoAuth": false,
+    "FailSession": true,
+    "Expected": {
+      "Error": "unavailable",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": null,
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        },
+        {
+          "Method": "GET",
+          "URI": "/auth_configs?is_composio_managed=false\u0026limit=200\u0026show_disabled=false\u0026toolkit_slug=example",
+          "Alias": ""
+        },
+        {
+          "Method": "POST",
+          "URI": "/tool_router/session",
+          "Alias": ""
+        }
+      ],
+      "Saves": 0,
+      "Changed": 0,
+      "OriginalRowsSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  {
+    "Name": "public-connection-no-auth-effects",
+    "Alias": "",
+    "Rows": null,
+    "Pending": null,
+    "NoAuth": true,
+    "FailSession": false,
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": [
+        {
+          "public": true,
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        }
+      ],
+      "Saves": 1,
+      "Changed": 1,
+      "OriginalRowsSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  {
+    "Name": "large-original-alias-corpus",
+    "Alias": "",
+    "Rows": null,
+    "Pending": null,
+    "NoAuth": true,
+    "FailSession": false,
+    "Generated": {
+      "Count": 10003,
+      "AliasRepeats": 1000
+    },
+    "Expected": {
+      "Error": "",
+      "Link": {
+        "redirect_url": "",
+        "connected_account_id": ""
+      },
+      "NewRows": [
+        {
+          "public": true,
+          "id": "$created",
+          "toolkit": "example",
+          "name": "Original example",
+          "alias": "personal",
+          "account_id": "",
+          "status": "active",
+          "revocation_confirmed": false
+        }
+      ],
+      "Requests": [
+        {
+          "Method": "GET",
+          "URI": "/toolkits/example",
+          "Alias": ""
+        }
+      ],
+      "Saves": 1,
+      "Changed": 1,
+      "OriginalRowsSHA256": "dc4ae6de3175a7834948fe2b375c3f5e809668f346c6ccb20a770b781a9c14cc"
+    }
+  }
+]

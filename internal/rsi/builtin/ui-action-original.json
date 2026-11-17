@@ -1,0 +1,51 @@
+[
+  {
+    "name": "original-action",
+    "document": "{\"title\":\"Action\",\"fallback\":\"Explicit request\",\"components\":[{\"name\":\"steward.action\",\"props\":{\"id\":\"refresh\",\"label\":\"Refresh catalog\",\"tool\":\"builtin__tool_search\",\"arguments\":{\"query\":\"task\",\"limit\":1}}}]}",
+    "expected": {
+      "action_views": [
+        {
+          "component": 0,
+          "working_label": "Working",
+          "unconfirmed_error": "Action not confirmed. Retry.",
+          "unknown_error": "Result unknown. Check the conversation.",
+          "cancelled_error": "Action cancelled.",
+          "not_executed_error": "Action was not completed.",
+          "failed_error": "Action failed. Retry.",
+          "success_indicator": true
+        }
+      ],
+      "component_text": [
+        "Refresh catalog"
+      ],
+      "document_json": "{\"title\":\"Action\",\"fallback\":\"Explicit request\",\"components\":[{\"name\":\"steward.action\",\"props\":{\"id\":\"refresh\",\"label\":\"Refresh catalog\",\"tool\":\"builtin__tool_search\",\"arguments\":{\"query\":\"task\",\"limit\":1}}}]}",
+      "readable": "Explicit request",
+      "error_code": ""
+    }
+  },
+  {
+    "name": "original-ordinal-one",
+    "document": "{\"title\":\"Action\",\"fallback\":\"Explicit request\",\"components\":[{\"name\":\"plan_visualization\",\"props\":{\"approach\":\"Original\",\"technology\":\"Go\",\"key_elements\":[]}},{\"name\":\"steward.action\",\"props\":{\"id\":\"refresh\",\"label\":\"Refresh catalog\",\"tool\":\"builtin__tool_search\",\"arguments\":{\"query\":\"task\",\"limit\":1}}}]}",
+    "expected": {
+      "action_views": [
+        {
+          "component": 1,
+          "working_label": "Working",
+          "unconfirmed_error": "Action not confirmed. Retry.",
+          "unknown_error": "Result unknown. Check the conversation.",
+          "cancelled_error": "Action cancelled.",
+          "not_executed_error": "Action was not completed.",
+          "failed_error": "Action failed. Retry.",
+          "success_indicator": true
+        }
+      ],
+      "component_text": [
+        "Go\nOriginal",
+        "Refresh catalog"
+      ],
+      "document_json": "{\"title\":\"Action\",\"fallback\":\"Explicit request\",\"components\":[{\"name\":\"plan_visualization\",\"props\":{\"approach\":\"Original\",\"technology\":\"Go\",\"key_elements\":[]}},{\"name\":\"steward.action\",\"props\":{\"id\":\"refresh\",\"label\":\"Refresh catalog\",\"tool\":\"builtin__tool_search\",\"arguments\":{\"query\":\"task\",\"limit\":1}}}]}",
+      "readable": "Explicit request",
+      "error_code": ""
+    }
+  }
+]

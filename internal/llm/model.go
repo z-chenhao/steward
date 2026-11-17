@@ -96,17 +96,8 @@ func (p ProfileInput) Validate() error {
 	if p.WireAPI != "openai_completions" && p.WireAPI != "openai_responses" {
 		return errors.New("invalid wire_api")
 	}
-	switch p.ProviderKind {
-	case "openai_compatible":
-		if !validEndpoint(p.Endpoint) {
-			return errors.New("endpoint must be an HTTP(S) URL without credentials, query, or fragment")
-		}
-	case "openai_account":
-		if p.Endpoint != "" || p.AuthConnectionID == "" || p.WireAPI != "openai_responses" {
-			return errors.New("openai_account requires an auth connection, responses API, and no custom endpoint")
-		}
-	default:
-		return errors.New("invalid provider_kind")
+	if err := p.validateProviderIdentity(); err != nil {
+		return err
 	}
 	if p.ContextWindow <= 0 || p.MaxOutputTokens <= 0 || p.MaxOutputTokens > p.ContextWindow {
 		return errors.New("token limits must be positive and max_output_tokens must not exceed context_window")
@@ -203,4 +194,28 @@ func EndpointHash(endpoint string) (string, error) {
 	}
 	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:]), nil
+}
+
+// ValidateIdentity checks supplied identity/transport authority before defaults
+// are resolved. It is not sufficient to persist or activate a profile.
+func (p ProfileInput) ValidateIdentity() error {
+	if strings.TrimSpace(p.Name) == "" || strings.TrimSpace(p.ModelID) == "" {
+		return errors.New("profile name and model_id are required")
+	}
+	return p.validateProviderIdentity()
+}
+func (p ProfileInput) validateProviderIdentity() error {
+	switch p.ProviderKind {
+	case "openai_compatible":
+		if !validEndpoint(p.Endpoint) {
+			return errors.New("endpoint must be an HTTP(S) URL without credentials, query, or fragment")
+		}
+	case "openai_account":
+		if p.Endpoint != "" || p.AuthConnectionID == "" || p.WireAPI != "openai_responses" {
+			return errors.New("openai_account requires an auth connection, responses API, and no custom endpoint")
+		}
+	default:
+		return errors.New("invalid provider_kind")
+	}
+	return nil
 }

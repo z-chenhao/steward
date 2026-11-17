@@ -59,3 +59,7 @@ Race 入口在 SQLite 分片之前分别运行 Bridge 与诊断记录器包，�
 文档检查复用 `scripts/check_docs.py`：页面需可从 README 导航到达，本地链接有效，且遵循当前主题布局、稳定文件名和非日志式章节规则。对应 harness 覆盖违规文档的 CLI 失败与真实协议日期、代码示例的合法使用。内容准确性和有效约束仍须人工审查。
 
 恢复与检查入口的 CI 可达性由 `tests/harness/test_ci.py` 验证：必需 `channels-web` 分组须实际调用完整场景清单，包括账户重连、实际 Trace/任务详情和 Memory 检查；维护拒绝原因及隐私恢复回归须继续匹配必需 Memory race 清单。用例文件存在不等于进入门禁。恢复场景直接验证用户动作后的可用状态，不用额外人工修复步骤补齐结果；外部 CLI 夹具按固定官方产物的实际输出维护。
+
+### Apps 竞态分批
+
+Apps 竞态沿用 `tests/system/race.py --part apps` 的实际 Go 动态清单：每进程最多12个 root、最多两个单 CPU 进程，保持 `-race -count=1 -timeout=15m`。required `make test-connected-apps` 在领域包之后运行该阶段；完整 race／packages 阶段也独立分批 App，不重复放回其他包集合。回执须与发现清单恰好一致，缺失／重复／外来／失败或未排空进程均拒绝；skip 明确记录，实际默认组合另由系统入口要求四种场景 terminal 全通过。该 part 使用独立的 `evidence/race-apps`，不覆盖并发 Memory 清单。

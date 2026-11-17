@@ -57,12 +57,12 @@ func TestExaMCPContract(t *testing.T) {
 		raw, _ := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": request.ID, "result": result})
 		return response(r, 200, "text/event-stream", "event: message\ndata: "+string(raw)+"\n\n"), nil
 	})}
-	text, sources, e := Search(context.Background(), "only this query", 2, client)
-	if e != nil || !strings.Contains(text, "Evidence") || len(sources) != 1 || len(methods) != 4 {
-		t.Fatal(text, sources, methods, e)
+	facts, e := SearchFacts(context.Background(), "only this query", 2, client)
+	if e != nil || !strings.Contains(facts.Text, "Evidence") || len(facts.Rows) != 1 || len(methods) != 4 {
+		t.Fatal(facts, methods, e)
 	}
 	client.Transport = roundTrip(func(r *http.Request) (*http.Response, error) { return response(r, 429, "application/json", ""), nil })
-	_, _, e = Search(context.Background(), "x", 5, client)
+	_, e = SearchFacts(context.Background(), "x", 5, client)
 	if !errors.Is(e, llm.RateLimited) {
 		t.Fatal(e)
 	}

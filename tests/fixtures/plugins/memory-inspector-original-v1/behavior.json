@@ -1,0 +1,442 @@
+{
+  "urls": [
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "layer",
+      "value": "transcripts",
+      "expected": "/developer/memory?layer=transcripts"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "ref",
+      "value": "memory:next",
+      "expected": "/developer/memory?layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Anext\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "ref",
+      "value": "",
+      "expected": "/developer/memory?layer=notes\u0026limit=25\u0026origin=explicit\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "source",
+      "value": "message:next",
+      "expected": "/developer/memory?cursor=original-cursor\u0026layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026source=message%3Anext\u0026sources_after=7\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "sources_after",
+      "value": "12",
+      "expected": "/developer/memory?cursor=original-cursor\u0026layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026sources_after=12\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "sources_after",
+      "value": "bad",
+      "expected": "/developer/memory?cursor=original-cursor\u0026layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "offset",
+      "value": "1024",
+      "expected": "/developer/memory?cursor=original-cursor\u0026layer=notes\u0026limit=25\u0026offset=1024\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026source=original-source\u0026sources_after=7\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "offset",
+      "value": "bad",
+      "expected": "/developer/memory?cursor=original-cursor\u0026layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026source=original-source\u0026sources_after=7\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "cursor",
+      "value": "next+cursor",
+      "expected": "/developer/memory?cursor=next%2Bcursor\u0026layer=notes\u0026limit=25\u0026offset=42\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026source=original-source\u0026sources_after=7\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "view",
+      "value": "maintenance",
+      "expected": "/developer/memory?view=maintenance"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "sources",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "unknown",
+      "value": "ignored",
+      "expected": "/developer/memory?cursor=original-cursor\u0026layer=notes\u0026limit=25\u0026offset=42\u0026origin=explicit\u0026ref=memory%3Aoriginal\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026source=original-source\u0026sources_after=7\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=sources"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "maintenance",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "ref",
+      "value": "memory-event:priced",
+      "expected": "/developer/memory?layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Amaintenance-priced\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=maintenance"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "maintenance",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "ref",
+      "value": "memory:maintenance-priced",
+      "expected": "/developer/memory?layer=notes\u0026limit=25\u0026origin=explicit\u0026ref=memory%3Amaintenance-priced\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=maintenance"
+    },
+    {
+      "query": {
+        "layer": "notes",
+        "sources_after": 7,
+        "since": "2026-11-01T01:02:03+08:00",
+        "until": "2026-11-02T01:02:03Z",
+        "ref": "memory:original",
+        "search": "中文 \u0026 private",
+        "tier": "working",
+        "origin": "explicit",
+        "status": "active",
+        "view": "maintenance",
+        "cursor": "original-cursor",
+        "limit": 25,
+        "source": "original-source",
+        "offset": 42
+      },
+      "key": "ref",
+      "value": "",
+      "expected": "/developer/memory?layer=notes\u0026limit=25\u0026origin=explicit\u0026search=%E4%B8%AD%E6%96%87+%26+private\u0026since=2026-11-01T01%3A02%3A03%2B08%3A00\u0026status=active\u0026tier=working\u0026until=2026-11-02T01%3A02%3A03Z\u0026view=maintenance"
+    },
+    {
+      "query": {
+        "since": "0001-01-01T00:00:00Z",
+        "until": "0001-01-01T00:00:00Z"
+      },
+      "key": "",
+      "value": "",
+      "expected": "/developer/memory"
+    },
+    {
+      "query": {
+        "since": "0001-01-01T00:00:00Z",
+        "until": "0001-01-01T00:00:00Z"
+      },
+      "key": "layer",
+      "value": "notes",
+      "expected": "/developer/memory?layer=notes"
+    },
+    {
+      "query": {
+        "since": "0001-01-01T00:00:00Z",
+        "until": "0001-01-01T00:00:00Z"
+      },
+      "key": "view",
+      "value": "maintenance",
+      "expected": "/developer/memory?view=maintenance"
+    }
+  ],
+  "labels": [
+    {
+      "kind": "source",
+      "input": "conversation",
+      "expected": "Source message"
+    },
+    {
+      "kind": "source",
+      "input": "task",
+      "expected": "Source task"
+    },
+    {
+      "kind": "source",
+      "input": "tool",
+      "expected": "memory_manage"
+    },
+    {
+      "kind": "source",
+      "input": "control",
+      "expected": "Local control"
+    },
+    {
+      "kind": "source",
+      "input": "",
+      "expected": "Source"
+    },
+    {
+      "kind": "source",
+      "input": "unknown",
+      "expected": "Source"
+    },
+    {
+      "kind": "origin",
+      "input": "written",
+      "expected": "Written note"
+    },
+    {
+      "kind": "origin",
+      "input": "dream",
+      "expected": "Dreaming"
+    },
+    {
+      "kind": "origin",
+      "input": "original",
+      "expected": "Original record"
+    },
+    {
+      "kind": "origin",
+      "input": "automatic",
+      "expected": "Automatically extracted"
+    },
+    {
+      "kind": "origin",
+      "input": "explicit",
+      "expected": "Explicitly remembered"
+    },
+    {
+      "kind": "origin",
+      "input": "",
+      "expected": "Unknown origin"
+    },
+    {
+      "kind": "origin",
+      "input": "unknown",
+      "expected": "Unknown origin"
+    },
+    {
+      "kind": "layer",
+      "input": "transcripts",
+      "expected": "Transcripts"
+    },
+    {
+      "kind": "layer",
+      "input": "representations",
+      "expected": "Memory representations"
+    },
+    {
+      "kind": "layer",
+      "input": "injected",
+      "expected": "Injected context"
+    },
+    {
+      "kind": "layer",
+      "input": "notes",
+      "expected": "Memory notes"
+    },
+    {
+      "kind": "layer",
+      "input": "",
+      "expected": "Memory notes"
+    },
+    {
+      "kind": "layer",
+      "input": "unknown",
+      "expected": "Memory notes"
+    },
+    {
+      "kind": "status",
+      "input": "",
+      "expected": "active"
+    },
+    {
+      "kind": "status",
+      "input": "active",
+      "expected": "active"
+    },
+    {
+      "kind": "status",
+      "input": "forgotten",
+      "expected": "forgotten"
+    },
+    {
+      "kind": "status",
+      "input": "unknown",
+      "expected": "unknown"
+    }
+  ]
+}

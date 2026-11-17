@@ -1,0 +1,774 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.apps-interface",
+  "version": "1.9.0",
+  "feature_ids": [
+    "F-071"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 10000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.apps-interface/2",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh-CN"
+            ]
+          }
+        },
+        "required": [
+          "locale"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "visible": {
+                  "type": "boolean"
+                },
+                "warning": {
+                  "type": "boolean"
+                },
+                "pending": {
+                  "type": "boolean"
+                },
+                "authorization_link": {
+                  "type": "boolean"
+                },
+                "status_label": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "actions": {
+                  "type": "array",
+                  "maxItems": 3,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "reconnect",
+                      "check",
+                      "disconnect"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "visible",
+                "warning",
+                "pending",
+                "authorization_link",
+                "status_label",
+                "actions"
+              ]
+            },
+            "minItems": 80,
+            "maxItems": 80
+          },
+          "cards": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "unavailable": {
+                  "type": "boolean"
+                },
+                "first_hidden": {
+                  "type": "boolean"
+                },
+                "additional": {
+                  "type": "boolean"
+                },
+                "additional_hidden": {
+                  "type": "boolean"
+                },
+                "empty_hidden": {
+                  "type": "boolean"
+                },
+                "manage_hidden": {
+                  "type": "boolean"
+                },
+                "add_hidden": {
+                  "type": "boolean"
+                },
+                "first_label": {
+                  "type": "string",
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "unavailable",
+                "first_hidden",
+                "additional",
+                "additional_hidden",
+                "empty_hidden",
+                "manage_hidden",
+                "add_hidden",
+                "first_label"
+              ]
+            },
+            "minItems": 64,
+            "maxItems": 64
+          },
+          "advanced": {
+            "type": "array",
+            "items": {
+              "type": "boolean"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "minItems": 8,
+            "maxItems": 8
+          },
+          "browser": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "active_fold": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2
+                },
+                "minItems": 9,
+                "maxItems": 9
+              },
+              "popup_actions": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "connect",
+                    "continue",
+                    "reconnect"
+                  ]
+                }
+              },
+              "open_details_after_authorization": {
+                "type": "boolean"
+              },
+              "reveal_alias": {
+                "type": "boolean"
+              },
+              "poll_interval_ms": {
+                "type": "integer",
+                "minimum": 5000,
+                "maximum": 60000
+              },
+              "poll_window_ms": {
+                "type": "integer",
+                "minimum": 5000,
+                "maximum": 600000
+              },
+              "detail_timeout_ms": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 15000
+              },
+              "action_timeout_ms": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 45000
+              },
+              "messages": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "open_authorization": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "details_failed": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "connection_unknown": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "poll_paused": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "poll_failed": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "authorization_failed": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "authorization_opened": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "popup_blocked": {
+                    "type": "string",
+                    "maxLength": 512
+                  },
+                  "link_expired": {
+                    "type": "string",
+                    "maxLength": 512
+                  }
+                },
+                "required": [
+                  "open_authorization",
+                  "details_failed",
+                  "connection_unknown",
+                  "poll_paused",
+                  "poll_failed",
+                  "authorization_failed",
+                  "authorization_opened",
+                  "popup_blocked",
+                  "link_expired"
+                ]
+              },
+              "poll_notices": {
+                "type": "array",
+                "minItems": 5,
+                "maxItems": 5,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text",
+                    "error"
+                  ],
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "maxLength": 512
+                    },
+                    "error": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "success_notices": {
+                "type": "array",
+                "minItems": 5,
+                "maxItems": 5,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              }
+            },
+            "required": [
+              "active_fold",
+              "popup_actions",
+              "open_details_after_authorization",
+              "reveal_alias",
+              "poll_interval_ms",
+              "poll_window_ms",
+              "detail_timeout_ms",
+              "action_timeout_ms",
+              "messages",
+              "poll_notices",
+              "success_notices"
+            ]
+          },
+          "notices": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "account_saved",
+              "service_saved",
+              "unsaved"
+            ],
+            "properties": {
+              "account_saved": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "service_saved": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "unsaved": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            }
+          }
+        },
+        "required": [
+          "accounts",
+          "cards",
+          "advanced",
+          "errors",
+          "browser",
+          "notices"
+        ]
+      }
+    },
+    {
+      "contract": "steward.apps-composition/2",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh-CN"
+            ]
+          }
+        },
+        "required": [
+          "locale"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "heading",
+                "unavailable",
+                "feedback",
+                "inventory",
+                "body",
+                "dialog"
+              ]
+            },
+            "minItems": 6,
+            "maxItems": 6
+          },
+          "directory": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "tabs",
+                "collection-back",
+                "categories",
+                "groups",
+                "pagination"
+              ]
+            },
+            "minItems": 5,
+            "maxItems": 5
+          },
+          "detail": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "heading",
+                "feedback",
+                "connect",
+                "accounts",
+                "additional"
+              ]
+            },
+            "minItems": 5,
+            "maxItems": 5
+          },
+          "account": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "copy",
+                "actions"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "service": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "heading",
+                "back",
+                "project"
+              ]
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "copy": {
+            "type": "object",
+            "properties": {
+              "apps_title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "app_settings": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "search_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "search": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "refresh_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "directory_unavailable": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "back_to_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "app_views": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "discover": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "your_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "all_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "category": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "all_categories": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "view_all": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "manage_app": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "about_app": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "no_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "more_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "connections_unavailable": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "your_connections": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "no_connections": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "add_account": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "service_title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "project_title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "project_help": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "authentication_title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "connected_apps": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "apps_title",
+              "app_settings",
+              "search_apps",
+              "search",
+              "refresh_apps",
+              "directory_unavailable",
+              "back_to_apps",
+              "app_views",
+              "discover",
+              "your_apps",
+              "all_apps",
+              "category",
+              "all_categories",
+              "filter",
+              "view_all",
+              "manage_app",
+              "about_app",
+              "no_apps",
+              "more_apps",
+              "connections_unavailable",
+              "your_connections",
+              "no_connections",
+              "add_account",
+              "service_title",
+              "project_title",
+              "project_help",
+              "authentication_title",
+              "connected_apps"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "page",
+          "directory",
+          "detail",
+          "account",
+          "service",
+          "copy"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-card-view/1",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "string",
+            "enum": [
+              "apps-card"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "minLength": 71,
+            "maxLength": 71
+          },
+          "program": {
+            "type": "array",
+            "minItems": 11,
+            "maxItems": 11,
+            "items": {
+              "type": "string",
+              "enum": [
+                "begin-card",
+                "begin-summary",
+                "icon",
+                "begin-copy",
+                "name",
+                "description",
+                "end-copy",
+                "end-summary",
+                "manage",
+                "connect",
+                "end-card"
+              ]
+            }
+          }
+        },
+        "required": [
+          "resource",
+          "digest",
+          "program"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-sidebar-view/1",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "string",
+            "enum": [
+              "apps-sidebar"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "minLength": 71,
+            "maxLength": 71
+          },
+          "program": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "enum": [
+                "begin-entry",
+                "icon",
+                "name",
+                "pending",
+                "end-entry"
+              ]
+            }
+          }
+        },
+        "required": [
+          "resource",
+          "digest",
+          "program"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.apps-view-markup/3",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "string",
+            "enum": [
+              "apps-view-markup"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "minLength": 71,
+            "maxLength": 71
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16384
+          }
+        },
+        "required": [
+          "resource",
+          "digest",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [],
+  "resources": [
+    {
+      "kind": "view",
+      "name": "apps-card",
+      "path": "views/card.json"
+    },
+    {
+      "kind": "view",
+      "name": "apps-sidebar",
+      "path": "views/sidebar.json"
+    },
+    {
+      "kind": "view",
+      "name": "apps-view-markup",
+      "path": "views/markup.json"
+    }
+  ]
+}

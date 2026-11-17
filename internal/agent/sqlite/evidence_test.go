@@ -54,8 +54,17 @@ func TestEvidenceOwnerResolvesOrdinaryObjectID(t *testing.T) {
 }
 
 func TestEvidenceExplicitMessageTaskArtifactChainAndRestart(t *testing.T) {
+	testEvidenceChain(t, false)
+}
+func TestEvidencePluginExplicitMessageTaskArtifactChainAndRestart(t *testing.T) {
+	testEvidenceChain(t, true)
+}
+func testEvidenceChain(t *testing.T, managed bool) {
 	ctx := context.Background()
 	s, r, a, p := evidenceFixture(t)
+	if managed {
+		installEvidencePlugin(t, s, r)
+	}
 	text := strings.Repeat("原始证据🧭", 1200)
 	attachment := putArtifact(t, s, artifactOwner(t, s), text)
 	mainStage := 0
@@ -135,7 +144,11 @@ func TestEvidenceExplicitMessageTaskArtifactChainAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer s2.Close()
-	again, err := s2.Runs(r.history, r.registry).ReadEvidence(ctx, evidence.Request{Ref: messageRef})
+	r2 := s2.Runs(r.history, r.registry)
+	if managed {
+		r2.ConfigurePlugins(r.plugins.Catalog)
+	}
+	again, err := r2.ReadEvidence(ctx, evidence.Request{Ref: messageRef})
 	if err != nil || !reflect.DeepEqual(message, again) {
 		t.Fatal("restart changed immutable source projection", again, err)
 	}
@@ -182,8 +195,17 @@ func TestEvidenceHostInvocationFrozenReplayAndNoGrant(t *testing.T) {
 }
 
 func TestEvidenceLinksRejectHiddenMissingExpiredAndRevokedSources(t *testing.T) {
+	testEvidencePrivacy(t, false)
+}
+func TestEvidencePluginLinksRejectHiddenMissingExpiredAndRevokedSources(t *testing.T) {
+	testEvidencePrivacy(t, true)
+}
+func testEvidencePrivacy(t *testing.T, managed bool) {
 	ctx := context.Background()
 	s, r, _, _ := evidenceFixture(t)
+	if managed {
+		installEvidencePlugin(t, s, r)
+	}
 	owner := artifactOwner(t, s)
 	private := putArtifact(t, s, owner, "ungranted private file")
 	input, err := r.Submit(ctx, "privacy", []conversation.ContentPart{{Type: "text", Text: "fresh evidence"}, {Type: "file", ArtifactRef: private}})
@@ -244,8 +266,17 @@ func TestEvidenceLinksRejectHiddenMissingExpiredAndRevokedSources(t *testing.T) 
 }
 
 func TestEvidenceLinksBoundedPagesAndOldCatalogSelection(t *testing.T) {
+	testEvidenceLinkPages(t, false)
+}
+func TestEvidencePluginLinksBoundedPagesAndOldCatalogSelection(t *testing.T) {
+	testEvidenceLinkPages(t, true)
+}
+func testEvidenceLinkPages(t *testing.T, managed bool) {
 	ctx := context.Background()
 	s, r, _, _ := evidenceFixture(t)
+	if managed {
+		installEvidencePlugin(t, s, r)
+	}
 	parts := conversation.Text("all explicit attachments")
 	expected := map[string]bool{}
 	for i := 0; i < 25; i++ {
@@ -295,7 +326,10 @@ func TestEvidenceLinksBoundedPagesAndOldCatalogSelection(t *testing.T) {
 	if err != nil || len(readPage.Links) != 20 {
 		t.Fatal("evidence page contended for WAL writer", err)
 	}
-	if _, err = r.ReadEvidence(readCtx, evidence.Request{Ref: readPage.Links[0].Ref}); err != nil {
+	// Each independent read keeps its own original deadline while the writer stays held.
+	artifactCtx, artifactCancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer artifactCancel()
+	if _, err = r.ReadEvidence(artifactCtx, evidence.Request{Ref: readPage.Links[0].Ref}); err != nil {
 		t.Fatal("evidence Artifact read contended for WAL writer", err)
 	}
 	if err = writer.Rollback(); err != nil {
@@ -317,9 +351,19 @@ func TestEvidenceLinksBoundedPagesAndOldCatalogSelection(t *testing.T) {
 }
 
 func TestEvidenceAdmittedMainReadDoesNotReserveWriter(t *testing.T) {
+	testEvidenceAdmittedRead(t, false)
+}
+func TestEvidencePluginAdmittedMainReadDoesNotReserveWriter(t *testing.T) {
+	testEvidenceAdmittedRead(t, true)
+}
+func testEvidenceAdmittedRead(t *testing.T, managed bool) {
 	ctx := context.Background()
 	calls := []llm.ToolCall{{ID: "read", Name: evidence.ToolName, Arguments: `{"ref":"conversation:writer-original"}`}}
-	s, r, c, _, exchange := admitPolicy(t, []tool.Definition{evidence.Definition()}, calls)
+	s, r, c, _, exchange := admitPolicyRun(t, []tool.Definition{evidence.Definition()}, calls, false, func(s *Store, r *Runs) {
+		if managed {
+			installEvidencePlugin(t, s, r)
+		}
+	})
 	defer r.Release(ctx, c)
 	if err := r.history.Append(ctx, []conversation.Message{{MessageID: "writer-original", ConversationID: idAgent(t, s), Role: "user", Content: conversation.Text("read this original"), Source: "cli", CreatedAt: time.Now().UTC()}}); err != nil {
 		t.Fatal(err)

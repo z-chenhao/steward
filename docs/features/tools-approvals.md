@@ -89,7 +89,7 @@ invocation and approval. Already dispatched effects cannot be revoked by steerin
 `unknown` is never dispatched again, even when a query later says absent.
 `approval reconcile` queries unknown calls by their original key and may settle
 only authoritative success/failure. It does not revive Runs, fabricate a new
-approval, or send another action. The scheduler also runs this query-only scan. The CLI prints each unknown or
+approval, or send another action. The scheduler also runs this query-only scan. It checks only the queried tool against its original frozen resource. Calls without a query or original capability remain unknown; a later tool registration cannot acquire query authority over them. Unrelated plugin changes do not block this scan. The CLI prints each unknown or
 reconciled action with its observed status and safe result/receipt.
 A Root with any unresolved effect in its current tree reports `unknown` and keeps
 its Task active. A previously delivered unknown message is a historical observation; reconciliation
@@ -103,3 +103,8 @@ Worker, so the call remains available for later authoritative reconciliation.
 代码入口、最新架构与取舍见 [技术方案](../designs/tools-approvals.md)；已有检查、未覆盖场景和验收方法见 [测试方案](../test-plans/tools-approvals.md)。
 
 高频 Tool search、Intelligent UI、Skill list/view 与 Main 的 Task 协调直接提供给模型；其余授权工具通过 Tool search 发现后经 Code Mode 调用，审批与恢复仍走同一工具管线。旧冻结执行不切换工具面。
+
+Computer 实验参数方法的完整选择在原审批前固化；所有者控制投影可包含 action_parameters，原 arguments／hash、审批身份与未知效果不重放保持原协议。Web 和通知展示相关解析选项及 Playwright 超时，显式输入仍由 Host 复核，详见[Computer 设计](../designs/computer-use.md#审批前固化动作参数私有实验接入)。
+
+
+Computer 实验导出审批同时展示已固化的名称／媒体类型，沿原 hash、决定 API 和共享控件；原文件授权与具体参数校验仍由 Host 执行。

@@ -3,6 +3,7 @@ package computer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -90,10 +91,20 @@ type UseStore interface {
 	OpenArtifact(context.Context, string) (io.ReadCloser, error)
 }
 type UseRuntime struct {
-	Driver   Driver
-	Store    UseStore
-	Instance Instance
-	Lease    string
+	Driver               Driver
+	Store                UseStore
+	Instance             Instance
+	Lease                string
+	ProjectObservation   ObservationProjector
+	WaitPolicy           WaitPolicy
+	ReadDocumentation    DocumentationReader
+	PlanSelection        SelectionPlanner
+	OrderInventory       InventoryOrderer
+	MatchTargets         TargetMatcher
+	ReadActionParameters ActionParameterReader
+	UploadBrowser        BrowserUploader
+	SnapshotBrowser      BrowserSnapshotter
+	ProjectBrowser       BrowserProjector
 }
 type BridgeCall struct {
 	Method string          `json:"method"`
@@ -200,19 +211,20 @@ func (r UseRuntime) Call(ctx context.Context, name, raw string) (tool.Result, er
 	}
 	return tool.Failure("NOT_FOUND"), nil
 }
-func (r UseRuntime) inventory(ctx context.Context, kind string) ([]Target, error) {
-	return r.Driver.Inventory(ctx, r.Instance, kind)
-}
 func (r UseRuntime) discover(ctx context.Context, s *UseState, c BridgeCall, a []any) (tool.Result, error) {
 	if c.Method == "importArtifact" || c.Method == "exportArtifact" {
 		return r.transfer(ctx, s, c.Method, object(arg(a, 0)))
 	}
 	if c.Method == "launchApp" {
-		app := str(object(arg(a, 0))["app"])
-		if !bundleID.MatchString(app) {
-			return tool.Failure("INVALID_ARGUMENT"), nil
+		parameters, err := r.actionParameters(ctx, c.Method, "", a)
+		if err != nil {
+			return tool.Result{}, err
 		}
-		_, err := r.Driver.Act(ctx, r.Instance, Target{}, r.Lease, "launchApp", map[string]any{"app": app})
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		app := parameters.App
+		_, err = r.Driver.Act(ctx, r.Instance, Target{}, r.Lease, "launchApp", map[string]any{"app": app})
 		if err != nil {
 			return driverFailure(err), nil
 		}
@@ -221,36 +233,49 @@ func (r UseRuntime) discover(ctx context.Context, s *UseState, c BridgeCall, a [
 	if c.Method == "getState" {
 		out := map[string]any{"computerId": r.Instance.ComputerID, "instanceEpoch": fmt.Sprint(r.Instance.Epoch), "platform": "macos", "errors": []any{}}
 		for _, kind := range []string{"apps", "windows", "browsers"} {
-			values, err := r.inventory(ctx, kind)
+			values, err := r.Driver.Inventory(ctx, r.Instance, kind)
 			pub := []any{}
 			if err != nil {
 				out["errors"] = append(out["errors"].([]any), map[string]string{"source": kind, "code": "PROVIDER_UNAVAILABLE"})
 			} else {
-				for _, v := range values {
-					pub = append(pub, v.Public())
+				pub, err = r.publicInventory(ctx, kind, values)
+				if err != nil {
+					return tool.Result{}, err
 				}
 			}
 			out[kind] = pub
 		}
-		return useResult(out), nil
+		result := useResult(out)
+		if r.OrderInventory != nil {
+			result.HostFence = TargetReceipt{Lease: r.Lease, Instance: r.Instance}
+		}
+		return result, nil
 	}
 	kinds := map[string]string{"listApps": "apps", "listWindows": "windows", "listBrowsers": "browsers", "listTabs": "tabs"}
 	kind := kinds[c.Method]
 	if kind == "" {
 		return tool.Failure("NOT_FOUND"), nil
 	}
-	values, err := r.inventory(ctx, kind)
+	values, err := r.Driver.Inventory(ctx, r.Instance, kind)
 	if err != nil {
 		return driverFailure(err), nil
 	}
-	pub := []any{}
+	filtered := make([]Target, 0, len(values))
 	browser := str(object(arg(a, 0))["browser"])
 	for _, v := range values {
 		if browser == "" || v.Browser == browser {
-			pub = append(pub, v.Public())
+			filtered = append(filtered, v)
 		}
 	}
-	return useResult(pub), nil
+	pub, err := r.publicInventory(ctx, kind, filtered)
+	if err != nil {
+		return tool.Result{}, err
+	}
+	result := useResult(pub)
+	if r.OrderInventory != nil {
+		result.HostFence = TargetReceipt{Lease: r.Lease, Instance: r.Instance}
+	}
+	return result, nil
 }
 func (r UseRuntime) bind(ctx context.Context, s *UseState, c BridgeCall, a []any) (tool.Result, error) {
 	if len(s.Handles) >= 256 {
@@ -258,11 +283,14 @@ func (r UseRuntime) bind(ctx context.Context, s *UseState, c BridgeCall, a []any
 	}
 	var target Target
 	if c.Method == "createBrowserTab" {
-		browser := str(arg(a, 0))
-		url := str(arg(a, 1))
-		if browser == "" {
-			return tool.Failure("INVALID_ARGUMENT"), nil
+		parameters, err := r.actionParameters(ctx, c.Method, "", a)
+		if err != nil {
+			return tool.Result{}, err
 		}
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		browser, url := parameters.Browser, parameters.URL
 		v, err := r.Driver.Act(ctx, r.Instance, Target{ID: browser, Kind: "browser"}, r.Lease, "createBrowserTab", map[string]any{"url": url})
 		if err != nil {
 			return driverFailure(err), nil
@@ -275,14 +303,14 @@ func (r UseRuntime) bind(ctx context.Context, s *UseState, c BridgeCall, a []any
 		if kind == "" {
 			return tool.Failure("NOT_FOUND"), nil
 		}
-		values, err := r.inventory(ctx, kind)
+		values, err := r.Driver.Inventory(ctx, r.Instance, kind)
 		if err != nil {
 			return driverFailure(err), nil
 		}
 		selector := str(arg(a, 0))
 		if c.Method == "getApp" && str(object(arg(a, 0))["windowId"]) != "" {
 			kind = "windows"
-			values, err = r.inventory(ctx, kind)
+			values, err = r.Driver.Inventory(ctx, r.Instance, kind)
 			if err != nil {
 				return driverFailure(err), nil
 			}
@@ -297,28 +325,31 @@ func (r UseRuntime) bind(ctx context.Context, s *UseState, c BridgeCall, a []any
 				}
 			}
 		}
-		matches := []Target{}
-		for _, v := range values {
-			if selector == "" && kind == "browsers" || selector == v.ID || selector == v.Name || selector != "" && selector == v.URL {
-				matches = append(matches, v)
-			}
+		selected, err := r.matchTarget(ctx, kind, selector, values)
+		if err != nil {
+			return tool.Result{}, err
 		}
-		if len(matches) != 1 {
+		if selected == nil {
 			return tool.Failure("NOT_FOUND"), nil
 		}
-		target = matches[0]
+		target = *selected
 	}
 	token := newToken()
+	result := useResult(map[string]any{"handle_token": token, "ref": target.Public()})
+	if result.Error != nil {
+		return result, nil
+	}
 	s.Handles[token] = &Handle{Instance: r.Instance, Lease: r.Lease, Target: target}
 	if err := r.Store.Save(ctx, *s); err != nil {
 		return tool.Result{}, err
 	}
-	return useResult(map[string]any{"handle_token": token, "ref": target.Public()}), nil
+	result.HostFence = TargetReceipt{Lease: r.Lease, Instance: r.Instance, Token: token}
+	return result, nil
 }
 func (r UseRuntime) invoke(ctx context.Context, s *UseState, h *Handle, c BridgeCall, a []any) (tool.Result, error) {
 	switch c.Method {
 	case "documentation":
-		return useResult(CoreDocumentation), nil
+		return r.documentation(ctx, "core")
 	case "capabilities.list":
 		h.Listed = true
 		if err := r.Store.Save(ctx, *s); err != nil {
@@ -330,7 +361,7 @@ func (r UseRuntime) invoke(ctx context.Context, s *UseState, h *Handle, c Bridge
 		}
 		return useResult(v), nil
 	case "capabilities.documentation", "playwright.documentation":
-		return useResult(PlaywrightDocumentation), nil
+		return r.documentation(ctx, "browser")
 	case "capabilities.get":
 		if len(s.Handles) >= 256 {
 			return tool.Failure("RESOURCE_LIMIT"), nil
@@ -338,7 +369,7 @@ func (r UseRuntime) invoke(ctx context.Context, s *UseState, h *Handle, c Bridge
 		if !h.Listed || str(arg(a, 0)) != "playwright" || h.Target.Kind != "tab" {
 			return tool.Failure("PERMISSION_DENIED"), nil
 		}
-		capture, err := r.Driver.Observe(ctx, r.Instance, h.Target, r.Lease, ObserveOptions{Accessibility: true})
+		capture, err := r.capture(ctx, h.Target, ObserveOptions{Accessibility: true})
 		if err != nil {
 			return driverFailure(err), nil
 		}
@@ -375,7 +406,7 @@ func (r UseRuntime) observe(ctx context.Context, s *UseState, h *Handle, method 
 	if err := r.Store.Save(ctx, *s); err != nil {
 		return tool.Result{}, err
 	}
-	c, err := r.Driver.Observe(ctx, r.Instance, h.Target, r.Lease, ObserveOptions{Accessibility: method != "getScreenshot", Screenshot: screenshot})
+	c, err := r.capture(ctx, h.Target, ObserveOptions{Accessibility: method != "getScreenshot", Screenshot: screenshot})
 	if err != nil {
 		return driverFailure(err), nil
 	}
@@ -420,15 +451,13 @@ func (r UseRuntime) recordObservation(ctx context.Context, s *UseState, h *Handl
 	if method != "getScreenshot" {
 		base := h.AXRevision
 		rev := newToken()
-		kind := "full"
-		state := c.State
-		if base != "" && opts["full"] != true {
-			kind = "diff"
-			state = lineDiff(h.AXState, c.State)
+		view, err := r.projectObservation(ctx, ObservationInput{Before: h.AXState, After: c.State, DiffAllowed: base != "", Full: opts["full"] == true})
+		if err != nil {
+			return tool.Result{}, err
 		}
 		h.AXRevision, h.AXState, h.Elements = rev, c.State, c.Elements
-		ax := map[string]any{"surfaceId": h.Target.ID, "revision": rev, "kind": kind, "state": state}
-		if kind == "diff" {
+		ax := map[string]any{"surfaceId": h.Target.ID, "revision": rev, "kind": view.Kind, "state": view.State}
+		if view.Kind == "diff" {
 			ax["baseRevision"] = base
 		}
 		out["ax"] = ax
@@ -471,28 +500,44 @@ func (r UseRuntime) recordObservation(ctx context.Context, s *UseState, h *Handl
 	return result, nil
 }
 func (r UseRuntime) wait(ctx context.Context, s *UseState, h *Handle, o map[string]any) (tool.Result, error) {
-	ms := 1000.0
+	var requested *int
 	if v, ok := o["timeoutMs"].(float64); ok {
-		ms = v
+		if v < 1 || v > 10000 || math.Trunc(v) != v {
+			return tool.Failure("INVALID_ARGUMENT"), nil
+		}
+		n := int(v)
+		requested = &n
 	}
-	if ms < 1 || ms > 10000 || math.Trunc(ms) != ms {
-		return tool.Failure("INVALID_ARGUMENT"), nil
-	}
-	waitCtx, cancel := context.WithTimeout(ctx, time.Duration(ms)*time.Millisecond)
-	defer cancel()
 	since := str(o["sinceRevision"])
 	if since != "" && since != h.AXRevision {
 		return tool.Failure("STALE_ELEMENT_REFERENCE"), nil
 	}
+	// Only the explicit native boundary keeps this original recipe. Managed
+	// adapters always supply WaitPolicy, including when the service is unavailable.
+	var recipe WaitRecipe
+	if r.WaitPolicy != nil {
+		var err error
+		recipe, err = r.WaitPolicy(ctx, WaitInput{RequestedTimeoutMS: requested})
+		if err != nil {
+			return tool.Result{}, err
+		}
+	} else {
+		recipe = WaitRecipe{TimeoutMS: 1000, PollMS: 100}
+		if requested != nil {
+			recipe.TimeoutMS = *requested
+		}
+	}
+	waitCtx, cancel := context.WithTimeout(ctx, time.Duration(recipe.TimeoutMS)*time.Millisecond)
+	defer cancel()
 	baseline := h.AXState
 	h.AXReady = false
 	if err := r.Store.Save(ctx, *s); err != nil {
 		return tool.Result{}, err
 	}
-	deadline := time.NewTimer(time.Duration(ms) * time.Millisecond)
+	deadline := time.NewTimer(time.Duration(recipe.TimeoutMS) * time.Millisecond)
 	defer deadline.Stop()
 	for {
-		capture, err := r.Driver.Observe(waitCtx, r.Instance, h.Target, r.Lease, ObserveOptions{Accessibility: true})
+		capture, err := r.capture(waitCtx, h.Target, ObserveOptions{Accessibility: true})
 		waitEnd, _ := waitCtx.Deadline()
 		if waitCtx.Err() == context.DeadlineExceeded || err == context.DeadlineExceeded || !time.Now().Before(waitEnd) {
 			return waitTimeout(h), nil
@@ -508,7 +553,7 @@ func (r UseRuntime) wait(ctx context.Context, s *UseState, h *Handle, o map[stri
 			return tool.Failure("CANCELLED"), nil
 		case <-deadline.C:
 			return waitTimeout(h), nil
-		case <-time.After(100 * time.Millisecond):
+		case <-time.After(time.Duration(recipe.PollMS) * time.Millisecond):
 		}
 	}
 }
@@ -573,39 +618,42 @@ func invalidate(s *UseState, _ string) {
 	}
 }
 func (r UseRuntime) action(ctx context.Context, s *UseState, h *Handle, method string, a []any) (tool.Result, error) {
+	surface := "native"
+	if h.Target.Kind == "tab" {
+		surface = "tab"
+	}
+	var parameters ActionParameters
+	if ActionParameterMethod("builtin__computer_invoke", method) {
+		var err error
+		parameters, err = r.actionParameters(ctx, method, surface, a)
+		if err != nil {
+			return tool.Result{}, err
+		}
+	}
 	m := map[string]any{"expectedNavigation": h.Navigation}
 	switch method {
 	case "click", "scroll":
 		if code := pointer(h, arg(a, 0), m); code != "" {
 			return tool.Failure(code), nil
 		}
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
 		if method == "click" {
-			opts := object(arg(a, 1))
-			for key := range opts {
-				if key != "button" && key != "count" {
-					return tool.Failure("INVALID_ARGUMENT"), nil
-				}
+			opts := map[string]any{}
+			if parameters.Button != "" {
+				opts["button"] = parameters.Button
 			}
-			if button := str(opts["button"]); button != "" && button != "left" && button != "right" {
-				return tool.Failure("INVALID_ARGUMENT"), nil
-			}
-			if n, ok := opts["count"]; ok && n != float64(1) && n != float64(2) {
-				return tool.Failure("INVALID_ARGUMENT"), nil
+			if parameters.Count != nil {
+				opts["count"] = float64(*parameters.Count)
 			}
 			m["options"] = opts
 		} else {
-			direction := str(arg(a, 1))
-			if !strings.Contains("|up|down|left|right|", "|"+direction+"|") || direction == "" {
-				return tool.Failure("INVALID_ARGUMENT"), nil
+			m["direction"] = parameters.Direction
+			m["amount"] = nil
+			if parameters.Amount != nil {
+				m["amount"] = *parameters.Amount
 			}
-			m["direction"] = direction
-			if amount := arg(a, 2); amount != nil {
-				n, ok := amount.(float64)
-				if !ok || n <= 0 || n > 10000 {
-					return tool.Failure("INVALID_ARGUMENT"), nil
-				}
-			}
-			m["amount"] = arg(a, 2)
 		}
 	case "drag":
 		if _, ok := arg(a, 0).([]any); !ok {
@@ -621,66 +669,72 @@ func (r UseRuntime) action(ctx context.Context, s *UseState, h *Handle, method s
 		if code := pointer(h, arg(a, 1), to); code != "" {
 			return tool.Failure(code), nil
 		}
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
 		m["to_x"], m["to_y"] = to["x"], to["y"]
 	case "setValue", "selectText", "performSecondaryAction":
 		e, ok := element(h, arg(a, 0))
 		if !ok {
 			return tool.Failure("STALE_ELEMENT_REFERENCE"), nil
 		}
-		m["element_token"] = e.Token
-		m["value"] = str(arg(a, 1))
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		m["element_token"], m["value"] = e.Token, parameters.Value
 		if method == "selectText" && h.Target.Kind != "tab" {
-			wanted := str(m["value"])
-			position := strings.Index(e.Value, wanted)
-			if wanted == "" || position < 0 || strings.Count(e.Value, wanted) != 1 || position+len(wanted) > 256 || e.Role != "AXTextField" && e.Role != "AXTextArea" {
+			input := SelectionInput{Value: e.Value, Wanted: parameters.Value, Role: e.Role}
+			if !selectionSourceValid(input) {
 				return tool.Failure("INVALID_ARGUMENT"), nil
 			}
-			for _, c := range e.Value {
-				if c > 127 || c == '\r' {
-					return tool.Failure("INVALID_ARGUMENT"), nil
-				}
+			plan, err := r.selection(ctx, input)
+			if err != nil {
+				return tool.Result{}, err
 			}
-			m["selection_start"], m["selection_length"] = position, len(wanted)
+			if !ValidSelection(input, plan) {
+				return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+			}
+			m["selection_dispatch"] = SelectionDispatch{Recipe: plan, BeforeInput: r.Store.Fence}
 		}
 		if method == "performSecondaryAction" {
 			found := false
 			for _, action := range e.Actions {
-				found = found || action == m["value"]
+				found = found || action == parameters.Value
 			}
 			if !found {
 				return tool.Failure("PERMISSION_DENIED"), nil
 			}
 		}
 	case "typeText", "pressKey", "paste":
-		offset := 0
-		if h.Target.Kind == "tab" {
-			offset = 1
-			if arg(a, 0) != nil {
-				e, ok := element(h, arg(a, 0))
-				if !ok {
-					return tool.Failure("STALE_ELEMENT_REFERENCE"), nil
-				}
-				m["element_token"] = e.Token
+		if h.Target.Kind == "tab" && arg(a, 0) != nil {
+			e, ok := element(h, arg(a, 0))
+			if !ok {
+				return tool.Failure("STALE_ELEMENT_REFERENCE"), nil
 			}
+			m["element_token"] = e.Token
 		}
-		if method == "paste" {
-			if format := str(object(arg(a, offset+1))["format"]); format != "" && format != "text" {
-				return tool.Failure("INVALID_ARGUMENT"), nil
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		m["text"] = parameters.Text
+		if method == "pressKey" && h.Target.Kind != "tab" {
+			if parameters.KeyInput == nil {
+				return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 			}
-		}
-		m["text"] = str(arg(a, offset))
-		if m["text"] == "" || len(str(m["text"])) > 16384 {
-			return tool.Failure("INVALID_ARGUMENT"), nil
+			m["key_dispatch"] = KeyDispatch{Recipe: *parameters.KeyInput, BeforeInput: r.Store.Fence}
 		}
 	case "goto", "back", "forward", "reload", "close":
 		if h.Target.Kind != "tab" {
 			return tool.Failure("NOT_FOUND"), nil
 		}
-		m["url"] = str(arg(a, 0))
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		m["url"] = parameters.URL
 	default:
 		return tool.Failure("NOT_FOUND"), nil
 	}
-	// Invalidate before dispatch. A timeout or crash cannot leave usable old refs.
+	// References and original effect lifecycle remain mandatory Host mechanisms.
 	invalidate(s, h.Target.ID)
 	if err := r.Store.Save(ctx, *s); err != nil {
 		return tool.Result{}, err
@@ -691,35 +745,72 @@ func (r UseRuntime) action(ctx context.Context, s *UseState, h *Handle, method s
 	}
 	return useResult(value), nil
 }
+
 func (r UseRuntime) playwright(ctx context.Context, s *UseState, h *Handle, method string, a []any) (tool.Result, error) {
 	if !h.Capability {
 		return tool.Failure("PERMISSION_DENIED"), nil
 	}
-	c, err := r.Driver.Observe(ctx, r.Instance, h.Target, r.Lease, ObserveOptions{Accessibility: true})
+	c, err := r.capture(ctx, h.Target, ObserveOptions{Accessibility: true})
 	if err != nil {
 		return driverFailure(err), nil
 	}
 	if c.Navigation != h.Navigation {
 		return tool.Failure("STALE_CAPABILITY_HANDLE"), nil
 	}
-	switch method {
-	case "playwright.count", "playwright.textContent", "playwright.click", "playwright.fill", "playwright.waitForSelector", "playwright.waitForURL", "playwright.download", "playwright.upload":
-	default:
+	if !PlaywrightParameterMethod(method) {
 		return tool.Failure("NOT_FOUND"), nil
 	}
-	m := object(arg(a, 0))
-	m["expectedNavigation"] = h.Navigation
-	if len(stringify(m)) > 16384 {
+	original := object(arg(a, 0))
+	original["expectedNavigation"] = h.Navigation
+	if len(stringify(original)) > 16384 {
 		return tool.Failure("INVALID_ARGUMENT"), nil
 	}
+	var m map[string]any
+	var parameters ActionParameters
+	if r.ReadActionParameters == nil {
+		// Facade-v1 passthrough only for pre-contract snapshots (through
+		// seven-service 1.0.3) and explicit unbundled carriers. Remove when
+		// no retained execution/carrier depends on it; no managed fallback.
+		m = original
+	} else {
+		parameters, err = r.actionParameters(ctx, method, "tab", a)
+		if err != nil {
+			return tool.Result{}, err
+		}
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		if !ValidActionParameters(method, "tab", a, parameters) {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
+		m = map[string]any{"timeoutMs": *parameters.TimeoutMS}
+		if method == "playwright.waitForURL" {
+			m["url"] = parameters.URL
+		} else {
+			m["selector"] = parameters.Selector
+		}
+		if method == "playwright.fill" {
+			m["value"] = parameters.Value
+		}
+	}
+	m["expectedNavigation"] = h.Navigation
+	var upload *BrowserUploadRequest
 	if method == "playwright.upload" {
-		file := object(m["file"])
+		file := object(original["file"])
 		p := str(file["path"])
 		if str(file["computerId"]) != r.Instance.ComputerID || !SafeTransferPath(p) || !s.Files[p] {
 			return tool.Failure("PERMISSION_DENIED"), nil
 		}
 		m["path"] = p
 		delete(m, "file")
+		if HasUploadPresentation(parameters) {
+			if r.UploadBrowser == nil {
+				return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+			}
+			upload = &BrowserUploadRequest{Path: p, Navigation: h.Navigation, Selector: parameters.Selector, TimeoutMS: *parameters.TimeoutMS, Name: parameters.Name, MediaType: parameters.MediaType}
+		} else if r.UploadBrowser != nil {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
 	}
 	if method == "playwright.download" {
 		m["path"] = "downloads/" + newToken()
@@ -730,7 +821,16 @@ func (r UseRuntime) playwright(ctx context.Context, s *UseState, h *Handle, meth
 			return tool.Result{}, err
 		}
 	}
-	value, err := r.Driver.Act(ctx, r.Instance, h.Target, r.Lease, method, m)
+	var value any
+	if upload != nil {
+		value, err = r.UploadBrowser.Upload(ctx, r.Instance, h.Target, r.Lease, *upload)
+	} else {
+		// For upload, only pre-service graphs (through nine-service 1.0.5) and
+		// explicit unbundled carriers retain facade-v1 FileChooser presentation.
+		// Remove its branch/source only after these executions and references,
+		// and the separately unmigrated browser operations, have no consumers.
+		value, err = r.Driver.Act(ctx, r.Instance, h.Target, r.Lease, method, m)
+	}
 	if err != nil {
 		return driverFailure(err), nil
 	}
@@ -776,24 +876,43 @@ func (r UseRuntime) transfer(ctx context.Context, s *UseState, method string, m 
 	if !SafeTransferPath(p) || !s.Files[p] {
 		return tool.Failure("PERMISSION_DENIED"), nil
 	}
+
+	var name, media string
+	if r.ReadActionParameters == nil {
+		// Facade-v1 presentation only for pre-transfer snapshots (through actual
+		// eight-service 1.0.4) and explicit unbundled carriers. Remove after their
+		// retained executions/references are gone; no managed failure fallback.
+		name, media = str(m["name"]), str(m["mediaType"])
+		if name == "" {
+			name = path.Base(p)
+		}
+		if media == "" {
+			media = "application/octet-stream"
+		}
+	} else {
+		parameters, err := r.actionParameters(ctx, method, "", []any{m})
+		if err != nil {
+			return tool.Result{}, err
+		}
+		if parameters.Failure != "" {
+			return tool.Failure(parameters.Failure), nil
+		}
+		if !ValidActionParameters(method, "", []any{m}, parameters) {
+			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+		}
+		name, media = parameters.Name, parameters.MediaType
+	}
 	f, err := r.Driver.ReadFile(ctx, r.Instance, p)
 	if err != nil {
 		return driverFailure(err), nil
 	}
-	name := str(m["name"])
-	if name == "" {
-		name = path.Base(p)
-	}
-	media := str(m["mediaType"])
-	if media == "" {
-		media = "application/octet-stream"
-	}
+
 	return tool.Result{Output: &tool.BinaryOutput{Name: name, MediaType: media, Reader: f, ResultJSON: func(ref string) string {
 		return useResult(map[string]any{"artifactId": ref, "name": name, "mediaType": media}).Text
 	}}}, nil
 }
 func driverFailure(err error) tool.Result {
-	if err == ErrUnknown {
+	if errors.Is(err, ErrUnknown) {
 		return tool.Failure("UNKNOWN_SIDE_EFFECT")
 	}
 	if err == context.Canceled {
@@ -827,8 +946,10 @@ func waitTimeout(h *Handle) tool.Result {
 	return result
 }
 
-// A bounded contiguous line patch. Full state stays internal as the next base.
-func lineDiff(before, after string) string {
+// legacyLineDiff preserves AX facade v1 for explicit native Runs/carriers.
+// Managed observation never uses it after activation; remove it only when no
+// retained native execution or documented unbundled consumer depends on it.
+func legacyLineDiff(before, after string) string {
 	if before == after {
 		return ""
 	}

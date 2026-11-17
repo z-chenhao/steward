@@ -45,19 +45,23 @@ func (r *Runs) ReadMemoryEvidence(ctx context.Context, q evidence.Request, store
 	if err != nil {
 		return evidence.Page{}, memoryEvidenceError(err)
 	}
+	if q.PageRevision != "" {
+		if !access.pagePlugin {
+			return evidence.Page{}, evidence.ErrInvalid
+		}
+		access.pageGraph = q.PageRevision
+	}
 	page := evidence.Page{Ref: q.Ref, Kind: "memory", OccurredAt: record.CreatedAt, Links: []evidence.Link{}}
-	if err = evidence.Window(&page, record.Text, q); err != nil {
+	if err = r.evidenceWindow(ctx, access, &page, record.Text, q); err != nil {
 		return evidence.Page{}, err
 	}
 	refs := record.Refs
-	if len(refs) > 20 {
-		next := q.LinksOffset + 20
-		if next > 1000000 {
-			return evidence.Page{}, artifact.ErrLimit
-		}
-		page.NextLinksOffset = &next
-		refs = refs[:20]
+	take, next, err := r.evidenceLinkWindow(ctx, access, q, len(refs))
+	if err != nil {
+		return evidence.Page{}, err
 	}
+	page.NextLinksOffset = next
+	refs = refs[:take]
 	for _, ref := range refs {
 		if !evidence.ValidRef(ref) {
 			continue

@@ -8,7 +8,7 @@ import tempfile
 
 from terminal_driver import Terminal
 from verify_main import MainHarness, require
-from verify_tasks import state
+from verify_tasks import state, select_managed_tasks
 
 
 def stopped(value, status, reason):
@@ -45,6 +45,7 @@ def run(binary):
             h = MainHarness(binary, folder, fixture="tasks")
             try:
                 h.setup()
+                select_managed_tasks(h)
                 return drive(h)
             finally:
                 h.cleanup()

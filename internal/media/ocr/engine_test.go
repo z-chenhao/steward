@@ -74,6 +74,19 @@ func TestDeterministicOCRDiscovery(t *testing.T) {
 	}
 }
 
+func TestRawOCRRejectsPluginOptionsOutsideFrozenEngine(t *testing.T) {
+	e := installedEngine(t)
+	pixels, err := os.ReadFile("testdata/text.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, plan := range []Plan{{Languages: e.Languages(), Layout: 99}, {Languages: []string{"../../private"}, Layout: 3}, {Languages: []string{"eng", "eng"}, Layout: 3}, {Layout: 3}} {
+		if _, err := e.Raw(context.Background(), "image/png", pixels, plan); !errors.Is(err, media.ErrInvalid) {
+			t.Fatal("unscoped language/layout accepted", plan, err)
+		}
+	}
+}
+
 func TestMissingOCR(t *testing.T) {
 	t.Setenv("PATH", t.TempDir())
 	missing := Discover(context.Background())

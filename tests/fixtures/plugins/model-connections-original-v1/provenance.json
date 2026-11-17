@@ -1,0 +1,13 @@
+{
+  "source_snapshot": "models67-origin-source.json",
+  "native_function": "Server.modelChoices",
+  "case_count": 96,
+  "capture_command": "go test -overlay /tmp/steward-models67-native-overlay.json ./internal/interaction/web -run ^TestCaptureOriginalModelMenu$ -count=1",
+  "capture_scope": "Executed unchanged native menu using synthetic profiles/accounts/catalogues. Does not prove activation or settings migration.",
+  "hashes": {
+    "internal/interaction/web/composer_models.go": "9e2b856684dd25640642f081df8837355da269ed7291dd34902a2a41c68fd722",
+    "/tmp/steward-models67-native-capture_test.go": "2f1111b572fdb21673bd0ee009b83f43a0b48becd258ab67d610940c5aa68404",
+    "/tmp/steward-models67-native-overlay.json": "8245a96f5e4d19e64968da7cdbd772cd948093e7923fab10a92218b953396125"
+  },
+  "fixture_sha256": "e2e12af88cdc2853602c6f05a1f6dbbadd60c09e90b0728a65ba7813cd1fae8a"
+}

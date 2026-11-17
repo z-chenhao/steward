@@ -31,7 +31,7 @@ mechanisms; they do not certify model quality or every external provider.
 
 ## Install and start
 
-From a checkout, install **Go 1.26.10+**, **Node.js 24.21.0** (with npm),
+From a checkout, install **Go 1.26.11+**, **Node.js 24.21.0** (with npm),
 **Python 3.10.12+**, bash and a C compiler. Linux file/command isolation also needs
 Bubblewrap and unprivileged user namespaces; macOS uses Seatbelt. Windows is not
 currently supported by the installer. Optional OCR needs Tesseract and language data.

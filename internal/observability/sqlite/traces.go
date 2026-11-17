@@ -100,24 +100,16 @@ func (s Inspector) Traces(ctx context.Context, q observability.TraceQuery) (obse
 	if err = tx.QueryRowContext(ctx, `SELECT count(*),min(r.created_at),max(r.created_at)`+filtered, filterArgs...).Scan(&out.Total, &first, &last); err != nil {
 		return out, err
 	}
-	if first.Valid || (!q.Since.IsZero() && !q.Until.IsZero()) {
-		start, end := first.Int64, last.Int64+1
-		if !q.Since.IsZero() {
-			start = q.Since.UnixMicro()
-		}
-		if !q.Until.IsZero() {
-			end = q.Until.UnixMicro()
-		}
-		// A useful minimum window avoids dozens of indistinguishable microsecond
-		// buckets for a single trace. Explicit filter boundaries remain exact.
-		if q.Since.IsZero() && q.Until.IsZero() && end-start < 60_000_000 {
-			end = start + 60_000_000
-		}
-		step := activityInterval(end - start)
-		base := start / step * step
+	plan, checkActivity, err := s.traceActivityPlan(ctx, tx, q, first, last)
+	if err != nil {
+		return out, err
+	}
+	if plan.Present {
+		start, end, base, step := plan.Start, plan.End, plan.Base, plan.Step
 		for at := base; at < end; at += step {
 			out.Activity = append(out.Activity, observability.TraceBucket{At: stamp(max(start, at)), Until: stamp(min(end, at+step))})
 		}
+
 		bucketArgs := append([]any{base, step}, filterArgs...)
 		buckets, e := tx.QueryContext(ctx, `SELECT (r.created_at-?)/?,count(*)`+filtered+` GROUP BY 1`, bucketArgs...)
 		if e != nil {
@@ -138,6 +130,15 @@ func (s Inspector) Traces(ctx context.Context, q observability.TraceQuery) (obse
 		buckets.Close()
 		if err != nil {
 			return out, err
+		}
+	}
+	if plan.Present {
+		var counted int64
+		for _, bucket := range out.Activity {
+			counted += bucket.Count
+		}
+		if counted != out.Total {
+			return observability.Traces{}, observability.ErrInvalid
 		}
 	}
 	rows, err := tx.QueryContext(ctx, query, args...)
@@ -167,6 +168,11 @@ func (s Inspector) Traces(ctx context.Context, q observability.TraceQuery) (obse
 		out.Items[i].Metrics, err = traceMetrics(ctx, tx, out.Items[i].ID)
 		if err != nil {
 			return out, err
+		}
+	}
+	if checkActivity != nil {
+		if err = checkActivity(ctx); err != nil {
+			return observability.Traces{}, err
 		}
 	}
 	return out, nil
@@ -249,6 +255,11 @@ func (s Inspector) Observations(ctx context.Context, q observability.Observation
 		return out, err
 	}
 	defer tx.Rollback()
+	return s.observations(ctx, tx, q)
+}
+func (s Inspector) observations(ctx context.Context, tx *sql.Tx, q observability.ObservationQuery) (observability.ObservationTree, error) {
+	out := observability.ObservationTree{Items: []observability.Observation{}}
+	var err error
 	out.Trace, err = traceRoot(ctx, tx, q.RunID)
 	if err != nil {
 		return out, err
@@ -335,15 +346,4 @@ func providerTimings(ctx context.Context, tx *sql.Tx, generationID string) ([]ob
 func parseStamp(raw string) (int64, error) {
 	at, err := time.Parse(time.RFC3339Nano, raw)
 	return at.UnixMicro(), err
-}
-
-// Keep histogram bins readable and bounded across short and long ranges.
-func activityInterval(span int64) int64 {
-	for _, seconds := range []int64{1, 5, 10, 30, 60, 300, 600, 1800, 3600, 10800, 21600, 43200, 86400, 604800, 2592000, 31536000} {
-		step := seconds * 1_000_000
-		if step >= (span+46)/47 {
-			return step
-		}
-	}
-	return max(int64(1_000_000), (span+46)/47)
 }

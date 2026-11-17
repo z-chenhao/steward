@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -42,64 +43,45 @@ func logoSource(slug, raw string) string {
 	}
 	return "https://logos.composio.dev/api/" + url.PathEscape(slug)
 }
-func (c *appLogoCache) register(slug, source string) {
+func (c *appLogoCache) registerForRevision(revision, slug, source string) {
 	if !composio.ValidID(slug) {
 		return
 	}
+	key := logoSourceKey(revision, slug)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.sources == nil {
 		c.sources = map[string]string{}
 	}
-	if source != "" || c.sources[slug] == "" {
-		if len(c.sources) < 4096 || c.sources[slug] != "" {
-			c.sources[slug] = logoSource(slug, source)
+	if source != "" || c.sources[key] == "" {
+		if len(c.sources) < 4096 || c.sources[key] != "" {
+			c.sources[key] = logoSource(slug, source)
 		}
 	}
 }
-func (c *appLogoCache) get(ctx context.Context, slug string) ([]byte, string, error) {
-	c.mu.Lock()
-	source := c.sources[slug]
-	if source == "" {
-		source = logoSource(slug, "")
-	}
-	key := slug + source
-	if v, ok := c.entries[key]; ok && time.Since(v.at) < 24*time.Hour {
-		c.mu.Unlock()
-		return v.body, v.kind, nil
-	}
-	c.mu.Unlock()
-	// Recommended apps are bundled from this same official API for offline
-	// startup. New apps use the provider's logo URL through the same boundary.
-	body, err := assets.ReadFile("assets/apps/" + slug + ".svg")
+func (c *appLogoCache) fetchAppLogo(ctx context.Context, source string) ([]byte, error) {
+	request, err := http.NewRequestWithContext(ctx, "GET", source, nil)
 	if err != nil {
-		c.mu.Lock()
-		registered := c.sources[slug] != ""
-		c.mu.Unlock()
-		if !registered {
-			return nil, "", errors.New("unknown app logo")
-		}
-		request, e := http.NewRequestWithContext(ctx, "GET", source, nil)
-		if e != nil {
-			return nil, "", e
-		}
-		request.Header.Set("Accept", "image/svg+xml,image/png,image/jpeg")
-		client := http.Client{Timeout: 8 * time.Second}
-		if c.client != nil {
-			client = *c.client
-		}
-		client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-		response, e := client.Do(request)
-		if e != nil {
-			return nil, "", errors.New("app logo unavailable")
-		}
-		defer response.Body.Close()
-		if response.StatusCode != 200 {
-			return nil, "", errors.New("app logo unavailable")
-		}
-		body, err = io.ReadAll(io.LimitReader(response.Body, maxAppLogo+1))
+		return nil, err
 	}
-	if err != nil || len(body) > maxAppLogo {
+	request.Header.Set("Accept", "image/svg+xml,image/png,image/jpeg")
+	client := http.Client{Timeout: 8 * time.Second}
+	if c.client != nil {
+		client = *c.client
+	}
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, errors.New("app logo unavailable")
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		return nil, errors.New("app logo unavailable")
+	}
+	return io.ReadAll(io.LimitReader(response.Body, maxAppLogo+1))
+}
+func validateAppLogo(body []byte) ([]byte, string, error) {
+	if len(body) > maxAppLogo {
 		return nil, "", errors.New("app logo unavailable")
 	}
 	kind := "image/svg+xml"
@@ -109,11 +91,15 @@ func (c *appLogoCache) get(ctx context.Context, slug string) ([]byte, string, er
 		}
 		kind = "image/" + format
 	} else {
+		var err error
 		body, err = cleanAppSVG(body)
 		if err != nil {
 			return nil, "", err
 		}
 	}
+	return body, kind, nil
+}
+func (c *appLogoCache) storeLogo(key string, body []byte, kind string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.entries == nil {
@@ -126,7 +112,6 @@ func (c *appLogoCache) get(ctx context.Context, slug string) ([]byte, string, er
 		}
 	}
 	c.entries[key] = cachedAppLogo{body: body, kind: kind, at: time.Now()}
-	return body, kind, nil
 }
 
 func (s *Server) appLogo(w http.ResponseWriter, r *http.Request) {
@@ -135,7 +120,26 @@ func (s *Server) appLogo(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404)
 		return
 	}
-	body, kind, err := s.appLogos.get(r.Context(), slug)
+	policy := NativeAppLogos()
+	revision := r.URL.Query().Get("revision")
+	var err error
+	if s.Logos != nil {
+		policy, err = s.Logos(r.Context(), revision)
+	} else if revision != "" {
+		err = errors.New("app logo unavailable")
+	}
+	if err != nil {
+		fail(w, 404)
+		return
+	}
+	var body []byte
+	var kind string
+	seconds := 86400
+	if policy.native {
+		body, kind, err = s.appLogos.getLegacyV1(r.Context(), slug)
+	} else {
+		body, kind, seconds, err = s.appLogos.getManaged(r.Context(), slug, policy)
+	}
 	if err != nil {
 		fail(w, 404)
 		return
@@ -143,7 +147,7 @@ func (s *Server) appLogo(w http.ResponseWriter, r *http.Request) {
 	hash := sha256.Sum256(body)
 	w.Header().Set("ETag", `"`+hex.EncodeToString(hash[:])+`"`)
 	w.Header().Set("Content-Type", kind)
-	w.Header().Set("Cache-Control", "private, max-age=86400")
+	w.Header().Set("Cache-Control", "private, max-age="+strconv.Itoa(seconds))
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; sandbox")
 	_, _ = w.Write(body)
 }

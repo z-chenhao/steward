@@ -3,55 +3,60 @@ package web
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 )
 
-func (s *Server) showAccountCatalog(w http.ResponseWriter, r *http.Request) error {
-	account := r.FormValue("account")
-	if account == "" || s.AccountCatalog == nil {
-		return llm.ErrConflict
-	}
-	catalog, catalogErr := s.AccountCatalog(r.Context(), account)
-	next := r.Clone(r.Context())
-	next.URL.Path = "/settings/models/new"
-	next.URL.RawQuery = url.Values{"provider": {"chatgpt"}, "account": {account}}.Encode()
-	p, err := s.page(next.Context(), next)
-	if err != nil {
-		return err
-	}
-	p.Settings.Catalog = catalog
-	p.Settings.CatalogLoaded = true
-	p.Settings.CatalogError = catalogErr != nil
-	s.render(w, next, p)
-	return nil
-}
-
-func (s *Server) addModel(r *http.Request) (llm.Profile, error) {
+func (s *Server) addModel(r *http.Request, status Status) (llm.Profile, string, error) {
 	if service := r.FormValue("service"); service != "" && service != "openai" && service != "custom" {
-		return llm.Profile{}, llm.ErrConflict
+		return llm.Profile{}, "", llm.ErrConflict
 	}
-	input := llm.ProfileInput{Name: r.FormValue("model"), Endpoint: r.FormValue("endpoint"), ModelID: r.FormValue("model"), ProviderKind: "openai_compatible", WireAPI: "openai_completions", ContextWindow: 128000, MaxOutputTokens: 16384, Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true, ImageInput: true}}
-	if r.FormValue("service") == "openai" {
-		input.Endpoint = "https://api.openai.com/v1"
+	facts := contract.ConnectionFacts{Service: r.FormValue("service"), WireAPI: r.FormValue("wire_api"), AccountBacked: r.FormValue("account") != "", Added: &contract.AddedFacts{HasCurrent: activeProfile(status) != ""}}
+	defaults, err := s.connectionDefaults(r.Context(), facts)
+	if err != nil {
+		return llm.Profile{}, "", err
 	}
-	if wire := r.FormValue("wire_api"); wire != "" {
-		input.WireAPI = wire
+	// Decide before persisting the candidate, from the same selected policy
+	// result as its defaults. Invalid or stopped policy must not create a row.
+	switch defaults.AddedAction {
+	case "activate":
+		if facts.Added.HasCurrent {
+			return llm.Profile{}, "", llm.ErrConflict
+		}
+	case "probe", "save":
+	default:
+		return llm.Profile{}, "", llm.ErrConflict
+	}
+	input := llm.ProfileInput{Name: r.FormValue("model"), Endpoint: r.FormValue("endpoint"), ModelID: r.FormValue("model"), ProviderKind: "openai_compatible", WireAPI: defaults.WireAPI, ContextWindow: defaults.ContextWindow, MaxOutputTokens: defaults.MaxOutputTokens, Compatibility: llm.Compatibility{ToolResultFormat: "openai"}, Capabilities: llm.Capabilities{TextInput: true, ImageInput: defaults.ImageInput}}
+	if !facts.AccountBacked {
+		// The submitted endpoint (or the explicit OpenAI service choice) is
+		// credential destination authority. A replaceable policy cannot redirect
+		// a newly supplied key to another origin or reinterpret that service.
+		expected := input.Endpoint
+		if facts.Service == "openai" {
+			expected = "https://api.openai.com/v1"
+		}
+		if defaults.EndpointOverride != "" && defaults.EndpointOverride != expected || facts.Service == "openai" && defaults.EndpointOverride != expected {
+			return llm.Profile{}, "", llm.ErrConflict
+		}
+	}
+	if defaults.EndpointOverride != "" {
+		input.Endpoint = defaults.EndpointOverride
 	}
 	if r.FormValue("account") != "" {
 		input.AuthConnectionID = r.FormValue("account")
 		input.ProviderKind = "openai_account"
-		input.WireAPI = "openai_responses"
 		input.Endpoint = ""
 		if s.AccountCatalog == nil {
-			return llm.Profile{}, llm.ErrNoBridge
+			return llm.Profile{}, "", llm.ErrNoBridge
 		}
 		catalog, err := s.AccountCatalog(r.Context(), input.AuthConnectionID)
 		if err != nil {
-			return llm.Profile{}, err
+			return llm.Profile{}, "", err
 		}
 		found := false
 		for _, m := range catalog {
@@ -63,14 +68,14 @@ func (s *Server) addModel(r *http.Request) (llm.Profile, error) {
 			}
 		}
 		if !found {
-			return llm.Profile{}, llm.ModelIncompatible
+			return llm.Profile{}, "", llm.ModelIncompatible
 		}
 	}
 	if name := r.FormValue("name"); name != "" {
 		input.Name = name
 	}
 	if input.Validate() != nil {
-		return llm.Profile{}, llm.ModelIncompatible
+		return llm.Profile{}, "", llm.ModelIncompatible
 	}
 	key := []byte(strings.TrimSpace(r.FormValue("api_key")))
 	defer func() { r.Form.Del("api_key"); r.PostForm.Del("api_key") }()
@@ -80,18 +85,20 @@ func (s *Server) addModel(r *http.Request) (llm.Profile, error) {
 		}
 	}()
 	if r.FormValue("service") == "openai" && len(key) == 0 {
-		return llm.Profile{}, llm.AuthRequired
+		return llm.Profile{}, "", llm.AuthRequired
 	}
 	if len(key) > 0 {
 		writer, ok := s.Models.(interface {
 			AddKeyProfile(context.Context, llm.ProfileInput, llm.SecretStore, []byte) (llm.Profile, error)
 		})
 		if !ok {
-			return llm.Profile{}, llm.ErrNoBridge
+			return llm.Profile{}, "", llm.ErrNoBridge
 		}
-		return writer.AddKeyProfile(r.Context(), input, s.Secrets, key)
+		profile, err := writer.AddKeyProfile(r.Context(), input, s.Secrets, key)
+		return profile, defaults.AddedAction, err
 	}
-	return s.Models.AddProfile(r.Context(), input)
+	profile, err := s.Models.AddProfile(r.Context(), input)
+	return profile, defaults.AddedAction, err
 }
 func (s *Server) testModel(r *http.Request) error {
 	ctx := r.Context()
@@ -177,14 +184,37 @@ func (s *Server) reconnectModel(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if activeProfile(status) == "" || activeProfile(status) == profile.ProfileID {
+	current := activeProfile(status)
+	policy, err := s.connectionDefaults(r.Context(), contract.ConnectionFacts{Reconnect: &contract.ReconnectFacts{HasCurrent: current != "", TargetCurrent: current == profile.ProfileID}})
+	if err != nil {
+		return err
+	}
+	switch policy.ReconnectAction {
+	case "activate":
+		// Reconnect consent cannot replace another current selection. The actual
+		// activation still uses the submitted profile/configuration version fences.
+		if current != "" && current != profile.ProfileID {
+			return llm.ErrConflict
+		}
 		err = s.activateModel(r)
-	} else {
+	case "probe":
 		_, err = s.Control.Test(r.Context(), profile.ProfileID)
+	default:
+		return llm.ErrConflict
 	}
 	if err != nil {
 		return err
 	}
 	http.Redirect(w, r, "/settings/models", http.StatusSeeOther)
 	return nil
+}
+
+func (s *Server) connectionDefaults(ctx context.Context, facts contract.ConnectionFacts) (contract.ConnectionDefaults, error) {
+	if s.ModelConnectionPolicy != nil {
+		out, managed, err := s.ModelConnectionPolicy(ctx, facts)
+		if err != nil || managed {
+			return out, err
+		}
+	}
+	return legacyv1.Connection(facts), nil
 }

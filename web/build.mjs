@@ -17,7 +17,7 @@ const js=await build({absWorkingDir:root,entryPoints:['src/main.tsx'],bundle:tru
 const appearance=await build({absWorkingDir:root,entryPoints:['src/appearance.ts'],bundle:true,minify:true,write:false,format:'iife',target:['es2022']});
 const diagrams=await build({absWorkingDir:root,entryPoints:['src/diagrams.ts'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
 const previewRuntime=await build({absWorkingDir:root,entryPoints:['src/preview-runtime.js'],bundle:true,minify:true,write:false,format:'iife',target:['es2022']});
-const widgetRuntime=await build({absWorkingDir:root,entryPoints:['src/widget-runtime.js'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
+const widgetRuntime=await build({absWorkingDir:root,entryPoints:['../internal/plugin/intelligentui/view/widget-runtime.js'],nodePaths:[root+'node_modules'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
 // Use Tailwind's file output: a synchronous child can otherwise lose buffered stdout.
 const cssTemp=mkdtempSync(join(tmpdir(),'steward-web-css-'));
 let css;
@@ -39,19 +39,20 @@ for(const input of [...Object.keys(js.metafile.inputs),...Object.keys(diagrams.m
   const pieces=input.slice(at+13).split('/');
   dependencyDirs.add(input.slice(0,at+13)+pieces.slice(0,pieces[0].startsWith('@')?2:1).join('/'));
 }
-const dependencyLicenses=[...dependencyDirs].sort().map(directory=>{
+// Sort rendered package identities, independent of node_modules real paths.
+const dependencyLicenses=[...dependencyDirs].map(directory=>{
   const path=join(root,directory),pkg=JSON.parse(readFileSync(join(path,'package.json'),'utf8'));
   const files=readdirSync(path,{withFileTypes:true}).filter(file=>file.isFile()&&/^(licen[cs]e|copying|notice)([.-]|$)/i.test(file.name));
   if(!files.length)throw new Error('Missing bundled license for '+pkg.name);
   return pkg.name+' '+pkg.version+'\n'+files.map(file=>readFileSync(join(path,file.name),'utf8')).join('\n');
-});
+}).sort();
 const stewardLicenses=['LICENSE-Inter.txt','LICENSE-SourceSerif4.md','LICENSE-SourceHanSans.txt','LICENSE-JetBrainsMono.txt','LICENSE-Michroma.txt'].map(name=>readFileSync(root+'licenses/'+name,'utf8').replace(/[ \t]+$/gm,'')).join('\n\n');
 const licenses=[notices,readFileSync(root+'licenses/app-icons.txt','utf8'),stewardLicenses,readFileSync(root+'licenses/steward-artwork.md','utf8'),...dependencyLicenses].join('\n\n').replace(/\r\n/g,'\n').replace(/[ \t]+$/gm,'');
 const lightTheme=THEME_CSS.match(/:root\s*\{([\s\S]*?)\}/)[1],darkTheme=THEME_CSS.match(/@media[^\{]+\{\s*:root\s*\{([\s\S]*?)\}/)[1];
 const widgetStyles=THEME_CSS+'\n'+SVG_CLASSES_CSS+'\n'+FORM_STYLES_CSS+'\n:root[data-widget-theme=light]{'+lightTheme+'}\n:root[data-widget-theme=dark]{'+darkTheme+'}';
 const frameTheme=readFileSync(root+'src/components/ui/controls.css','utf8').split('/* Intelligent UI sandbox theme:')[1];
 const embeddedFont="@font-face{font-family:Inter;src:url(data:font/woff2;base64,"+readFileSync(root+'../internal/interaction/web/assets/brand/InterVariable.woff2').toString('base64')+") format('woff2');font-style:normal;font-weight:100 900;font-display:swap}";
-const outputs={'preview-runtime.js':previewRuntime.outputFiles[0].contents,'widget.css':widgetStyles+'\n/* Intelligent UI sandbox theme:'+frameTheme+'\n'+embeddedFont,'widget-runtime.js':widgetRuntime.outputFiles[0].contents,'appearance.js':appearance.outputFiles[0].contents,'client.js':js.outputFiles[0].contents,'diagrams.js':diagrams.outputFiles[0].contents,'style.css':css,'licenses.txt':licenses,'brand/NOTICE.txt':readFileSync(root+'licenses/steward-artwork.md')};
+const outputs={'preview-runtime.js':previewRuntime.outputFiles[0].contents,'widget.css':widgetStyles+'\n/* Intelligent UI sandbox theme:'+frameTheme+'\n'+embeddedFont,'widget-runtime.js':widgetRuntime.outputFiles[0].contents,'appearance.js':appearance.outputFiles[0].contents,'client.js':js.outputFiles[0].contents,'diagrams.js':diagrams.outputFiles[0].contents,'style-base.css':css,'licenses.txt':licenses,'brand/NOTICE.txt':readFileSync(root+'licenses/steward-artwork.md')};
 for(const [name,bytes] of Object.entries(outputs)){
   const path=root+'../internal/interaction/web/assets/'+name;
   if(process.argv.includes('--check')){

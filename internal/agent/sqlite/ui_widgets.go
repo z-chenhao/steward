@@ -16,10 +16,14 @@ import (
 )
 
 func (t *tools) showUI(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
+	prepared, err := t.prepareUI(ctx, inv)
+	if err != nil {
+		return tool.Result{}, err
+	}
 	var result tool.Result
 	var previewInput, previewKey, previewOrder string
 	var replacedPreview string
-	err := t.runs.write(ctx, func(tx *sql.Tx) error {
+	err = t.runs.write(ctx, func(tx *sql.Tx) error {
 		kind, name, args, err := t.acceptedBuiltin(ctx, tx, inv)
 		if err != nil {
 			return err
@@ -28,7 +32,31 @@ func (t *tools) showUI(ctx context.Context, inv tool.Invocation) (tool.Result, e
 			result = tool.Failure("PERMISSION_DENIED")
 			return nil
 		}
-		widget, ok := ui.ParseWidget(args)
+		var widget ui.Widget
+		var ok bool
+		if prepared.managed {
+			if args != prepared.args {
+				return agent.ErrStorage
+			}
+			if prepared.access.pluginGraph != "" {
+				if err := t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID()); err != nil {
+					return err
+				}
+				if err := t.runs.evidenceFence(ctx, tx, prepared.access); err != nil {
+					return err
+				}
+			}
+			if prepared.failure != "" {
+				result = tool.Failure(prepared.failure)
+				return nil
+			}
+			if err := json.Unmarshal([]byte(prepared.document), &widget); err != nil {
+				return err
+			}
+			ok = true
+		} else {
+			widget, ok = ui.ParseWidget(args)
+		}
 		if !ok {
 			result = tool.Failure("INVALID_ARGUMENT")
 			return nil
@@ -72,6 +100,33 @@ func (t *tools) showUI(ctx context.Context, inv tool.Invocation) (tool.Result, e
 		if _, err = tx.ExecContext(ctx, `INSERT INTO ui_widget(invocation_id,run_id,ui_ref,document_json,created_at) VALUES(?,?,?,?,?) ON CONFLICT(invocation_id) DO NOTHING`, inv.ID, t.claim.RunID(), ref, string(document), time.Now().UnixMicro()); err != nil {
 			return err
 		}
+		if prepared.planManaged && len(prepared.planOutput) > 0 {
+			// The view and UI artifact are one accepted fact. A failed commit
+			// leaves neither; staged recovery never reruns the pure formatter.
+			if _, err = tx.ExecContext(ctx, `INSERT INTO ui_plan_view_snapshot VALUES(?,?,?)`, inv.ID, prepared.access.pluginGraph, string(prepared.planOutput)); err != nil {
+				return err
+			}
+		}
+		if prepared.cardsManaged && len(prepared.cardsOutput) > 0 {
+			if _, err = tx.ExecContext(ctx, `INSERT INTO ui_cards_view_snapshot VALUES(?,?,?)`, inv.ID, prepared.access.pluginGraph, string(prepared.cardsOutput)); err != nil {
+				return err
+			}
+		}
+		if prepared.tableManaged && len(prepared.tableOutput) > 0 {
+			if _, err = tx.ExecContext(ctx, `INSERT INTO ui_table_view_snapshot VALUES(?,?,?)`, inv.ID, prepared.access.pluginGraph, string(prepared.tableOutput)); err != nil {
+				return err
+			}
+		}
+		if prepared.chartManaged && len(prepared.chartOutput) > 0 {
+			if _, err = tx.ExecContext(ctx, `INSERT INTO ui_chart_view_snapshot VALUES(?,?,?)`, inv.ID, prepared.access.pluginGraph, string(prepared.chartOutput)); err != nil {
+				return err
+			}
+		}
+		if prepared.formViewManaged && len(prepared.formViewOutput) > 0 {
+			if _, err = tx.ExecContext(ctx, `INSERT INTO ui_form_view_snapshot VALUES(?,?,?)`, inv.ID, prepared.access.pluginGraph, string(prepared.formViewOutput)); err != nil {
+				return err
+			}
+		}
 		data, _ := json.Marshal(map[string]string{"ui_ref": ref, "status": "staged"})
 		result = tool.Result{Text: string(data)}
 		previewInput = string(document)
@@ -105,75 +160,113 @@ type uiQuerier interface {
 }
 
 func appendWidgets(ctx context.Context, q uiQuerier, message string, spec ui.Spec) (ui.Spec, error) {
-	rows, err := q.QueryContext(ctx, `SELECT ui_ref,document_json FROM ui_widget w JOIN tool_invocation i USING(invocation_id) WHERE w.message_id=? AND i.status='succeeded' ORDER BY `+uiSectionOrder, message)
+	rows, err := q.QueryContext(ctx, `SELECT ui_ref,`+uiStoredColumns+`,`+uiPlanColumn+`,`+uiCardsColumn+`,`+uiTableColumn+`,`+uiChartColumn+`,`+uiFormViewColumn+` FROM ui_widget w JOIN tool_invocation i USING(invocation_id) WHERE w.message_id=? AND i.status='succeeded' ORDER BY `+uiSectionOrder, message)
 	if err != nil {
 		return spec, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var ref, raw string
-		if err = rows.Scan(&ref, &raw); err != nil {
+		var ref, raw, receipt string
+		var planReceipt, cardsReceipt, tableReceipt, chartReceipt, formViewReceipt sql.NullString
+		var managed bool
+		if err = rows.Scan(&ref, &raw, &managed, &receipt, &planReceipt, &cardsReceipt, &tableReceipt, &chartReceipt, &formViewReceipt); err != nil {
 			return spec, err
 		}
-		w, ok := ui.StoredWidget(raw)
-		if !ok {
+		w, _, decodeErr := storedUI(raw, managed, receipt)
+		if decodeErr != nil {
 			return spec, agent.ErrStorage
 		}
-		spec.Components = append(spec.Components, ui.WidgetComponents(w, ref, message, len(spec.Components))...)
+		components := ui.WidgetComponents
+		if managed {
+			components = ui.ManagedWidgetComponents
+		}
+		bound := components(w, ref, message, len(spec.Components))
+		if err := bindPlanViewRefs(raw, ref, bound, planReceipt); err != nil {
+			return spec, err
+		}
+		if err := bindCardsViewRefs(raw, ref, bound, cardsReceipt); err != nil {
+			return spec, err
+		}
+		if err := bindTableViewRefs(raw, ref, bound, tableReceipt); err != nil {
+			return spec, err
+		}
+		if err := bindChartViewRefs(raw, ref, bound, chartReceipt); err != nil {
+			return spec, err
+		}
+		if err := bindFormViewRefs(raw, ref, bound, formViewReceipt); err != nil {
+			return spec, err
+		}
+		spec.Components = append(spec.Components, bound...)
 	}
 	return spec, rows.Err()
 }
 
 // WebWidget reads only a delivered Main-owned artifact in the current account.
 func (s *Store) WebWidget(ctx context.Context, ref string) (ui.Widget, error) {
+	source, err := s.WebWidgetSource(ctx, ref)
+	return source.Document, err
+}
+
+func (s *Store) WebWidgetSource(ctx context.Context, ref string) (ui.WidgetSource, error) {
 	base, index, found := strings.Cut(ref, "#")
 	if !found {
-		return ui.Widget{}, agent.ErrNotFound
+		return ui.WidgetSource{}, agent.ErrNotFound
 	}
 	i, err := strconv.Atoi(index)
 	if err != nil || i < 0 || strconv.Itoa(i) != index {
-		return ui.Widget{}, agent.ErrNotFound
+		return ui.WidgetSource{}, agent.ErrNotFound
 	}
-	var raw string
-	err = s.db.QueryRowContext(ctx, `SELECT w.document_json FROM ui_widget w JOIN run r USING(run_id) JOIN conversation_intent c ON c.message_id=w.message_id JOIN tool_invocation i USING(invocation_id) WHERE w.ui_ref=? AND r.kind='main' AND r.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND i.status='succeeded'`, base).Scan(&raw)
+	var raw, revision, receipt string
+	var managed bool
+	err = s.db.QueryRowContext(ctx, `SELECT `+uiStoredColumns+`,coalesce(b.graph_revision,'') FROM ui_widget w JOIN run r USING(run_id) LEFT JOIN rsi_run b USING(run_id) JOIN conversation_intent c ON c.message_id=w.message_id JOIN tool_invocation i USING(invocation_id) WHERE w.ui_ref=? AND r.kind='main' AND r.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND i.status='succeeded'`, base).Scan(&raw, &managed, &receipt, &revision)
 	if err != nil {
-		return ui.Widget{}, agent.ErrNotFound
+		return ui.WidgetSource{}, agent.ErrNotFound
 	}
-	w, ok := ui.StoredWidget(raw)
-	if !ok {
-		return w, agent.ErrStorage
+	w, _, decodeErr := storedUI(raw, managed, receipt)
+	if decodeErr != nil {
+		return ui.WidgetSource{}, agent.ErrStorage
 	}
 	if i >= len(w.Components) || w.Components[i].Name != "generateSandboxedUi" {
-		return ui.Widget{}, agent.ErrNotFound
+		return ui.WidgetSource{}, agent.ErrNotFound
 	}
 	w.Components = w.Components[i : i+1]
-	return w, nil
+	return ui.WidgetSource{Document: w, GraphRevision: revision, Managed: managed}, nil
 }
 
 // WebBubbles splits only a projection whose frozen parts match the bound UI
 // artifacts. Stored Conversation and Delivery projections remain untouched.
 // Slices share the original components, including submitted-form restoration.
 func (s *Store) WebBubbles(ctx context.Context, m conversation.Message, spec ui.Spec) ([]ui.Spec, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT ui_ref,document_json FROM ui_widget w JOIN tool_invocation i USING(invocation_id) WHERE w.message_id=? AND i.status='succeeded' ORDER BY `+uiSectionOrder, m.MessageID)
+	rows, err := s.db.QueryContext(ctx, `SELECT ui_ref,`+uiStoredColumns+`,`+uiPlanColumn+`,`+uiCardsColumn+`,`+uiTableColumn+`,`+uiChartColumn+`,`+uiFormViewColumn+` FROM ui_widget w JOIN tool_invocation i USING(invocation_id) WHERE w.message_id=? AND i.status='succeeded' ORDER BY `+uiSectionOrder, m.MessageID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	type bound struct {
-		ref    string
-		widget ui.Widget
+		ref             string
+		widget          ui.Widget
+		readable        string
+		managed         bool
+		planReceipt     sql.NullString
+		cardsReceipt    sql.NullString
+		tableReceipt    sql.NullString
+		chartReceipt    sql.NullString
+		formViewReceipt sql.NullString
+		document        string
 	}
 	var items []bound
 	for rows.Next() {
-		var ref, raw string
-		if err := rows.Scan(&ref, &raw); err != nil {
+		var ref, raw, receipt string
+		var planReceipt, cardsReceipt, tableReceipt, chartReceipt, formViewReceipt sql.NullString
+		var managed bool
+		if err := rows.Scan(&ref, &raw, &managed, &receipt, &planReceipt, &cardsReceipt, &tableReceipt, &chartReceipt, &formViewReceipt); err != nil {
 			return nil, err
 		}
-		w, ok := ui.StoredWidget(raw)
-		if !ok {
+		w, readable, decodeErr := storedUI(raw, managed, receipt)
+		if decodeErr != nil {
 			return nil, agent.ErrStorage
 		}
-		items = append(items, bound{ref, w})
+		items = append(items, bound{ref, w, readable, managed, planReceipt, cardsReceipt, tableReceipt, chartReceipt, formViewReceipt, raw})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -191,7 +284,7 @@ func (s *Store) WebBubbles(ctx context.Context, m conversation.Message, spec ui.
 	}
 	for i, item := range items {
 		part := m.Content[start+i]
-		if part.Type != "text" || part.Text != item.widget.Readable() {
+		if part.Type != "text" || part.Text != item.readable {
 			return nil, nil
 		}
 	}
@@ -202,7 +295,26 @@ func (s *Store) WebBubbles(ctx context.Context, m conversation.Message, spec ui.
 	offset := len(base.Components)
 	var bubbles []ui.Spec
 	for _, item := range items {
-		expected := ui.WidgetComponents(item.widget, item.ref, m.MessageID, offset)
+		components := ui.WidgetComponents
+		if item.managed {
+			components = ui.ManagedWidgetComponents
+		}
+		expected := components(item.widget, item.ref, m.MessageID, offset)
+		if err := bindPlanViewRefs(item.document, item.ref, expected, item.planReceipt); err != nil {
+			return nil, err
+		}
+		if err := bindCardsViewRefs(item.document, item.ref, expected, item.cardsReceipt); err != nil {
+			return nil, err
+		}
+		if err := bindTableViewRefs(item.document, item.ref, expected, item.tableReceipt); err != nil {
+			return nil, err
+		}
+		if err := bindChartViewRefs(item.document, item.ref, expected, item.chartReceipt); err != nil {
+			return nil, err
+		}
+		if err := bindFormViewRefs(item.document, item.ref, expected, item.formViewReceipt); err != nil {
+			return nil, err
+		}
 		end := offset + len(expected)
 		if end > len(spec.Components) || ui.Hash(spec.Components[offset:end]) != ui.Hash(expected) {
 			return nil, nil
@@ -210,7 +322,12 @@ func (s *Store) WebBubbles(ctx context.Context, m conversation.Message, spec ui.
 		for j := range expected {
 			if expected[j].Name != "" {
 				spec.Components[offset+j].WidgetRef = item.ref + "#" + strconv.Itoa(j)
+				spec.Components[offset+j].MeetingView = expected[j].MeetingView
+				spec.Components[offset+j].ActionView = expected[j].ActionView
 			}
+		}
+		if err := bindFormViewDisplay(spec.Components[offset:end], item.formViewReceipt); err != nil {
+			return nil, err
 		}
 		if item.widget.Text != "" {
 			bubbles = append(bubbles, ui.Compose(delivery.Envelope{Message: conversation.Message{Content: conversation.Text(item.widget.Text)}}))
@@ -255,4 +372,19 @@ func (r *Runs) StagedUIPreviews(ctx context.Context, c agent.RunClaim) ([]ui.Sta
 		return rows.Err()
 	})
 	return calls, err
+}
+
+// WebWidgetDefinition reads only a published, account-owned artifact's durable
+// definition receipt. It never dispatches candidate code while serving a view.
+func (s *Store) WebWidgetDefinition(ctx context.Context, ref, instance string) ([]byte, error) {
+	if _, err := s.WebWidgetSource(ctx, ref); err != nil {
+		return nil, err
+	}
+	base, _, _ := strings.Cut(ref, "#")
+	var raw string
+	err := s.db.QueryRowContext(ctx, `SELECT c.result_json FROM ui_widget w JOIN rsi_call c ON c.run_id=w.run_id AND c.operation_id='ui-definition:'||w.invocation_id WHERE w.ui_ref=? AND c.instance_id=? AND c.result_json IS NOT NULL`, base, instance).Scan(&raw)
+	if err != nil {
+		return nil, agent.ErrNotFound
+	}
+	return []byte(raw), nil
 }

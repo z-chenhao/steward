@@ -65,7 +65,16 @@ func requestFeedback(t *testing.T, s *Store, a agent.Actor, p *loopProvider, ref
 }
 
 func TestTaskFeedbackMainContinuationAndConcurrentRetries(t *testing.T) {
+	testFeedbackMainContinuationAndConcurrentRetries(t, false)
+}
+func TestFeedbackPluginMainContinuationAndConcurrentRetries(t *testing.T) {
+	testFeedbackMainContinuationAndConcurrentRetries(t, true)
+}
+func testFeedbackMainContinuationAndConcurrentRetries(t *testing.T, managed bool) {
 	s, r, a, p, ref := feedbackFixture(t)
+	if managed {
+		installFeedbackPlugin(t, s, r)
+	}
 	f := requestFeedback(t, s, a, p, ref)
 	if f.Status != "pending" || f.Kind != "input" || f.SourceMessageID == "" {
 		t.Fatal(f)
@@ -124,9 +133,18 @@ func TestTaskFeedbackMainContinuationAndConcurrentRetries(t *testing.T) {
 }
 
 func TestTaskFeedbackRejectsStaleAndKeepsApprovalsSeparate(t *testing.T) {
+	testFeedbackRejectsStaleAndKeepsApprovalsSeparate(t, false)
+}
+func TestFeedbackPluginRejectsStaleAndKeepsApprovalsSeparate(t *testing.T) {
+	testFeedbackRejectsStaleAndKeepsApprovalsSeparate(t, true)
+}
+func testFeedbackRejectsStaleAndKeepsApprovalsSeparate(t *testing.T, managed bool) {
 	for _, mode := range []string{"superseded", "pause", "cancel", "epoch", "forget", "expired", "wrong_task"} {
 		t.Run(mode, func(t *testing.T) {
 			s, r, a, p, ref := feedbackFixture(t)
+			if managed {
+				installFeedbackPlugin(t, s, r)
+			}
 			f := requestFeedback(t, s, a, p, ref)
 			switch mode {
 			case "superseded":
@@ -170,7 +188,16 @@ func TestTaskFeedbackRejectsStaleAndKeepsApprovalsSeparate(t *testing.T) {
 }
 
 func TestTaskFeedbackResponseRollbackAndReopen(t *testing.T) {
+	testFeedbackResponseRollbackAndReopen(t, false)
+}
+func TestFeedbackPluginResponseRollbackAndReopen(t *testing.T) {
+	testFeedbackResponseRollbackAndReopen(t, true)
+}
+func testFeedbackResponseRollbackAndReopen(t *testing.T, managed bool) {
 	s, r, a, p, ref := feedbackFixture(t)
+	if managed {
+		installFeedbackPlugin(t, s, r)
+	}
 	f := requestFeedback(t, s, a, p, ref)
 	if _, err := s.db.Exec(`CREATE TRIGGER reject_feedback_response BEFORE UPDATE ON task_feedback WHEN NEW.status='answered' BEGIN SELECT RAISE(ABORT,'injected'); END`); err != nil {
 		t.Fatal(err)
@@ -200,9 +227,18 @@ func TestTaskFeedbackResponseRollbackAndReopen(t *testing.T) {
 }
 
 func TestTaskFeedbackLateMainCannotUndoStop(t *testing.T) {
+	testFeedbackLateMainCannotUndoStop(t, false)
+}
+func TestFeedbackPluginLateMainCannotUndoStop(t *testing.T) {
+	testFeedbackLateMainCannotUndoStop(t, true)
+}
+func testFeedbackLateMainCannotUndoStop(t *testing.T, managed bool) {
 	for _, mode := range []string{"pause", "cancel", "forget"} {
 		t.Run(mode, func(t *testing.T) {
 			s, r, a, p, ref := feedbackFixture(t)
+			if managed {
+				installFeedbackPlugin(t, s, r)
+			}
 			f := requestFeedback(t, s, a, p, ref)
 			if _, err := r.RespondTaskFeedback(context.Background(), f.Ref, "Continue with the report"); err != nil {
 				t.Fatal(err)
@@ -249,9 +285,18 @@ func TestTaskFeedbackLateMainCannotUndoStop(t *testing.T) {
 }
 
 func TestTaskFeedbackCurrentSourceCannotSwitchTargetOrCause(t *testing.T) {
+	testFeedbackCurrentSourceCannotSwitchTargetOrCause(t, false)
+}
+func TestFeedbackPluginCurrentSourceCannotSwitchTargetOrCause(t *testing.T) {
+	testFeedbackCurrentSourceCannotSwitchTargetOrCause(t, true)
+}
+func testFeedbackCurrentSourceCannotSwitchTargetOrCause(t *testing.T, managed bool) {
 	for _, mode := range []string{"task", "cause", "stopped"} {
 		t.Run(mode, func(t *testing.T) {
 			s, r, a, p, ref := feedbackFixture(t)
+			if managed {
+				installFeedbackPlugin(t, s, r)
+			}
 			f := requestFeedback(t, s, a, p, ref)
 			if _, err := r.RespondTaskFeedback(context.Background(), f.Ref, "The answer"); err != nil {
 				t.Fatal(err)
@@ -289,7 +334,16 @@ func TestTaskFeedbackCurrentSourceCannotSwitchTargetOrCause(t *testing.T) {
 }
 
 func TestTaskFeedbackReviewRetainsExactArtifactRevision(t *testing.T) {
+	testFeedbackReviewRetainsExactArtifactRevision(t, false)
+}
+func TestFeedbackPluginReviewRetainsExactArtifactRevision(t *testing.T) {
+	testFeedbackReviewRetainsExactArtifactRevision(t, true)
+}
+func testFeedbackReviewRetainsExactArtifactRevision(t *testing.T, managed bool) {
 	s, r, a, p, ref := feedbackFixture(t)
+	if managed {
+		installFeedbackPlugin(t, s, r)
+	}
 	scope := artifact.Scope{UserID: artifact.LocalUser, AgentID: idAgent(t, s), Owner: true}
 	artifactRef, err := s.Artifacts().Put(context.Background(), scope, artifact.Input{Name: "report.txt", MediaType: "text/plain"}, strings.NewReader("Revision A"))
 	if err != nil {
@@ -370,7 +424,16 @@ func TestTaskFeedbackPendingPaginationDoesNotHideOlderQuestions(t *testing.T) {
 }
 
 func TestTaskFeedbackEscapedAnswerRetainsValidContentBounds(t *testing.T) {
+	testFeedbackEscapedAnswerRetainsValidContentBounds(t, false)
+}
+func TestFeedbackPluginEscapedAnswerRetainsValidContentBounds(t *testing.T) {
+	testFeedbackEscapedAnswerRetainsValidContentBounds(t, true)
+}
+func testFeedbackEscapedAnswerRetainsValidContentBounds(t *testing.T, managed bool) {
 	s, r, a, p, ref := feedbackFixture(t)
+	if managed {
+		installFeedbackPlugin(t, s, r)
+	}
 	f := requestFeedback(t, s, a, p, ref)
 	answer := strings.Repeat("\x01", 16<<10)
 	receipt, err := r.RespondTaskFeedback(context.Background(), f.Ref, answer)
@@ -433,6 +496,9 @@ func TestTaskFeedbackListReusesArtifactAccessAndProtectedExpiry(t *testing.T) {
 				refs, _ := encoded([]string{fixtureRef})
 				newRef := "feedback:" + newID()
 				if _, err := s.db.Exec(`INSERT INTO task_feedback(feedback_ref,task_id,task_epoch,privacy_epoch,kind,prompt,source_message_id,artifact_refs,status,created_at,expires_at) SELECT ?,task_id,task_epoch,privacy_epoch,kind,prompt,source_message_id,?,'pending',created_at,expires_at FROM task_feedback WHERE feedback_ref=?`, newRef, refs, f.Ref); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := s.db.Exec(`INSERT INTO task_feedback_policy_binding SELECT ?,graph_revision,response_guidance FROM task_feedback_policy_binding WHERE feedback_ref=?`, newRef, f.Ref); err != nil {
 					t.Fatal(err)
 				}
 				f.Ref = newRef

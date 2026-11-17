@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"mime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -16,6 +15,7 @@ import (
 	artifactsqlite "github.com/z-chenhao/assistant/internal/artifact/sqlite"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/memory"
+	"github.com/z-chenhao/assistant/internal/plugin/artifactworkbench/contract"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
@@ -74,7 +74,11 @@ func (t *tools) executeArtifact(ctx context.Context, tx *sql.Tx, name, args stri
 		if v.Refs == nil {
 			return tool.Failure("INVALID_ARGUMENT"), nil
 		}
-		return tool.Result{Text: "Final artifacts selected.", PublishRefs: v.Refs}, nil
+		recipe, err := t.runs.selectedArtifactRecipeTx(ctx, tx, t.claim.RunID())
+		if err != nil {
+			return artifactFailure(err), nil
+		}
+		return tool.Result{Text: recipe.PublishText, PublishRefs: v.Refs}, nil
 	case "describe":
 		d, e := store.DescribeTx(ctx, tx, a, v.Ref, true)
 		if e != nil {
@@ -83,7 +87,7 @@ func (t *tools) executeArtifact(ctx context.Context, tx *sql.Tx, name, args stri
 		raw, e := encoded(d)
 		return tool.Result{Text: raw}, e
 	case "search":
-		list, e := store.SearchTx(ctx, tx, a, v.Query, v.Limit)
+		list, e := store.SearchLegacyTx(ctx, tx, a, v.Query, v.Limit)
 		if e != nil {
 			return artifactFailure(e), nil
 		}
@@ -225,8 +229,9 @@ func (r *Runs) storeOutput(ctx, outputCtx context.Context, tx *sql.Tx, runID, id
 		}
 		if result.Output != nil || len(result.Text) > p.OutputBytes {
 			output := result.Output
-			if output == nil {
-				output = &tool.BinaryOutput{Name: "tool-output.txt", MediaType: "text/plain", Reader: strings.NewReader(result.Text)}
+			recipe, err := r.selectedArtifactRecipeTx(ctx, tx, runID)
+			if err != nil {
+				return err
 			}
 			if prepared.err != nil {
 				return prepared.err
@@ -238,8 +243,8 @@ func (r *Runs) storeOutput(ctx, outputCtx context.Context, tx *sql.Tx, runID, id
 			if e != nil {
 				return e
 			}
-			result.Text = "Saved artifact."
-			if output.ResultJSON != nil {
+			result.Text = recipe.StoredText
+			if output != nil && output.ResultJSON != nil {
 				result.Text = output.ResultJSON(ref)
 				if len(result.Text) > p.OutputBytes || !json.Valid([]byte(result.Text)) {
 					return artifact.ErrLimit
@@ -276,7 +281,7 @@ func (r *Runs) storeOutput(ctx, outputCtx context.Context, tx *sql.Tx, runID, id
 			return tool.Failure("TIMEOUT"), nil
 		case errors.Is(err, context.Canceled):
 			return tool.Failure("CANCELLED"), nil
-		case errors.Is(err, artifact.ErrInvalid), errors.Is(err, artifact.ErrNotFound), errors.Is(err, artifact.ErrIntegrity), errors.Is(err, artifact.ErrLimit):
+		case errors.Is(err, artifact.ErrInvalid), errors.Is(err, artifact.ErrNotFound), errors.Is(err, artifact.ErrIntegrity), errors.Is(err, artifact.ErrLimit), errors.Is(err, artifact.ErrUnavailable):
 			return artifactFailure(err), nil
 		default:
 			return tool.Result{}, err
@@ -333,6 +338,7 @@ type preparedOutput struct {
 	attachments []*artifactsqlite.Staged
 	staged      *artifactsqlite.Staged
 	publication *artifactsqlite.Publication
+	recipe      contract.RecipePlan
 	err         error
 }
 
@@ -346,6 +352,26 @@ func (p preparedOutput) Close() {
 }
 func (r *Runs) stageOutput(ctx context.Context, id string, result tool.Result) preparedOutput {
 	var prepared preparedOutput
+	if result.Error != nil {
+		return prepared
+	}
+	var raw, name string
+	if err := r.host.db.QueryRowContext(ctx, `SELECT policy_json,tool_name FROM tool_invocation WHERE invocation_id=?`, id).Scan(&raw, &name); err != nil {
+		prepared.err = err
+		return prepared
+	}
+	var policy tool.Policy
+	if json.Unmarshal([]byte(raw), &policy) != nil {
+		prepared.err = artifact.ErrStorage
+		return prepared
+	}
+	text, limit, valid := artifactOutputText(name, policy, result)
+	if result.Output != nil || len(result.Attachments) > 0 || result.PublishRefs != nil || valid && len(text) > limit {
+		prepared.recipe, prepared.err = r.outputArtifactRecipe(ctx, id)
+		if prepared.err != nil {
+			return prepared
+		}
+	}
 	if len(result.Attachments) > 8 {
 		prepared.err = artifact.ErrLimit
 		return prepared
@@ -362,7 +388,7 @@ func (r *Runs) stageOutput(ctx context.Context, id string, result tool.Result) p
 		}
 		prepared.attachments = append(prepared.attachments, staged)
 	}
-	prepared.staged, prepared.err = r.stageBinaryOutput(ctx, id, result)
+	prepared.staged, prepared.err = r.stageBinaryOutput(ctx, name, policy, result, prepared.recipe)
 	if prepared.err != nil || result.PublishRefs == nil {
 		return prepared
 	}
@@ -378,18 +404,7 @@ func (r *Runs) stageOutput(ctx context.Context, id string, result tool.Result) p
 	}
 	return prepared
 }
-func (r *Runs) stageBinaryOutput(ctx context.Context, id string, result tool.Result) (*artifactsqlite.Staged, error) {
-	if result.Error != nil {
-		return nil, nil
-	}
-	var raw, name string
-	if err := r.host.db.QueryRowContext(ctx, `SELECT policy_json,tool_name FROM tool_invocation WHERE invocation_id=?`, id).Scan(&raw, &name); err != nil {
-		return nil, err
-	}
-	var policy tool.Policy
-	if json.Unmarshal([]byte(raw), &policy) != nil {
-		return nil, artifact.ErrStorage
-	}
+func artifactOutputText(name string, policy tool.Policy, result tool.Result) (string, int, bool) {
 	if policy.OutputBytes == 0 {
 		policy.OutputBytes = 16384
 	}
@@ -397,14 +412,22 @@ func (r *Runs) stageBinaryOutput(ctx context.Context, id string, result tool.Res
 	if name == agent.RunToolName {
 		var value agent.AgentResult
 		if json.Unmarshal([]byte(text), &value) != nil {
-			return nil, nil
+			return "", 0, false
 		}
 		text = value.Text
 		policy.OutputBytes = 16384
 	}
+	return text, policy.OutputBytes, true
+}
+
+func (r *Runs) stageBinaryOutput(ctx context.Context, name string, policy tool.Policy, result tool.Result, recipe contract.RecipePlan) (*artifactsqlite.Staged, error) {
+	text, limit, valid := artifactOutputText(name, policy, result)
+	if !valid {
+		return nil, nil
+	}
 	output := result.Output
-	if output == nil && len(text) > policy.OutputBytes {
-		output = &tool.BinaryOutput{Name: "tool-output.txt", MediaType: "text/plain", Reader: strings.NewReader(text)}
+	if output == nil && len(text) > limit {
+		output = &tool.BinaryOutput{Name: recipe.OverflowName, MediaType: recipe.OverflowMedia, Reader: strings.NewReader(text)}
 	}
 	if output == nil {
 		return nil, nil
@@ -413,6 +436,9 @@ func (r *Runs) stageBinaryOutput(ctx context.Context, id string, result tool.Res
 }
 
 func (t *tools) executeArtifactCall(ctx context.Context, inv tool.Invocation) (tool.Result, error) {
+	if result, handled, err := t.searchArtifactPlugin(ctx, inv); handled || err != nil {
+		return result, err
+	}
 	result := tool.Failure("PERMISSION_DENIED")
 	var readArgs string
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
@@ -437,7 +463,7 @@ func (t *tools) executeArtifactCall(ctx context.Context, inv tool.Invocation) (t
 		return err
 	})
 	if err == nil && readArgs != "" {
-		return t.readArtifact(ctx, readArgs)
+		return t.readArtifact(ctx, readArgs, inv)
 	}
 	return result, err
 }
@@ -448,7 +474,7 @@ type artifactReadRequest struct {
 	Limit  int    `json:"limit"`
 }
 
-func (t *tools) readArtifact(ctx context.Context, args string) (tool.Result, error) {
+func (t *tools) readArtifact(ctx context.Context, args string, invocation tool.Invocation) (tool.Result, error) {
 	var v artifactReadRequest
 	if json.Unmarshal([]byte(args), &v) != nil {
 		return tool.Failure("INVALID_ARGUMENT"), nil
@@ -468,18 +494,26 @@ func (t *tools) readArtifact(ctx context.Context, args string) (tool.Result, err
 		return artifactFailure(e), nil
 	}
 	defer f.Close()
-	// Binary media are passed by ref; never base64-encode them into history.
-	media, _, _ := mime.ParseMediaType(d.MediaType)
-	if !strings.HasPrefix(media, "text/") && media != "application/json" && !strings.HasSuffix(media, "+json") {
-		return tool.Result{Text: "Binary content; use the artifact reference.", ArtifactRefs: []string{v.Ref}}, nil
+	plan, managed, e := t.artifactReadPolicy(ctx, invocation, v, d)
+	if e != nil {
+		return artifactPolicyFailure(e)
 	}
-
-	if v.Limit == 0 {
-		v.Limit = 4096
-	}
-	if v.Limit < 1 || v.Limit > 4096 || v.Offset < 0 || v.Offset > d.ByteSize {
+	if plan.ErrorCode == "INVALID_ARGUMENT" {
 		return tool.Failure("INVALID_ARGUMENT"), nil
 	}
+	if plan.Kind == "binary" {
+		result := tool.Result{Text: plan.Notice, ArtifactRefs: []string{v.Ref}}
+		if managed {
+			return t.recheckArtifactRead(ctx, invocation, d, result)
+		}
+		return result, nil
+	}
+	// The producer chooses representation/window, never authorizes extra bytes.
+	// Actual ranges and original UTF-8 evidence remain a Host invariant.
+	if plan.Kind != "text" || plan.ErrorCode != "" || plan.Limit < 1 || plan.Limit > 4096 || (v.Limit > 0 && plan.Limit > v.Limit) || v.Offset < 0 || v.Offset > d.ByteSize {
+		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
+	}
+	v.Limit = plan.Limit
 	if _, e = io.CopyN(io.Discard, f, v.Offset); e != nil {
 		return artifactFailure(e), nil
 	}
@@ -497,7 +531,14 @@ func (t *tools) readArtifact(ctx context.Context, args string) (tool.Result, err
 		Bytes  int    `json:"bytes"`
 		Total  int64  `json:"total_bytes"`
 	}{string(b), v.Offset, len(b), d.ByteSize})
-	return tool.Result{Text: raw}, e
+	if e != nil {
+		return tool.Result{}, e
+	}
+	result := tool.Result{Text: raw}
+	if managed {
+		return t.recheckArtifactRead(ctx, invocation, d, result)
+	}
+	return result, nil
 }
 
 func (r *Runs) openArtifact(ctx context.Context, ref string, authorize func(*sql.Tx) (artifact.Scope, error)) (io.ReadCloser, artifact.Descriptor, error) {

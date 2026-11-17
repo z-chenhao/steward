@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import time
 
-from verify_codemode import CodeHarness
+from verify_codemode import CodeHarness, check_managed_code
 from verify_main import require
 
 
@@ -42,6 +42,7 @@ def run(binary):
                 # wait for exact effect approvals. Remaining 55 are not issued.
                 child = 'Capabilities: ' + json.dumps([{'name': 'mcp__fixture__send', 'arguments': {'target': 'recovery', 'text': 'approved-child'}}])
                 source = '''
+const method = await describeTool("builtin__agent_run");
 const first = await Promise.all(Array.from({length:37}, (_,i)=>agent.run({task:"Capabilities: []"})));
 const active = await Promise.all(Array.from({length:8}, (_,i)=>agent.run({task:CHILD})));
 const rest = await Promise.all(Array.from({length:55}, (_,i)=>agent.run({task:"Capabilities: []"})));
@@ -53,6 +54,8 @@ return {count:first.length+active.length+rest.length};
                 process = h.hold('code_37_completed_8_active', extra_flags=('-test-main-release', str(release)))
                 before = read(state, "SELECT c.call_id,c.invocation_id,a.child_run_id,r.status FROM code_call c JOIN agent_invocation a USING(invocation_id) JOIN run r ON r.run_id=a.child_run_id")
                 require(len(before) == 45 and sum(r['status'] == 'completed' for r in before) == 37, 'not actual 37 completed/8 active')
+                descriptions_before = read(state, "SELECT * FROM code_description_reply ORDER BY execution_id,request_hash")
+                require(len(descriptions_before) == 1, "description was not frozen before suspension")
                 completed = [r['child_run_id'] for r in before if r['status'] == 'completed']
                 generations = read(state, "SELECT generation_id,run_id FROM model_generation WHERE status='completed'")
                 done_generations = [g['generation_id'] for g in generations if g['run_id'] in completed]
@@ -105,6 +108,8 @@ return {count:first.length+active.length+rest.length};
                 require(final['state'] == 'completed' and final['claim_token'] is None, 'terminal lease leaked')
                 require(read(state, 'SELECT descendants FROM run_tree')[0]['descendants'] == 100, 'replay consumed descendant quota')
                 report['checks'].append({'variant':variant, 'signal':'SIGTERM' if variant == 'shutdown' else 'SIGKILL','sidecar_pid':sidecar_pid,'before':before,'after':after,'completed_provider_dispatch_counts':{g:audit[g] for g in done_generations},'execution':final,'suspended_memory_metrics':metrics,'elapsed_seconds':time.monotonic()-start})
+                require(read(state, 'SELECT * FROM code_description_reply ORDER BY execution_id,request_hash') == descriptions_before, 'reconstruction replaced an accepted method reply')
+                report['checks'][-1]['managed_code'] = check_managed_code(h, descriptions=True)
                 # Cancellation reaches a live Root/Child tree through Main's
                 # public Task tool; no test directly writes domain stop intent.
                 cancel_source = 'return await agent.run({task:' + json.dumps(child) + '});'

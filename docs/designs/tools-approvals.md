@@ -126,6 +126,7 @@ queued → running ↔ waiting → succeeded / failed / cancelled / unknown
   - `safe`：读取、查询等操作可在崩溃后安全重放。
   - `query_before_retry`：邮件发送、下单、支付等通过稳定幂等键查询外部结果，确认未执行后才允许复用同一键重试。
   - `never`：无法安全重放或查询的调用不自动重试，恢复为 `unknown`。
+  - 终态 unknown 的后台对账只使用原工具自身的权威 Query，核对其冻结身份、参数、幂等键和原预算；无 Query 或缺少原冻结能力则原样保留 unknown；后注册的同名 Query 不获得旧动作的核实权。其他功能的托管版本或资源变化不参与这一查询裁定，不要求整张 live Registry 与旧 Run 全量一致；对账不重发效果、不重启已结束 Run。
 - `unknown` 表示副作用结果无法确认，不得伪装为普通失败，也不得自动重试；只有 Reconciler 根据外部权威证据才能将其收敛为 `succeeded` 或 `failed`。没有证据时保持 `unknown` 并交给 Main Agent 或用户处理。
 - Parent Run 或承载调用的 ToolInvocation 被取消时，取消意图递归传播到可取消的后代 ToolInvocation 和 Child Run；已经发生或无法确认的外部副作用仍按恢复策略进入确定终态或 `unknown`。
 - Code Mode 内部嵌套调用同样各自拥有 `ToolInvocation`，不能只持久化顶层 Code Mode 调用。
@@ -323,3 +324,5 @@ Artifact kill/restart recovery, configured Memory and channel delivery. See the
 发现和权限边界属于必要机制，固定小型名单是可替换的内部政策。没有公开通用 exposure 配置，MCP 与 Computer 目录继续按需发现；不为未配置的 JavaScript 运行时提供任意原生执行回退。已有冻结 Run 保留原声明。
 
 新生产目录中其余普通工具标为 Code Mode 可发现，原生 Tool search 能返回其描述，但不会把其 schema 加入直接声明；MCP 和 builtin 使用相同的冻结目录检索，内部桥接不进入检索。
+
+Computer 的私有参数准备发生在 Tool Prepare 的原审批事务之前：仅接纳完整领域计划，再由同一不可变 invocation／request hash 关联原审批。控制投影的可选 action_parameters JSON 字符串来自该计划，既不覆盖原 arguments，也不建立第二套决定 API；执行时复查原冻结图和权限，读取已批准选择。机制、隐私与兼容范围见[Computer 设计](computer-use.md#审批前固化动作参数私有实验接入)。

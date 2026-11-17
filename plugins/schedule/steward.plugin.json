@@ -1,0 +1,527 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.schedule",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-015",
+    "F-016"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.schedule-next/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "trigger_type": {
+            "type": "string",
+            "enum": [
+              "at",
+              "cron"
+            ]
+          },
+          "trigger_spec": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "after": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "trigger_type",
+          "trigger_spec",
+          "timezone",
+          "after"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "next",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-local-time/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "clock": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "original_spec": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "date",
+          "clock",
+          "timezone"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "spec": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "spec",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-frequency/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "clock": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "weekday": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "day": {
+            "type": "string",
+            "maxLength": 2
+          }
+        },
+        "required": [
+          "frequency",
+          "clock",
+          "weekday",
+          "day"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "spec": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "spec",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-editor/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "trigger_type": {
+            "type": "string",
+            "enum": [
+              "at",
+              "cron"
+            ]
+          },
+          "trigger_spec": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "trigger_type",
+          "trigger_spec",
+          "timezone"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "",
+              "once",
+              "daily",
+              "weekdays",
+              "weekly",
+              "monthly",
+              "custom"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "clock": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "weekday": {
+            "type": "string",
+            "maxLength": 1
+          },
+          "day": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "frequency",
+          "date",
+          "clock",
+          "weekday",
+          "day",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-display/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "trigger_type": {
+            "type": "string",
+            "enum": [
+              "at",
+              "cron"
+            ]
+          },
+          "trigger_spec": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "trigger_type",
+          "trigger_spec",
+          "timezone"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "frequency_en": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "frequency_zh": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "time_en": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "time_zh": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "frequency_en",
+          "frequency_zh",
+          "time_en",
+          "time_zh",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-instruction-label/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8192
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-guidance/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "observation": {
+            "type": "object",
+            "properties": {
+              "tool_description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "instruction_prefix": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "instruction_suffix": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "tool_description",
+              "instruction_prefix",
+              "instruction_suffix"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-defaults/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "once",
+              "daily",
+              "weekdays",
+              "weekly",
+              "monthly",
+              "custom"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "clock": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 5
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cron": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "weekday": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "day": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "frequency",
+          "date",
+          "clock",
+          "timezone",
+          "cron",
+          "weekday",
+          "day",
+          "enabled"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.schedule-threshold/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "below": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "entered": {
+            "type": "boolean"
+          },
+          "fresh": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "value",
+          "below",
+          "entered",
+          "fresh"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "is_below": {
+            "type": "boolean"
+          },
+          "notify": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_below",
+          "notify"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

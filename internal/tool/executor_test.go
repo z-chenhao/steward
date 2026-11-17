@@ -2,6 +2,7 @@ package tool
 
 import (
 	"context"
+	"strings"
 	"testing"
 )
 
@@ -130,6 +131,17 @@ func TestSchemaRejectsInvalidBoundsTypesAndDuplicates(t *testing.T) {
 		if Validate(schema, args) {
 			t.Fatal("invalid value", args)
 		}
+	}
+}
+
+func TestServiceResultBudgetDoesNotWidenToolArguments(t *testing.T) {
+	schema := `{"type":"string","maxLength":262144}`
+	raw := `"` + strings.Repeat("<", 200000) + `"`
+	if Validate(schema, raw) || !ValidateBounded(schema, raw, 1<<20) || ValidateBounded(schema, raw, len(raw)-1) {
+		t.Fatal("argument and result budgets are not independent")
+	}
+	if ValidateBounded(schema, raw, 0) || ValidateBounded(`{"type":"object"}`, `{"x":1,"x":2}`, 1<<20) {
+		t.Fatal("larger results bypassed strict validation")
 	}
 }
 

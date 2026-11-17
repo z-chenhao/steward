@@ -1,0 +1,135 @@
+[
+  {
+    "instance_id": "capability-settings",
+    "contract": "steward.capability-form/1",
+    "input": {
+      "operation": "prepare",
+      "id": "memory",
+      "text": "mode: automatic\n",
+      "default_key_ref": "env:MEMORY",
+      "action": "",
+      "values": []
+    },
+    "expected": {
+      "form": {
+        "Mode": "automatic",
+        "Available": true,
+        "Enabled": false,
+        "Error": "",
+        "Memory": {
+          "KeyRef": "env:MEMORY"
+        },
+        "Embedding": {
+          "Endpoint": "",
+          "Model": "",
+          "Dimensions": "",
+          "KeyRef": ""
+        },
+        "Skills": {
+          "Root": "",
+          "Scope": ""
+        },
+        "Execution": {
+          "Root": "",
+          "Toolchains": ""
+        },
+        "Computer": {
+          "Root": "",
+          "Endpoint": "",
+          "ProviderVersion": "",
+          "GuestBuild": "",
+          "DriverVersion": "",
+          "DriverSHA256": "",
+          "DriverTeam": "",
+          "DriverBundle": "",
+          "Architecture": "",
+          "User": "",
+          "Port": "",
+          "PasswordRef": "",
+          "HostKey": "",
+          "Node": "",
+          "Script": "",
+          "ManifestVersion": ""
+        }
+      },
+      "text": "mode: automatic\n",
+      "action": "",
+      "draft": false,
+      "error_code": "",
+      "message": ""
+    }
+  },
+  {
+    "instance_id": "capability-settings",
+    "contract": "steward.capability-form/1",
+    "input": {
+      "operation": "submit",
+      "id": "skills",
+      "text": "root: /private/catalog\nscope: agent\nadvanced: {keep: true}\n",
+      "default_key_ref": "",
+      "action": "apply",
+      "values": [
+        {
+          "Name": "mode",
+          "Value": "custom"
+        },
+        {
+          "Name": "root",
+          "Value": "/private/new"
+        },
+        {
+          "Name": "scope",
+          "Value": "workspace"
+        }
+      ]
+    },
+    "expected": {
+      "form": {
+        "Mode": "custom",
+        "Available": true,
+        "Enabled": true,
+        "Error": "",
+        "Memory": {
+          "KeyRef": ""
+        },
+        "Embedding": {
+          "Endpoint": "",
+          "Model": "",
+          "Dimensions": "",
+          "KeyRef": ""
+        },
+        "Skills": {
+          "Root": "/private/new",
+          "Scope": "workspace"
+        },
+        "Execution": {
+          "Root": "",
+          "Toolchains": ""
+        },
+        "Computer": {
+          "Root": "",
+          "Endpoint": "",
+          "ProviderVersion": "",
+          "GuestBuild": "",
+          "DriverVersion": "",
+          "DriverSHA256": "",
+          "DriverTeam": "",
+          "DriverBundle": "",
+          "Architecture": "",
+          "User": "",
+          "Port": "",
+          "PasswordRef": "",
+          "HostKey": "",
+          "Node": "",
+          "Script": "",
+          "ManifestVersion": ""
+        }
+      },
+      "text": "root: /private/new\nscope: workspace\nadvanced: {keep: true}\n",
+      "action": "apply",
+      "draft": false,
+      "error_code": "",
+      "message": ""
+    }
+  }
+]

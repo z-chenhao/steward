@@ -1,0 +1,6 @@
+{
+  "source": "Executed unchanged Server.selectAccountModelAfterLogin, intercepted after original accountModel created its candidate and before activation",
+  "source_sha256": "b040f165c7467caeb39cd746cd30859216ed09adf6da2632045016f9be4cc5fc",
+  "fixture_sha256": "8075e97833f2bf4e65d29b336addd86ffd0ba1b4c2a95e2e31f82efec5ee8f32",
+  "cases": 5
+}

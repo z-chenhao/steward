@@ -331,12 +331,20 @@ func restoreExtensionForm(c *Component, parts []conversation.ContentPart) error 
 	return nil
 }
 func extensionFormHTML(c Component) string {
+	if c.ViewRef != "" && c.FormView == nil {
+		return `<p class="semantic">` + template.HTMLEscapeString(c.Text) + `</p>`
+	}
 	var p FormProps
-	if json.Unmarshal(c.Props, &p) != nil {
+	values := map[string]string{}
+	if c.FormView != nil {
+		p = c.FormView.Props
+		for name, value := range c.FormView.Defaults {
+			values[name] = value
+		}
+	} else if json.Unmarshal(c.Props, &p) != nil {
 		return ""
 	}
 	esc := template.HTMLEscapeString
-	values := map[string]string{}
 	_ = json.Unmarshal([]byte(c.Response), &values)
 	var b strings.Builder
 	fmt.Fprintf(&b, `<form class="native-input-form" method="post" action="/ui/form" data-form-id="%s"><h3>%s</h3><input type="hidden" name="message_id" value="%s"><input type="hidden" name="form_id" value="%s"><fieldset`, esc(c.FormID), esc(p.Title), esc(c.MessageID), esc(c.FormID))

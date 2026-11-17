@@ -47,8 +47,17 @@ func evidenceFact(id, owner string, refs ...memory.SourceRef) memory.Record {
 }
 
 func TestMemoryEvidenceExactScopeSourcesAndPagesWithoutWriter(t *testing.T) {
+	testMemoryEvidencePages(t, false)
+}
+func TestEvidencePluginPrivateMemoryPagesWithoutWriter(t *testing.T) {
+	testMemoryEvidencePages(t, true)
+}
+func testMemoryEvidencePages(t *testing.T, managed bool) {
 	ctx := context.Background()
 	s, r, history, a, _ := loopFixture(t)
+	if managed {
+		installEvidencePlugin(t, s, r)
+	}
 	m, vault := evidenceMemoryVault(t, s)
 	owner := idAgent(t, s)
 	// Keep the input in state.db only. Reading its link must never flush it.

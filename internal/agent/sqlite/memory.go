@@ -48,6 +48,26 @@ func (r *Runs) queueMemory(ctx context.Context, tx *sql.Tx, agentID, operation, 
 	if _, e = tx.ExecContext(ctx, `INSERT INTO memory_mutation(event_id,agent_id,operation,source_type,source_ref,payload,accepted_at) VALUES(?,?,?,?,?,?,?)`, id, agentID, operation, typ, ref, payload, now); e != nil {
 		return "", e
 	}
+	managed := false
+	if operation == "observe" && r.plugins != nil {
+		var err error
+		managed, err = managedService(ctx, tx, "steward.memory-curation-policy/1")
+		if err != nil {
+			return "", err
+		}
+	}
+	var policyRevision sql.NullString
+	if managed {
+		var err error
+		policyRevision, err = activeMemoryPolicy(ctx, tx)
+		if err != nil {
+			return "", err
+		}
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO memory_policy_binding(event_id,managed,graph_revision) VALUES(?,?,?)`, id, managed, policyRevision); err != nil {
+		return "", err
+	}
+
 	return id, runEvent(ctx, tx, id, "memory_mutation.accepted", 1)
 }
 
@@ -188,6 +208,24 @@ func (t *tools) manageMemory(ctx context.Context, inv tool.Invocation) (tool.Res
 
 func (r *Runs) revokeMemory(ctx context.Context, tx *sql.Tx, agentID string) error {
 	now := time.Now().UnixMicro()
+	if _, err := tx.ExecContext(ctx, `UPDATE computer_action_plan SET plan_json=NULL WHERE plan_json IS NOT NULL AND invocation_id IN(SELECT invocation_id FROM tool_invocation WHERE run_id IN(SELECT run_id FROM run WHERE agent_id=?))`, agentID); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE task_label_plan SET title=NULL WHERE title IS NOT NULL AND invocation_id IN(SELECT invocation_id FROM tool_invocation WHERE run_id IN(SELECT run_id FROM run WHERE agent_id=?))`, agentID); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE recall_candidate_snapshot SET payload=NULL WHERE payload IS NOT NULL AND run_id IN(SELECT run_id FROM run WHERE agent_id=?)`, agentID); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE rsi_event SET input_json=NULL WHERE run_id IN(SELECT run_id FROM run WHERE agent_id=?)`, agentID); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE rsi_call SET result_json=NULL WHERE run_id IN(SELECT run_id FROM run WHERE agent_id=?)`, agentID); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `DELETE FROM rsi_state WHERE substr(namespace,1,instr(namespace,':')-1) IN(SELECT run_id FROM run WHERE agent_id=?)`, agentID); err != nil {
+		return err
+	}
 	if _, e := tx.ExecContext(ctx, `INSERT INTO memory_privacy(agent_id,epoch,history_floor,updated_at) VALUES(?,1,(SELECT coalesce(max(sequence),0) FROM conversation_intent),?) ON CONFLICT(agent_id) DO UPDATE SET epoch=epoch+1,history_floor=excluded.history_floor,updated_at=excluded.updated_at`, agentID, now); e != nil {
 		return e
 	}

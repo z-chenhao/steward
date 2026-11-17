@@ -112,10 +112,10 @@ func TestStopIntentSurvivesFailedUnloadRestartAndInspection(t *testing.T) {
 	ctx := context.Background()
 	must(t, m.Install(ctx, ""))
 	must(t, m.Start(ctx))
-	session, _, err := m.Begin()
+	session, _, err := beginOriginalRecipe(t, m)
 	must(t, err)
 	must(t, session.Heartbeat("ready"))
-	if _, _, err := m.Begin(); !errors.Is(err, ErrBusy) {
+	if _, _, err := beginOriginalRecipe(t, m); !errors.Is(err, ErrBusy) {
 		t.Fatal("second runtime admitted", err)
 	}
 	if err := m.Install(ctx, ""); err == nil {
@@ -143,7 +143,7 @@ func TestStopIntentSurvivesFailedUnloadRestartAndInspection(t *testing.T) {
 	if len(p.calls) != before {
 		t.Fatal("stopped inspector touched launchctl")
 	}
-	if _, _, err := m.Begin(); !errors.Is(err, ErrStopped) {
+	if _, _, err := beginOriginalRecipe(t, m); !errors.Is(err, ErrStopped) {
 		t.Fatal("login restored stopped intent", err)
 	}
 	// A new manager/process sees exactly the same stopped authority.
@@ -155,7 +155,7 @@ func TestStopIntentSurvivesFailedUnloadRestartAndInspection(t *testing.T) {
 		t.Fatal(v)
 	}
 	must(t, m.Start(ctx))
-	session, _, err = m.Begin()
+	session, _, err = beginOriginalRecipe(t, m)
 	must(t, err)
 	must(t, session.Close())
 }
@@ -167,7 +167,7 @@ func TestInspectorOnlyRestartsDeadProcessesAndLimitsCrashLoops(t *testing.T) {
 	m.now = func() time.Time { return now }
 	must(t, m.Install(ctx, ""))
 	must(t, m.Start(ctx))
-	session, _, err := m.Begin()
+	session, _, err := beginOriginalRecipe(t, m)
 	must(t, err)
 	for _, code := range []string{"setup_required", "credential_or_provider_unavailable", "dependency_unavailable", "health_unavailable"} {
 		must(t, session.Heartbeat(code))
@@ -220,7 +220,7 @@ func TestInspectorOnlyRestartsDeadProcessesAndLimitsCrashLoops(t *testing.T) {
 	}
 	// Explicit start resets the crash budget even if enabled remains true.
 	must(t, m.Start(ctx))
-	session, _, err = m.Begin()
+	session, _, err = beginOriginalRecipe(t, m)
 	must(t, err)
 	must(t, session.Heartbeat("ready"))
 	v, err = m.Inspect(ctx)
@@ -236,7 +236,7 @@ func TestFatalSetupRequiresExplicitRepairAndUpgradePreservesStop(t *testing.T) {
 	ctx := context.Background()
 	must(t, m.Install(ctx, "/old/config"))
 	must(t, m.Start(ctx))
-	session, path, err := m.Begin()
+	session, path, err := beginOriginalRecipe(t, m)
 	must(t, err)
 	if path != "/old/config" {
 		t.Fatal(path)
@@ -257,7 +257,7 @@ func TestFatalSetupRequiresExplicitRepairAndUpgradePreservesStop(t *testing.T) {
 		t.Fatal("upgrade enabled execution", v)
 	}
 	must(t, m.Start(ctx))
-	session, path, err = m.Begin()
+	session, path, err = beginOriginalRecipe(t, m)
 	must(t, err)
 	if path != "/new/config" {
 		t.Fatal(path)
@@ -288,7 +288,7 @@ func TestMetadataAndControlLocksFailClosed(t *testing.T) {
 	if err := m.Start(ctx); err == nil {
 		t.Fatal("incompatible metadata started service")
 	}
-	if _, _, err := m.Begin(); err == nil {
+	if _, _, err := beginOriginalRecipe(t, m); err == nil {
 		t.Fatal("incompatible metadata admitted runtime")
 	}
 	other, _ := fixture(t)
@@ -338,4 +338,19 @@ func TestInactiveInstallCanFinishInterruptedJobPublication(t *testing.T) {
 	if v.Installed || v.Enabled {
 		t.Fatal(v)
 	}
+}
+
+// Mirrors real background startup: freeze the independently captured original
+// recipe once, before any heartbeat/crash. Retained recovery never re-admits it.
+func beginOriginalRecipe(t *testing.T, m *Manager) (*Session, string, error) {
+	t.Helper()
+	session, path, err := m.Begin()
+	if err == nil && session.NeedsRestartRecipe() {
+		receipt := RestartReceipt{GraphRevision: "sha256:" + strings.Repeat("a", 64), Recipe: RestartRecipe{Attempts: 3, RetryDelayMS: 60000}}
+		if err = session.FreezeRestartRecipe(&receipt); err != nil {
+			session.Close()
+			return nil, "", err
+		}
+	}
+	return session, path, err
 }

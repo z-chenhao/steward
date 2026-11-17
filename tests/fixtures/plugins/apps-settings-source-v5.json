@@ -1,0 +1,19 @@
+{
+  "program": "{{define \"app-settings-view-project\"}} <section class=\"service-configuration\"><h2 class=\"settings-section-title\" aria-label=\"{{.ProjectTitle}}\">{{.ProjectTitle}}{{.ProjectHelp}}</h2>\n\n <form method=\"post\" action=\"/apps/service/configure\">{{.Identity}}<div class=\"setting-row\"><label for=\"composio-key-ref\"><span class=\"control-field-label\">{{.KeyRefLabel}}{{.KeyHelp}}</span></label><div class=\"setting-controls\"><input id=\"composio-key-ref\" name=\"key_ref\" value=\"{{.KeyRef}}\" placeholder=\"env:COMPOSIO_API_KEY\" required autocomplete=\"off\" aria-label=\"{{.KeyRefLabel}}\"></div></div><input type=\"hidden\" name=\"editor\" value=\"fields\"><details class=\"service-advanced\" {{if .AdvancedOpen}}open{{end}}><summary>{{.AuthenticationTitle}}</summary>\n {{.Rows}}\n <div class=\"settings-actions\"><button class=\"secondary setting-action\" name=\"action\" value=\"add-override\" formnovalidate>{{.AddLabel}}</button></div></details><div class=\"settings-actions\"><button type=\"submit\" class=\"secondary setting-action\">{{.SaveLabel}}</button></div></form>\n </section>\n{{end}}\n{{define \"app-settings-view-row\"}}<fieldset><legend class=\"sr-only\">{{.AuthenticationTitle}}</legend><label>{{.AppLabel}}<input name=\"app_slug\" value=\"{{.App}}\" maxlength=\"128\" spellcheck=\"false\" autocomplete=\"off\" placeholder=\"gmail\"></label><label>{{.ConfigLabel}}<input name=\"auth_config\" value=\"{{.Config}}\" maxlength=\"128\" spellcheck=\"false\" autocomplete=\"off\"></label><div class=\"settings-actions\"><button class=\"secondary setting-action\" name=\"action\" value=\"remove-override-{{.Index}}\" formnovalidate>{{.RemoveLabel}}</button></div></fieldset>{{end}}\n",
+  "en": {
+    "key_ref_label": "API key reference",
+    "app_label": "App identifier",
+    "config_label": "Configuration ID",
+    "remove_label": "Remove override",
+    "add_label": "Add override",
+    "save_label": "Verify and save"
+  },
+  "zh-CN": {
+    "key_ref_label": "API key 引用",
+    "app_label": "应用标识",
+    "config_label": "授权配置 ID",
+    "remove_label": "移除自定义配置",
+    "add_label": "添加自定义配置",
+    "save_label": "验证并保存"
+  }
+}

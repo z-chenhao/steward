@@ -19,19 +19,37 @@ type ToolDescription struct {
 func Describe(s tool.Spec) ToolDescription {
 	var input any
 	_ = json.Unmarshal([]byte(s.InputSchema), &input)
+	return DescribeInputType(s, typeScript(input), "")
+}
+
+// DescribeInputType keeps identity, original schema and result shape Host-owned.
+// Only argument-type documentation and an appended method hint are replaceable.
+func DescribeInputType(s tool.Spec, inputType, guidance string) ToolDescription {
 	name, _ := json.Marshal(s.Name)
 	output := "unknown"
 	if s.Name == "builtin__agent_run" {
 		output = "{ readonly text: string; readonly artifactRefs: readonly string[] }"
 	}
-	return ToolDescription{Name: s.Name, Description: s.Description, InputSchema: s.InputSchema, Declaration: "tools[" + string(name) + "](args: " + typeScript(input) + "): Promise<" + output + ">", Instructions: s.Description}
+	instructions := s.Description
+	if guidance != "" {
+		instructions += "\n" + guidance
+	}
+	return ToolDescription{Name: s.Name, Description: s.Description, InputSchema: s.InputSchema, Declaration: "tools[" + string(name) + "](args: " + inputType + "): Promise<" + output + ">", Instructions: instructions}
 }
+
 func NamespaceMatches(toolName, namespace string) bool {
 	if name, ok := strings.CutPrefix(toolName, "builtin__"); ok {
 		namespace = strings.TrimPrefix(namespace, "builtin__")
 		return namespace != "" && !strings.Contains(namespace, "__") && !strings.Contains(name, "__") && strings.HasPrefix(name, namespace+"_")
 	}
 	parts := strings.Split(toolName, "__")
+	// Connected Apps retains its original per-account business naming rather
+	// than a stdio MCP server/tool name. Discovery still uses only frozen role
+	// specs, and an account namespace must never capture another binding.
+	if len(parts) == 5 && parts[0] == "mcp" && parts[1] == "apps" && parts[2] == "b" && parts[3] != "" && (parts[4] == "search_tools" || parts[4] == "execute") {
+		name := "apps__b__" + parts[3]
+		return namespace == name || namespace == "mcp__"+name
+	}
 	return len(parts) == 3 && parts[0] == "mcp" && parts[1] != "" && parts[2] != "" && (namespace == parts[1] || namespace == "mcp__"+parts[1])
 }
 

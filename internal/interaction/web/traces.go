@@ -20,7 +20,11 @@ type TraceReader interface {
 }
 
 type traceView struct {
+	Copy                               []observability.TraceTranslation
+	ViewSource                         string
+	WorkbenchManaged                   bool
 	MetadataOpen                       bool
+	ReaderRevision                     string
 	ShowInternal                       bool
 	HiddenInternal                     int
 	InputComplete                      bool
@@ -42,18 +46,10 @@ type traceView struct {
 	FullContext                        *contextView
 	Compare                            string
 	Tabs                               []string
+	EvidenceTabs                       []string
 	TTFTMS                             *int64
 }
-type traceRow struct {
-	observability.Observation
-	Depth         int
-	ParentOutside bool
-	HasChildren   bool
-	Guides        []bool
-	X, Width      float64
-	Running       bool
-	FirstOutput   *int64
-}
+type traceRow = observability.TraceRow
 
 func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 	if s.Traces == nil {
@@ -62,6 +58,19 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	var err error
+	if selector, ok := s.Traces.(interface {
+		TraceWorkbenchSelection(context.Context, string) (observability.TraceWorkbench, error)
+	}); ok {
+		selection, e := selector.TraceWorkbenchSelection(ctx, v.ReaderRevision)
+		if e != nil {
+			return e
+		}
+		v.ReaderRevision = selection.ReaderRevision
+		v.Query.ReaderRevision = selection.ReaderRevision
+		v.WorkbenchManaged = selection.Managed
+		v.ViewSource = selection.ViewSource
+		v.Copy = selection.Copy
+	}
 	if v.Run == "" && v.Task == "" {
 		v.List, err = s.Traces.Traces(ctx, v.Query)
 		return err
@@ -92,65 +101,90 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 				v.FullContext.Query.Step = rounds.Items[0].Step
 			}
 		}
+		v.FullContext.ReaderRevision = v.ReaderRevision
 		if err = s.loadContext(ctx, v.FullContext, ""); err != nil {
 			return err
+		}
+		if v.ReaderRevision == "" {
+			v.ReaderRevision = v.FullContext.ReaderRevision
 		}
 		if v.FullContext.Frozen != nil {
 			v.Node = "generation:" + v.FullContext.Frozen.Round.ID
 		}
 	}
-	query := observability.ObservationQuery{RunID: v.Run, Selected: v.Node, Cursor: v.After}
-	tree, err := s.Traces.Observations(ctx, query)
+	query := observability.ObservationQuery{RunID: v.Run, Selected: v.Node, Cursor: v.After, ReaderRevision: v.ReaderRevision}
+	var tree observability.ObservationTree
+	var presentation *observability.TracePresentation
+	if projector, ok := s.Traces.(interface {
+		ProjectedObservations(context.Context, observability.ObservationQuery) (observability.ObservationTree, *observability.TracePresentation, error)
+	}); ok {
+		tree, presentation, err = projector.ProjectedObservations(ctx, query)
+	} else {
+		tree, err = s.Traces.Observations(ctx, query)
+	}
 	if err != nil {
 		return err
 	}
+	if v.WorkbenchManaged && (presentation == nil || presentation.Timeline == nil) {
+		return errors.New("managed trace layout unavailable")
+	}
 	v.Tree = &tree
-	var started, firstText int64
-	starts := map[string]int64{}
-	for _, mark := range tree.ProviderTimings {
-		if mark.Phase == "started" {
-			starts[mark.Attempt] = mark.At
-			if started == 0 || mark.At < started {
-				started = mark.At
-			}
-		}
-	}
-	for _, mark := range tree.ProviderTimings {
-		if at, ok := starts[mark.Attempt]; ok && (mark.Phase == "first_text" || mark.Phase == "first_tool_call") && mark.At >= at && (firstText == 0 || mark.At < firstText) {
-			firstText = mark.At
-		}
-	}
-	if started > 0 && firstText >= started {
-		ms := (firstText - started) / 1000
-		v.TTFTMS = &ms
+	var firstOutput *int64
+	if presentation != nil && presentation.Timeline != nil {
+		v.TTFTMS, v.OutputRate, firstOutput = presentation.TTFTMS, presentation.OutputRate, presentation.FirstOutputAt
+	} else {
+		v.TTFTMS, firstOutput = legacyTraceTimingV1(tree, presentation)
+		v.OutputRate = legacyTraceGenerationOutputRateV1(tree)
 	}
 	v.Node = tree.Selected.ID
 	query.Selected = v.Node
-	visible := tree
-	if !v.ShowInternal {
-		visible.Items, v.HiddenInternal = primaryObservations(tree)
+	if presentation != nil {
+		v.EvidenceTabs = presentation.Tabs
+		v.ReaderRevision = presentation.ReaderRevision
 	}
-	v.Rows = traceRows(visible)
-	v.TimelineStart, v.TimelineEnd = traceTimeRange(tree)
+	if presentation != nil && presentation.Timeline != nil {
+		v.TimelineStart, v.TimelineEnd = presentation.Timeline.Start, presentation.Timeline.End
+		v.Rows = nil
+		v.HiddenInternal = 0
+		for _, row := range presentation.Rows {
+			if !v.ShowInternal && !row.Primary {
+				v.HiddenInternal++
+				continue
+			}
+			if !v.ShowInternal {
+				row.HasChildren = row.PrimaryHasChildren
+			}
+			v.Rows = append(v.Rows, row)
+		}
+	} else {
+		v.Rows, v.HiddenInternal, v.TimelineStart, v.TimelineEnd = legacyTracePresentationRowsV1(tree, presentation, v.ShowInternal)
+	}
+
+	query.ReaderRevision = v.ReaderRevision
+	if v.FullContext != nil {
+		v.FullContext.ReaderRevision = v.ReaderRevision
+	}
 	for i := range v.Rows {
-		if v.Rows[i].ID == tree.Selected.ID && firstText > 0 {
-			v.Rows[i].FirstOutput = &firstText
+		if v.Rows[i].ID == tree.Selected.ID && firstOutput != nil {
+			v.Rows[i].FirstOutput = firstOutput
 		}
 	}
-	v.Tabs = observationTabs(tree.Selected)
+	if !v.WorkbenchManaged {
+		v.Tabs = legacyTracePrimaryTabsV1(tree.Selected)
+	}
 	switch v.Tab {
 	case "context", "wire", "diff":
-		if tree.Selected.Type != "generation" && !(v.Tab == "wire" && tree.Selected.Name == "Provider HTTP") {
+		if !traceHasView(v, v.Tab) || (tree.Selected.Type != "generation" && !(v.Tab == "wire" && tree.Selected.Name == "Provider HTTP")) {
 			v.Tab = "overview"
 		}
 	case "overview", "metadata":
 	default:
 		v.Tab = "overview"
 	}
-	v.OutputRate = generationOutputRate(tree)
 	if v.Tab == "context" && tree.Selected.Type == "generation" {
 		if v.FullContext == nil {
 			v.FullContext = &contextView{Query: observability.ContextQuery{RunID: tree.Selected.RunID, Step: *tree.Selected.Step, Section: "messages"}, RoundAfter: -1}
+			v.FullContext.ReaderRevision = v.ReaderRevision
 			return s.loadContext(ctx, v.FullContext, "")
 		}
 		return nil
@@ -189,12 +223,39 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 	if v.Tab == "metadata" {
 		return nil
 	}
+	if tree.Selected.Type == "tool" {
+		v.Input, err = read("input")
+		if err != nil {
+			return err
+		}
+		if projector, ok := s.Traces.(interface {
+			ProjectedToolOutput(context.Context, observability.BodyQuery) (observability.Body, *observability.ToolPresentation, bool, error)
+		}); ok {
+			offset := 0
+			if v.Field == "output" {
+				offset = v.Offset
+			}
+			var managed bool
+			v.Output, v.ToolOutput, managed, err = projector.ProjectedToolOutput(ctx, observability.BodyQuery{ObservationQuery: query, Field: "output", Offset: offset})
+			if err != nil || managed {
+				return err
+			}
+		}
+		if v.WorkbenchManaged {
+			return observability.ErrInvalid
+		}
+		v.Output, err = read("output")
+		if err == nil {
+			v.ToolOutput = legacyTraceToolOutputV1(tree.Selected.Name, v.Output, v.Offset)
+		}
+		return err
+	}
 	if tree.Selected.Type == "generation" {
 		if v.Tab == "diff" {
 			if s.Contexts == nil {
 				return errors.New("context unavailable")
 			}
-			diff, e := s.Contexts.ContextDiff(ctx, observability.DiffQuery{RunID: tree.Selected.RunID, Step: *tree.Selected.Step, Section: v.Compare, After: v.DiffAfter})
+			diff, e := s.Contexts.ContextDiff(ctx, observability.DiffQuery{RunID: tree.Selected.RunID, Step: *tree.Selected.Step, Section: v.Compare, After: v.DiffAfter, ReaderRevision: v.ReaderRevision})
 			v.Diff = &diff
 			return e
 		}
@@ -226,9 +287,6 @@ func (s *Server) loadTrace(ctx context.Context, v *traceView) error {
 		return err
 	}
 	v.Output, err = read("output")
-	if err == nil && tree.Selected.Type == "tool" {
-		v.ToolOutput = previewToolOutput(tree.Selected.Name, v.Output, v.Offset)
-	}
 	return err
 }
 
@@ -243,7 +301,7 @@ func (s *Server) traceAPI(w http.ResponseWriter, r *http.Request, kind string) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
-	q := observability.ObservationQuery{RunID: v.Run, Selected: v.Node, Cursor: v.After}
+	q := observability.ObservationQuery{RunID: v.Run, Selected: v.Node, Cursor: v.After, ReaderRevision: v.ReaderRevision}
 	if kind != "traces" {
 		err = q.Validate()
 	}
@@ -268,13 +326,4 @@ func (s *Server) traceAPI(w http.ResponseWriter, r *http.Request, kind string) {
 		return
 	}
 	jsonResult(w, result)
-}
-
-// Trace identity is the task title for workers and the incoming message for Main.
-// The full input remains available in the detail; this is a read-only label.
-func traceLabel(trace observability.Trace) string {
-	if trace.Role == "main" && strings.TrimSpace(trace.Input) != "" {
-		return trace.Input
-	}
-	return trace.Title
 }

@@ -45,7 +45,7 @@ func TestCodeModeOnlyMCPNeverBecomesAModelTool(t *testing.T) {
 	if len(MainTools([]tool.Spec{spec})) != 1 || len(WorkerTools([]tool.Spec{spec})) != 1 {
 		t.Fatal("frozen routing or Worker authority lost")
 	}
-	result := tool.SearchTools([]tool.Spec{spec}, nil, "lookup", 1)
+	result := tool.SearchToolsLegacyV1([]tool.Spec{spec}, nil, "lookup", 1)
 	if len(result.Tools) != 1 || len(result.Loaded) != 0 {
 		t.Fatal("metadata search activated a native MCP declaration", result)
 	}

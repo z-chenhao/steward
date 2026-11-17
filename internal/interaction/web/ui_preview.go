@@ -9,6 +9,12 @@ import (
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
 )
 
+// Existing streamed prefixes are bounded at 128 KiB. Accepted Table views
+// additionally retain escaped DOM, original-text transport and bounded Worker
+// bytes; their private representation can exceed the former 512 KiB envelope.
+// Count all private bytes, retaining a fixed cap and unchanged tool admission.
+const uiPreviewMaxBytes = 2 << 20
+
 type uiPreviewItem struct {
 	Key string `json:"key"`
 	ui.Preview
@@ -25,6 +31,7 @@ type uiPreview struct {
 	changed chan struct{}
 	version uint64
 	session string
+	runID   string
 	frame   uiPreviewFrame
 }
 
@@ -37,9 +44,10 @@ func (s *Server) observeUIPreview(e agent.Event) {
 	defer p.mu.Unlock()
 	if e.Kind == "ui_preview_start" {
 		p.session = e.PreviewID
+		p.runID = e.RunID
 		p.frame = uiPreviewFrame{Key: replyKey(e.PreviewID), State: "draft"}
 	} else {
-		if p.session != e.PreviewID || p.frame.State != "draft" {
+		if p.session != e.PreviewID || p.runID != e.RunID || p.frame.State != "draft" {
 			return
 		}
 		switch e.Kind {
@@ -79,8 +87,24 @@ func (s *Server) observeUIPreview(e agent.Event) {
 			if ordered {
 				sort.SliceStable(items, func(i, j int) bool { return items[i].Order < items[j].Order })
 			}
-			raw, _ := json.Marshal(items)
-			if len(raw) > 512<<10 {
+			views := make([]map[int]ui.PlanView, len(items))
+			cards := make([]map[int]ui.CardsView, len(items))
+			tables := make([]map[int]ui.TableView, len(items))
+			charts := make([]map[int]ui.ChartView, len(items))
+			for i := range items {
+				views[i] = items[i].PlanViews
+				cards[i] = items[i].CardsViews
+				tables[i] = items[i].TableViews
+				charts[i] = items[i].ChartViews
+			}
+			raw, _ := json.Marshal(struct {
+				Items  []uiPreviewItem
+				Views  []map[int]ui.PlanView
+				Cards  []map[int]ui.CardsView
+				Tables []map[int]ui.TableView
+				Charts []map[int]ui.ChartView
+			}{items, views, cards, tables, charts})
+			if len(raw) > uiPreviewMaxBytes {
 				return
 			}
 			p.frame.Items = items

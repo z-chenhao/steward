@@ -1,0 +1,42 @@
+{
+  "id": "coding-system-owner",
+  "allowed_contracts": [
+    "steward.coding-import-limits/1",
+    "steward.coding-report-recipe/1"
+  ],
+  "cases": [
+    {
+      "instance_id": "coding-workspace",
+      "contract": "steward.coding-import-limits/1",
+      "input": {
+        "ceilings": {
+          "entries": 4096,
+          "file_bytes": 8388608,
+          "tree_bytes": 67108864
+        }
+      },
+      "expected": {
+        "entries": 4096,
+        "file_bytes": 8388608,
+        "tree_bytes": 67108864
+      }
+    },
+    {
+      "instance_id": "coding-workspace",
+      "contract": "steward.coding-report-recipe/1",
+      "input": {
+        "ceilings": {
+          "commands": 256,
+          "command_bytes": 4194304,
+          "patch_bytes": 8388608
+        }
+      },
+      "expected": {
+        "commands": 256,
+        "command_bytes": 4194304,
+        "patch_bytes": 8388608,
+        "order": "oldest"
+      }
+    }
+  ]
+}

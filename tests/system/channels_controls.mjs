@@ -69,5 +69,12 @@ export async function assertDataList(page){
   if(Math.abs(before.x-after.x)>1||Math.abs(before.y-after.y)>1)problems.push('Filters moved while toggling');
   await toggle.click();
  }
- if(problems.length)throw Error('Data list layout: '+JSON.stringify({viewport:page.viewportSize(),problems}));
+ if(problems.length){
+  const geometry=await page.evaluate(()=>{
+   const search=document.querySelector('.control-list-search'),toggle=document.querySelector('[data-list-filter-toggle]:not([hidden]),[data-task-filter-mount] button');
+   const box=node=>node?{rect:node.getBoundingClientRect().toJSON(),display:getComputedStyle(node).display,alignItems:getComputedStyle(node).alignItems,justifyContent:getComputedStyle(node).justifyContent,flexDirection:getComputedStyle(node).flexDirection}:null;
+   return {search:box(search),filter:box(toggle),toolbar:box(toggle?.closest('.control-list-toolbar')),styles:[...document.querySelectorAll('link[rel=stylesheet]')].map(link=>link.getAttribute('href'))};
+  });
+  throw Error('Data list layout: '+JSON.stringify({viewport:page.viewportSize(),problems,geometry}));
+ }
 }

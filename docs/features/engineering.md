@@ -85,7 +85,7 @@ Use the [testing guide](../test-plans/product.md) for test ownership and command
 
 ### Development
 
-Use Go 1.26.10+, Node 24.21.0, Python 3.10.12+ and a C compiler. On Linux,
+Use Go 1.26.11+, Node 24.21.0, Python 3.10.12+ and a C compiler. On Linux,
 coding isolation requires Bubblewrap and user namespaces. Install dependencies:
 
 ```sh
@@ -178,8 +178,7 @@ that separate gap without requiring unrelated local work to be committed.
 Go package tests currently mix unit and component integration checks; `go test
 ./...` is not called a pure UT suite. The eleven deterministic core system gates
 run in isolated parallel PR CI lanes, with one required aggregate status that
-rejects failed, cancelled or missing work. The five-minute latency target is
-verified against remote workflow timing. Extended system coverage and the full race inventory run separately
+rejects failed, cancelled or missing work. The software/system jobs allow a 60-minute outer budget; individual test deadlines remain unchanged. The five-minute latency target is currently unmet and is measured against remote workflow timing. Extended system coverage and the full race inventory run separately
 on a weekly schedule or manual request. See [CI](../designs/engineering.md#ci-continuous-integration-and-delivery).
 
 `make lint` also runs pinned Staticcheck and actionlint. Compatibility exceptions
@@ -201,3 +200,5 @@ it does not certify real-model quality, real-account login or release acceptance
 Creating a version tag or publishing a release requires an explicit request.
 
 开源治理：项目采用 [Apache-2.0](../../LICENSE)，协作与分支策略见 [GOVERNANCE.md](../../GOVERNANCE.md)。README 提供首次安装和开发路径；GitHub Issue 表单与 CODEOWNERS 提供问题描述和评审入口。Dependabot 定期提出依赖 PR，仍需审核冻结能力兼容性、构建产物和第三方许可。原生安装包保留项目、Go 链接依赖及 Web 授权说明。
+
+Go 全量、提示／冻结上下文与工具发现 race 使用三个独立必需软件分片，分别调用现有 Make 目标；聚合 Ubuntu checks 仍要求全部成功。分离累计时长，不减少检查或复用可变构建目录。

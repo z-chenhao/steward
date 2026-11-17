@@ -32,6 +32,21 @@ func Check() error {
 }
 
 func (l Local) Execute(ctx context.Context, name, args string) tool.Result {
+	if failure := l.prepareWorkspace(); failure.Error != nil {
+		return failure
+	}
+	request, err := Request(l.Config.Root, name, args)
+	if err != nil {
+		return tool.Failure("INVALID_ARGUMENT")
+	}
+	raw, failure := l.runProgram(ctx, Source, request, name == "builtin__read")
+	if failure.Error != nil {
+		return failure
+	}
+	return Response(raw)
+}
+
+func (l Local) prepareWorkspace() tool.Result {
 	if l.Config.Validate() != nil {
 		return tool.Failure("PERMISSION_DENIED")
 	}
@@ -48,13 +63,16 @@ func (l Local) Execute(ctx context.Context, name, args string) tool.Result {
 		return tool.Failure("PERMISSION_DENIED")
 	}
 
-	request, err := Request(root, name, args)
+	return tool.Result{}
+}
+
+// Callers supply a fixed Host program. No plugin can choose executable
+// source, interpreter, workspace, mounts, environment or toolchain roots.
+func (l Local) runProgram(ctx context.Context, source string, request []byte, readOnly bool) ([]byte, tool.Result) {
+	root := l.Config.Root
+	cmd, err := sandbox.PythonCommand(ctx, []string{"-I", "-c", source}, l.Config.ToolchainRoots, root)
 	if err != nil {
-		return tool.Failure("INVALID_ARGUMENT")
-	}
-	cmd, err := sandbox.PythonCommand(ctx, []string{"-I", "-c", Source}, l.Config.ToolchainRoots, root)
-	if err != nil {
-		return tool.Failure("PROVIDER_UNAVAILABLE")
+		return nil, tool.Failure("PROVIDER_UNAVAILABLE")
 	}
 	paths := []string{}
 	for _, p := range l.Config.ToolchainRoots {
@@ -67,16 +85,16 @@ func (l Local) Execute(ctx context.Context, name, args string) tool.Result {
 	cmd.Stdout, cmd.Stderr = output, nil
 	started, err := sandbox.Run(cmd, syscall.SIGTERM)
 	if !started {
-		return tool.Failure("PROVIDER_UNAVAILABLE")
+		return nil, tool.Failure("PROVIDER_UNAVAILABLE")
 	}
 	if err != nil || output.Overflow() {
 		// The transport may have executed before it died; never dispatch again.
-		if name != "builtin__read" {
-			return tool.Failure("UNKNOWN_SIDE_EFFECT")
+		if !readOnly {
+			return nil, tool.Failure("UNKNOWN_SIDE_EFFECT")
 		}
-		return tool.Failure("PROVIDER_UNAVAILABLE")
+		return nil, tool.Failure("PROVIDER_UNAVAILABLE")
 	}
-	return Response(output.Bytes())
+	return output.Bytes(), tool.Result{}
 }
 
 func Request(root, name, arguments string) ([]byte, error) {

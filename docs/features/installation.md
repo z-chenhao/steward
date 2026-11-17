@@ -28,7 +28,7 @@
 
 ### Install
 
-From the repository checkout, install Go 1.26.10+ and Node.js 24.21.0, then run:
+From the repository checkout, install Go 1.26.11+ and Node.js 24.21.0, then run:
 
 ```sh
 ./install.sh
@@ -41,8 +41,10 @@ use system Python 3 and bash, with bubblewrap/user namespaces on Linux or
 Seatbelt on macOS. On macOS, the selected Xcode or Command Line Tools provides
 the interpreter under a supported system Developer directory. Doctor checks
 these dependencies. No Host execution fallback exists.
-On Ubuntu, install `python3 bash bubblewrap` using the system package manager and
-ensure unprivileged user namespaces are available.
+On Ubuntu, install `python3 bash bubblewrap util-linux` using the system package manager and
+ensure unprivileged user namespaces are available. Managed plugins also require
+`/usr/bin/prlimit` from util-linux; the native launcher applies the unchanged
+CPU/file/FD/address-space limits before starting the candidate runtime.
 Image OCR additionally uses local Tesseract and supported language data. The
 tool is always discoverable; missing OCR does not block chat. See
 [OCR installation and limits](artifacts-media.md#图片文字识别f-013-增强).

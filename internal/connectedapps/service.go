@@ -9,14 +9,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/z-chenhao/assistant/internal/connector/composio"
 	"github.com/z-chenhao/assistant/internal/interaction"
 	"github.com/z-chenhao/assistant/internal/llm"
+	accounts "github.com/z-chenhao/assistant/internal/plugin/appsaccounts/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/contract"
 )
 
 var ErrInvalid = errors.New("invalid app connection")
@@ -34,6 +34,8 @@ const DefaultKeyRef = "env:COMPOSIO_API_KEY"
 type authorization struct {
 	Link    composio.Link
 	Created time.Time
+	// Zero denotes the exact pre-session-service cache lifetime.
+	TTL time.Duration
 }
 
 type Connection struct {
@@ -60,8 +62,13 @@ type Store interface {
 	SaveApps(context.Context, State, int64) error
 }
 type Service struct {
-	Store   Store
-	Secrets llm.SecretStore
+	ReadEditorial       EditorialReader
+	ReadAccountPolicies AccountPolicyReader
+	ReadAccountClose    AccountCloseReader
+	ReadSettings        SettingsReader
+	ReadInventory       AccountInventoryReader
+	Store               Store
+	Secrets             llm.SecretStore
 	// Client is a protocol-peer injection. Production only supplies Secrets.
 	Client  composio.Client
 	Changed func(context.Context) error
@@ -108,45 +115,54 @@ func (s *Service) View(ctx context.Context, search, category, cursor string) (Vi
 	if err != nil {
 		return v, err
 	}
-	if v.State.KeyRef == "" {
-		v.Suggested = true
-		v.Catalog.Items = Suggestions(search, category)
-		v.Categories = categories(Suggestions("", ""))
-		return v, nil
-	}
-	v.Catalog, err = s.client(v.State).Catalog(ctx, search, category, cursor)
+	selection, err := s.Directory(ctx, contract.Query{Search: search, Category: category, LiveConfigured: v.State.KeyRef != "", HasCursor: cursor != ""})
 	if err != nil {
-		v.Unavailable = true
+		return v, err
+	}
+	editorial := selection.Catalogue
+	useEditorial := func() {
+		v.Suggested = true
+		bySlug := map[string]composio.Toolkit{}
+		for _, item := range EditorialToolkits(editorial) {
+			bySlug[item.Slug] = item
+		}
+		v.Catalog = composio.Catalog{Items: []composio.Toolkit{}}
+		v.Categories = nil
+		for _, slug := range editorial.Filter.Slugs {
+			v.Catalog.Items = append(v.Catalog.Items, bySlug[slug])
+		}
+		for _, category := range editorial.Filter.Categories {
+			v.Categories = append(v.Categories, composio.Category{ID: category.ID, Name: category.Name})
+		}
+	}
+	if editorial.Route.Source == "editorial" {
+		useEditorial()
 		return v, nil
 	}
-	v.Categories = categories(v.Catalog.Items)
-	if category != "" {
-		found := false
-		for _, c := range v.Categories {
-			if c.ID == category {
-				found = true
-			}
+	if selection.mode == directoryManaged {
+		v.Catalog, err = s.client(v.State).CatalogPage(ctx, search, category, cursor, editorial.Route.PageSize)
+	} else {
+		v.Catalog, err = s.client(v.State).CatalogLegacyV1(ctx, search, category, cursor)
+	}
+	if err != nil {
+		if editorial.Route.OnLiveError == "editorial" {
+			useEditorial()
+		} else {
+			v.Unavailable = true
 		}
-		if !found {
-			v.Categories = append(v.Categories, composio.Category{ID: category, Name: category})
+		return v, nil
+	}
+	if selection.mode == directoryManaged {
+		v.Categories, err = projectCategoryOptions(ctx, selection.categoryProjector(), v.Catalog.Items, category)
+		if err != nil {
+			return View{State: v.State, Search: search, Category: category}, ErrUnavailable
 		}
+	} else {
+		v.Categories = categoryOptionsLegacyV1(v.Catalog.Items, category)
 	}
 	return v, nil
 }
 
-func categories(items []composio.Toolkit) []composio.Category {
-	var result []composio.Category
-	seen := map[string]bool{}
-	for _, item := range items {
-		for _, c := range item.Meta.Categories {
-			if c.ID != "" && !seen[c.ID] {
-				result = append(result, c)
-				seen[c.ID] = true
-			}
-		}
-	}
-	return result
-}
 func (s *Service) save(ctx context.Context, state State) error {
 	return s.Store.SaveApps(ctx, state, state.Revision)
 }
@@ -190,11 +206,18 @@ func (s *Service) ConfigureProject(ctx context.Context, ref string, revision int
 	}
 	candidate := state
 	candidate.KeyRef = ref
-	if _, err = s.client(candidate).Catalog(ctx, "", "", ""); err != nil {
+	if len(configs) > 0 {
+		policies, e := s.accountPolicies(ctx)
+		if e != nil {
+			return ErrUnavailable
+		}
+		ctx = context.WithValue(ctx, accountPoliciesKey{}, policies)
+	}
+	if _, err = s.client(candidate).CatalogLegacyV1(ctx, "", "", ""); err != nil {
 		return ErrUnavailable
 	}
 	for toolkit, id := range configs {
-		if _, err = s.client(candidate).AuthConfig(ctx, toolkit, id); err != nil {
+		if _, err = s.selectAuthConfig(ctx, state, s.client(candidate), toolkit, id, false); err != nil {
 			return ErrUnavailable
 		}
 	}
@@ -216,88 +239,41 @@ func (s *Service) Connect(ctx context.Context, toolkit, alias, authConfig string
 	return s.connect(ctx, toolkit, alias, authConfig)
 }
 func (s *Service) connect(ctx context.Context, toolkit, alias, authConfig string) (composio.Link, error) {
-	if !composio.ValidID(toolkit) || alias != "" && (!composio.ValidID(alias) || len(alias) > 64) || authConfig != "" && !composio.ValidID(authConfig) {
+	if !validConnectionArgs(toolkit, alias, authConfig) {
 		return composio.Link{}, ErrInvalid
 	}
 	state, err := s.State(ctx)
 	if err != nil {
 		return composio.Link{}, err
 	}
+	return s.connectFromState(ctx, state, toolkit, alias, authConfig)
+}
+func validConnectionArgs(toolkit, alias, authConfig string) bool {
+	return composio.ValidID(toolkit) && (alias == "" || composio.ValidID(alias) && len(alias) <= 64) && (authConfig == "" || composio.ValidID(authConfig))
+}
+
+// connectFromState serves ordinary connect and an already accepted reconnect
+// stage, preserving its exact post-close authority snapshot through source I/O.
+func (s *Service) connectFromState(ctx context.Context, state State, toolkit, alias, authConfig string) (composio.Link, error) {
+	if !validConnectionArgs(toolkit, alias, authConfig) {
+		return composio.Link{}, ErrInvalid
+	}
 	if state.KeyRef == "" {
 		return composio.Link{}, ErrUnavailable
 	}
-	if alias == "" {
-		for _, c := range state.Connections {
-			if c.Toolkit == toolkit && c.Status == "active" && !c.Public {
-				return composio.Link{}, ErrAliasRequired
-			}
-		}
-		for i := len(state.Connections) - 1; i >= 0; i-- {
-			c := state.Connections[i]
-			if c.Toolkit == toolkit && c.Status == "pending" {
-				return s.authorization(state, c.ID)
-			}
-		}
-		alias = "personal"
-		for _, c := range state.Connections {
-			if c.Toolkit == toolkit && c.Alias == alias {
-				alias = "personal_" + uuid.NewString()[:8]
-			}
-		}
-	}
-	for _, c := range state.Connections {
-		if c.Toolkit == toolkit && c.Alias == alias && c.Status != "disconnected" {
-			if c.Status == "pending" {
-				return s.authorization(state, c.ID)
-			}
-			return composio.Link{}, ErrConflict
-		}
-	}
-	client := s.client(state)
-	app, err := client.Toolkit(ctx, toolkit)
-	if err != nil || app.Slug != toolkit {
-		return composio.Link{}, ErrUnavailable
-	}
-	if app.NoAuth {
-		state.Connections = append(state.Connections, Connection{ID: uuid.NewString(), Toolkit: toolkit, Name: app.Name, Alias: alias, Status: "active", Public: true})
-		if err = s.save(ctx, state); err != nil {
-			return composio.Link{}, err
-		}
-		return composio.Link{}, s.changed(ctx)
-	}
-	if authConfig == "" {
-		authConfig = state.AuthConfigs[toolkit]
-	}
-	selection, err := client.FindAuthConfig(ctx, toolkit, authConfig)
+	policies, err := s.connectIntentSelection(ctx)
 	if err != nil {
 		return composio.Link{}, ErrUnavailable
 	}
-	// An explicit empty managed-auth list means the provider cannot supply
-	// hosted credentials. An omitted list remains unknown (e.g. scoped peers).
-	authConfig = selection.ID
-	if selection.Readable && authConfig == "" && app.ManagedAuth != nil && len(app.ManagedAuth) == 0 {
-		return composio.Link{}, ErrAuthConfigRequired
-	}
-	link, err := client.Connect(ctx, state.UserID, toolkit, alias, authConfig)
+	ctx = context.WithValue(ctx, accountPoliciesKey{}, policies)
+	intent, err := s.connectionIntent(ctx, state, toolkit, alias)
 	if err != nil {
-		return composio.Link{}, ErrUnavailable
-	}
-	link.ConnectionID = uuid.NewString()
-	link.ExpiresAt = time.Now().Add(AuthorizationTTL)
-	state.Connections = append(state.Connections, Connection{ID: link.ConnectionID, Toolkit: toolkit, Name: app.Name, Alias: alias, AccountID: link.AccountID, Status: "pending"})
-	if err = s.save(ctx, state); err != nil {
 		return composio.Link{}, err
 	}
-	if s.pending == nil {
-		s.pending = map[string]authorization{}
+	if intent.PendingID != nil {
+		return s.authorization(state, *intent.PendingID)
 	}
-	for id, p := range s.pending {
-		if time.Since(p.Created) >= AuthorizationTTL {
-			delete(s.pending, id)
-		}
-	}
-	s.pending[link.ConnectionID] = authorization{Link: link, Created: time.Now()}
-	return link, nil
+	return policies.session.create(ctx, s, state, toolkit, intent.Alias, authConfig)
 }
 
 func (s *Service) authorization(state State, id string) (composio.Link, error) {
@@ -306,7 +282,7 @@ func (s *Service) authorization(state State, id string) (composio.Link, error) {
 		return composio.Link{}, ErrDenied
 	}
 	p, ok := s.pending[id]
-	if !ok || time.Since(p.Created) >= AuthorizationTTL {
+	if !ok || authorizationExpired(p) {
 		return composio.Link{}, ErrLinkExpired
 	}
 	return p.Link, nil
@@ -331,11 +307,15 @@ func (s *Service) Reconnect(ctx context.Context, id string) (composio.Link, erro
 	if c == nil || c.Status == "active" || c.Status == "disconnected" {
 		return composio.Link{}, ErrDenied
 	}
-	toolkit, alias := c.Toolkit, c.Alias
-	if err = s.disconnect(ctx, id); err != nil {
-		return composio.Link{}, err
+	selection, selectErr := s.connectIntentSelection(ctx)
+	if selectErr != nil {
+		return composio.Link{}, ErrUnavailable
 	}
-	return s.connect(ctx, toolkit, alias, "")
+	if !selection.session.available() || !selection.close.available() || !selection.reconnect.available() {
+		return composio.Link{}, ErrUnavailable
+	}
+	ctx = context.WithValue(ctx, accountPoliciesKey{}, selection)
+	return selection.reconnect.apply(ctx, s, state, *c)
 }
 
 func find(state *State, id string) *Connection {
@@ -363,6 +343,10 @@ func (s *Service) Check(ctx context.Context, id string) error {
 	if c == nil || c.Status == "disconnected" {
 		return ErrDenied
 	}
+	selection, selectErr := s.accountPolicies(ctx)
+	if selectErr != nil || !selection.check.available() {
+		return ErrUnavailable
+	}
 	if c.Public {
 		app, e := s.client(state).Toolkit(ctx, c.Toolkit)
 		if e != nil {
@@ -370,6 +354,9 @@ func (s *Service) Check(ctx context.Context, id string) error {
 		}
 		if app.Slug != c.Toolkit || !app.NoAuth {
 			return ErrDenied
+		}
+		if _, err := selection.check.decide(ctx, state.Revision, accounts.AccountCheckRequest{Public: true}); err != nil {
+			return err
 		}
 		return s.changed(ctx)
 	}
@@ -381,16 +368,11 @@ func (s *Service) Check(ctx context.Context, id string) error {
 		return ErrDenied
 	}
 	previous := c.Status
-	switch {
-	case a.Disabled:
-		c.Status = "expired"
-	case a.Status == "ACTIVE":
-		c.Status = "active"
-	case a.Status == "INITIALIZING" || a.Status == "INITIATED":
-		c.Status = "pending"
-	default:
-		c.Status = "expired"
+	status, err := selection.check.decide(ctx, state.Revision, accounts.AccountCheckRequest{Disabled: a.Disabled, Active: a.Status == "ACTIVE", Initializing: a.Status == "INITIALIZING", Initiated: a.Status == "INITIATED"})
+	if err != nil {
+		return err
 	}
+	c.Status = status
 	if previous == c.Status {
 		return s.changed(ctx)
 	}
@@ -419,6 +401,11 @@ func (s *Service) disconnect(ctx context.Context, id string) error {
 	if c.Status == "disconnected" {
 		return nil
 	}
+	policy := AccountClosePolicy{}
+	if !c.Public {
+		policy = s.accountClosePolicy(ctx)
+	}
+	originalHash := BindingHash(state, *c)
 	// Local closure is durable before any unreliable remote operation.
 	c.Status = "disconnected"
 	if err = s.save(ctx, state); err != nil {
@@ -431,13 +418,15 @@ func (s *Service) disconnect(ctx context.Context, id string) error {
 		return err
 	}
 	c = find(&state, id)
+	if c == nil || c.Status != "disconnected" {
+		return ErrConflict
+	}
+	if policy.mode == accountPolicyManaged && BindingHash(state, *c) != originalHash {
+		return ErrConflict
+	}
 	c.RevocationConfirmed = c.Public
 	if !c.Public {
-		client := s.client(state)
-		account, e := client.Account(ctx, c.AccountID)
-		if e == nil && accountIdentity(account, state, *c) {
-			c.RevocationConfirmed = client.Disconnect(ctx, c.AccountID)
-		}
+		c.RevocationConfirmed = policy.cleanup(ctx, state, s.client(state), *c)
 	}
 	if err = s.save(ctx, state); err != nil {
 		return err
@@ -475,18 +464,10 @@ func (s *Service) active(ctx context.Context, id, hash string) (State, Connectio
 	}
 	return state, *c, nil
 }
-func (s *Service) SearchTools(ctx context.Context, id, hash, query, cursor string) (composio.Tools, error) {
-	if len(query) > 200 || len(cursor) > 4096 {
-		return composio.Tools{}, ErrInvalid
-	}
-	state, c, err := s.active(ctx, id, hash)
-	if err != nil {
-		return composio.Tools{}, err
-	}
-	result, err := s.client(state).SearchTools(ctx, c.Toolkit, query, cursor)
-	if err != nil {
-		return composio.Tools{}, ErrUnavailable
-	}
+
+// Tool eligibility preserves the original authorization/version boundary. The
+// candidate can choose presentation/page size, not grant an account operation.
+func filterTools(result composio.Tools, c Connection) composio.Tools {
 	filtered := result.Items[:0]
 	for _, t := range result.Items {
 		if t.Toolkit.Slug == c.Toolkit && (!c.Public || t.NoAuth) && !t.Deprecated && composio.ValidID(t.Slug) && composio.ValidID(t.Version) && t.Version != "latest" && len(t.Input) > 0 {
@@ -494,37 +475,5 @@ func (s *Service) SearchTools(ctx context.Context, id, hash, query, cursor strin
 		}
 	}
 	result.Items = filtered
-	return result, nil
-}
-
-// Execute is called only after Steward's durable acceptance and approval. The
-// explicit account, version and tool descriptor are revalidated at dispatch.
-func (s *Service) Execute(ctx context.Context, id, hash, slug, version, descriptor string, args json.RawMessage) (composio.Execution, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if len(args) > 65536 || !json.Valid(args) || !strings.HasPrefix(strings.TrimSpace(string(args)), "{") {
-		return composio.Execution{}, ErrInvalid
-	}
-	state, c, err := s.active(ctx, id, hash)
-	if err != nil {
-		return composio.Execution{}, err
-	}
-	client := s.client(state)
-	if !c.Public {
-		a, e := client.Account(ctx, c.AccountID)
-		if e != nil {
-			return composio.Execution{}, ErrUnavailable
-		}
-		if !validAccount(a, state, c) || a.Status != "ACTIVE" {
-			return composio.Execution{}, ErrDenied
-		}
-	}
-	t, err := client.Tool(ctx, slug, version)
-	if err != nil {
-		return composio.Execution{}, ErrUnavailable
-	}
-	if t.Slug != slug || t.Version != version || t.Toolkit.Slug != c.Toolkit || (c.Public && !t.NoAuth) || t.Deprecated || ToolHash(t) != descriptor {
-		return composio.Execution{}, ErrDenied
-	}
-	return client.Execute(ctx, state.UserID, c.AccountID, slug, version, args)
+	return result
 }

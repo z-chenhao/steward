@@ -97,7 +97,7 @@ func (r *Runs) readGitHubObservation(ctx context.Context, a evidenceAccess, q ev
 	if observation.State != "" {
 		text = "State: " + observation.State + "\n" + text
 	}
-	return evidence.Window(page, text, q)
+	return r.evidenceWindow(ctx, a, page, text, q)
 }
 
 func (r *Runs) recheckGitHubEvidence(ctx context.Context, tx *sql.Tx, a evidenceAccess, page *evidence.Page) error {

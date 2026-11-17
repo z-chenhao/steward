@@ -12,8 +12,13 @@ import (
 	"github.com/z-chenhao/assistant/internal/task"
 )
 
-func TestRootLoopPublishesStageUpdatesWithoutMainWork(t *testing.T) {
+func TestRootLoopPublishesStageUpdatesWithoutMainWork(t *testing.T) { testRootLoopProgress(t, false) }
+func TestProgressPluginRootLoopProgress(t *testing.T)               { testRootLoopProgress(t, true) }
+func testRootLoopProgress(t *testing.T, managed bool) {
 	s, r, a, p := taskFixture(t)
+	if managed {
+		installProgressPlugin(t, s, r)
+	}
 	step, version := 0, 0
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if !isRoot(req) {
@@ -90,7 +95,14 @@ func executeTaskRunID(t *testing.T, a agent.Actor, r *Runs, id string) error {
 }
 
 func TestProgressCheckpointAtomicRecoveryAndOwnership(t *testing.T) {
+	testProgressAtomicRecovery(t, false)
+}
+func TestProgressPluginProgressAtomicRecovery(t *testing.T) { testProgressAtomicRecovery(t, true) }
+func testProgressAtomicRecovery(t *testing.T, managed bool) {
 	s, r, a, p := taskFixture(t)
+	if managed {
+		installProgressPlugin(t, s, r)
+	}
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if isRoot(req) {
 			if req.Messages[len(req.Messages)-1].Role == "tool" {
@@ -134,6 +146,9 @@ func TestProgressCheckpointAtomicRecoveryAndOwnership(t *testing.T) {
 	if _, err = s.db.Exec(`DROP TRIGGER fail_progress`); err != nil {
 		t.Fatal(err)
 	}
+	if managed && scalar(t, s, `SELECT count(*) FROM rsi_call WHERE run_id=? AND operation_id LIKE 'task-progress:%' AND result_json IS NOT NULL`, id) != 2 {
+		t.Fatal("guidance and accepted stage selection were not saved before the failed Task write")
+	}
 	// A different owner recovers the durable generation after the failed commit.
 	if err = executeTaskRunID(t, a, r, id); err != nil {
 		t.Fatal(err)
@@ -142,6 +157,9 @@ func TestProgressCheckpointAtomicRecoveryAndOwnership(t *testing.T) {
 	if scalar(t, s, `SELECT count(*) FROM model_generation WHERE run_id=?`, id) != 2 || scalar(t, s, `SELECT count(*) FROM tool_invocation WHERE run_id=?`, id) != 1 {
 		t.Fatal("recovery repeated the model turn or tool")
 	}
+	if managed && scalar(t, s, `SELECT count(*) FROM rsi_call WHERE run_id=? AND operation_id LIKE 'task-progress:%' AND result_json IS NOT NULL`, id) != 2 {
+		t.Fatal("checkpoint recovery redispatched an already accepted stage selection")
+	}
 	// The old owner cannot overwrite a new owner's committed projection.
 	if err = r.Progress(ctx, c, "stale"); !errors.Is(err, agent.ErrClaimLost) {
 		t.Fatal("old owner updated progress", err)
@@ -149,6 +167,10 @@ func TestProgressCheckpointAtomicRecoveryAndOwnership(t *testing.T) {
 }
 
 func TestProgressExcludesChildrenLegacyAndInvalidProse(t *testing.T) {
+	testProgressExclusions(t, false)
+}
+func TestProgressPluginProgressExclusions(t *testing.T) { testProgressExclusions(t, true) }
+func testProgressExclusions(t *testing.T, managed bool) {
 	for _, tc := range []struct {
 		name, text, want           string
 		clipped, legacy, oldLayout bool
@@ -165,6 +187,9 @@ func TestProgressExcludesChildrenLegacyAndInvalidProse(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, r, a, p := childFixture(t)
+			if managed {
+				installProgressPlugin(t, s, r)
+			}
 			p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 				last := req.Messages[len(req.Messages)-1]
 				if last.Role == "tool" || isFollowup(req) {

@@ -1,0 +1,11 @@
+{
+  "producer": "original React PlanCard in real Chrome; candidate plan renderer not implemented yet",
+  "original_source": "web/src/components/open-intelligent-ui/plan-card.tsx",
+  "original_sha256": "2e6707ea804251f2e738e1061a2779f7ca245d1b37cfb208905d621fcdbd8dfb",
+  "cases": 4,
+  "capture_tool": "work/plugins-migration/capture-ui47-original-plan.mjs",
+  "original_css_source": "web/src/intelligent-ui.css",
+  "original_css_sha256": "db083450cfb392806976515ac4d1c316954109d583b324071e6448f44081017c",
+  "captured_plan_css_sha256": "6fcad785738cff45f25cbaf96862c91a6ea06506633eaf619b21efbd7d7c21d7",
+  "scope": "only delivered status=complete is a real catalog consumer; original React effect closes details before capture; native click expansion verified"
+}

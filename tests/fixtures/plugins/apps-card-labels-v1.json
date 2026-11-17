@@ -1,0 +1,56 @@
+[
+  {
+    "Slug": "example",
+    "Name": "Example",
+    "ExpectedName": "Example",
+    "ExpectedInitial": "E"
+  },
+  {
+    "Slug": "empty_name",
+    "Name": "",
+    "ExpectedName": "empty_name",
+    "ExpectedInitial": "E"
+  },
+  {
+    "Slug": "",
+    "Name": "",
+    "ExpectedName": "",
+    "ExpectedInitial": ""
+  },
+  {
+    "Slug": "lower",
+    "Name": "lowercase app",
+    "ExpectedName": "lowercase app",
+    "ExpectedInitial": "L"
+  },
+  {
+    "Slug": "unicode",
+    "Name": "汉字",
+    "ExpectedName": "汉字",
+    "ExpectedInitial": "汉"
+  },
+  {
+    "Slug": "emoji",
+    "Name": "🙂 app",
+    "ExpectedName": "🙂 app",
+    "ExpectedInitial": "🙂"
+  },
+  {
+    "Slug": "combining",
+    "Name": "éclair",
+    "ExpectedName": "éclair",
+    "ExpectedInitial": "E"
+  },
+  {
+    "Slug": "sharp",
+    "Name": "ßeta",
+    "ExpectedName": "ßeta",
+    "ExpectedInitial": "ß"
+  },
+  {
+    "Slug": "space",
+    "Name": " app",
+    "ExpectedName": " app",
+    "ExpectedInitial": " "
+  }
+]

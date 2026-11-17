@@ -1,0 +1,305 @@
+[
+  {
+    "facts": {
+      "forms": [
+        {
+          "component": 3,
+          "name": "steward.form",
+          "props": {
+            "title": "Original form",
+            "submitLabel": "Continue",
+            "fields": [
+              {
+                "name": "name",
+                "label": "Name",
+                "type": "text",
+                "required": true
+              },
+              {
+                "name": "notes",
+                "label": "Notes",
+                "type": "textarea"
+              },
+              {
+                "name": "count",
+                "label": "Count",
+                "type": "number",
+                "min": 1,
+                "max": 5
+              },
+              {
+                "name": "date",
+                "label": "Date",
+                "type": "date"
+              },
+              {
+                "name": "email",
+                "label": "Email",
+                "type": "email"
+              },
+              {
+                "name": "mode",
+                "label": "Mode",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "train",
+                    "label": "Train"
+                  },
+                  {
+                    "value": "bus",
+                    "label": "Bus"
+                  }
+                ]
+              },
+              {
+                "name": "extras",
+                "label": "Extras",
+                "type": "multiselect",
+                "options": [
+                  {
+                    "value": "meal",
+                    "label": "Meal"
+                  },
+                  {
+                    "value": "bag",
+                    "label": "Bag"
+                  }
+                ]
+              },
+              {
+                "name": "confirm",
+                "label": "Confirm",
+                "type": "boolean",
+                "required": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "expected": {
+      "views": [
+        {
+          "component": 3,
+          "title": "Original form",
+          "submit_label": "Continue",
+          "fields": [
+            {
+              "name": "name",
+              "label": "Name",
+              "type": "text",
+              "required": true,
+              "default": ""
+            },
+            {
+              "name": "notes",
+              "label": "Notes",
+              "type": "textarea",
+              "default": ""
+            },
+            {
+              "name": "count",
+              "label": "Count",
+              "type": "number",
+              "min": 1,
+              "max": 5,
+              "default": ""
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "default": ""
+            },
+            {
+              "name": "email",
+              "label": "Email",
+              "type": "email",
+              "default": ""
+            },
+            {
+              "name": "mode",
+              "label": "Mode",
+              "type": "select",
+              "options": [
+                {
+                  "value": "train",
+                  "label": "Train"
+                },
+                {
+                  "value": "bus",
+                  "label": "Bus"
+                }
+              ],
+              "default": ""
+            },
+            {
+              "name": "extras",
+              "label": "Extras",
+              "type": "multiselect",
+              "options": [
+                {
+                  "value": "meal",
+                  "label": "Meal"
+                },
+                {
+                  "value": "bag",
+                  "label": "Bag"
+                }
+              ],
+              "default": "[]"
+            },
+            {
+              "name": "confirm",
+              "label": "Confirm",
+              "type": "boolean",
+              "required": true,
+              "default": "false"
+            }
+          ]
+        }
+      ],
+      "error_code": ""
+    }
+  },
+  {
+    "facts": {
+      "forms": [
+        {
+          "component": 0,
+          "name": "steward.form",
+          "props": {
+            "title": "First",
+            "fields": [
+              {
+                "name": "confirm",
+                "label": "Confirm",
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        {
+          "component": 15,
+          "name": "steward.form",
+          "props": {
+            "title": "Last",
+            "fields": [
+              {
+                "name": "extras",
+                "label": "Extras",
+                "type": "multiselect",
+                "options": [
+                  {
+                    "value": "meal",
+                    "label": "Meal"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "expected": {
+      "views": [
+        {
+          "component": 0,
+          "title": "First",
+          "submit_label": "",
+          "fields": [
+            {
+              "name": "confirm",
+              "label": "Confirm",
+              "type": "boolean",
+              "default": "false"
+            }
+          ]
+        },
+        {
+          "component": 15,
+          "title": "Last",
+          "submit_label": "",
+          "fields": [
+            {
+              "name": "extras",
+              "label": "Extras",
+              "type": "multiselect",
+              "options": [
+                {
+                  "value": "meal",
+                  "label": "Meal"
+                }
+              ],
+              "default": "[]"
+            }
+          ]
+        }
+      ],
+      "error_code": ""
+    }
+  },
+  {
+    "facts": {
+      "forms": [
+        {
+          "component": 0,
+          "name": "steward.form",
+          "props": {
+            "title": "First",
+            "fields": [
+              {
+                "name": "confirm",
+                "label": "Confirm",
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        {
+          "component": 0,
+          "name": "steward.form",
+          "props": {
+            "title": "First",
+            "fields": [
+              {
+                "name": "confirm",
+                "label": "Confirm",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "expected": {
+      "views": [],
+      "error_code": "INVALID_ARGUMENT"
+    }
+  },
+  {
+    "facts": {
+      "forms": [
+        {
+          "component": 0,
+          "name": "scheduleTime",
+          "props": {
+            "title": "First",
+            "fields": [
+              {
+                "name": "confirm",
+                "label": "Confirm",
+                "type": "boolean"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "expected": {
+      "views": [],
+      "error_code": "INVALID_ARGUMENT"
+    }
+  }
+]

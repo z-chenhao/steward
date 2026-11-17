@@ -73,7 +73,10 @@ func (r *Runs) recallMessages(ctx context.Context, c agent.RunClaim, run agent.R
 			return nil, e
 		}
 		if contextual && run.Kind == "main" && strings.TrimSpace(q.Query) != "" {
-			q.Query = conversationalRecallQuery(messages, q.Query)
+			q.Query, e = r.conversationalRecall(ctx, c, run, messages, q.Query)
+			if e != nil {
+				return nil, e
+			}
 		}
 		reuse, e := r.evidenceReuse(ctx, run.ID)
 		if e != nil {
@@ -95,7 +98,7 @@ func (r *Runs) recallMessages(ctx context.Context, c agent.RunClaim, run agent.R
 		lookup, cancel := context.WithTimeout(ctx, 30*time.Second)
 		hits := []recall.Hit{}
 		if strings.TrimSpace(query) != "" {
-			hits, e = r.recall.Search(lookup, recall.Scope{UserID: r.host.OwnerID(), AgentID: run.AgentID}, q, budget)
+			hits, e = r.searchRecall(lookup, c, "recall-auto:"+strconv.FormatInt(run.Checkpoint.Step, 10)+":"+digest(recallInputRef(messages)), "", recall.Scope{UserID: r.host.OwnerID(), AgentID: run.AgentID}, q, budget)
 		}
 		cancel()
 		if e != nil {
@@ -374,7 +377,7 @@ func (t *tools) searchMemory(ctx context.Context, inv tool.Invocation) (tool.Res
 		q.ExcerptBytes = 1400
 		budget = min(8<<10, max(2048, int(run.Snapshot.ContextWindow*3/6)))
 	}
-	hits, err := t.runs.recall.Search(ctx, scope, q, budget)
+	hits, err := t.runs.searchRecall(ctx, t.claim, "recall-tool:"+inv.ID, inv.ID, scope, q, budget)
 	if err != nil {
 		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 	}

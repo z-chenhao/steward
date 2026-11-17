@@ -1,0 +1,444 @@
+[
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "e366bb0072e16cdf08e29c99e7a0328c32f969b6fbd9779b7aaa83db5bbb007e",
+      "Bytes": 315
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "3a73b25fc4b5bd6aa07982e14eb76b4fedb5ca7304db905f68002fec5d00cf1a",
+      "Bytes": 336
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "2f4486467fea18788e5fd4a963489d2a6ca93fbe754abd961ad3d992441b73eb",
+      "Bytes": 303
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "f044fbd435e31522f2a8e4778cd5ca280da6b490f47f71fd3c30aae713ff1ec7",
+      "Bytes": 304
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "1890b40569b09d4bacd37a2873b31bae1b069a55a2c951aa0105f112e0a545ad",
+      "Bytes": 439
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "85a86a1ce74f1be963ba2127c1d5d0786dea987897ded12b97d01978b8139447",
+      "Bytes": 460
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "ccb49c53fca6c9c765c5cc8c0e542c72a123525e739aab28959f0923e4497d2f",
+      "Bytes": 427
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "427edcfc7bb87a47e8d2aa7365a51e25829cc41b22682614cdbb3d99bcc888e6",
+      "Bytes": 428
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "0eb415809c39bea941601fb57408bd86befcc4b729fb462c94d84c756c4f8b17",
+      "Bytes": 388
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "f908a8790a73ad63f233f2467fad4e57c7f73256f29fb0d0e6d0ec31d49f893b",
+      "Bytes": 409
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "a01ce18f3b9caf79caf0466e399b55dbc611292a36d617b7a1e4e34c55772bd2",
+      "Bytes": 376
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "770481e2a9d6cd63e51c48c8b7b20a74e697003ca6c0bb07cf5057e8ab897414",
+      "Bytes": 377
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "8e84b24d61fc3b0964e959750eabca3fed372ebcc5d24ab85deaae2700a9fca1",
+      "Bytes": 512
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "d599825e5f39e4b5f4712e1e957060eee07082817c06d6b83691f9a8ec1a29e0",
+      "Bytes": 533
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "9a590a0bffe1e2fef6139cd338df17e0597e62ca869b2bb98dd809ebb2440382",
+      "Bytes": 500
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "e15dbd0538e9f991df9edfca6610967f1f5c3e64d383a12e60565dafeb07d203",
+      "Bytes": 501
+    }
+  },
+  {
+    "Scene": {
+      "Language": "en",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 0,
+      "Empty": true
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "137bdf457b74e75f26495cf693b263498d344ecfdb32ba07e0ddcc626a941761",
+      "Bytes": 323
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "6f46c1633b6b2efc9bb30e6a48e87b62b1951ad8e0124b6fdc94cc83bfc9d0cd",
+      "Bytes": 344
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "8daadab5ad1c5016b08fb4d63663638ee4bcfef4ff857b234fb29e6057c35392",
+      "Bytes": 311
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "cfa9dddbc034b18913aade29cc1671203ce252e2b411702a1ec86ca12fd9af8c",
+      "Bytes": 312
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "4c2c31b28d89006b816b3a97791bd9259266c60286e76de1f74c8c9228504469",
+      "Bytes": 447
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "f59aeec22c510fe4fe7e3095488c6bc456698f031050224aac3461ed3c9c5660",
+      "Bytes": 468
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "dcad4381cd85d1235865a36dda943a51cc2d765310215f6d64e0f151e0a0aef7",
+      "Bytes": 435
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 1,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "728c673dc59129eb7df54a749c2bf5f4c0c49ef21d6587ae48cd9a1ba3f42bcb",
+      "Bytes": 436
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "906c4716d84df3ff9f0c8d88fc30569e70fc3548ef3f99b28db829a9eb3cf126",
+      "Bytes": 386
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "f2848bf6d4348400026eb2cd6382653d46a140f23eb4ceef3e516e3f2c50d854",
+      "Bytes": 407
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "8690e97b7759bd9a0f9e0321c1c99f034b1ac775fdc563cbefdee0c6d731d53d",
+      "Bytes": 374
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 0,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "f534b1305b16791636de243bb751f2783721f015b748c9f6ce6147021149cfb8",
+      "Bytes": 375
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 0,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "2568e343ce3bde8176729c020291daf7f6e8140919e9fc5e9a0bd64e10055171",
+      "Bytes": 510
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 1,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "4f3d010d86a08d41e93aac55188111f3795ccfc2ec65a6f51e32bf8efcf1aa23",
+      "Bytes": 531
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 2,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "99df513dbb6fc04f576d4cfc978cf0b19cb7f2c317255f5f40f1e7828ebeb925",
+      "Bytes": 498
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": true,
+      "IconMode": 1,
+      "TextMode": 3,
+      "Empty": false
+    },
+    "Expected": {
+      "SHA256": "eaf193469248d57d9ed77b5eb18da0efa836c9907617051db6df18c0310942e6",
+      "Bytes": 499
+    }
+  },
+  {
+    "Scene": {
+      "Language": "zh-CN",
+      "Pending": false,
+      "IconMode": 0,
+      "TextMode": 0,
+      "Empty": true
+    },
+    "Expected": {
+      "SHA256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+      "Bytes": 2
+    }
+  }
+]

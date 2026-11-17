@@ -56,6 +56,7 @@ type Observation struct {
 	HeadSHA    string     `json:"head_sha,omitempty"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	ReceivedAt *time.Time `json:"received_at,omitempty"`
+	Method     *Method    `json:"-"`
 }
 
 func (o *Observation) identify(sourceBody string) {
@@ -71,14 +72,27 @@ func (o *Observation) identify(sourceBody string) {
 }
 
 type Batch struct {
-	RepositoryID int64
-	HeadSHA      string
-	Events       []Observation
-	bytes        int
+	RepositoryID    int64
+	HeadSHA         string
+	Events          []Observation
+	bytes           int
+	IntervalSeconds int `json:"-"`
 }
 
 func (b *Batch) add(e Observation) error {
 	b.bytes += len(e.Body) + len(e.URL) + len(e.Actor) + len(e.State) + 512
+	if e.Method != nil {
+		// The original per-row allowance covers the default frozen recipe.
+		// Enlarged method text must spend the same finite scan budget, including
+		// JSON escaping; it cannot multiply an unpriced payload by every row.
+		raw, err := json.Marshal(e.Method)
+		if err != nil {
+			return err
+		}
+		if len(raw) > 512 {
+			b.bytes += len(raw) - 512
+		}
+	}
 	if b.bytes > 8<<20 {
 		return &Failure{"HISTORY_LIMIT"}
 	}
@@ -90,6 +104,8 @@ type Ticket struct {
 	Version           int64
 	Epoch             int64
 	BindingGeneration int64
+	Managed           bool
+	GraphRevision     string
 }
 
 type Status struct {
@@ -113,22 +129,39 @@ type Store interface {
 }
 
 type Service struct {
-	Config Config
-	Store  Store
-	Client Client
+	Config   Config
+	Store    Store
+	Client   Client
+	ReadStep ReadStep
 }
 
 func (s Service) Poll(ctx context.Context) error {
+	_, err := s.poll(ctx)
+	return err
+}
+func (s Service) poll(ctx context.Context) (time.Duration, error) {
+	interval := s.Config.Interval()
 	if err := s.Config.Validate(); err != nil {
-		return err
+		return interval, err
 	}
 	ticket, err := s.Store.BeginGitHubPoll(ctx, s.Config)
 	if err != nil {
-		return err
+		return interval, err
 	}
-	batch, pollErr := s.Client.read(ctx, s.Config)
+	var batch Batch
+	var pollErr error
+	if ticket.Managed {
+		var selected time.Duration
+		batch, selected, pollErr = s.Client.readManaged(ctx, s.Config, ticket, s.ReadStep)
+		if selected > 0 {
+			interval = selected
+			batch.IntervalSeconds = int(selected / time.Second)
+		}
+	} else {
+		batch, pollErr = s.Client.readLegacyV1(ctx, s.Config)
+	}
 	if ctx.Err() != nil {
-		return ctx.Err() // shutdown does not commit an interrupted/partial scan
+		return interval, ctx.Err() // shutdown does not commit an interrupted/partial scan
 	}
 	code := ""
 	if pollErr != nil {
@@ -139,17 +172,19 @@ func (s Service) Poll(ctx context.Context) error {
 		}
 	}
 	if err = s.Store.FinishGitHubPoll(ctx, s.Config, ticket, batch, code); err != nil {
-		return err
+		return interval, err
 	}
-	return pollErr
+	return interval, pollErr
 }
 
 // Run is canceled and joined with the foreground runtime. Failure is persisted
 // and retried at a bounded interval; it never closes the user's control surface.
 func (s Service) Run(ctx context.Context) {
 	for ctx.Err() == nil {
-		_ = s.Poll(ctx)
-		timer := time.NewTimer(s.Config.Interval())
+		interval, _ := s.poll(ctx)
+		// On unavailable policy, this remains the existing finite retry wait;
+		// it never executes the legacy reader for a managed ticket.
+		timer := time.NewTimer(interval)
 		select {
 		case <-ctx.Done():
 			timer.Stop()

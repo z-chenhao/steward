@@ -24,6 +24,8 @@
 
 ## 已有检查与缺失覆盖
 
+`codemode.TestConnectedAppNamespacesKeepExactAccountBoundary` 覆盖 Apps 两种精确账户 namespace、另一账户／宽泛名称／畸形工具拒绝以及普通 MCP 匹配。SQLite 的 `TestConnectedAppsGuidanceActualAccountDiscoveryUpgradeRetainedRollbackAndDisable` 通过真实 JavaScript 查询两个账户，验证每次只返回对应两项工具、冻结文字和原执行属性；实验工具包的默认分发与完整迁移仍按[集成方案](integrations.md)验证。
+
 | 入口 | 覆盖用途与限制 |
 | --- | --- |
 | [tests/system/verify_codemode.py](../../tests/system/verify_codemode.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |
@@ -104,3 +106,25 @@ F-008/F-039：现有真实 Sidecar、挂起/恢复、Child、事件落库失败�
 `TestCodeModeAcceptsLargeBoundedSource` 通过真实 Sidecar 执行超过 16 KiB 的合法脚本，验证模型结果接纳遵循 Code Mode 的 64 KiB 参数边界；其他工具继续使用 16 KiB 边界，总帧和上下文限制仍生效。
 
 生产直接声明名单与角色过滤由 `TestProductionToolSurfaceKeepsOnlyFrequentControlsDirect` 验证；Code Mode-only 测试保存显式冻结面的兼容覆盖，并非当前生产声明全集。
+
+## 版本化执行配方与说明回归
+
+`TestCodeModePlugin*` 驱动实际独立 Go 二进制与 QuickJS：默认说明与 native 原字段一致；连续读取、嵌套调用挂起和 VM 重建保持 JSON.stringify 字节；独立 v1.1 缩小等待预算并改变类型说明／提示，升级前排队 Run、retired 包、回退及停用均保留各自方法。恶意 v1.2 即使通过其自扩 Schema 和独立所有者 fixture，也不能超过 Host 资源上限，且不能创建 manifest 或触发嵌套效果。
+
+同组回归验证 Main／Worker 权限、20 KiB 源、Store 和终态事件写入失败、CodeCall 参数漂移、旧 VM epoch、已冻结说明不绕过 Guardian、缓存写失败无确认、拒绝回复冻结、真实 Forget 在 formatter 计算后阻断输出。`TestV58CodeDescriptionMigrationPreservesNativeManifestAndReplay` 保留真实 native manifest／hash／source／lease，前向升级不改旧执行或追加策略；新表保留不可变回复。角色／恢复测试同时保留 native 版本；LateForget 纳入现有 memory race 发现，插件族纳入 test-prompts 和普通 Go 检查。
+
+现有 `codemode` 与 `code-recovery` 系统入口显式安装 Task／Progress／Feedback／Delegation／CodeMode 组合，独立核对每个实际 manifest 的 frozen graph、服务边界和资源配方；真实三种 kill／shutdown 的 100 Child 工作负载还比较恢复前后完整说明行与原提供方派发审计。未改变原 37 完成／8 审批等待、剩余 55、unknown 副作用及精确取消断言。启动门禁独立核对标准分发包清单。确定性验证不证明说明的真实模型质量，也不证明可任意替换 VM 字节；运行时指纹 driver 的平台验证继续独立维护。
+
+## 工具发现插件验收
+
+`make test-tool-discovery` 为 CI 必需竞态门禁；普通 Go 门禁继续覆盖全部新根。对照候选前 288 个原始输出，包括 500 候选、已加载／隐藏／内部资格、CodeModeOnly、schema／namespace／中英文分词、精确匹配、空词、截断和限制。用实际原生模型调用与 Worker JavaScript 查找并执行所选工具，证明独立排序版本改变真实结果、未预加载整个目录、未提升授权或跳过审批；验证实际9MiB冻结元数据不引入普通输入限制。
+
+验证索引／窗口越界、重复、整数溢出、未知字段与原输出预算；Code Mode 回复在确认前保留，写失败不得确认，回执不可 update/delete/replace，隔离后的新查询明确拒绝，旧 VM 不得重读。真实冷恢复／暂停重放、升级与已冻结 Run／Child、回退／退役／停用、晚 Forget 及声明合法但索引越界的坏计划已有定向回归；仍须在固定源码完整验收，并完成默认29／真实旧23／归档24及 Linux，不把纯原始对照或单次握手算作完整交付。Forward schema 必须同时更新实际 Go migration catalog 与共享 system fixture，普通测试检查每个源文件均实际嵌入。
+
+`TestToolDiscoveryBootstrapRejectsCorruptPlanAndRetainsOwnerDisable` 用真实排序进程证明独立 owner 期望拒绝声明合法但伪造索引的候选，首启失败不产生选择，冷启动与所有者停用不被修复。标准29包的 `tool-discovery-plugins` 系统门禁使用正常 CLI、provider bridge 和 Code Mode，检查完整包集合、冷启动不重选、实际原生／脚本发现及先行冻结回复。可选 `--prior-binary` 必须使用归档的真实23包二进制和原封存包：既验证保持原23包／资源的单包升级，也逐一安装完整当前29包，要求23个已变内容的原包有独立新版本且原 digest 仍保留，再经所有者验证切换并回退整套原图。切换后立即消费旧程序接纳的排队 Run，回退后立即消费新版已排队工作；旧图／新图分别保持原解释，移除后新工作拒绝原生兜底。另用明确的原 scripted children bridge 在旧版真实 Root／Child 接纳后 SIGKILL，首个新版 status 只迁移读取；显式安装／验证／切换完整新图后立即 chat work，核对原子级身份、图／能力／模型／上下文和已完成 Generation 原字节，要求恢复后确实创建并完成 Grandchild，继续继承旧图，冷恢复不重放。旧 scripted 夹具的初始23包由所有者在接纳输入前显式装配，不把它宣称为普通启动或旧树实际排序查询；普通 CLI 原生／CodeMode 发现则使用独立的 HTTP 模型替身。`--prior24-binary` 另验证真实归档24实物，要求原24个 digest 保持一致；回退后发现服务仍可用，不能让模型替身误期待停用错误。归档候选是否完成整体验收须单独说明。`--prior28-binary` 另外驱动实际原28包的整套升级／回退和冻结子树恢复，要求28个原 digest 不变；当前29只增加 GitHub 包。三种真实旧树路径均要求实际新建 Grandchild，旧24／28树保留原发现服务。未提供相应旧制品时分别报告 `not_run`；当前 SDK 的 prior24／prior23／prior22 组合用例不能冒充历史制品验收。
+
+实际9MiB元数据的竞态回归保持 `policy_json.timeout_ms=10000`，同时验证不可变快照／引用／参数不可修改、完成 invocation 不再释放输入、原生读取中 Forget 拒绝晚结果。完整夹具设有自己的有界运行期限，不能用放宽工具超时绕过回归。
+
+`TestToolDiscoveryActualFrozenRootUpgradeRollbackRetireAndDisable` 只声明真实 Root 生命周期覆盖。`TestToolDiscoveryActualChildrenAndGrandchildrenKeepRootVersion` 另创建六棵实际子树（共12个已完成 Child／Grandchild），在 Root 固定后、子级实际接纳前切版／回退／退役／停用，逐个核对原图、服务清单、模型、Task epoch、能力／scope、真实 JavaScript 排序结果和冻结回复。原生旧树没有新缓存，受管树每个子级恰有一条已接纳发现回复；已迁移后的停用新树逐级明确不可用。断言必须包含正向的子级数量／祖先关系，不能仅查询不存在的子级是否有不一致。此根由 `make test-tool-discovery` 与普通 Go 门禁自动覆盖；当前 SDK 的原生树不冒充实际旧发行制品。
+
+Schema67 的回归包括：真实 Actor（保留生产心跳）驱动500工具的六棵 Root／Child／Grandchild 子树；原五秒 Run 租约及工具期限保持不变。`TestChildStorageRejectsAncestryAndCapabilityExpansion` 直接验证完整描述符变化、越权能力、NULL、祖先／模型错误拒绝及合法子集接纳，并进入 required tool-discovery race。`TestToolDiscoveryV66ChildAdmissionMigrationKeepsFrozenTree` 验证原66数据升级后，Run、能力、上下文、图绑定、模型／工具回执、子级身份、树计数与 claim 原字节不变。实际 Go migration catalog 和共享系统版本同时更新。

@@ -52,15 +52,6 @@ func Models(provider string) []Model {
 	return out
 }
 
-func GetModel(provider, id string) (Model, bool) {
-	for _, m := range Models(provider) {
-		if m.ID == id {
-			return m, true
-		}
-	}
-	return Model{}, false
-}
-
 func APIs() []API {
 	return []API{OpenAICompletions, OpenAIResponses, AzureResponses, CodexResponses, AnthropicMessages, BedrockConverse, GoogleGenerative, GoogleVertex, MistralConversations, GatewayMessages}
 }

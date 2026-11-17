@@ -240,6 +240,11 @@ func (l *agentLoop) collectTools(r Run) (bool, error) {
 			if err := applyToolLoads(&cp, r.Tools, batch.Calls[i].Name, result); err != nil {
 				return false, err
 			}
+			projected, err := l.projectTool(r, batch.Calls[i].ID, result)
+			if err != nil {
+				return false, err
+			}
+			result = projected
 			// A pre-upgrade pending receipt keeps its exact correlation identity.
 			ref := deferredOperationRef(cp.Messages, batch.Step, i, batch.Calls[i].ID)
 			m := RuntimeContext("tool_results", "", result.Error != nil && result.Error.Code == "UNKNOWN_SIDE_EFFECT", struct {

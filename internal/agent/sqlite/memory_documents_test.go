@@ -218,7 +218,13 @@ func TestRecallEmptyEvidenceOmittedFromAgentMessagesAndFrozen(t *testing.T) {
 }
 
 func TestLayeredMemoryDreamBuildsAllRepresentationsAndRecoversAcceptedPasses(t *testing.T) {
+	testLayeredMemoryDreamRecovery(t, false)
+}
+func testLayeredMemoryDreamRecovery(t *testing.T, managed bool) {
 	s, r, m, a, p := semanticRuntime(t)
+	if managed {
+		installCuratorPlugin(t, s, r)
+	}
 	ctx := context.Background()
 	mustSubmit(t, a, "evidence", "请你调研这个问题")
 	if err := r.Flush(ctx); err != nil {
@@ -290,7 +296,13 @@ func mustOwner(t *testing.T, s *Store) string {
 }
 
 func TestLayeredMemoryDreamContinuesLongTranscriptsWithoutLosingUTF8(t *testing.T) {
+	testLayeredMemoryDreamLongTranscript(t, false)
+}
+func testLayeredMemoryDreamLongTranscript(t *testing.T, managed bool) {
 	s, r, _, _, p := semanticRuntime(t)
+	if managed {
+		installCuratorPlugin(t, s, r)
+	}
 	ctx := context.Background()
 	text := "请你" + strings.Repeat("资料", 10000)
 	if _, err := r.Submit(ctx, "long-transcript", conversation.Text(text)); err != nil {

@@ -14,6 +14,10 @@ import (
 func (a *App) Schedule(ctx context.Context, ref string) (task.ScheduledWork, error) {
 	return a.store.TaskReader().ScheduledDetail(ctx, ref)
 }
+func (a *App) ScheduleDefaults(ctx context.Context) (automation.EditorDefaults, error) {
+	return a.runtimeRuns().OwnerScheduleDefaults(ctx)
+}
+
 func (a *App) ConfigureSchedule(ctx context.Context, key string, q automation.OwnerConfiguration) (automation.OwnerReceipt, error) {
 	return a.runtimeRuns().ConfigureAutomation(ctx, "web:"+key, q, a.runtimeRuns().AutomationNow())
 }

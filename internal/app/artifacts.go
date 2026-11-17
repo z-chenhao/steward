@@ -16,7 +16,6 @@ type artifactStore interface {
 	Open(context.Context, artifact.Scope, string) (io.ReadCloser, error)
 	Describe(context.Context, artifact.Scope, string) (artifact.Descriptor, error)
 	Delete(context.Context, artifact.Scope, string, int64) error
-	Cleanup(context.Context, artifact.Scope, bool) (artifact.CleanupReport, error)
 }
 
 func (a *App) artifactOwner(ctx context.Context) (artifact.Scope, error) {
@@ -24,6 +23,16 @@ func (a *App) artifactOwner(ctx context.Context) (artifact.Scope, error) {
 	return artifact.Scope{UserID: a.store.OwnerID(), AgentID: d.AgentID, Owner: true}, e
 }
 func (a *App) SaveArtifact(ctx context.Context, in artifact.Input, src io.Reader) (artifact.Descriptor, error) {
+	if a.prepareArtifactPlugins != nil {
+		if err := a.prepareArtifactPlugins(ctx); err != nil {
+			return artifact.Descriptor{}, err
+		}
+	}
+	var err error
+	in, err = a.store.PrepareArtifactInput(ctx, in)
+	if err != nil {
+		return artifact.Descriptor{}, err
+	}
 	scope, err := a.artifactOwner(ctx)
 	if err != nil {
 		return artifact.Descriptor{}, err
@@ -56,11 +65,12 @@ func (a *App) DeleteArtifact(ctx context.Context, ref string, version int64) err
 	return a.artifacts.Delete(ctx, scope, ref, version)
 }
 func (a *App) CleanupArtifacts(ctx context.Context, dry bool) (artifact.CleanupReport, error) {
-	scope, err := a.artifactOwner(ctx)
-	if err != nil {
-		return artifact.CleanupReport{}, err
+	if a.prepareArtifactPlugins != nil {
+		if err := a.prepareArtifactPlugins(ctx); err != nil {
+			return artifact.CleanupReport{}, err
+		}
 	}
-	return a.artifacts.Cleanup(ctx, scope, dry)
+	return a.store.CleanupArtifacts(ctx, dry)
 }
 func (a *App) SubmitParts(ctx context.Context, key string, parts []conversation.ContentPart) (agent.Receipt, error) {
 	d, err := a.Diagnostics(ctx)

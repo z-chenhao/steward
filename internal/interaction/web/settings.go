@@ -9,18 +9,17 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/llm"
+	modelsettings "github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	"unicode/utf8"
 )
 
 type settingsView struct {
+	Copy                  *modelsettings.View
+	View                  *modelsettings.View
 	TargetUnavailable     bool
 	Section               string
-	Provider              string
 	TargetModel           string
 	DirectModels          []modelResource
-	Account               *llm.AuthConnection
-	Catalog               []llm.CatalogModel
-	CatalogLoaded         bool
-	CatalogError          bool
 	AccountModels         map[string][]modelResource
 	Target                string
 	Model, Endpoint, Name string
@@ -30,11 +29,11 @@ type settingsView struct {
 
 type modelResource struct {
 	llm.Profile
-	Current, Verified, Open, CanTest bool
-	KeyAuth                          bool
-	AuthVersion                      int64
-	ConnectionStatus                 string
-	ConfigVersion                    int64
+	Current, Verified, Open bool
+	KeyAuth                 bool
+	AuthVersion             int64
+	ConnectionStatus        string
+	ConfigVersion           int64
 }
 
 func resourceModelQuery(id, notice string) url.Values {
@@ -50,7 +49,7 @@ func resourceModelURL(id, notice string) string {
 }
 
 func (s *Server) loadSettings(ctx context.Context, r *http.Request, p *page) error {
-	v := &settingsView{Section: "models", Provider: r.URL.Query().Get("provider"), Endpoint: "https://api.openai.com/v1", Service: "openai", WireAPI: "openai_completions"}
+	v := &settingsView{Section: "models"}
 	p.Settings = v
 	if r.URL.Path == "/settings/preferences" {
 		v.Section = "preferences"
@@ -86,8 +85,8 @@ func (s *Server) loadSettings(ctx context.Context, r *http.Request, p *page) err
 	}
 	if r.URL.Path == "/settings/models/new" {
 		v.Section = "new"
-		v.ConnectionMethod = r.URL.Query().Get("method")
-		v.Provider = "compatible"
+		var sourceProfile *llm.Profile
+		facts := modelsettings.SettingsFacts{Rows: []modelsettings.SettingsRow{}, WithView: true, Draft: &modelsettings.DraftFacts{Method: r.URL.Query().Get("method")}}
 		if source := r.URL.Query().Get("source"); source != "" {
 			if s.Control.Store == nil {
 				return errPageNotFound
@@ -96,14 +95,27 @@ func (s *Server) loadSettings(ctx context.Context, r *http.Request, p *page) err
 			if err != nil || profile.ProviderKind != "openai_compatible" {
 				return errPageNotFound
 			}
-			v.Model = profile.ModelID
-			v.Endpoint = profile.Endpoint
-			v.Name = profile.Name
-			v.WireAPI = profile.WireAPI
-			v.Service = "custom"
-			if profile.Endpoint == "https://api.openai.com/v1" {
-				v.Service = "openai"
+			sourceProfile = &profile
+			facts.Draft.HasSource = true
+			facts.Draft.OpenAIEndpoint = profile.Endpoint == "https://api.openai.com/v1"
+		}
+		projected, err := s.projectModelSettings(ctx, facts)
+		if err != nil {
+			return err
+		}
+		v.View, v.Copy = projected.View, projected.Copy
+		draft := projected.Draft
+		if draft == nil || len(projected.Rows) != 0 || draft.UseSource && sourceProfile == nil {
+			return llm.ErrConflict
+		}
+		for _, value := range []string{draft.Method, draft.Endpoint, draft.Service, draft.WireAPI} {
+			if !utf8.ValidString(value) || strings.ContainsRune(value, 0) {
+				return llm.ErrConflict
 			}
+		}
+		v.ConnectionMethod, v.Endpoint, v.Service, v.WireAPI = draft.Method, draft.Endpoint, draft.Service, draft.WireAPI
+		if draft.UseSource {
+			v.Model, v.Endpoint, v.Name, v.WireAPI = sourceProfile.ModelID, sourceProfile.Endpoint, sourceProfile.Name, sourceProfile.WireAPI
 		}
 		return nil
 	}
@@ -114,27 +126,7 @@ func (s *Server) loadSettings(ctx context.Context, r *http.Request, p *page) err
 			return err
 		}
 	}
-	if v.Section == "models" {
-		return s.loadResourceModels(ctx, r, p)
-	}
-
-	account := r.URL.Query().Get("account")
-	if account == "" {
-		account = p.AccountID
-	}
-	for i := range p.Accounts {
-		if p.Accounts[i].ConnectionID == account {
-			v.Account = &p.Accounts[i]
-			break
-		}
-	}
-	if account != "" && v.Account == nil {
-		return errPageNotFound
-	}
-	if v.Account == nil && len(p.Accounts) == 1 {
-		v.Account = &p.Accounts[0]
-	}
-	return nil
+	return s.loadResourceModels(ctx, r, p)
 }
 
 func (s *Server) loadResourceModels(ctx context.Context, r *http.Request, p *page) error {
@@ -144,28 +136,18 @@ func (s *Server) loadResourceModels(ctx context.Context, r *http.Request, p *pag
 	}
 	v := p.Settings
 	v.AccountModels = make(map[string][]modelResource, len(p.Accounts))
-	connectedAccounts := make(map[string]bool, len(p.Accounts))
 	for _, account := range p.Accounts {
 		v.AccountModels[account.ConnectionID] = nil
-		connectedAccounts[account.ConnectionID] = account.Status == "connected"
 	}
 	requested := r.URL.Query().Get("model")
 	notice := r.URL.Query().Get("notice")
 	if strings.HasPrefix(r.URL.Path, "/settings/models/") {
 		requested = strings.TrimPrefix(r.URL.Path, "/settings/models/")
 	}
+	facts := modelsettings.SettingsFacts{Rows: []modelsettings.SettingsRow{}, WithView: true, Requested: requested, Notice: notice}
+	sources := map[string]modelResource{}
 	for _, profile := range profiles {
-		current := profile.ProfileID == activeProfile(p.Status)
-		verified := s.profileVerified(ctx, profile)
-		row := modelResource{
-			Profile:       profile,
-			Current:       current,
-			Verified:      verified,
-			Open:          profile.ProfileID == requested && notice != "active",
-			ConfigVersion: p.Status.ConfigVersion,
-			CanTest:       profile.ProviderKind != "openai_account" || connectedAccounts[profile.AuthConnectionID],
-		}
-		row.ConnectionStatus = "connected"
+		row := modelResource{Profile: profile, Current: profile.ProfileID == activeProfile(p.Status), Verified: s.profileVerified(ctx, profile), ConfigVersion: p.Status.ConfigVersion, ConnectionStatus: "connected"}
 		if profile.AuthConnectionID != "" && profile.ProviderKind != "openai_account" && s.Control.Store != nil {
 			auth, e := s.Control.Store.Auth(ctx, profile.AuthConnectionID)
 			if e == nil {
@@ -174,31 +156,50 @@ func (s *Server) loadResourceModels(ctx context.Context, r *http.Request, p *pag
 				row.ConnectionStatus = auth.Status
 			}
 		}
-		if !row.Verified && row.ConnectionStatus != "logged_out" {
-			row.ConnectionStatus = "Needs attention"
-		}
-		if row.ProfileID == requested {
-			v.TargetModel = row.ProfileID
-			switch notice {
-			case "tested":
-				if !row.Verified && row.ConnectionStatus != "logged_out" {
-					p.Notice = ""
-				}
-			case "active":
-				if !row.Current {
-					p.Notice = ""
-				}
-			}
-		}
-		if models, known := v.AccountModels[profile.AuthConnectionID]; known {
-			v.AccountModels[profile.AuthConnectionID] = append(models, row)
-		} else {
-			v.DirectModels = append(v.DirectModels, row)
+		_, known := v.AccountModels[profile.AuthConnectionID]
+		facts.Rows = append(facts.Rows, modelsettings.SettingsRow{Ref: profile.ProfileID, Account: profile.AuthConnectionID, KnownAccount: known, Verified: row.Verified, Current: row.Current, AuthStatus: row.ConnectionStatus})
+		sources[profile.ProfileID] = row
+		if profile.ProfileID == requested {
+			v.TargetModel = profile.ProfileID
 		}
 	}
 	if requested != "" && v.TargetModel == "" {
 		return errPageNotFound
 	}
+	projected, err := s.projectModelSettings(ctx, facts)
+	if err != nil {
+		return err
+	}
+	v.View, v.Copy = projected.View, projected.Copy
+	if projected.Draft != nil {
+		return llm.ErrConflict
+	}
+	if len(projected.Rows) != len(facts.Rows) {
+		return llm.ErrConflict
+	}
+	seen := map[string]bool{}
+	for _, choice := range projected.Rows {
+		row, ok := sources[choice.Ref]
+		if !ok || seen[choice.Ref] || !utf8.ValidString(choice.Status) || strings.ContainsRune(choice.Status, 0) {
+			return llm.ErrConflict
+		}
+		seen[choice.Ref] = true
+		if choice.Account != "" {
+			if _, known := v.AccountModels[choice.Account]; !known || choice.Account != row.AuthConnectionID {
+				return llm.ErrConflict
+			}
+		}
+		row.Open, row.ConnectionStatus = choice.Open, choice.Status
+		if choice.Account != "" {
+			v.AccountModels[choice.Account] = append(v.AccountModels[choice.Account], row)
+		} else {
+			v.DirectModels = append(v.DirectModels, row)
+		}
+	}
+	if projected.SuppressNotice {
+		p.Notice = ""
+	}
+
 	return nil
 }
 
@@ -228,4 +229,17 @@ func (s *Server) profileVerified(ctx context.Context, p llm.Profile) bool {
 		version = a.Version
 	}
 	return record.AuthVersion == version
+}
+
+func (s *Server) projectModelSettings(ctx context.Context, facts modelsettings.SettingsFacts) (modelsettings.SettingsProjection, error) {
+	if s.ModelSettings != nil {
+		out, managed, err := s.ModelSettings(ctx, facts)
+		if err != nil || managed {
+			if err == nil && managed && facts.WithView && (out.View == nil || out.Copy == nil) {
+				return out, llm.ErrConflict
+			}
+			return out, err
+		}
+	}
+	return legacyModelSettingsV1(facts), nil
 }

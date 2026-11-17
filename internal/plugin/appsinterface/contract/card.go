@@ -1,0 +1,13 @@
+package contract
+
+// CardView is a private composition of the existing native card atoms. It grants
+// no HTML, scripts, URLs, attributes, expressions, iteration or data access.
+const CardViewInterface = "steward.apps-card-view/1"
+const CardViewResource = "apps-card"
+const CardViewFile = "views/card.json"
+
+type CardView struct {
+	Resource string   `json:"resource"`
+	Digest   string   `json:"digest"`
+	Program  []string `json:"program"`
+}

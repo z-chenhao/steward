@@ -16,7 +16,7 @@ func TestWebAccessContentSpansUnicodeAndAssessment(t *testing.T) {
 	text := "前言 İSTANBUL 中文证据：Fact one\nFact two。" + strings.Repeat("尾 ", 5000)
 	doc := Document{Version: 1, Pages: []Page{{URL: "https://example.com", Text: text}}}
 	for _, tc := range []struct{ pattern, mode, expected string }{{"istanbul", "case-insensitive", "İSTANBUL"}, {"Fact one Fact two", "fuzzy", "Fact one\nFact two"}, {"中文证据", "exact", "中文证据"}} {
-		start, end, e := findSpan(text, tc.pattern, tc.mode)
+		start, end, e := FindSpanV1(text, tc.pattern, tc.mode)
 		if e != nil || start < 0 || text[start:end] != tc.expected {
 			t.Fatal(tc, start, end, e)
 		}

@@ -1,0 +1,973 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.intelligent-ui",
+  "version": "1.27.0",
+  "feature_ids": [
+    "F-021"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 5000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.ui-document/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "document_json": {
+            "type": "string",
+            "maxLength": 786432
+          },
+          "readable": {
+            "type": "string",
+            "maxLength": 131072
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          },
+          "component_text": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "string",
+              "maxLength": 131072
+            }
+          },
+          "meeting_views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "decline_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "selected_title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "declined_title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "saving_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "select_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "decline_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "saved_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "slots": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "choice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 15
+                      },
+                      "date": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "time": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "duration": {
+                        "type": "string",
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "choice",
+                      "date",
+                      "time",
+                      "duration"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "title",
+                "decline_label",
+                "selected_title",
+                "declined_title",
+                "saving_label",
+                "select_error",
+                "decline_error",
+                "saved_label",
+                "component",
+                "slots"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "action_views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "working_label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "unconfirmed_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "unknown_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "cancelled_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "not_executed_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "failed_error": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "success_indicator": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "working_label",
+                "unconfirmed_error",
+                "unknown_error",
+                "cancelled_error",
+                "not_executed_error",
+                "failed_error",
+                "component",
+                "success_indicator"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "document_json",
+          "readable",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-definition/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "input_schema": {
+            "type": "string",
+            "maxLength": 131072
+          },
+          "model_input_schema": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "runtime": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "digest": {
+                "type": "string",
+                "minLength": 71,
+                "maxLength": 71
+              }
+            },
+            "required": [
+              "name",
+              "digest"
+            ],
+            "additionalProperties": false
+          },
+          "styles": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "digest": {
+                "type": "string",
+                "minLength": 71,
+                "maxLength": 71
+              }
+            },
+            "required": [
+              "name",
+              "digest"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "input_schema",
+          "model_input_schema",
+          "description",
+          "runtime",
+          "styles"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-preview/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          },
+          "preview_json": {
+            "type": "string",
+            "maxLength": 786432
+          }
+        },
+        "required": [
+          "valid",
+          "preview_json"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-form/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "const": "ui-form"
+          }
+        },
+        "required": [
+          "input_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "parts": {
+            "type": "array",
+            "maxItems": 17,
+            "items": {
+              "type": "string",
+              "maxLength": 16384
+            }
+          },
+          "response": {
+            "type": "string",
+            "maxLength": 131072
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT",
+              "CONFLICT"
+            ]
+          }
+        },
+        "required": [
+          "parts",
+          "response",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-plan-view/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "html": {
+                  "type": "string",
+                  "maxLength": 524288
+                },
+                "css": {
+                  "type": "string",
+                  "maxLength": 16384
+                },
+                "compact_max_width": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4096
+                }
+              },
+              "required": [
+                "component",
+                "html",
+                "css",
+                "compact_max_width"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "views",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-cards-view/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "html": {
+                  "type": "string",
+                  "maxLength": 524288
+                },
+                "css": {
+                  "type": "string",
+                  "maxLength": 16384
+                },
+                "compact_max_width": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4096
+                },
+                "contexts": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "maxLength": 300
+                      },
+                      "visible_item": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      }
+                    },
+                    "required": [
+                      "visible_item"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "worker": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 16384
+                }
+              },
+              "required": [
+                "component",
+                "html",
+                "css",
+                "compact_max_width",
+                "contexts",
+                "worker"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "views",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-table-view/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "html": {
+                  "type": "string",
+                  "maxLength": 524288,
+                  "minLength": 1
+                },
+                "worker": {
+                  "type": "string",
+                  "maxLength": 16384,
+                  "minLength": 1
+                },
+                "css": {
+                  "type": "string",
+                  "maxLength": 16384,
+                  "minLength": 1
+                },
+                "compact_max_width": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4096
+                },
+                "contexts": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 26,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sort": {
+                        "type": "integer",
+                        "minimum": -1,
+                        "maximum": 11
+                      },
+                      "direction": {
+                        "type": "integer",
+                        "enum": [
+                          1,
+                          -1
+                        ]
+                      },
+                      "description": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "maxLength": 300
+                          },
+                          "sort": {
+                            "oneOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 200
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "direction": {
+                            "type": "integer",
+                            "enum": [
+                              1,
+                              -1
+                            ]
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "sort",
+                          "direction"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "sort",
+                      "direction",
+                      "description"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "component",
+                "html",
+                "worker",
+                "css",
+                "compact_max_width",
+                "contexts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "views",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-chart-view/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "worker": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 16384
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                "columns": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "header": {
+                        "type": "string",
+                        "maxLength": 300
+                      },
+                      "source": {
+                        "type": "string",
+                        "enum": [
+                          "label",
+                          "value",
+                          "x",
+                          "y",
+                          "axis_x",
+                          "series"
+                        ]
+                      },
+                      "series": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 5
+                      }
+                    },
+                    "required": [
+                      "header",
+                      "source"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "component",
+                "worker",
+                "title",
+                "description",
+                "unit",
+                "columns"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "views",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.ui-form-view/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "type": "object",
+              "properties": {
+                "component": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "submit_label": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "fields": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "text",
+                          "textarea",
+                          "number",
+                          "date",
+                          "email",
+                          "select",
+                          "multiselect",
+                          "boolean"
+                        ]
+                      },
+                      "default": {
+                        "type": "string",
+                        "maxLength": 4096
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "options": {
+                        "type": "array",
+                        "maxItems": 32,
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
+                            }
+                          },
+                          "required": [
+                            "value",
+                            "label"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "min": {
+                        "type": "number",
+                        "minimum": -1000000000000000,
+                        "maximum": 1000000000000000
+                      },
+                      "max": {
+                        "type": "number",
+                        "minimum": -1000000000000000,
+                        "maximum": 1000000000000000
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "label",
+                      "type",
+                      "default"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "component",
+                "title",
+                "submit_label",
+                "fields"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "",
+              "INVALID_ARGUMENT"
+            ]
+          }
+        },
+        "required": [
+          "views",
+          "error_code"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ],
+  "resources": [
+    {
+      "kind": "view",
+      "name": "ui-sandbox-runtime",
+      "path": "view/widget-runtime.js"
+    },
+    {
+      "kind": "view",
+      "name": "ui-sandbox-styles",
+      "path": "view/widget.css"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-entry",
+      "path": "skill/intelligent_ui/SKILL.md"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-design",
+      "path": "skill/intelligent_ui/references/design.md"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-presentation",
+      "path": "skill/intelligent_ui/references/presentation.md"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-visualization",
+      "path": "skill/intelligent_ui/references/visualization.md"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-architecture-diagram",
+      "path": "skill/intelligent_ui/templates/architecture-diagram.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-calculator",
+      "path": "skill/intelligent_ui/templates/calculator.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-flow-diagram",
+      "path": "skill/intelligent_ui/templates/flow-diagram.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-geographic-overview",
+      "path": "skill/intelligent_ui/templates/geographic-overview.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-native-comparison",
+      "path": "skill/intelligent_ui/templates/native-comparison.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-native-explorer",
+      "path": "skill/intelligent_ui/templates/native-explorer.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-scenario-comparison",
+      "path": "skill/intelligent_ui/templates/scenario-comparison.json"
+    },
+    {
+      "kind": "skill",
+      "name": "ui-skill-three-dimensional",
+      "path": "skill/intelligent_ui/templates/three-dimensional.json"
+    }
+  ]
+}

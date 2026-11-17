@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -15,7 +14,12 @@ import (
 type MemoryReader interface {
 	InspectMemory(context.Context, memory.InspectionQuery) (memory.InspectionPage, error)
 }
+type MemoryPresentedReader interface {
+	InspectMemoryPresented(context.Context, memory.InspectionQuery, string) (memory.InspectionPage, *memory.InspectionPresentation, error)
+}
+
 type memoryView struct {
+	Presentation        *memory.InspectionPresentation
 	Query               memory.InspectionQuery
 	Page                memory.InspectionPage
 	Selected            *memory.InspectionRecord
@@ -77,18 +81,45 @@ func memoryQuery(r *http.Request) (memory.InspectionQuery, error) {
 	return q, q.Validate()
 }
 func (s *Server) loadMemory(ctx context.Context, r *http.Request) (*memoryView, error) {
-	q, err := memoryQuery(r)
+	queryRequest := r
+	reference := ""
+	usePresentation := !strings.HasPrefix(r.URL.Path, "/api/")
+	if usePresentation {
+		if values, ok := r.URL.Query()["inspector_revision"]; ok {
+			if len(values) != 1 || values[0] == "" || len(values[0]) > 256 {
+				return nil, memory.ErrInspectionInvalid
+			}
+			reference = values[0]
+			clone := r.Clone(ctx)
+			copied := *r.URL
+			clone.URL = &copied
+			query := copied.Query()
+			query.Del("inspector_revision")
+			clone.URL.RawQuery = query.Encode()
+			queryRequest = clone
+		}
+	}
+	q, err := memoryQuery(queryRequest)
 	if err != nil {
 		return nil, err
 	}
 	if s.Memory == nil {
 		return nil, memory.ErrInspectionUnavailable
 	}
-	p, err := s.Memory.InspectMemory(ctx, q)
+	var p memory.InspectionPage
+	var presentation *memory.InspectionPresentation
+	if reader, ok := s.Memory.(MemoryPresentedReader); usePresentation && ok {
+		p, presentation, err = reader.InspectMemoryPresented(ctx, q, reference)
+	} else {
+		if reference != "" {
+			return nil, memory.ErrInspectionUnavailable
+		}
+		p, err = s.Memory.InspectMemory(ctx, q)
+	}
 	if err != nil {
 		return nil, err
 	}
-	v := &memoryView{Query: q, Page: p}
+	v := &memoryView{Query: q, Page: p, Presentation: presentation}
 	if q.Ref != "" && q.View == "maintenance" {
 		if len(p.Maintenance) != 1 {
 			return nil, memory.ErrInspectionNotFound
@@ -119,97 +150,6 @@ func (s *Server) memoryAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResult(w, v.Page)
 }
-func memoryURL(q memory.InspectionQuery, key, value string) string {
-	switch key {
-	case "layer":
-		q = memory.InspectionQuery{Layer: value}
-	case "ref":
-		if q.View == "maintenance" {
-			value = strings.Replace(value, "memory-event:", "memory:maintenance-", 1)
-		}
-		q.Ref = value
-		q.Cursor = ""
-		q.Source = ""
-		q.Offset = 0
-		q.SourcesOffset = 0
-		if q.View != "maintenance" {
-			q.View = ""
-		}
-	case "source":
-		q.Source = value
-		q.Offset = 0
-	case "sources_after":
-		q.SourcesOffset, _ = strconv.Atoi(value)
-		q.Source = ""
-		q.Offset = 0
-	case "offset":
-		q.Offset, _ = strconv.ParseInt(value, 10, 64)
-	case "cursor":
-		q.Cursor = value
-	case "view":
-		q = memory.InspectionQuery{View: value}
-	}
-	values := url.Values{}
-	for key, value := range map[string]string{"layer": q.Layer, "ref": q.Ref, "search": q.Search, "tier": q.Tier, "origin": q.Origin, "status": q.Status, "view": q.View, "cursor": q.Cursor, "source": q.Source} {
-		if value != "" {
-			values.Set(key, value)
-		}
-	}
-	if !q.Since.IsZero() {
-		values.Set("since", q.Since.Format(time.RFC3339))
-	}
-	if !q.Until.IsZero() {
-		values.Set("until", q.Until.Format(time.RFC3339))
-	}
-	if q.Offset != 0 {
-		values.Set("offset", strconv.FormatInt(q.Offset, 10))
-	}
-	if q.SourcesOffset != 0 {
-		values.Set("sources_after", strconv.Itoa(q.SourcesOffset))
-	}
-	if q.Limit != 0 {
-		values.Set("limit", strconv.Itoa(q.Limit))
-	}
-	if len(values) == 0 {
-		return "/developer/memory"
-	}
-	return "/developer/memory?" + values.Encode()
-}
-func memorySourceLabel(kind string) string {
-	switch kind {
-	case "conversation":
-		return "Source message"
-	case "task":
-		return "Source task"
-	case "tool":
-		return "memory_manage"
-	case "control":
-		return "Local control"
-	}
-	return "Source"
-}
-func memoryOriginLabel(origin string) string {
-	switch origin {
-	case "written":
-		return "Written note"
-	case "dream":
-		return "Dreaming"
-	case "original":
-		return "Original record"
-	case "automatic":
-		return "Automatically extracted"
-	case "explicit":
-		return "Explicitly remembered"
-	}
-	return "Unknown origin"
-}
-func memoryStatus(q memory.InspectionQuery) string {
-	if q.Status == "" {
-		return "active"
-	}
-	return q.Status
-}
-
 func memoryOffset(n *int64) string {
 	if n == nil {
 		return "0"
@@ -222,17 +162,4 @@ func memorySourcesOffset(n *int) string {
 		return "0"
 	}
 	return strconv.Itoa(*n)
-}
-
-func memoryLayerLabel(layer string) string {
-	switch layer {
-	case memory.Transcripts:
-		return "Transcripts"
-	case memory.Representations:
-		return "Memory representations"
-	case memory.Injected:
-		return "Injected context"
-	default:
-		return "Memory notes"
-	}
 }

@@ -1,0 +1,6 @@
+{
+  "source": "Executed unchanged readModelInput before CLI default migration",
+  "source_sha256": "1d4665d5d6c6ed8a7efb6aef8eed29788a18928279caa1ec8e0694980f8a1bac",
+  "fixture_sha256": "02a19352826e3911e13206ea37260ed83b8c235835b6fb4937a993c81ae60ee5",
+  "cases": 10
+}

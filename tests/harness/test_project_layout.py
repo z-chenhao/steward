@@ -93,7 +93,7 @@ Schema 28 does not rewrite frozen requests.
                         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                     else:
                         self.assertNotEqual(result.returncode, 0)
-                        self.assertIn('Stale embedded UI asset: style.css', result.stderr)
+                        self.assertIn('Stale embedded UI asset: style-base.css', result.stderr)
                 finally:
                     name.unlink()
 

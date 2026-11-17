@@ -98,6 +98,13 @@ func TestWebAccessAuxiliaryLedgerBudgetReplayAndFences(t *testing.T) {
 	}
 }
 func TestWebAccessMainCodeModeReadUsesScopedPersistedDocument(t *testing.T) {
+	testWebAccessMainCodeModeRead(t, false)
+}
+func TestWebPluginReadMainCodeModeUsesScopedPersistedDocument(t *testing.T) {
+	testWebAccessMainCodeModeRead(t, true)
+}
+func testWebAccessMainCodeModeRead(t *testing.T, managed bool) {
+	t.Helper()
 	cfg := webaccess.Config{}
 	defs := append(webaccess.Definitions(cfg), codemode.Definition())
 	s, r, a, p := childFixture(t, defs...)
@@ -114,6 +121,9 @@ func TestWebAccessMainCodeModeReadUsesScopedPersistedDocument(t *testing.T) {
 	r.registry, a.Registry = registry, registry
 	r.ConfigureJavaScript(realCodeRuntime(t))
 	r.ConfigureWebAccess(cfg, p)
+	if managed {
+		installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
+	}
 	var imageBytes bytes.Buffer
 	if e = png.Encode(&imageBytes, image.NewRGBA(image.Rect(0, 0, 2, 2))); e != nil {
 		t.Fatal(e)

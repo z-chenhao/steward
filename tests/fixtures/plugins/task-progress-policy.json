@@ -1,0 +1,30 @@
+{
+  "id": "progress-system-owner",
+  "allowed_contracts": [
+    "steward.task-progress-guidance/1",
+    "steward.task-progress-selection/1"
+  ],
+  "allowed_requests": [],
+  "cases": [
+    {
+      "instance_id": "task-progress",
+      "contract": "steward.task-progress-guidance/1",
+      "input": {
+        "role": "root"
+      },
+      "expected": {
+        "instructions": "- Before tools, when the execution stage changes, write one brief progress sentence in assistant text, at most 512 UTF-8 bytes. State confirmed progress and the next stage; omit private reasoning and raw tool calls. Final text remains the Task result."
+      }
+    },
+    {
+      "instance_id": "task-progress",
+      "contract": "steward.task-progress-selection/1",
+      "input": {
+        "summary": "Requirements reviewed; checking the supporting evidence."
+      },
+      "expected": {
+        "publish": true
+      }
+    }
+  ]
+}

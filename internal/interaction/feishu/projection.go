@@ -1,8 +1,7 @@
 package feishu
 
 import (
-	"strconv"
-	"strings"
+	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/legacyv1"
 
 	"github.com/z-chenhao/assistant/internal/delivery"
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
@@ -22,20 +21,12 @@ type transportProjection struct {
 	IncludeArtifacts bool           `json:"include_artifacts"`
 }
 
+// composeProjection is the named never-activated historical interpreter. The
+// production managed path uses Adapter.prepareCard and cannot fall back here.
 func composeProjection(e delivery.Envelope, workspace, source string) projection {
 	spec := ui.Compose(e)
-	t := &transportProjection{Version: 1, ReplySource: source, Card: ui.Card(spec), IncludeArtifacts: true}
-	if workspace != "" && e.Message.Sequence > 0 && e.Request.Intent != "approval" {
-		text := []rune(spec.Fallback)
-		if len(text) > 1200 {
-			text = append(text[:1200], []rune("…")...)
-		}
-		link := strings.TrimRight(workspace, "/") + "/?before=" + strconv.FormatInt(e.Message.Sequence+1, 10) + "#message-" + strconv.FormatInt(e.Message.Sequence, 10)
-		t.Card = map[string]any{"config": map[string]any{"wide_screen_mode": true}, "elements": []any{
-			map[string]any{"tag": "div", "text": map[string]string{"tag": "plain_text", "content": string(text)}},
-			map[string]any{"tag": "action", "actions": []any{map[string]any{"tag": "button", "text": map[string]string{"tag": "plain_text", "content": "Open full response and files"}, "type": "default", "url": link}}},
-		}}
-		t.IncludeArtifacts = false
-	}
-	return projection{Spec: spec, Transport: t}
+	facts := cardFacts(spec, workspace != "" && e.Message.Sequence > 0 && e.Request.Intent != "approval", false, false)
+	out := legacyv1.ProjectCard(facts)
+	p, _ := bindCard(spec, out, facts, workspace, e.Message.Sequence, source, "", "")
+	return p
 }

@@ -1,0 +1,14 @@
+{
+  "source_snapshot": "trace66-layout-gate-source.json",
+  "source_sha256": "464aaadefd5b5a1318315bd810cfdea805636cf215435a312e32a751ab27c399",
+  "files": {
+    "internal/interaction/web/trace_view.go": "c2f670d310632e2b3a17f2e0460f20f841e756be18c5c774a88366fe52b294ce",
+    "internal/interaction/web/traces.go": "93967be166f39c084b40488bcfc14e88e0ba5d2ae0c5bd72bf72727f58c5d703",
+    "internal/interaction/web/traces_test.go": "a4af52a935e7a4d92646d1d0ad34e6fa99715a030fb59a2d496d1ba4a9360f18",
+    "internal/interaction/web/trace_workbench_selection_test.go": "51d6d2609009addc2c0e970801c4713f65822df8ee9b22d11cf486b24787a7fe"
+  },
+  "method": "Execute original loadTrace first-output/TTFT and generationOutputRate via external Go test overlay; synthetic recorded metadata, no wall-clock dependence or source edits.",
+  "cases": 384,
+  "results_sha256": "db1a7ff6414e41bdf6ac0fee97e99632d9312ff0b784ed1ac569158a0a07ab4d",
+  "results_file": "metrics-v1.json"
+}

@@ -1,0 +1,362 @@
+[
+  {
+    "account": false,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "",
+    "wire_api": ""
+  },
+  {
+    "account": true,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_account",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-account",
+      "context_window": 8192,
+      "max_output_tokens": 8192,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "",
+    "wire_api": ""
+  },
+  {
+    "account": false,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "",
+    "wire_api": "openai_completions"
+  },
+  {
+    "account": true,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_account",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-account",
+      "context_window": 8192,
+      "max_output_tokens": 8192,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "",
+    "wire_api": "openai_completions"
+  },
+  {
+    "account": false,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "",
+    "wire_api": "openai_responses"
+  },
+  {
+    "account": true,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_account",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-account",
+      "context_window": 8192,
+      "max_output_tokens": 8192,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "",
+    "wire_api": "openai_responses"
+  },
+  {
+    "account": false,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "custom",
+    "wire_api": ""
+  },
+  {
+    "account": true,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_account",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-account",
+      "context_window": 8192,
+      "max_output_tokens": 8192,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "custom",
+    "wire_api": ""
+  },
+  {
+    "account": false,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_completions",
+      "model_id": "fixture-model",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "custom",
+    "wire_api": "openai_completions"
+  },
+  {
+    "account": true,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_account",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-account",
+      "context_window": 8192,
+      "max_output_tokens": 8192,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "custom",
+    "wire_api": "openai_completions"
+  },
+  {
+    "account": false,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_compatible",
+      "endpoint": "http://localhost:8080/v1",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": true,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "custom",
+    "wire_api": "openai_responses"
+  },
+  {
+    "account": true,
+    "expected": {
+      "name": "Original",
+      "provider_kind": "openai_account",
+      "wire_api": "openai_responses",
+      "model_id": "fixture-model",
+      "auth_connection_id": "original-account",
+      "context_window": 8192,
+      "max_output_tokens": 8192,
+      "generation_defaults": {},
+      "compatibility": {
+        "developer_role": false,
+        "reasoning_effort": false,
+        "parallel_tool_calls": false,
+        "stream_usage": false,
+        "tool_result_format": "openai"
+      },
+      "capabilities": {
+        "text_input": true,
+        "image_input": false,
+        "audio_input": false,
+        "tool_calls": false,
+        "streaming": false,
+        "reasoning_efforts": null
+      }
+    },
+    "service": "custom",
+    "wire_api": "openai_responses"
+  }
+]
