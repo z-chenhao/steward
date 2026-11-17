@@ -17,15 +17,15 @@ test('Chat follows layout clamps while real reading input cancels following',{ti
     // Multiple asynchronous frames can shrink and regrow within one rendering
     // turn. Force the real browser clamp before delivering its scroll event.
     for(let step=0;step<10;step++){
-      const clamped=await page.evaluate(()=>{
+      const clamped=await page.evaluate(step=>{
         const before=scrollY,sections=[...document.querySelectorAll('section')];
         for(const section of sections)section.style.height='1px';
         void document.documentElement.offsetHeight;
         const after=scrollY;
-        for(const section of sections)section.style.height='700px';
+        for(const section of sections)section.style.height=(701+step)+'px';
         void document.documentElement.offsetHeight;
         return after<before;
-      });
+      },step);
       assert.equal(clamped,true,'fixture must actually clamp the browser viewport');
       await bottom();
     }

@@ -1288,11 +1288,13 @@ try{
   await architecture.locator('.node-detail strong').getByText('Tools',{exact:true}).waitFor();
   await geography.locator('.destination-detail strong').getByText('Los Angeles',{exact:true}).waitFor();
   await page.setViewportSize({width:390,height:844});
-  await calculator.evaluate(node=>node.scrollIntoView({block:'center'}));
+  await calculator.scrollIntoViewIfNeeded();
+  await calculator.evaluate(async node=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));const box=node.getBoundingClientRect();if(box.width<=0||box.bottom<=0||box.top>=innerHeight)throw Error('calculator capture has no visible content')});
   await page.screenshot({path:evidence+'/intelligent-ui-widget-mobile.png'});
   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2))throw Error('widget overflowed mobile viewport');
   await page.setViewportSize({width:1400,height:980});
-  await calculator.evaluate(node=>node.scrollIntoView({block:'center'}));
+  await calculator.scrollIntoViewIfNeeded();
+  await calculator.evaluate(async node=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));const box=node.getBoundingClientRect();if(box.width<=0||box.bottom<=0||box.top>=innerHeight)throw Error('calculator capture has no visible content')});
   await page.screenshot({path:evidence+'/intelligent-ui-widget-desktop.png'});
   const plain=await browser.newContext({javaScriptEnabled:false});try{await plain.addCookies(await context.cookies());const text=await plain.newPage();await text.goto(url);if(!await text.getByText('The calculator doubles its input. No network or Host access.',{exact:true}).count())throw Error('no-script text alternative missing')}finally{await plain.close()}
  }
