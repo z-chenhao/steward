@@ -15,7 +15,7 @@ from runner import CORE
 class CIChecksTests(unittest.TestCase):
     def test_go_partitions_keep_all_roots_and_original_package_alarm(self):
         root = Path(__file__).resolve().parents[2]
-        commands = subprocess.check_output(['make', '-n', 'test-go'], cwd=root, text=True)
+        commands = subprocess.check_output(['make', '--no-print-directory', '-n', 'test-go'], cwd=root, text=True)
         partitions = [shlex.split(line) for line in commands.splitlines()]
         self.assertEqual(len(partitions), 4)
         for tokens in partitions:

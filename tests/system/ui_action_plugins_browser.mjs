@@ -13,7 +13,10 @@ try{
  if(phase==='formal'||phase==='upgraded'){
   await button.evaluate(node=>node.dispatchEvent(new MouseEvent('click',{bubbles:true})));assert.equal(posts.length,0);
   for(const width of[1400,390])for(const theme of['light','dark']){await page.setViewportSize({width,height:980});await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await button.screenshot({path:out+'/action-'+width+'-'+theme+'.png'})}
-  await button.click();
+  // The source CAS is persisted before the effect POST. Observe actual Host
+  // acceptance before reading its receipt, rather than racing the pending POST.
+  const accepted=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/ui/action'&&response.request().method()==='POST');
+  await button.click();assert.equal((await accepted).ok(),true);
  }
  const state=await waitForUIState(page,ref,s=>typeof s.state.source==='string'&&s.state.source.length>=16);const source=state.state.source;
  const result=await page.evaluate(async({ref,source})=>{const deadline=performance.now()+10000;for(;;){const r=await fetch('/api/ui/action?'+new URLSearchParams({ref,source}));if(!r.ok)throw Error('original action unavailable');const value=await r.json();if(value.status==='succeeded')return value;if(!['pending','waiting'].includes(value.status)||performance.now()>deadline)throw Error('actual original action did not succeed: '+value.status);await new Promise(resolve=>setTimeout(resolve,40))}},{ref,source});

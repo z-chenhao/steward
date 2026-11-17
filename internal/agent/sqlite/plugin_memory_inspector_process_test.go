@@ -92,8 +92,7 @@ func TestMemoryInspectorActualProcessLateForgetReplacementPrivacyAndGuardian(t *
 	}
 	for _, mode := range []string{"unchanged", "forget", "replacement", "privacy-epoch", "stop"} {
 		t.Run(mode, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
+			ctx := context.Background()
 			s, r, _, _, _ := loopFixture(t)
 			vault, _ := evidenceMemoryVault(t, s)
 			owner := idAgent(t, s)
@@ -117,6 +116,9 @@ func TestMemoryInspectorActualProcessLateForgetReplacementPrivacyAndGuardian(t *
 			if err != nil {
 				t.Fatal(err)
 			}
+			// Fixture store/package setup is outside the unchanged producer race alarm.
+			ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
 			type outcome struct {
 				page         memory.InspectionPage
 				presentation *memory.InspectionPresentation

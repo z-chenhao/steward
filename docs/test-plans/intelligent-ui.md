@@ -371,3 +371,5 @@ Cards 原文修复的直接回归纳入既有必跑 `TestUICardsViewBrowserIsola
 现有必跑 `verify_ui_interactions.py` 增加实际 normalizer 收据检查：已发布动作必须有非空 action_views、原 ordinal 与 action 组件匹配，DTO 不含请求或权限字段；实际普通 Main／工具账本执行与两次绑定参数变化继续保留。第一次 SIGKILL 冷恢复后原 action_views 收据字节不变，不通过额外重选或补写恢复。当前默认32包 UI1.27 已通过该实际专项。`verify_ui_actions_plugins.py` 经现有 `verify_intelligent_ui.run` 必跑，覆盖生产桥／Main、独立 UI1.28 反馈与成功图标变化、原 source／CAS／参数、升级回退停用与首次冷恢复；停机数据副本的 `TestUIActionActualForgetRevokesOriginalFeedbackAndReceipt` 验证真实 Forget 立即撤销原展示与动作收据读取。`verify_ui_actions_legacy.py`／`ui_action_legacy_browser.mjs` 使用锁定 SHA256 的 UI1.25 原二进制，生成一个成功操作及一个未点击操作；换成当前 Host 后首次读取比较原 source、状态、结果、按钮与全部原产物／服务／收据／动作／视图状态事实，不重选、不补造展示、不调用模型。两类真实专项已通过；动作反馈迁移已随当前完整源码完成常规检查、真实专项与综合视觉验收。
 
 会议展示随原消息投影读取，没有独立 `/ui/form-view` 资源。全图停用后当前工作台返回503；真实冷启动数据副本经 `OpenControl` 首次读取新旧两版原消息投影，并立即验证 Forget 撤销，期间不重选或修复图。升级、回退与 SIGKILL 恢复仍使用实际浏览器。
+
+动作生命周期浏览器在真实点击前监听动作 POST，并在 Host 实际接纳后读取对应收据；source 的视图 CAS 先于动作提交，不能把 CAS 完成视为效果已接纳。重启／回退读取仍要求零 POST。
