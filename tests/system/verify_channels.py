@@ -1442,11 +1442,15 @@ def rich_replies(binary, evidence, report):
             h.wait_runtime_ready('native UI runtime readiness')
             source = 'SHOW_INTELLIGENT_UI: Compare these options and ask for the trip details.'
             h.http('/api/message', dict(source_id='rich-reply-request', content=[dict(type='text', text=source)]))
-            initial = h.wait(lambda s: len(s['deliveries']) == 1 and s['deliveries'][0]['status'] == 'sent', 'normal Main rich reply delivered')
+            # Discovery, Skill loading, seven managed component normalizers
+            # and final prose span several successful model/tool rounds.
+            delivery_started = time.monotonic()
+            initial = h.wait(lambda s: len(s['deliveries']) == 1 and s['deliveries'][0]['status'] == 'sent', 'normal Main rich reply delivered', timeout=60)
+            delivery_seconds = time.monotonic()-delivery_started
             history = h.http('/api/conversation')
             message = next(m for m in history if m['role'] == 'assistant')
             projection = json.loads(initial['projections'][0]['spec_json'])
-            (evidence.parent / 'rich-generation.json').write_text(json.dumps(dict(history=history, projection=projection, failure_state=h.failure_state()), ensure_ascii=False, indent=2) + '\n')
+            (evidence.parent / 'rich-generation.json').write_text(json.dumps(dict(history=history, projection=projection, failure_state=h.failure_state(), delivery_seconds=delivery_seconds, fixture_delivery_limit_seconds=60), ensure_ascii=False, indent=2) + '\n')
             kinds = [c['type'] for c in projection['components']]
             require([kind for kind in kinds if kind!='markdown'] == ['openintelligentui']*6+['widget'], f'ordinary reply did not generate controlled components: {kinds!r}')
             forms = [c for c in projection['components'] if c.get('name') == 'scheduleTime']
@@ -1454,7 +1458,7 @@ def rich_replies(binary, evidence, report):
             h.browser(evidence.parent / 'channels-ui', 'rich-replies')
             settled = h.wait(lambda s: len(s['inputs']) == 3 and len(s['deliveries']) == 3 and
                              all(d['status'] == 'sent' for d in s['deliveries']) and
-                             all(r['status'] == 'completed' for r in s['runs']), 'two form answers and Main continuations')
+                             all(r['status'] == 'completed' for r in s['runs']), 'two form answers and Main continuations', timeout=60)
             require(not settled['approvals'], 'answering a form created an approval')
             h.stop(kill=True); h.start()
             h.wait_runtime_ready('restored UI runtime ready')
