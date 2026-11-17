@@ -18,10 +18,6 @@ const (
 	OpenAIDecisions     API = "openai-decisions"
 )
 
-func ClassifierAPIs() []API {
-	return []API{TypeSafeSystemOne, CloudflareSystemOne, LlamaCPPClassify, OpenAIDecisions}
-}
-
 type Question struct {
 	Type         string `json:"type"`
 	Instructions string `json:"instructions"`

@@ -28,11 +28,6 @@
 .native-time-decline{justify-self:start;min-height:36px;padding:5px 0;border:0;border-radius:0;background:transparent;color:var(--muted-foreground);font:12px/1.5 var(--font-ui);box-shadow:none;cursor:pointer}
 .native-time-decline:hover{color:var(--foreground);background:transparent;text-decoration:underline;text-underline-offset:3px}
 .native-time-confirmation p{margin:5px 0 0;font:13px/1.6 var(--font-ui);color:var(--muted-foreground)}
-.native-export{position:relative;min-width:0}.native-export-trigger{position:absolute;top:0;right:0;z-index:2}
-.native-export-button{display:flex;align-items:center;justify-content:center;width:30px;height:30px;min-height:30px;padding:6px;border-radius:8px;cursor:pointer;box-shadow:none;transform:none}
-.native-export-menu{position:absolute;top:100%;right:0;margin-top:6px;min-width:180px;max-width:calc(100vw - 80px);padding:4px;border-radius:10px;display:grid;gap:2px;box-shadow:none}
-.native-export-action{display:flex;align-items:center;gap:9px;width:100%;min-height:34px;padding:7px 9px;border:0;border-radius:6px;background:transparent;font:12px/1.5 var(--font-ui);text-align:start;cursor:pointer;white-space:nowrap;box-shadow:none}
-.native-export-action svg{flex:none}
 .intelligent-widget{min-width:0;padding:0;margin:0;font:14px/1.6 var(--font-ui)}
 .intelligent-widget>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .intelligent-widget>header strong{font-size:14px;font-weight:600;line-height:1.6;overflow-wrap:anywhere;min-width:0}
@@ -50,7 +45,7 @@
 .widget-expanded{position:fixed;inset:20px;z-index:1000;overflow:auto;background:var(--background);padding:20px;border:1px solid var(--border);border-radius:16px}
 .widget-expanded>header{position:sticky;top:-20px;z-index:1;background:var(--background);padding:8px 0 14px;border-bottom:1px solid var(--border)}
 .widget-expanded iframe{min-height:60vh}
-@media(max-width:760px){.native-export-action,.native-plan summary{min-height:44px}.native-time-option{gap:12px}.widget-followup-actions>button,.native-time-decline{min-height:44px}.intelligent-widget .widget-expand-button{min-height:44px}.native-export-button{width:44px;height:44px}.native-chart .native-answer-heading{padding-inline-end:52px}.widget-expanded{inset:8px;padding:16px}.widget-expanded>header{top:-16px}}
+@media(max-width:760px){.native-plan summary{min-height:44px}.native-time-option{gap:12px}.widget-followup-actions>button,.native-time-decline{min-height:44px}.intelligent-widget .widget-expand-button{min-height:44px}.native-chart .native-answer-heading{padding-inline-end:52px}.widget-expanded{inset:8px;padding:16px}.widget-expanded>header{top:-16px}}
 /* Content stays in the conversation; secondary operations appear on demand. */
 .answer-surface{display:block;position:relative;inset:auto;width:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;overflow:visible;background:transparent;color:var(--foreground);font:14px/1.6 var(--font-ui);min-width:0}
 .answer-toolbar{position:absolute;top:-2px;right:0;z-index:3;display:flex;align-items:center;gap:6px}
