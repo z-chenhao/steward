@@ -106,3 +106,5 @@ required Apps 竞态使用[同一动态分批机制](engineering.md#apps-竞态�
 Trace 文案迁移的完成验收须覆盖：封存资源摘要与非法／重复字典拒绝；原中英文对应值；当前页面实际消费与未知词条不回退原生字典；独立换版、原冻结引用、回退、停用与冷读取；共享 Context 阅读器不被 Trace 字典改写。资源专项通过不替代页面或整功能验收。
 
 工具输出页面回归须通过真实 loadTrace 选择 tool 节点，断言恰好一次托管调用、原 Selected／ReaderRevision／Field／Offset、原始回执不变和独立预览实际显示；覆盖已托管空预览、调用错误、managed=false 和缺少 projector，当前图均不得静默回退。只测插件函数或 Store 投影不足以证明页面接线。
+
+RSI 验证器的真实候选测试载体遵守生产32MiB单文件包限制。race 或平台调试符号令载体超限时，夹具编译去调试符号的非 race 候选载体；Host 仍按当前 race 模式验证，生产大小边界、新鲜隔离进程数量、完整 Owner trace 与晚失败断言不变。

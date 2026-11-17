@@ -54,10 +54,11 @@ test-prompts:
 # Memory Inspector isolated-version cases share the managed Web partition;
 # every root stays exactly once under the original per-package alarm.
 test-go:
-	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
+	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable|Apps|ConnectedApp)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(WebPlugin|MemoryInspector)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^TestUI' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
+	go test -p 1 -timeout=15m ./... -run '^Test(Apps|ConnectedApp)' -count=1
 
 # Both real discovery entry points keep their own frozen authority and replay.
 test-tool-discovery:
@@ -82,7 +83,8 @@ test-memory:
 	go test -race ./internal/app ./internal/rsi ./internal/interaction/web -run 'MemoryExternalSecrets|MemoryInspector|MemoryView|MemoryStyles|MemoryLocalization|MemoryClientConfiguration|MemoryProgram|AppsStyles' -count=1
 
 test-connected-apps:
-	go test -race -p 1 -timeout=15m ./internal/connector/composio ./internal/connectedapps ./internal/plugin/appsmethods/... ./internal/plugin/appsdirectory/... ./internal/plugin/appsaccounts/... ./internal/plugin/appslogos/... ./internal/plugin/appsinterface/... ./pkg/rsiplugin ./internal/plugin/connectedapps ./internal/rsi ./internal/interaction/web ./internal/tool ./internal/tool/codemode ./internal/agent/sqlite -run '^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)' -count=1
+	go test -race -p 1 -timeout=15m ./internal/connector/composio ./internal/connectedapps ./internal/plugin/appsmethods/... ./internal/plugin/appsdirectory/... ./internal/plugin/appsaccounts/... ./internal/plugin/appslogos/... ./internal/plugin/appsinterface/... ./pkg/rsiplugin ./internal/plugin/connectedapps ./internal/rsi ./internal/interaction/web ./internal/tool ./internal/tool/codemode -run '^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)' -count=1
+	python3 tests/system/race.py --part apps-sqlite
 	python3 tests/system/race.py --part apps
 
 # Build the exact distribution before the mandatory real App lifecycle test.

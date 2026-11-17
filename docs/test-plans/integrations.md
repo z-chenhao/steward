@@ -633,3 +633,5 @@ required Apps 竞态使用[同一动态分批机制](engineering.md#apps-竞态�
 已保留的 pre-auth／pre-session／pre-check／pre-close／pre-reconnect／pre-settings 原始 producer 也必须分别在独立原 Store 中验证 Inventory 已启用后的安装／选择与首次冷读取；不能只验证最新七服务包，也不能重选／修复 fixture。
 
 完整分发 fixture 的清单读取器须和其他账户读取器一样绑定真实 Steward 载体，并实际投影 Check 后的当前状态；不能只靠启动 Owner 用例证明业务调用。标准组合还须以真实目录查询拒绝验证独立账户页面仍显示原 active 账户；不替换读取器、原图或事实来制造成功。
+
+当前标准分发为40包。Connected Apps SQLite race 通过原执行器按同一命名选择集分批，每根恰好一次，CPU 并发、15分钟单批报警和完整性核对保留。实际 App 系统验收的 managed33／managed32／prior30／prior29／prior28／prior24／prior23／prior22 八个独立组合分别运行，各保留20分钟报警；每个原子组合必须恰好一次 pass，不能因累计前序时间跳过后续版本、审批、unknown 或冷恢复。

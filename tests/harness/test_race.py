@@ -256,7 +256,7 @@ class SQLiteRaceInventoryTests(unittest.TestCase):
             unrelated = folder / 'retained-note.txt'
             unrelated.write_text('keep')
 
-            def execute(selected, output, stopped, memory=False):
+            def execute(selected, output, stopped, memory=False, pattern=None):
                 self.assertTrue(memory)
                 self.assertEqual(output, folder)
                 self.assertTrue(all(not path.exists() for path in stale))

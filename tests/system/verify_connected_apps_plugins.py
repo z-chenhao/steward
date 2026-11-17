@@ -71,21 +71,29 @@ def run(binary, evidence):
     # App accepts the external protocol peer through its existing test-only
     # Client field. It uses the exact standard bundle just proven by the CLI.
     environment = dict(os.environ, STEWARD_TEST_APP_DEFAULT_BUNDLE=str(binary))
-    # Eight real compositions run serially; observed race runs take roughly
-    # two minutes each. Bound the whole suite without truncating later modes.
-    result = owned_run(['go', 'test', '-race', '-json', './internal/app', '-run', '^' + TEST + '$',
-        '-count=1', '-timeout=20m'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=1260)
+    # Each composition owns its original 20-minute alarm; accumulated earlier
+    # modes must not cancel later cold/version/unknown-effect verification.
+    modes = ('managed33', 'managed32', 'prior30', 'prior29', 'prior28', 'prior24', 'prior23', 'prior22')
+    events, terminals = [], []
     log = evidence.with_name(evidence.stem + '-app-go.jsonl')
-    log.write_text(result.stdout)
-    if result.stderr:
-        evidence.with_name(evidence.stem + '-app-stderr.log').write_text(result.stderr)
-    events = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
-    terminal = [event['Action'] for event in events if event.get('Test') == TEST and
-                event['Action'] in ('pass', 'fail', 'skip')]
+    for mode in modes:
+        result = owned_run(['go', 'test', '-race', '-json', './internal/app', '-run', '^' + TEST + '$/^' + mode + '$',
+            '-count=1', '-timeout=20m'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=1260)
+        with log.open('a') as output:
+            output.write(result.stdout)
+        evidence.with_name(evidence.stem + '-' + mode + '-stderr.log').write_text(result.stderr)
+        observed = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+        terminal = [event['Action'] for event in observed if event.get('Test') == TEST and
+                    event['Action'] in ('pass', 'fail', 'skip')]
+        require(result.returncode == 0 and terminal == ['pass'],
+            'actual default App lifecycle failed or was skipped: ' + mode + result.stdout[-12000:] + result.stderr[-2000:])
+        events.extend(observed)
+        terminals.extend(terminal)
+    terminal = terminals
     scenarios = {suffix: [event['Action'] for event in events if event.get('Test') == TEST + '/' + suffix
-        and event['Action'] in ('pass', 'fail', 'skip')] for suffix in ('managed33', 'managed32', 'prior30', 'prior29', 'prior28', 'prior24', 'prior23', 'prior22')}
-    require(result.returncode == 0 and terminal == ['pass'] and all(value == ['pass'] for value in scenarios.values()),
-        'actual default App lifecycle failed or was skipped: ' + result.stdout[-12000:] + result.stderr[-2000:])
+        and event['Action'] in ('pass', 'fail', 'skip')] for suffix in modes}
+    require(terminal == ['pass'] * len(modes) and all(value == ['pass'] for value in scenarios.values()),
+        'default App composition coverage incomplete or duplicated')
     report['checks'].append(dict(actual_app_default40_account_lifecycle=True,
         test=TEST, terminal=terminal, scenarios=scenarios, log=str(log), queued_scope=True, cold_read=True,
         exact_approval=True, unknown_non_replay=True, independent_disable_and_owner_control=True))

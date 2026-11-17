@@ -17,7 +17,7 @@ class CIChecksTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         commands = subprocess.check_output(['make', '--no-print-directory', '-n', 'test-go'], cwd=root, text=True)
         partitions = [shlex.split(line) for line in commands.splitlines()]
-        self.assertEqual(len(partitions), 4)
+        self.assertEqual(len(partitions), 5)
         for tokens in partitions:
             self.assertIn('-timeout=15m', tokens)
             self.assertEqual(tokens[tokens.index('-p') + 1], '1')
@@ -30,6 +30,8 @@ class CIChecksTests(unittest.TestCase):
         selected_ui = partitions[2][partitions[2].index('-run') + 1]
         self.assertIn('./...', partitions[3])
         selected_schedule = partitions[3][partitions[3].index('-run') + 1]
+        self.assertIn('./...', partitions[4])
+        selected_apps = partitions[4][partitions[4].index('-run') + 1]
         for folder in ('cmd', 'internal', 'pkg', 'examples'):
             for source in (root / folder).rglob('*_test.go'):
                 for name in re.findall(r'^func (Test\w+)\(t \*testing.T\)', source.read_text(), re.MULTILINE):
@@ -37,7 +39,8 @@ class CIChecksTests(unittest.TestCase):
                     second = bool(re.search(selected, name))
                     third = bool(re.search(selected_ui, name))
                     fourth = bool(re.search(selected_schedule, name))
-                    self.assertEqual(sum((first, second, third, fourth)), 1, f'{source}: {name} must run exactly once')
+                    fifth = bool(re.search(selected_apps, name))
+                    self.assertEqual(sum((first, second, third, fourth, fifth)), 1, f'{source}: {name} must run exactly once')
 
     def test_prompt_partitions_keep_inheritance_and_managed_lifecycles_required(self):
         root = Path(__file__).resolve().parents[2]
@@ -516,6 +519,8 @@ class CIChecksTests(unittest.TestCase):
             cwd=Path(__file__).resolve().parents[2], text=True)
         import race
         self.assertIn('python3 tests/system/race.py --part apps', recipe)
+        self.assertIn('python3 tests/system/race.py --part apps-sqlite', recipe)
+        self.assertEqual(race.groups([race.SQLITE, race.BRIDGE, race.RECORDER, race.APP], 'apps-sqlite'), [('remainder', [race.SQLITE])])
         self.assertEqual(race.groups([race.SQLITE, race.BRIDGE, race.RECORDER, race.APP], 'apps'), [('app', [race.APP])])
         self.assertRegex('TestConnectedAppsDefaultProductionCompositionAndColdLifecycle', race.APP_PATTERN)
         self.assertRegex('TestAppsGraphicsActualVersionsRefsColdFrozenEffectsAndReceipts', race.APP_PATTERN)
@@ -530,6 +535,8 @@ class CIChecksTests(unittest.TestCase):
             self.assertRegex(name, race.APP_PATTERN)
         tokens = shlex.split(recipe)
         self.assertNotIn('./internal/app', tokens)  # App runs once through the audited batch inventory.
+        self.assertNotIn('./internal/agent/sqlite', tokens)
+        self.assertEqual(tokens[tokens.index('-run') + 1], race.APPS_SQLITE_PATTERN)
         for package in ('./internal/plugin/appsmethods/...', './internal/plugin/appsdirectory/...', './internal/plugin/appsaccounts/...', './pkg/rsiplugin', './internal/rsi', './internal/tool/codemode'):
             self.assertIn(package, tokens)
         pattern = tokens[tokens.index('-run') + 1]

@@ -27,6 +27,7 @@ RECORDER = 'github.com/z-chenhao/assistant/internal/observability/sqlite'
 SQLITE = 'github.com/z-chenhao/assistant/internal/agent/sqlite'
 APP = 'github.com/z-chenhao/assistant/internal/app'
 APP_PATTERN = '^Test(ConnectedApps|Apps)'
+APPS_SQLITE_PATTERN = r'^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)'
 APP_BATCH_SIZE = 12
 RACE = ['go', 'test', '-race', '-count=1', '-timeout=15m']
 MEMORY_PATTERN = 'Memory|Layered|Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs|RootFailureNotice'
@@ -57,7 +58,7 @@ def groups(packages, part=None):
         if APP not in packages:
             raise ValueError('missing App package inventory')
         return [('app', [APP])]
-    if part in ('sqlite', 'memory'):
+    if part in ('sqlite', 'memory', 'apps-sqlite'):
         return [('remainder', [SQLITE])]
     # The recorder intentionally drops diagnostics after 100 ms. Its 60 ms
     # lock-release contract needs CPU time, just like Bridge's RPC deadlines;
@@ -172,7 +173,7 @@ def drive_batch(job, folder, stopped, package):
     return result
 
 
-def run_remainder(selected, folder, stopped, memory=False):
+def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     started = time.monotonic()
     flags = MEMORY_RACE if memory else RACE
     discovery, metrics = flags + ['-list', '.', SQLITE], {}
@@ -186,10 +187,10 @@ def run_remainder(selected, folder, stopped, memory=False):
     names = test_names(listing.read_text())
     if not set(SERIAL_SQLITE) <= set(names):
         raise ValueError('timing-sensitive SQLite inventory changed')
-    if memory:
-        names = [name for name in names if re.search(MEMORY_PATTERN, name)]
+    if memory or pattern:
+        names = [name for name in names if re.search(MEMORY_PATTERN if memory else pattern, name)]
         if not names:
-            raise ValueError('missing memory race inventory')
+            raise ValueError('missing selected SQLite race inventory')
     serial = [name for name in SERIAL_SQLITE if name in names]
     budget = cpu_budget()
     seconds = timing_hints()
@@ -277,7 +278,8 @@ def main(part=None):
             if not selected:
                 continue
             if name == 'remainder':
-                row = run_remainder(selected, folder, stopped, memory=part == 'memory')
+                row = run_remainder(selected, folder, stopped, memory=part == 'memory',
+                                    pattern=APPS_SQLITE_PATTERN if part == 'apps-sqlite' else None)
             elif name == 'app':
                 row = run_app(selected, folder, stopped, APP_PATTERN if part == 'apps' else '.')
             else:
@@ -305,5 +307,5 @@ def main(part=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--part', choices=['packages', 'sqlite', 'memory', 'apps'])
+    parser.add_argument('--part', choices=['packages', 'sqlite', 'memory', 'apps', 'apps-sqlite'])
     raise SystemExit(main(parser.parse_args().part))

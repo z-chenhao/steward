@@ -42,7 +42,14 @@ func TestMain(m *testing.M) {
 	}
 	fixtureExecutable, _ = os.Executable()
 	cleanup := func() {}
-	if raceBuild {
+	info, err := os.Stat(fixtureExecutable)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	// The candidate must fit the same 32 MiB package boundary as production.
+	// Linux debug symbols can push this shared test carrier beyond that limit.
+	if raceBuild || info.Size() > 32<<20 {
 		root, err := os.MkdirTemp("", "steward-rsi-carrier-")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -50,7 +57,7 @@ func TestMain(m *testing.M) {
 		}
 		cleanup = func() { os.RemoveAll(root) }
 		fixtureExecutable = filepath.Join(root, "carrier")
-		cmd := exec.Command("go", "test", "-c", "-race=false", "-o", fixtureExecutable, ".")
+		cmd := exec.Command("go", "test", "-c", "-race=false", "-ldflags=-s -w", "-o", fixtureExecutable, ".")
 		if out, err := cmd.CombinedOutput(); err != nil {
 			fmt.Fprintln(os.Stderr, string(out))
 			cleanup()
