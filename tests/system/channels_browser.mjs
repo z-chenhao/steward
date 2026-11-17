@@ -1085,7 +1085,8 @@ try{
     await page.evaluate(()=>window.streamingFrame=document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]'));
     await frame.locator('#preview-text').evaluate(node=>window.streamingNode=node);
     await writeFile(evidence+'/preview-before.png',await preview.screenshot());
-    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await page.mouse.move(4,200);await page.mouse.wheel(0,-100000);
+    await page.waitForFunction(()=>scrollY===0);
     await writeFile(evidence+'/preview-advance.json',JSON.stringify({advance:true}));
     await frame.locator('#root-node').getByText('Root',{exact:true}).waitFor();
     if(!await page.evaluate(()=>window.streamingFrame===document.querySelector('#conversation-ui-preview iframe[title="Streaming visual"]'))||!await frame.locator('#preview-text').evaluate(node=>node===window.streamingNode))throw Error('incremental drawing reloaded the frame or replaced an existing node');

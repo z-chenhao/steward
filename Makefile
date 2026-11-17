@@ -54,11 +54,13 @@ test-prompts:
 # Memory Inspector isolated-version cases share the managed Web partition;
 # every root stays exactly once under the original per-package alarm.
 test-go:
-	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable|Apps|ConnectedApp)' -count=1
+	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable|Apps|ConnectedApp|Memory|Recall|Context|Compaction|Forget|Curator|Dream|Experience|Plugin|Shipped|Runtime|Native|ToolDiscovery|ToolSearch|Skill|MCP|Coding|Computer|File|Shell)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(WebPlugin|MemoryInspector)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^TestUI' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Apps|ConnectedApp)' -count=1
+	go test -p 1 -timeout=15m ./... -run '^Test(Memory|Recall|Context|Compaction|Forget|Curator|Dream|Experience)' -skip '^TestMemoryInspector' -count=1
+	go test -p 1 -timeout=15m ./... -run '^Test(Plugin|Shipped|Runtime|Native|ToolDiscovery|ToolSearch|Skill|MCP|Coding|Computer|File|Shell)' -count=1
 
 # Both real discovery entry points keep their own frozen authority and replay.
 test-tool-discovery:

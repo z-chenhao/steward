@@ -17,30 +17,20 @@ class CIChecksTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         commands = subprocess.check_output(['make', '--no-print-directory', '-n', 'test-go'], cwd=root, text=True)
         partitions = [shlex.split(line) for line in commands.splitlines()]
-        self.assertEqual(len(partitions), 5)
+        self.assertEqual(len(partitions), 7)
         for tokens in partitions:
             self.assertIn('-timeout=15m', tokens)
             self.assertEqual(tokens[tokens.index('-p') + 1], '1')
             self.assertIn('-count=1', tokens)
-        self.assertIn('./...', partitions[0])
-        skip = partitions[0][partitions[0].index('-skip') + 1]
-        self.assertIn('./...', partitions[1])
-        selected = partitions[1][partitions[1].index('-run') + 1]
-        self.assertIn('./...', partitions[2])
-        selected_ui = partitions[2][partitions[2].index('-run') + 1]
-        self.assertIn('./...', partitions[3])
-        selected_schedule = partitions[3][partitions[3].index('-run') + 1]
-        self.assertIn('./...', partitions[4])
-        selected_apps = partitions[4][partitions[4].index('-run') + 1]
+            self.assertIn('./...', tokens)
+        def selected(tokens, name):
+            include = '-run' not in tokens or bool(re.search(tokens[tokens.index('-run') + 1], name))
+            exclude = '-skip' in tokens and bool(re.search(tokens[tokens.index('-skip') + 1], name))
+            return include and not exclude
         for folder in ('cmd', 'internal', 'pkg', 'examples'):
             for source in (root / folder).rglob('*_test.go'):
                 for name in re.findall(r'^func (Test\w+)\(t \*testing.T\)', source.read_text(), re.MULTILINE):
-                    first = not re.search(skip, name)
-                    second = bool(re.search(selected, name))
-                    third = bool(re.search(selected_ui, name))
-                    fourth = bool(re.search(selected_schedule, name))
-                    fifth = bool(re.search(selected_apps, name))
-                    self.assertEqual(sum((first, second, third, fourth, fifth)), 1, f'{source}: {name} must run exactly once')
+                    self.assertEqual(sum(selected(tokens, name) for tokens in partitions), 1, f'{source}: {name} must run exactly once')
 
     def test_prompt_partitions_keep_inheritance_and_managed_lifecycles_required(self):
         self.assertEqual(ci.command('prompts'), 'make test-prompts')
