@@ -127,7 +127,18 @@ def _run_visual_flow(binary, evidence):
                         server.preview_release.set()
                 release = threading.Thread(target=release_preview)
                 try:
-                    require(server.preview_ready.wait(15), mode+' preview gate did not open')
+                    # Code Mode stages all three tools before its next model
+                    # request. Its existing execution budget is 30 seconds;
+                    # allow that budget plus protocol handoff, not just 15s.
+                    readiness_limit = 35 if mode == 'code' else 15
+                    readiness_started = time.monotonic()
+                    ready = server.preview_ready.wait(readiness_limit)
+                    (evidence.parent / ('preview-'+mode+'-readiness.json')).write_text(json.dumps(dict(
+                        mode=mode, ready=ready, seconds=time.monotonic()-readiness_started,
+                        limit_seconds=readiness_limit)))
+                    if not ready:
+                        (evidence.parent / ('preview-'+mode+'-runtime-state.json')).write_text(json.dumps(h.failure_state()))
+                    require(ready, mode+' preview gate did not open')
                     release.start()
                     h.browser(evidence.parent / ('preview-'+mode), 'intelligent-ui-preview-'+mode)
                 finally:
