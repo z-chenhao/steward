@@ -4,6 +4,8 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  const tableContent=table.frameLocator('iframe[title="Table view"]');
  const tableRows=async count=>tableContent.locator('tbody').evaluate((node,count)=>new Promise((resolve,reject)=>{const deadline=performance.now()+5000;const check=()=>node.rows.length===count?resolve():performance.now()>deadline?reject(Error('managed Table row count: '+node.rows.length+' expected '+count)):setTimeout(check,25);check()}),count);
  await form.getByRole('textbox',{name:'Notes',exact:true}).waitFor();await frame.locator('#quantity').waitFor();
+ // Enter reading mode before navigating among retained interactive widgets.
+ await page.mouse.move(4,200);await page.mouse.wheel(0,-100);
  // Chromium can defer ResizeObserver deliveries during responsive layout.
  // Such browser notifications must retain the live frame and its controls.
  await frame.locator('#quantity').evaluate(()=>{for(const message of ['ResizeObserver loop completed with undelivered notifications.','ResizeObserver loop limit exceeded'])dispatchEvent(new ErrorEvent('error',{message}))});
@@ -59,14 +61,26 @@ export async function uiInteractions(page,context,browser,url,evidence,restart=f
  await bar.locator('.answer-chart-tooltip').getByText('7,000,000,000',{exact:true}).waitFor();
  for(const width of [1400,390]){await page.setViewportSize({width,height:980});for(const theme of ['light','dark']){await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);await bar.scrollIntoViewIfNeeded();const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname));const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});try{await bar.screenshot({path:evidence+'/category-chart-'+width+'-'+theme+'.png'})}finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname)).deleteRule(index),captureRule)}}}
  await page.setViewportSize({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
- await tableContent.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button').click();await tableContent.locator('th[aria-sort=ascending]').waitFor();
+ // Settle the outer frame after responsive captures before one header click.
+ await table.scrollIntoViewIfNeeded();
+ await tableContent.locator('body').evaluate(()=>{window.sortInputEvents=[];for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,event=>window.sortInputEvents.push({type,target:event.target.tagName,text:event.target.textContent?.slice(0,80)}),{capture:true,once:true})});
+ await activate(tableContent.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button'));
+ try{await tableContent.locator('th[aria-sort=ascending]').waitFor()}catch(error){
+  await writeFile(evidence+'/table-sort-failure.json',JSON.stringify({frame:await tableContent.locator('body').evaluate(()=>({events:window.sortInputEvents??null,headers:[...document.querySelectorAll('th')].map(node=>({text:node.textContent,sort:node.getAttribute('aria-sort'),disabled:node.querySelector('button').disabled}))})),host:await table.evaluate(node=>({box:node.getBoundingClientRect().toJSON(),top:scrollY,height:innerHeight}))},null,2));throw error;
+ }
  if(await tableContent.locator('tbody tr').first().innerText().then(text=>!text.includes('10')))throw Error('numeric ascending sort failed');
- await tableContent.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button').click();await tableContent.locator('th[aria-sort=descending]').waitFor();if(!await tableContent.locator('tbody tr').first().innerText().then(text=>text.includes('42')))throw Error('numeric descending sort failed');
+ await activate(tableContent.getByRole('columnheader',{name:'Value',exact:true}).getByRole('button'));await tableContent.locator('th[aria-sort=descending]').waitFor();if(!await tableContent.locator('tbody tr').first().innerText().then(text=>text.includes('42')))throw Error('numeric descending sort failed');
  await menu(table,'Filter');await table.getByRole('searchbox',{name:'Filter rows'}).fill('A');await tableRows(1);if(await tableContent.locator('tbody tr').count()!==1)throw Error('table filter failed');
  await page.waitForFunction(()=>document.querySelector('[data-openintelligentui="steward.lineChart"] svg .recharts-line')!==null);
  const bytes=await downloaded(table,'Download CSV','.csv');if(!bytes.toString().includes('"A","10"')||bytes.toString().includes('"B","42"'))throw Error('CSV ignored current filter');
  await menu(table,'Reset');await line.locator('[data-chart-label="B"]').click();await tableRows(1);if(await tableContent.locator('tbody tr').count()!==1||!(await tableContent.locator('tbody tr').innerText()).includes('42'))throw Error('chart point selection did not filter the table');await line.locator('[data-chart-label="B"]').focus();await page.keyboard.press('Enter');await tableRows(3);if(await tableContent.locator('tbody tr').count()!==3)throw Error('keyboard chart selection did not clear the filter');await downloaded(line,'Download SVG','.svg');await downloaded(scatter,'Download PNG','.png');
- await menu(line,'Zoom');const ranges=line.locator('input[type=range]');await ranges.nth(1).fill('1');if(await line.locator('.recharts-line-dot').count()>2)throw Error('chart range did not update');await menu(line,'Reset');
+ await menu(line,'Zoom');const ranges=line.locator('input[type=range]');
+ await line.locator('[data-chart-label="C"]').waitFor();await ranges.nth(1).fill('1');
+ // Managed range decisions and React drawing complete after the input event.
+ // Observe the actual new graphic, including both retained nonempty points.
+ await line.locator('[data-chart-label="C"]').waitFor({state:'detached'});
+ for(const label of ['A','B'])await line.locator('[data-chart-label="'+label+'"]').waitFor();
+ if(await line.locator('.recharts-line-dot').count()!==2)throw Error('chart range did not retain exactly A and B');await menu(line,'Reset');
  // The same live frame must survive every Host display mode.
  await frame.locator('#quantity').fill('7');await frame.locator('#value').getByText('14',{exact:true}).waitFor();
  // Existing generated scroll containers keep their own keyboard and wheel input.
