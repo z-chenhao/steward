@@ -1234,9 +1234,9 @@ try{
      // the existing whole-page captures retain the actual conversation shell.
      // CSSOM uses the existing authorized stylesheet; an injected inline
      // screenshot style would be blocked by the real Host CSP.
-     const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css');const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
+     const captureRule=await page.evaluate(()=>{const sheet=[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname));const index=sheet.cssRules.length;sheet.insertRule('.chat-topbar,.chat-topbar *,.conversation-footer,#new-messages{visibility:hidden!important}',index);return index});
      try{await answer.screenshot({path:evidence+'/'+title.toLowerCase().replaceAll(' ','-')+'-'+width+'-'+theme+'.png'})}
-     finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&new URL(sheet.href).pathname==='/style.css').deleteRule(index),captureRule)}
+     finally{await page.evaluate(index=>[...document.styleSheets].find(sheet=>sheet.href&&['/style.css','/api/workbench/style'].includes(new URL(sheet.href).pathname)).deleteRule(index),captureRule)}
     }
     if(width===390){await architecture.locator('.architecture-list button').filter({hasText:'Tools'}).click();await architecture.locator('.node-detail strong').getByText('Tools',{exact:true}).waitFor()}
    }

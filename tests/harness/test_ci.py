@@ -385,9 +385,14 @@ class CIChecksTests(unittest.TestCase):
         self.assertIn('make test-web-access', ci.command('capabilities-race'))
         dry_run = subprocess.check_output(['make', '-n', 'test-web-access'],
                                           cwd=Path(__file__).resolve().parents[2], text=True)
+        commands = [shlex.split(line) for line in dry_run.splitlines()]
+        def selected(root):
+            return sum(re.search(row[row.index('-run') + 1], root) is not None and
+                       ('-skip' not in row or re.search(row[row.index('-skip') + 1], root) is None)
+                       for row in commands if '-run' in row)
         tokens = shlex.split(dry_run)
         patterns = [tokens[i + 1] for i, token in enumerate(tokens) if token == '-run']
-        self.assertEqual(len(patterns), 4)
+        self.assertEqual(len(patterns), 8)
         self.assertIn('./internal/webcontent/...', tokens)
         self.assertIn('./internal/rsi', tokens)
         self.assertIn('./internal/app', tokens)
@@ -398,7 +403,7 @@ class CIChecksTests(unittest.TestCase):
                      'TestVerificationBoundedFreshProcessesAndLateFailure',
                      'TestVerificationBeyondFormerCaseLimitIncludesLateFailure',
                      'TestVerificationPolicyCaseBound'):
-            self.assertTrue(any(re.search(pattern, root) for pattern in patterns),
+            self.assertEqual(selected(root), 1,
                             f'{root} is missing from required Web race')
         for root in ('TestWebPluginSearchActualTaskUpgradeRetainedRollbackAndDisable',
                      'TestWebPluginReadPublishedInterpreterSurvivesUpgradeRetirementAndDisable',
@@ -451,11 +456,11 @@ class CIChecksTests(unittest.TestCase):
                      'TestWebPluginExtractRealReleaseRecoveryDoesNotReplayOriginalNeverTool',
                      'TestWebPluginExtractCustomAbsoluteCommandAndScriptKeepFullInputAndLargeResult',
                      'TestWebPluginExtractMissingCatalogAndChangedConfigCannotUseRetainedAuthority'):
-            self.assertTrue(any(re.search(pattern, root) for pattern in patterns), f'{root} is missing from Web race')
+            self.assertEqual(selected(root), 1, f'{root} is missing from Web race')
         directory = Path(__file__).resolve().parents[2] / 'internal/agent/sqlite'
         for source in directory.glob('plugin_web*_test.go'):
             for root in re.findall(r'^func (TestWebPlugin\w+)\(', source.read_text(), re.MULTILINE):
-                self.assertTrue(any(re.search(pattern, root) for pattern in patterns),
+                self.assertEqual(selected(root), 1,
                                 f'{source.name}: {root} is missing from partitioned Web race')
 
     def test_default_computer_business_gate_is_a_required_system_lane(self):

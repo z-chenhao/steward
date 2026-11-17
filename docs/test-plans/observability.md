@@ -275,3 +275,5 @@ Trace／Memory 侧栏关闭的浏览器回归必须确认已返回原列表 URL�
 `TestTraceManagedHistoryWithoutCatalogCannotRestoreNativeDiffOrWorkbench` 先证明 never-managed 的真实 Diff 可读，再保留激活历史并验证 Catalog 缺失不回退。`TestTraceColdMissingCatalogNeverRestoresNativeProjection` 经实际隔离插件和 Host 激活后新开只读 Inspector；首次 Workbench／分桶／布局读取均须不可用，停用后再次新开也不回退，原始轮次仍可独立读取。`TestTracePartialActivationSchemaIsNotNeverManaged` 拒绝部分迁移表伪装成原生状态。这些回归同时保留在 ordinary Go 检查与必需 capabilities race；不增加额外 select、配置或 reload 作为恢复前提。
 
 真实 Trace 浏览器回归按列表筛选／列偏好、时间窗手势、列表截图／几何、详情／抽屉交互、模型 I/O／配置与截图、请求／上下文、任务执行导航七个场景分别运行，保留每个浏览器进程原45秒期限与全部原检查；场景共享同一真实后端 fixture 和原事实。冷页面早期链接／整行点击须等待原冻结程序的决策；无损浏览前后事实计数保持一致。移动端角色筛选发生真实导航后，按折叠状态显式重新打开 Filters，不依赖异步初始化竞态。
+
+真实 Trace fixture 包含两次 Root、四次 Main 及跨渠道交付；只对浏览前的两次最终状态等待使用60秒累计预算，保留完成／交付全部断言、生产租约和浏览器45秒时限。

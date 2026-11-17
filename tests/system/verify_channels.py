@@ -152,9 +152,9 @@ class ChannelHarness(MainHarness):
                 resources='SELECT * FROM channel_resource',
                 projections='SELECT * FROM delivery_projection').items()}
 
-    def wait(self,predicate,description):
+    def wait(self,predicate,description,timeout=20):
         try:
-            return self.wait_state(predicate,description,lambda _:self.rows(),timeout=20)
+            return self.wait_state(predicate,description,lambda _:self.rows(),timeout=timeout)
         except RuntimeError as error:
             # Bounded fixture state, without arguments, message bodies or credentials.
             state=self.rows()
@@ -1188,11 +1188,11 @@ def native_trace_inspection(binary,evidence,report):
             h.browser(evidence.parent/'execution-empty-ui','execution-empty')
             # The Root terminal commit can precede its causal Main follow-up. Wait
             # for both Main runs and their deliveries before measuring read-only UI.
-            h.wait(lambda state:any(r['worker_position']=='root' for r in state['runs']) and sum(r['kind']=='main' for r in state['runs'])>=2 and all(r['status'] in ('completed','failed','cancelled') for r in state['runs']) and len(state['deliveries'])>=2 and all(d['status']=='sent' for d in state['deliveries']),'native trace completion and Main follow-up')
+            h.wait(lambda state:any(r['worker_position']=='root' for r in state['runs']) and sum(r['kind']=='main' for r in state['runs'])>=2 and all(r['status'] in ('completed','failed','cancelled') for r in state['runs']) and len(state['deliveries'])>=2 and all(d['status']=='sent' for d in state['deliveries']),'native trace completion and Main follow-up',timeout=60)
             # A second real execution exercises previous/next inspection without
             # replacing the first trace's frozen request or accepted delivery.
             h.http('/api/message',dict(source_id='native-trace-second',content=[dict(type='text',text='Prepare a second independent report from the available evidence.')]))
-            h.wait(lambda state:sum(r['worker_position']=='root' for r in state['runs'])==2 and sum(r['kind']=='main' for r in state['runs'])>=4 and all(r['status'] in ('completed','failed','cancelled') for r in state['runs']) and all(d['status']=='sent' for d in state['deliveries']),'second native execution and delivery')
+            h.wait(lambda state:sum(r['worker_position']=='root' for r in state['runs'])==2 and sum(r['kind']=='main' for r in state['runs'])>=4 and all(r['status'] in ('completed','failed','cancelled') for r in state['runs']) and all(d['status']=='sent' for d in state['deliveries']),'second native execution and delivery',timeout=60)
             capture_state={}
             def captured(_):
                 with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
