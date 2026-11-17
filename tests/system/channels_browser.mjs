@@ -473,11 +473,11 @@ try{
   await page.screenshot({path:evidence+'/empty-to-live-execution.png',animations:'disabled',fullPage:true});
   await sheet.getByRole('button',{name:'Close details',exact:true}).click();await page.waitForURL(url+'/tasks');
  }
- if(['native-trace','native-trace-list','native-trace-detail','native-trace-model','native-trace-execution'].includes(phase)){
+ if(['native-trace','native-trace-list','native-trace-activity','native-trace-visual','native-trace-detail','native-trace-model','native-trace-execution'].includes(phase)){
   const facts=JSON.parse(process.env.STEWARD_NATIVE_TRACE_FACTS);
   await page.getByRole('link',{name:'Developer',exact:false}).click();
   await page.getByRole('heading',{name:'Tracing',exact:true}).waitFor();
-  if(['native-trace-list','native-trace-detail','native-trace-model'].includes(phase))await traceList(page,context,browser,url,evidence,facts,phase.replace('native-trace-',''));
+  if(['native-trace-list','native-trace-activity','native-trace-visual','native-trace-detail','native-trace-model'].includes(phase))await traceList(page,context,browser,url,evidence,facts,phase.replace('native-trace-',''));
   if(phase==='native-trace'){
   await page.setViewportSize({width:720,height:980});
   await page.waitForFunction(()=>document.querySelector('.obs-filter-rail')?.open===false);

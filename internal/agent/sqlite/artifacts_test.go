@@ -758,6 +758,8 @@ func testArtifactManageSearchExecutionAndReplay(t *testing.T, managed bool) {
 			installArtifactWorkbench(t, s, r)
 		}
 	})
+	// Direct executor fixture owns the same live heartbeat as the production Actor.
+	defer keepWebReadClaim(r, claim)()
 	// This contract checks sequential operations; capacity suspension is tested separately.
 	e.Concurrency = 1
 	results, err := e.Execute(ctx, exchange, save)

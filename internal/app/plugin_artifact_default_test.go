@@ -21,7 +21,7 @@ import (
 func TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle(t *testing.T) {
 	carrier := os.Getenv("STEWARD_TEST_APP_DEFAULT_BUNDLE")
 	if carrier == "" {
-		t.Skip("requires actual complete30 distribution;artifact-plugins gate supplies it")
+		t.Skip("requires actual complete40 distribution;artifact-plugins gate supplies it")
 	}
 	carrier, err := filepath.Abs(carrier)
 	if err != nil {
@@ -73,7 +73,7 @@ func TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle(t *testing.T
 		t.Fatal(err)
 	}
 	graph, err := a.Plugins().Store.Graph(ctx, selected.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 30 {
+	if err != nil || len(graph.Graph.Bindings) != 40 {
 		t.Fatal("owner used a partial distribution", err)
 	}
 	var policyJSON string
@@ -83,7 +83,7 @@ func TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle(t *testing.T
 		t.Fatal(err)
 	}
 	var policy rsi.Policy
-	if err := json.Unmarshal([]byte(policyJSON), &policy); err != nil || len(policy.Cases) != 243 {
+	if err := json.Unmarshal([]byte(policyJSON), &policy); err != nil || len(policy.Cases) != 387 {
 		t.Fatal("owner bootstrap omitted independent cases", len(policy.Cases), err)
 	}
 	// No model, Skills or runtime execution has been required for creation.

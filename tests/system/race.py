@@ -37,7 +37,7 @@ SERIAL_SQLITE = ['TestChildApprovalIsPerInvocationAndWaitingTreeReleasesLeases',
                  'TestDelegationPluginApprovalIsPerInvocationAndWaitingTreeReleasesLeases']
 # Independently compiled plugin and retained-version cases have enlarged this
 # package. Bound process batches rather than relaxing its aggregate alarm.
-SQLITE_BATCH_SIZE = 32
+SQLITE_BATCH_SIZE = 16
 
 
 def show_failure(path, code):

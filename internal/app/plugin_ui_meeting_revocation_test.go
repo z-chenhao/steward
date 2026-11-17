@@ -67,6 +67,27 @@ func TestUIMeetingActualForgetRevokesOriginalProjection(t *testing.T) {
 	if json.Unmarshal(raw, &spec) != nil || spec.MeetingViews[formID].Title != "Review" {
 		t.Fatal("original private display unavailable before Forget")
 	}
+	// Both accepted versions remain readable after real graph deactivation and
+	// cold OpenControl; no select, update or repair precedes these reads.
+	newMessage, newForm := os.Getenv("STEWARD_TEST_MEETING_NEW_MESSAGE"), os.Getenv("STEWARD_TEST_MEETING_NEW_FORM")
+	if newMessage == "" || newForm == "" {
+		t.Fatal("upgraded delivered identity required")
+	}
+	found := false
+	for _, m := range page.Messages {
+		if m.MessageID != newMessage {
+			continue
+		}
+		found = true
+		projection, e := app.WebProjection(ctx, m)
+		var upgraded ui.Spec
+		if e != nil || json.Unmarshal(projection, &upgraded) != nil || upgraded.MeetingViews[newForm].Title != "Meeting v126: Review" {
+			t.Fatal("upgraded private display unavailable after deactivation", e)
+		}
+	}
+	if !found {
+		t.Fatal("upgraded conversation unavailable")
+	}
 	result, err := app.ManageMemory(ctx, "meeting-owner-forget", memory.Mutation{Operation: "forget", Category: "preferences"})
 	if err != nil || result["accepted"] != true {
 		t.Fatal("real Forget rejected", result, err)

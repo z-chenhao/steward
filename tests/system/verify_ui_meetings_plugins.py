@@ -18,7 +18,6 @@ from feishu_sandbox import Sandbox
 from provider_endpoint import Endpoint
 from verify_channels import ChannelHarness, require
 
-from verify_ui_plan_plugins import read_published_view, read_deactivated_view
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -84,15 +83,12 @@ def run(binary, evidence):
     db.execute('BEGIN'); target = db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]; graph = json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?', (target,)).fetchone()[0]); require(len(graph['bindings']) == 40, 'not actual default40')
     digest = next(b['package_digest'] for b in graph['bindings'] if b['instance_id'] == 'intelligent-ui'); manifest = json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?', (digest,)).fetchone()[0]); require(manifest['version'] == '1.27.0' and len(manifest['provides']) == 9, 'new meeting added a service or default version wrong')
     base_policy = db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0]; owner_cases = db.execute("SELECT json_array_length(policy_json,'$.cases') FROM rsi_policy WHERE policy_id=?", (base_policy,)).fetchone()[0]; require(owner_cases == 387, 'default meeting Owner cases missing')
-   published = {}
    def browser(phase, ref='', caption='Review'):
-    if phase.startswith('disabled'): return read_deactivated_view(h, 'meetings', ref, published[ref])
     out = evidence.parent / phase; env = h.env.copy(); chrome = Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
     if chrome.exists(): env['STEWARD_BROWSER_EXECUTABLE'] = str(chrome)
     result = process(['node', str(ROOT / 'tests/system/ui_meeting_plugins_browser.mjs'), h.url, str(out), phase, ref, caption], cwd=ROOT, env=env, capture_output=True, text=True, timeout=45)
     (out / 'process-state.json').write_text(json.dumps(dict(url=h.url,pid=h.process.pid if h.process else None,returncode=h.process.poll() if h.process else None))); require(result.returncode == 0, 'actual meeting browser: ' + result.stderr);
     report = json.loads((out / 'report.json').read_text())
-    if ref: published[ref] = dict(source=report.get('source',''), value=read_published_view(h, 'meetings', ref, report.get('source','')))
     return report
    def snapshots():
     with closing(sqlite3.connect(h.root / 'data/state.db')) as db, db:
@@ -114,8 +110,8 @@ def run(binary, evidence):
    new = snapshots()[1]; require(new[2] == new_target, 'new meeting wrong graph'); new_ref = new[0] + '#1'; upgraded = browser('upgraded', new_ref, 'Meeting v126: Review'); answers(2); all_snapshots = snapshots(); h.stop()
    candidate = 'meeting-full-app-rollback'; h.command('plugin', 'propose', text=json.dumps(dict(candidate_id=candidate, baseline=new_target, target=target, policy_id=base_policy, goal='Retain both original meeting references.'))); decision = h.command('plugin', 'verify', candidate, timeout=90); h.command('plugin', 'activate', text=json.dumps(dict(operation_id=candidate, expected_graph_revision=new_target, target_graph_revision=target, decision_ref=decision['decision_ref'])), timeout=60)
    h.start(); h.wait_runtime_ready('meeting rollback ready'); browser('rollback-old', ref); browser('rollback-new', new_ref, 'Meeting v126: Review'); h.stop()
-   h.command('plugin', 'deactivate', text=json.dumps(dict(operation_id='meeting-disable', expected_graph_revision=target))); h.start(); browser('disabled-old', ref); browser('disabled-new', new_ref, 'Meeting v126: Review'); require(h.command('plugin', 'status')['graph_revision'] == '', 'cold start reactivated meeting graph'); require(snapshots() == all_snapshots, 'lifecycle recomputed owning receipt'); answers(2); h.stop()
-   env = h.env.copy(); env.update(STEWARD_TEST_MEETING_CONFIG=str(h.config), STEWARD_TEST_MEETING_MESSAGE=before[3], STEWARD_TEST_MEETING_FORM=formal['formID'])
+   h.command('plugin', 'deactivate', text=json.dumps(dict(operation_id='meeting-disable', expected_graph_revision=target))); h.start(); h.http('/', expected=503); require(h.command('plugin', 'status')['graph_revision'] == '', 'cold start reactivated meeting graph'); require(snapshots() == all_snapshots, 'lifecycle recomputed owning receipt'); answers(2); h.stop()
+   env = h.env.copy(); env.update(STEWARD_TEST_MEETING_CONFIG=str(h.config), STEWARD_TEST_MEETING_MESSAGE=before[3], STEWARD_TEST_MEETING_FORM=formal['formID'], STEWARD_TEST_MEETING_NEW_MESSAGE=new[3], STEWARD_TEST_MEETING_NEW_FORM=upgraded['formID'])
    result = process(['go', 'test', './internal/app', '-run', '^TestUIMeetingActualForgetRevokesOriginalProjection$', '-count=1'], cwd=ROOT, env=env, capture_output=True, text=True, timeout=90); (evidence.parent / 'forget-control.log').write_text(result.stdout + result.stderr); require(result.returncode == 0, 'actual meeting Forget fence failed: ' + result.stdout + result.stderr)
    report = dict(scope='actual production Host/bridge/Main/default40; source UI1.27 and independent1.28; remaining historical carrier/final gates incomplete', owner_cases=owner_cases, ref=ref, original_graph=target, new_graph=new_target, new_ref=new_ref, packages=[digest, new_digest], formal=formal, restart=restart, upgraded=upgraded, previews=[preview, new_preview], original_receipts_unchanged=True, real_bound_answers=2, no_new_service=True, no_new_persistent_table=True, binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest())
    evidence.write_text(json.dumps(report, indent=2) + '\n'); return report

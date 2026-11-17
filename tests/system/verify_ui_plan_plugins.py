@@ -22,7 +22,7 @@ from verify_channels import ChannelHarness, require
 
 
 def read_published_view(h, kind, ref, source=''):
- routes = {'plan':'/ui/plan','cards':'/ui/cards','table':'/ui/table','charts':'/ui/chart','forms':'/ui/form-view','meetings':'/ui/form-view','actions':'/api/ui/action'}
+ routes = {'plan':'/ui/plan','cards':'/ui/cards','table':'/ui/table','charts':'/ui/chart','forms':'/ui/form-view','actions':'/api/ui/action'}
  query = dict(ref=ref)
  if kind == 'actions': query['source'] = source
  body = h.http(routes[kind] + '?' + urlencode(query), headers={'Sec-Fetch-Dest':'iframe'})

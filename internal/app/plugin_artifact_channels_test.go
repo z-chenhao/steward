@@ -112,7 +112,7 @@ func artifactHTTPMediaPackage(t *testing.T) string {
 func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t *testing.T) {
 	carrier := os.Getenv("STEWARD_TEST_APP_DEFAULT_BUNDLE")
 	if carrier == "" {
-		t.Skip("requires actual complete30 distribution;artifact-plugins gate supplies it")
+		t.Skip("requires actual complete40 distribution;artifact-plugins gate supplies it")
 	}
 	carrier, err := filepath.Abs(carrier)
 	if err != nil {
@@ -120,7 +120,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 	}
 	directories, err := shippedPluginDirectories(carrier)
 	if err != nil || directories.Artifact == "" {
-		t.Fatal("actual complete30 required", err)
+		t.Fatal("actual complete40 required", err)
 	}
 	ctx := context.Background()
 	root := t.TempDir()
@@ -207,7 +207,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	graph, err := host.Store.Graph(ctx, first.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 30 {
+	if err != nil || len(graph.Graph.Bindings) != 40 {
 		t.Fatal("channel used partial composition", err)
 	}
 	var policyID string
@@ -217,7 +217,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	basePolicy, err := host.Store.Policy(ctx, policyID)
-	if err != nil || len(basePolicy.Cases) != 243 {
+	if err != nil || len(basePolicy.Cases) != 387 {
 		t.Fatal("full owner cases missing", err)
 	}
 	var pixels bytes.Buffer

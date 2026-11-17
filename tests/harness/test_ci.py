@@ -387,7 +387,7 @@ class CIChecksTests(unittest.TestCase):
                                           cwd=Path(__file__).resolve().parents[2], text=True)
         tokens = shlex.split(dry_run)
         patterns = [tokens[i + 1] for i, token in enumerate(tokens) if token == '-run']
-        self.assertEqual(len(patterns), 3)
+        self.assertEqual(len(patterns), 4)
         self.assertIn('./internal/webcontent/...', tokens)
         self.assertIn('./internal/rsi', tokens)
         self.assertIn('./internal/app', tokens)
@@ -655,18 +655,20 @@ class CIChecksTests(unittest.TestCase):
         self.assertIn('STEWARD_APP_CONNECT_VIEW_BROWSER_EVIDENCE=', ' '.join(connect[0]))
         self.assertEqual(len(owning), 1)
         self.assertIn('STEWARD_TEST_APP_BROWSER=1', owning[0])
-        pattern = owning[0][owning[0].index('-run') + 1]
-        self.assertIsNotNone(re.match(pattern, 'TestAppsEditorialActualOwnerHTTPVersionsSnapshotRollbackAndDisable'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsSettingsActualOriginalHTTPRowsDraftAndSave'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsLogoActualOwnerHTTPOriginal65FrozenReferencesColdAndDisable'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsInterfaceActualManagedBrowserLifecycle'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsCompositionActualVersionsColdOriginalProfileOnlyAndUnavailable'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsLocalizationActualBrowserOwnedFeedbackAndNative'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsCardViewActualManagedResourceBrowser'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsSidebarViewActualBrowserAndAcceptedLink'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsMarkupActualBrowserAndRecoveryLink'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsGraphicsActualBrowserAndRecoveryLink'))
-        self.assertIsNotNone(re.match(pattern, 'TestAppsAccountMarkupActualBrowserAndRecoveryLink'))
+        batches = [row for row in commands if any('STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE=' in token for token in row)]
+        self.assertEqual(len(batches), 3)
+        patterns = [row[row.index('-run') + 1] for row in batches]
+        self.assertEqual(sum(re.match(pattern, 'TestAppsEditorialActualOwnerHTTPVersionsSnapshotRollbackAndDisable') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsSettingsActualOriginalHTTPRowsDraftAndSave') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsLogoActualOwnerHTTPOriginal65FrozenReferencesColdAndDisable') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsInterfaceActualManagedBrowserLifecycle') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsCompositionActualVersionsColdOriginalProfileOnlyAndUnavailable') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsLocalizationActualBrowserOwnedFeedbackAndNative') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsCardViewActualManagedResourceBrowser') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsSidebarViewActualBrowserAndAcceptedLink') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsMarkupActualBrowserAndRecoveryLink') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsGraphicsActualBrowserAndRecoveryLink') is not None for pattern in patterns), 1)
+        self.assertEqual(sum(re.match(pattern, 'TestAppsAccountMarkupActualBrowserAndRecoveryLink') is not None for pattern in patterns), 1)
         self.assertIn('STEWARD_APP_SETTINGS_BROWSER_EVIDENCE=', ' '.join(owning[0]))
 
     def test_required_check_rejects_missing_failed_and_cancelled_work(self):

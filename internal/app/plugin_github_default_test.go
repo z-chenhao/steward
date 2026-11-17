@@ -38,7 +38,7 @@ func (p githubDefaultTransport) RoundTrip(req *http.Request) (*http.Response, er
 func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 	carrier := os.Getenv("STEWARD_TEST_APP_DEFAULT_BUNDLE")
 	if carrier == "" {
-		t.Skip("requires actual complete30 distribution;required github-plugins system gate supplies it")
+		t.Skip("requires actual complete40 distribution;required github-plugins system gate supplies it")
 	}
 	carrier, err := filepath.Abs(carrier)
 	if err != nil {
@@ -46,7 +46,7 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 	}
 	directories, err := shippedPluginDirectories(carrier)
 	if err != nil || directories.GitHub == "" {
-		t.Fatal("actual complete30 distribution missing", err)
+		t.Fatal("actual complete40 distribution missing", err)
 	}
 	ctx := context.Background()
 	root := t.TempDir()
@@ -129,8 +129,8 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 		t.Fatal(selected, err)
 	}
 	graph, err := a.Plugins().Store.Graph(ctx, selected.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 30 {
-		t.Fatal("source did not use all30", err)
+	if err != nil || len(graph.Graph.Bindings) != 40 {
+		t.Fatal("source did not use all40", err)
 	}
 	var source, method string
 	if err = a.store.Transaction(ctx, func(tx *sql.Tx) error {

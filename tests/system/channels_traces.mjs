@@ -5,7 +5,9 @@ import {writeFile} from 'node:fs/promises';
 export async function traceList(page,context,browser,url,evidence,facts,part='all'){
  const setViewport=async viewport=>{await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))};
  const list=url+'/developer/observability';
- if(part!=='detail'&&part!=='model'){
+ await setViewport({width:1400,height:980});
+ if(!['detail','model'].includes(part)){
+ if(part!=='activity'&&part!=='visual'){
  await page.waitForFunction(()=>[...document.querySelectorAll('.obs-trace-list time[data-local-time]')].every(node=>/\d{2}:\d{2}:\d{2}/.test(node.textContent)&&/^\d{4}-\d{2}-\d{2} /.test(node.title)&&!/GMT|UTC|Asia\//.test(node.title)));
  const assertRows=async(expected)=>{await page.waitForFunction(count=>document.querySelectorAll('[data-execution-id]').length===count,expected)};
  await page.getByRole('searchbox',{name:'Search traces',exact:true}).fill(facts.main);
@@ -50,6 +52,9 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  await page.getByRole('button',{name:'Columns',exact:true}).click();
  await page.getByRole('checkbox',{name:'Show column: Output',exact:true}).check();
  await page.keyboard.press('Escape');
+ }
+ if(part==='list')return;
+ if(part==='activity'){await traceActivity(page,context,browser,url,evidence);return;}
  const density=await page.locator('.obs-trace-list tbody tr').first().evaluate(row=>({height:row.getBoundingClientRect().height,font:parseFloat(getComputedStyle(row.querySelector('td')).fontSize)}));
  if(density.height>38||density.font!==12)throw Error('trace rows left the compact density: '+JSON.stringify(density));
  if(!await page.locator('.workspace-topbar').getByRole('button',{name:'All time',exact:true}).isVisible())throw Error('time range left the global header');
@@ -59,7 +64,7 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  const total=(await (await context.request.get(url+'/api/developer/traces')).json()).total;
  const activity=await page.locator('[data-trace-activity]').evaluate(node=>JSON.parse(node.dataset.traceActivity));
  if(activity.reduce((sum,bucket)=>sum+bucket.count,0)!==total)throw Error('activity histogram is not the complete filtered trace count');
- await traceActivity(page,context,browser,url,evidence);
+
  for(const theme of ['light','dark']){
   await page.evaluate(theme=>document.documentElement.classList.toggle('dark',theme==='dark'),theme);
   await page.screenshot({animations:'disabled',path:evidence+'/trace-list-'+theme+'.png',fullPage:true});
@@ -83,7 +88,7 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  await page.screenshot({animations:'disabled',path:evidence+'/trace-time-mobile.png',fullPage:true});await page.keyboard.press('Escape');
  await setViewport({width:1400,height:980});
  }
- if(part==='list')return;
+ if(part==='visual')return;
  await setViewport({width:1400,height:980});
  const traceRow=page.locator('[data-execution-id="'+facts.main+'"]'),trace=traceRow.locator('a.trace-open');
  await traceRow.locator('td').nth(1).click();
