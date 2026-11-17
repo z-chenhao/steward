@@ -56,7 +56,14 @@ try {
     assert(identity);
     const inspect = async target => {
       const name = await target.locator('.setting-copy strong').innerText();
-      if(options.clientView)assert.equal(await target.evaluate(row=>getComputedStyle(row).paddingTop),options.styleVariant?'24px':'16px');
+      if(options.clientView){
+        // Accepted check results replace the account row asynchronously. Read
+        // the connected rendered row, rather than a just-detached DOM handle.
+        await page.waitForFunction(({identity,padding})=>[...document.querySelectorAll('[data-app-account]')].some(row=>{
+          const box=row.getBoundingClientRect();
+          return row.dataset.appAccount===identity&&row.closest('[data-app-dialog][open],.app-detail-page')&&row.isConnected&&box.width>0&&box.height>0&&getComputedStyle(row).paddingTop===padding;
+        }),{identity,padding:options.styleVariant?'24px':'16px'},{timeout:5000});
+      }
       const parts = name.split(' · ');
       assert.equal(parts.length, 2);
       assert.equal(parts[options.accountVariant ? 1 : 0], 'Gmail');

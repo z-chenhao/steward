@@ -1,5 +1,8 @@
+import {writeFile} from 'node:fs/promises';
 // Exercise the shared Trace-style sheet against actual execution read models.
 export async function executionDetails(page,context,browser,url,evidence,facts){
+ const stage=name=>writeFile(evidence+'/execution-stage.json',JSON.stringify({stage:name,at:Date.now()}));
+ await stage('open-list');
  const list=url+'/tasks?view=closed&q=report';
  await page.goto(list);
  const row=page.locator('#execution-'+facts.root),opener=row.locator('[data-execution-open]');
@@ -20,6 +23,7 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
  // changes to the selected execution. Both read regions remain independent.
  await page.waitForResponse(response=>{const query=new URL(response.url()).searchParams;return new URL(response.url()).pathname==='/api/updates'&&query.get('view')==='/tasks'&&query.get('q')==='report'&&query.get('task_view')==='closed'});
  if(await page.locator('[data-execution-open]').count()!==2||await sheet.locator('#execution-detail').getAttribute('data-execution-id')!==facts.root)throw Error('list and execution refresh crossed scopes');
+ await stage('preserve-live-content');
  const delivery=await sheet.locator('#task-messages [data-ui-spec]').elementHandle();
  await page.waitForResponse(response=>new URL(response.url()).pathname==='/api/updates'&&new URL(response.url()).searchParams.get('view')==='/tasks/executions/'+facts.root);
  if(!await delivery.evaluate(node=>node.isConnected&&node===document.querySelector('#task-messages [data-ui-spec]')))throw Error('unchanged execution refresh remounted its delivered content');
@@ -45,6 +49,7 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
  await sheet.getByRole('button',{name:'Expand details',exact:true}).click();
  if((await sheet.boundingBox()).width<1398)throw Error('execution sheet did not expand');
  await sheet.getByRole('button',{name:'Expand details',exact:true}).click();
+ await stage('responsive-captures');
  for(const width of [1400,1920,390])for(const theme of ['light','dark']){
   await page.setViewportSize({width,height:980});
   await page.evaluate(value=>document.documentElement.classList.toggle('dark',value==='dark'),theme);
@@ -68,6 +73,7 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
   if(width===390&&result.y>=details.y)throw Error('mobile execution metadata precedes the result');
   await page.screenshot({path:`${evidence}/execution-drawer-${theme}-${width}.png`,fullPage:width>760,animations:'disabled'});
  }
+ await stage('history-and-filters');
  await page.setViewportSize({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
  await sheet.getByRole('button',{name:'Close details',exact:true}).click();
  await page.waitForURL(list);await sheet.waitFor({state:'detached'});await opener.and(page.locator(':focus')).waitFor();
@@ -83,6 +89,7 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
  await sheet.getByRole('link',{name:'Open full page',exact:true}).click();
  await page.locator('#execution-detail').waitFor();
  if(await page.locator('.control-sheet').count())throw Error('full-page execution retained its sheet');
+ await stage('native-fallback');
  const plain=await browser.newContext({javaScriptEnabled:false});
  try{
   await plain.addCookies(await context.cookies());const fallback=await plain.newPage();await fallback.goto(list);
@@ -90,4 +97,5 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
   await fallback.getByRole('heading',{name:'Execution result',exact:true}).waitFor();
   if(!await fallback.locator('#task-messages').innerText().then(text=>text.includes('Main Task follow-up through Pi.')))throw Error('native execution lost its delivery');
  }finally{await plain.close()}
+ await stage('complete');
 }

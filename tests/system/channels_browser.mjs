@@ -537,9 +537,9 @@ try{
   await page.locator('.task-configuration').waitFor();
   if(await page.locator('.primary-settings svg').innerHTML()===await page.locator('.task-configuration h2>svg').innerHTML())throw Error('Settings and task configuration reuse one icon');
   await page.screenshot({path:evidence+'/task-result.png',fullPage:true});
-  await taskNavigation(page,url,evidence);
   }
  }
+ if(phase==='native-trace-task-navigation')await taskNavigation(page,url,evidence);
  if(phase==='inspection'){
   const facts=JSON.parse(process.env.STEWARD_INSPECTION_FACTS);
   const main=facts.main,root=facts.runs.find(r=>r.role==='root'),child=facts.runs.find(r=>r.role==='child'&&r.parent!==root.id);
