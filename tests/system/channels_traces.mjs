@@ -3,10 +3,13 @@ import {assertDataList} from './channels_controls.mjs';
 import {writeFile} from 'node:fs/promises';
 // The trace list and peek panel use the actual Web query and read model.
 export async function traceList(page,context,browser,url,evidence,facts,part='all'){
+ const stage=name=>writeFile(evidence+'/trace-stage.json',JSON.stringify({part,stage:name,at:Date.now()}));
+ await stage('open-list');
+ const modelPart=part==='model-io'||part==='model-config';
  const setViewport=async viewport=>{await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))};
  const list=url+'/developer/observability';
  await setViewport({width:1400,height:980});
- if(!['detail','model'].includes(part)){
+ if(part!=='detail'&&!modelPart){
  if(part!=='activity'&&part!=='visual'){
  await page.waitForFunction(()=>[...document.querySelectorAll('.obs-trace-list time[data-local-time]')].every(node=>/\d{2}:\d{2}:\d{2}/.test(node.textContent)&&/^\d{4}-\d{2}-\d{2} /.test(node.title)&&!/GMT|UTC|Asia\//.test(node.title)));
  const assertRows=async(expected)=>{await page.waitForFunction(count=>document.querySelectorAll('[data-execution-id]').length===count,expected)};
@@ -92,9 +95,9 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  await setViewport({width:1400,height:980});
  const traceRow=page.locator('[data-execution-id="'+facts.main+'"]'),trace=traceRow.locator('a.trace-open');
  await traceRow.locator('td').nth(1).click();
- const sheet=page.getByRole('dialog',{name:'Trace details',exact:true});await sheet.waitFor();
+ const sheet=page.getByRole('dialog',{name:'Trace details',exact:true});await sheet.waitFor();await stage('detail-open');
  await page.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();
- if(part!=='model'){
+ if(!modelPart){
  // Full identifiers are copied from dynamic detail fragments, including LAN
  // HTTP without Clipboard API. Do not write the developer's real clipboard.
  await page.evaluate(()=>{
@@ -181,7 +184,7 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  if(part==='detail')return;
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a[aria-current="true"]').first().waitFor();
- await page.locator('.obs-selected-name').filter({hasText:'Model call'}).waitFor();
+ await page.locator('.obs-selected-name').filter({hasText:'Model call'}).waitFor();await stage('model-selected');
  await page.locator('.obs-generation-metrics').waitFor();
  await page.getByRole('link',{name:'Input / Output',exact:true}).click();
  if(await page.locator('.obs-detail-tabs a').count()!==2)throw Error('observation repeated overlapping primary tabs');
@@ -197,7 +200,8 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  for(const width of [1400,390,1920])for(const theme of ['light','dark']){
   if(width===1920&&theme==='dark')continue;
   await setViewport({width,height:980});await page.evaluate(value=>document.documentElement.classList.toggle('dark',value==='dark'),theme);
-  for(const view of ['io','details']){
+  for(const view of part==='model-io'?['io']:part==='model-config'?['details']:['io','details']){
+   await stage('model-'+view+'-'+theme+'-'+width);
    await page.getByRole('link',{name:view==='io'?'Input / Output':'Details',exact:true}).click();
    if(view==='details'){
     await page.getByRole('heading',{name:'Model configuration',exact:true}).waitFor();
@@ -210,6 +214,8 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
    if(width===390){await page.locator(view==='io'?'.obs-io-input':'.obs-generation-config').scrollIntoViewIfNeeded();await page.screenshot({animations:'disabled',path:`${evidence}/trace-model-${view}-${theme}-${width}-content.png`})}
   }
  }
+ if(part==='model-io'){await stage('complete');return}
+ await stage('drawer-captures');
  await setViewport({width:1400,height:980});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
  await page.getByRole('link',{name:'Input / Output',exact:true}).click();
  await page.screenshot({animations:'disabled',path:evidence+'/trace-drawer-light.png',fullPage:true});
@@ -227,9 +233,11 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  await setViewport({width:1400,height:980});
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
  await page.waitForURL(target=>target.searchParams.has('obs'));
+ await stage('close-and-restore-focus');
  await page.getByRole('button',{name:'Close details',exact:true}).click();
  await page.waitForURL(list);await sheet.waitFor({state:'detached'});
  await trace.and(page.locator(':focus')).waitFor();
+ await stage('history-forward');
  await page.goForward();await sheet.waitFor();
  await page.keyboard.press('Escape');await page.waitForURL(list);await sheet.waitFor({state:'detached'});
  await trace.click();await sheet.waitFor();
@@ -237,6 +245,7 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  await page.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();
  if(await page.locator('.control-sheet').count())throw Error('full-page trace remained in a drawer');
  await page.goto(list);
+ await stage('native-fallback');
  const plain=await browser.newContext({javaScriptEnabled:false});
  try{
   await plain.addCookies(await context.cookies());const fallback=await plain.newPage();await fallback.goto(list);
@@ -248,4 +257,5 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
   if(await fallback.locator('[data-execution-id]').count()!==1)throw Error('native histogram link lost the exact time bucket');
   await fallback.locator('a.trace-open').click();await fallback.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();
  }finally{await plain.close()}
+ await stage('complete');
 }
