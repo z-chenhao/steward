@@ -140,14 +140,22 @@ func TestComputerPluginPlaywrightFrozenBeforeApprovalAndUnknownNeverReplanned(t 
 			}
 			facts, _ := json.Marshal(contract.ActionFacts{Method: "playwright.fill", Surface: "tab"})
 			input, _ := json.Marshal(contract.ActionArguments{Args: []any{args}})
-			raw, err := h.ReadService(ctx, revision, contract.PlaywrightParametersContract, facts, []rsi.InputData{{ID: "arguments", Data: input}})
-			if err != nil {
-				t.Fatal(err)
+			// Fresh sandboxed processes can share a PID namespace ID. The fixture
+			// draws a bounded random timeout; tolerate only random value collisions.
+			changed := false
+			for attempt := 0; attempt < 3 && !changed; attempt++ {
+				raw, err := h.ReadService(ctx, revision, contract.PlaywrightParametersContract, facts, []rsi.InputData{{ID: "arguments", Data: input}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				var another computer.ActionParameters
+				if err := json.Unmarshal(raw, &another); err != nil || another.TimeoutMS == nil {
+					t.Fatal("invalid fixture response", string(raw), err)
+				}
+				changed = *another.TimeoutMS != *approved.TimeoutMS
 			}
-			var another computer.ActionParameters
-			json.Unmarshal(raw, &another)
-			if another.TimeoutMS == nil || *another.TimeoutMS == *approved.TimeoutMS {
-				t.Fatal("fixture did not change actual default", string(raw))
+			if !changed {
+				t.Fatal("independent fixture never changed the proposed timeout")
 			}
 			approveComputerAction(t, s, r)
 			result, err = computerPluginCall(t, b, "frozen-fill", "invoke", cap, "playwright.fill", args)

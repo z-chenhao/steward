@@ -5,7 +5,7 @@ import {writeFile} from 'node:fs/promises';
 export async function traceList(page,context,browser,url,evidence,facts,part='all'){
  const setViewport=async viewport=>{await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))};
  const list=url+'/developer/observability';
- if(part!=='detail'){
+ if(part!=='detail'&&part!=='model'){
  await page.waitForFunction(()=>[...document.querySelectorAll('.obs-trace-list time[data-local-time]')].every(node=>/\d{2}:\d{2}:\d{2}/.test(node.textContent)&&/^\d{4}-\d{2}-\d{2} /.test(node.title)&&!/GMT|UTC|Asia\//.test(node.title)));
  const assertRows=async(expected)=>{await page.waitForFunction(count=>document.querySelectorAll('[data-execution-id]').length===count,expected)};
  await page.getByRole('searchbox',{name:'Search traces',exact:true}).fill(facts.main);
@@ -89,6 +89,7 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
  await traceRow.locator('td').nth(1).click();
  const sheet=page.getByRole('dialog',{name:'Trace details',exact:true});await sheet.waitFor();
  await page.getByRole('heading',{name:'Trace tree',exact:true}).waitFor();
+ if(part!=='model'){
  // Full identifiers are copied from dynamic detail fragments, including LAN
  // HTTP without Clipboard API. Do not write the developer's real clipboard.
  await page.evaluate(()=>{
@@ -171,6 +172,8 @@ export async function traceList(page,context,browser,url,evidence,facts,part='al
   await prior.click();await page.waitForFunction(id=>document.querySelector('[data-trace-id]')?.dataset.traceId!==id,facts.main);
   await page.getByRole('button',{name:'Next trace',exact:true}).click();await page.waitForFunction(id=>document.querySelector('[data-trace-id]')?.dataset.traceId===id,facts.main);
  }
+ }
+ if(part==='detail')return;
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a').first().click();
  await page.locator('.obs-tree [data-observation-id="generation:'+facts.generation+'"] a[aria-current="true"]').first().waitFor();
  await page.locator('.obs-selected-name').filter({hasText:'Model call'}).waitFor();

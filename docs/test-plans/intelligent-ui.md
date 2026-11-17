@@ -300,6 +300,8 @@ Plan 的完整 App 鼠标展开检查等待相邻托管 Table 完成原状态恢
 
 ### Cards Worker 接线的验收范围
 
+整图停用同时关闭当前工作台及模型菜单策略，新的工作台请求应返回 503，不以原生页面兜底。Plan／Cards／Table／Chart／Form／Meeting／Action 专项在停用前最后一次真实浏览器交互后保存原引用的 HTTP 表示与适用的 CAS 状态；真实停用并冷启动后，首次直接读取已发布引用，逐字节比较（仅归一化每次响应的 CSP nonce），核对原状态与空活动图，并断言当前工作台仍不可用。此阶段验证已发布引用，不假称停用后的当前工作台仍可用；升级、回退及 SIGKILL 冷恢复继续执行完整真实浏览器交互，不补做 select／setup 或状态写入。
+
 Cards／Table 的失败 Worker 检查须在等待关闭前验证 Host 主线程仍可响应，并保留网络零请求与拒绝越权投影的断言。Chromium 对死循环脚本的强制终止本身有 [2 秒延迟](https://raw.githubusercontent.com/chromium/chromium/main/third_party/blink/renderer/core/workers/worker_thread.cc)，关闭事件的测试观察窗口为 5 秒，包含引擎终止与 IPC 余量；这不改变生产 Host 的初始化／命令 watchdog，也不允许 Worker 无限存活。仍必须观察真实关闭事件，不能以页面关闭或测试主动终止 Worker 代替。
 
 对照冻结原 Runtime 验证边界翻页、重复可达滚动位置、选中、状态采集及预取去重；实际 HTTP／CSP 浏览器验证候选未进入 DOM、导航／网络零请求、非法／未请求回复及死循环终止。正式接线还须验证原链接真实手势、图片 Delete／Forget、恢复后首次交互及 group 原状态，不用再次选择修复 fixture。以真实旧 UI 1.13 载体发布的快照验证原摘要、DOM／非空状态／图片／链接，旧记录不改写；独立换版、回退、停用与在途执行保持原图。草稿／夹具检查不能替代实际 App 和旧载体验收；当前仍待完成。

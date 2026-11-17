@@ -254,6 +254,8 @@ Node or Chromium. The `Ubuntu checks` job still executes and reports a status;
 there is no workflow-level path filter that leaves branch protection pending.
 Unknown paths, code changes, empty diffs and main pushes use the full PR path.
 
+Software and system jobs have a 60-minute outer execution budget for the complete managed-plugin integration inventory. Individual Go package, native driver and browser scenario deadlines remain unchanged. The former 10-minute job budget cancelled unfinished required checks; a larger outer budget does not turn a failed or timed-out test into a pass. The five-minute latency target is currently unmet and must be assessed from actual remote timing.
+
 A lane stops on its first failure; other lanes finish and retain their evidence
 (`fail-fast: false`). The aggregate uses `always()` and requires successful scope
 and every selected lane. Missing, failed or cancelled work cannot pass; skipped
@@ -320,6 +322,6 @@ They are not PR prerequisites. See [evaluation boundaries](../test-plans/product
 
 ## Dependency and repository maintenance
 
-`make lint` includes SHA-pinned workflow validation with actionlint v1.7.12. The independent dependency-audit workflow uses govulncheck v1.9.0 and npm lockfile audits, and runs weekly/manually/on dependency PRs. Dependabot proposes updates without automatic merging. Go 1.26.10 is the current minimum patched toolchain; the application module import path remains compatible.
+`make lint` includes SHA-pinned workflow validation with actionlint v1.7.12. The independent dependency-audit workflow uses govulncheck v1.9.0 and npm lockfile audits, and runs weekly/manually/on dependency PRs. Dependabot proposes updates without automatic merging. Go 1.26.11 is the current minimum patched toolchain; the application module import path remains compatible.
 
 The root README covers onboarding and directory responsibilities. GOVERNANCE/CONTRIBUTING/SECURITY own collaboration and reporting policies. Current artwork sources are separate from embedded runtime assets; static brand images derive from the production atlas. Historical reconstruction briefs are removed instead of being maintained as competing design authorities.

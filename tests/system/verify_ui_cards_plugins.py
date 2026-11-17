@@ -17,6 +17,8 @@ from fixture_pool import run as process, run_cases
 from verify_channels import ChannelHarness, require
 from verify_ui_plan_plugins import PlanEndpoint
 
+from verify_ui_plan_plugins import read_published_view, read_deactivated_view
+
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = 'steward.ui-cards-view/1'
 PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=')
@@ -102,12 +104,16 @@ def run(binary, evidence):
                 owner_cases = len(json.loads(policy_raw)['cases'])
                 require(owner_cases == 387, 'default Cards Owner oracle missing')
             h.start(); h.wait_runtime_ready('managed Cards App ready')
+            published = {}
             def browser(phase, ref='', heading='Card choices'):
+                if phase.startswith('disabled'): return read_deactivated_view(h, 'cards', ref, published[ref])
                 env = h.env.copy(); chrome = Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
                 if chrome.exists(): env['STEWARD_BROWSER_EXECUTABLE'] = str(chrome)
                 result = process(['node', str(ROOT / 'tests/system/ui_cards_plugins_browser.mjs'), h.url, str(evidence / phase), phase, ref, heading], cwd=ROOT, env=env, capture_output=True, text=True, timeout=45)
                 require(result.returncode == 0, 'actual Cards browser: ' + result.stderr)
-                return json.loads((evidence / phase / 'report.json').read_text())
+                report = json.loads((evidence / phase / 'report.json').read_text())
+                if ref: published[ref] = dict(source=report.get('source',''), value=read_published_view(h, 'cards', ref, report.get('source','')))
+                return report
             h.http('/api/message', dict(source_id='cards-app', content=[dict(type='text', text='PLAN_GATE')]))
             require(peer.ready.wait(20), 'provider did not emit Cards prefix')
             preview = browser('preview'); peer.release.set()

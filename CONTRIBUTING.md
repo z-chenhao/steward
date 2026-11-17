@@ -7,7 +7,7 @@ for a significant proposal; a small fix does not require an issue number.
 ## First contribution
 
 1. Fork the repository and create a topic branch from current `main`.
-2. Install Go 1.26.10+, Node 24.21.0, Python 3.10.12+, bash and a C compiler.
+2. Install Go 1.26.11+, Node 24.21.0, Python 3.10.12+, bash and a C compiler.
    Linux isolation needs Bubblewrap/user namespaces; optional OCR tests need
    Tesseract with English and Simplified Chinese data. See [installation](docs/features/installation.md).
 3. Run `make setup`, then `make test lint` to establish your baseline. On a fresh

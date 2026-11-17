@@ -18,6 +18,8 @@ from feishu_sandbox import Sandbox
 from provider_endpoint import Endpoint
 from verify_channels import ChannelHarness, require
 
+from verify_ui_plan_plugins import read_published_view, read_deactivated_view
+
 ROOT = Path(__file__).resolve().parents[2]
 
 class MeetingEndpoint(Endpoint):
@@ -82,11 +84,16 @@ def run(binary, evidence):
     db.execute('BEGIN'); target = db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]; graph = json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?', (target,)).fetchone()[0]); require(len(graph['bindings']) == 40, 'not actual default40')
     digest = next(b['package_digest'] for b in graph['bindings'] if b['instance_id'] == 'intelligent-ui'); manifest = json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?', (digest,)).fetchone()[0]); require(manifest['version'] == '1.27.0' and len(manifest['provides']) == 9, 'new meeting added a service or default version wrong')
     base_policy = db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0]; owner_cases = db.execute("SELECT json_array_length(policy_json,'$.cases') FROM rsi_policy WHERE policy_id=?", (base_policy,)).fetchone()[0]; require(owner_cases == 387, 'default meeting Owner cases missing')
+   published = {}
    def browser(phase, ref='', caption='Review'):
+    if phase.startswith('disabled'): return read_deactivated_view(h, 'meetings', ref, published[ref])
     out = evidence.parent / phase; env = h.env.copy(); chrome = Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
     if chrome.exists(): env['STEWARD_BROWSER_EXECUTABLE'] = str(chrome)
     result = process(['node', str(ROOT / 'tests/system/ui_meeting_plugins_browser.mjs'), h.url, str(out), phase, ref, caption], cwd=ROOT, env=env, capture_output=True, text=True, timeout=45)
-    (out / 'process-state.json').write_text(json.dumps(dict(url=h.url,pid=h.process.pid if h.process else None,returncode=h.process.poll() if h.process else None))); require(result.returncode == 0, 'actual meeting browser: ' + result.stderr); return json.loads((out / 'report.json').read_text())
+    (out / 'process-state.json').write_text(json.dumps(dict(url=h.url,pid=h.process.pid if h.process else None,returncode=h.process.poll() if h.process else None))); require(result.returncode == 0, 'actual meeting browser: ' + result.stderr);
+    report = json.loads((out / 'report.json').read_text())
+    if ref: published[ref] = dict(source=report.get('source',''), value=read_published_view(h, 'meetings', ref, report.get('source','')))
+    return report
    def snapshots():
     with closing(sqlite3.connect(h.root / 'data/state.db')) as db, db:
      db.execute('BEGIN'); return db.execute("SELECT w.ui_ref,c.result_json,b.graph_revision,w.message_id FROM ui_widget w JOIN rsi_call c ON c.run_id=w.run_id AND c.operation_id='ui-normalize:'||w.invocation_id JOIN rsi_run b ON b.run_id=w.run_id WHERE w.message_id IS NOT NULL ORDER BY w.rowid").fetchall()

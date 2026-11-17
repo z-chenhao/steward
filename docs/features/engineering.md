@@ -85,7 +85,7 @@ Use the [testing guide](../test-plans/product.md) for test ownership and command
 
 ### Development
 
-Use Go 1.26.10+, Node 24.21.0, Python 3.10.12+ and a C compiler. On Linux,
+Use Go 1.26.11+, Node 24.21.0, Python 3.10.12+ and a C compiler. On Linux,
 coding isolation requires Bubblewrap and user namespaces. Install dependencies:
 
 ```sh
@@ -178,8 +178,7 @@ that separate gap without requiring unrelated local work to be committed.
 Go package tests currently mix unit and component integration checks; `go test
 ./...` is not called a pure UT suite. The eleven deterministic core system gates
 run in isolated parallel PR CI lanes, with one required aggregate status that
-rejects failed, cancelled or missing work. The five-minute latency target is
-verified against remote workflow timing. Extended system coverage and the full race inventory run separately
+rejects failed, cancelled or missing work. The software/system jobs allow a 60-minute outer budget; individual test deadlines remain unchanged. The five-minute latency target is currently unmet and is measured against remote workflow timing. Extended system coverage and the full race inventory run separately
 on a weekly schedule or manual request. See [CI](../designs/engineering.md#ci-continuous-integration-and-delivery).
 
 `make lint` also runs pinned Staticcheck and actionlint. Compatibility exceptions

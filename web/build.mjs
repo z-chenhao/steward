@@ -39,12 +39,13 @@ for(const input of [...Object.keys(js.metafile.inputs),...Object.keys(diagrams.m
   const pieces=input.slice(at+13).split('/');
   dependencyDirs.add(input.slice(0,at+13)+pieces.slice(0,pieces[0].startsWith('@')?2:1).join('/'));
 }
-const dependencyLicenses=[...dependencyDirs].sort().map(directory=>{
+// Sort rendered package identities, independent of node_modules real paths.
+const dependencyLicenses=[...dependencyDirs].map(directory=>{
   const path=join(root,directory),pkg=JSON.parse(readFileSync(join(path,'package.json'),'utf8'));
   const files=readdirSync(path,{withFileTypes:true}).filter(file=>file.isFile()&&/^(licen[cs]e|copying|notice)([.-]|$)/i.test(file.name));
   if(!files.length)throw new Error('Missing bundled license for '+pkg.name);
   return pkg.name+' '+pkg.version+'\n'+files.map(file=>readFileSync(join(path,file.name),'utf8')).join('\n');
-});
+}).sort();
 const stewardLicenses=['LICENSE-Inter.txt','LICENSE-SourceSerif4.md','LICENSE-SourceHanSans.txt','LICENSE-JetBrainsMono.txt','LICENSE-Michroma.txt'].map(name=>readFileSync(root+'licenses/'+name,'utf8').replace(/[ \t]+$/gm,'')).join('\n\n');
 const licenses=[notices,readFileSync(root+'licenses/app-icons.txt','utf8'),stewardLicenses,readFileSync(root+'licenses/steward-artwork.md','utf8'),...dependencyLicenses].join('\n\n').replace(/\r\n/g,'\n').replace(/[ \t]+$/gm,'');
 const lightTheme=THEME_CSS.match(/:root\s*\{([\s\S]*?)\}/)[1],darkTheme=THEME_CSS.match(/@media[^\{]+\{\s*:root\s*\{([\s\S]*?)\}/)[1];

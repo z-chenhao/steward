@@ -1243,7 +1243,7 @@ def native_trace_inspection(binary,evidence,report):
             h.stop(kill=True);h.start()
             require(h.http('/api/developer/observations?'+urlencode(dict(run=main)))==tree,'completed trace changed across restart')
             h.env['STEWARD_NATIVE_TRACE_FACTS']=json.dumps(facts)
-            for phase in ('native-trace-list','native-trace-detail','native-trace','native-trace-execution'):
+            for phase in ('native-trace-list','native-trace-detail','native-trace-model','native-trace','native-trace-execution'):
                 h.browser(evidence.parent/'trace-ui'/phase,phase)
             with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
                 db.execute('BEGIN')

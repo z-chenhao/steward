@@ -55,6 +55,9 @@ func testConnectedAppsDefaultLifecycle(t *testing.T, mode string) {
 	if err != nil || directories.Apps == "" {
 		t.Fatal("actual default distribution missing Apps", err)
 	}
+	// These named historical fixtures predate the seven later feature packages.
+	directories.ModelConnections, directories.Feishu, directories.CapabilityForms, directories.Terminal = "", "", "", ""
+	directories.ReferencePricing, directories.WebWorkbench, directories.ServiceWatchdog = "", "", ""
 	ctx := context.Background()
 	secrets := memory.New()
 	if err := secrets.Put(ctx, connectedapps.DefaultKeyRef, []byte("synthetic-app-project")); err != nil {

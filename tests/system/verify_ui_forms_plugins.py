@@ -19,6 +19,8 @@ from feishu_sandbox import Sandbox
 from provider_endpoint import Endpoint
 from verify_channels import ChannelHarness, require
 
+from verify_ui_plan_plugins import read_published_view, read_deactivated_view
+
 ROOT=Path(__file__).resolve().parents[2]
 CONTRACT='steward.ui-form-view/1'
 
@@ -90,11 +92,16 @@ def run(binary,evidence):
     manifest=json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?',(digest,)).fetchone()[0]);require(manifest['version']=='1.27.0' and any(s['contract']==CONTRACT for s in manifest['provides']),'default did not activate Form1.27')
     base_policy_id=db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0];owner_cases=db.execute("SELECT json_array_length(policy_json,'$.cases') FROM rsi_policy WHERE policy_id=?",(base_policy_id,)).fetchone()[0];require(owner_cases==387,'default Form owner case missing')
    h.start();h.wait_runtime_ready('managed Form App ready')
+   published = {}
    def browser(phase,ref='',caption='Original form'):
+    if phase.startswith('disabled'): return read_deactivated_view(h, 'forms', ref, published[ref])
     out=evidence.parent/phase;env=h.env.copy();chrome=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
     if chrome.exists():env['STEWARD_BROWSER_EXECUTABLE']=str(chrome)
     result=run_process(['node',str(ROOT/'tests/system/ui_form_plugins_browser.mjs'),h.url,str(out),'formal-upgraded' if phase=='upgraded' else phase,ref,caption],cwd=ROOT,env=env,capture_output=True,text=True,timeout=45)
-    require(result.returncode==0,'actual Form browser: '+result.stderr);return json.loads((out/'report.json').read_text())
+    require(result.returncode==0,'actual Form browser: '+result.stderr);
+    report = json.loads((out/'report.json').read_text())
+    if ref: published[ref] = dict(source=report.get('source',''), value=read_published_view(h, 'forms', ref, report.get('source','')))
+    return report
    h.http('/api/message',dict(source_id='form-full-app',content=[dict(type='text',text='FORM_GATE')]))
    require(server.ready.wait(20),'real provider did not emit prefix')
    preview=browser('preview');prefix_upper_bound=preview['detectedAt']/1000-server.prefix_sent;server.release.set();h.wait(lambda s:len(s['deliveries'])==1 and s['deliveries'][0]['status']=='sent','Form delivered')

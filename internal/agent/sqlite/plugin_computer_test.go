@@ -164,8 +164,8 @@ func computerVersionPackage(t *testing.T, version string) string {
 		case "1.19.0":
 			extra = `if original["selector"]=="#LIVE_ORIGINAL" {plan.Selector="#WRONG_REPLACEMENT"}`
 		case "1.20.0":
-			code = strings.Replace(code, `"errors"`, `"errors";"os"`, 1)
-			extra = `if original["selector"]=="#LIVE_NONDETERMINISTIC" {n:=os.Getpid()%9000+1000;plan.TimeoutMS=&n}`
+			code = strings.Replace(code, `"errors"`, `"errors";"crypto/rand";"math/big"`, 1)
+			extra = `if original["selector"]=="#LIVE_NONDETERMINISTIC" {pick,err:=rand.Int(rand.Reader,big.NewInt(9000));if err!=nil{return rsiplugin.Result{},err};n:=int(pick.Int64())+1000;plan.TimeoutMS=&n}`
 		case "1.21.0":
 			extra = `if original["timeoutMs"]==float64(1234) {n:=5000;plan.TimeoutMS=&n}`
 		}
@@ -182,8 +182,8 @@ func computerVersionPackage(t *testing.T, version string) string {
 			extra = `if plan.NameFromSource {plan.NameFromSource=false;plan.Name="../escape"}`
 		}
 		if version == "1.25.0" {
-			code = strings.Replace(code, `"errors"`, `"errors";"os";"strconv"`, 1)
-			extra = `if plan.NameFromSource && plan.MediaType=="application/x-live-nondeterministic" {plan.NameFromSource=false;plan.Name="output-"+strconv.Itoa(os.Getpid())+".bin"}`
+			code = strings.Replace(code, `"errors"`, `"errors";"crypto/rand"`, 1)
+			extra = `if plan.NameFromSource && plan.MediaType=="application/x-live-nondeterministic" {plan.NameFromSource=false;plan.Name="output-"+rand.Text()+".bin"}`
 		}
 		replacement := `contract.TransferPresentationContract: func(ctx context.Context,call rsiplugin.Call)(rsiplugin.Result,error){var facts contract.ActionFacts;if err:=rsiplugin.Decode(call.Input,&facts);err!=nil{return rsiplugin.Result{},err};var input contract.ActionArguments;raw,err:=rsiplugin.ReadInput(ctx,call.Inputs[0]);if err!=nil{return rsiplugin.Result{},err};if err=json.Unmarshal(raw,&input);err!=nil{return rsiplugin.Result{},err};plan:=normalizeTransfer(facts,input.Args);original,_:=input.Args[0].(map[string]any);_ = original;LIVE;return rsiplugin.JSONResult(ctx,plan)},`
 		code = strings.Replace(code, `contract.TransferPresentationContract: transferPresentation,`, strings.Replace(replacement, "LIVE;", extra+";", 1), 1)
@@ -200,8 +200,8 @@ func computerVersionPackage(t *testing.T, version string) string {
 		case "1.30.0":
 			extra = `plan.NameFromSource=false;plan.Name="";plan.MediaType=""`
 		case "1.29.0":
-			code = strings.Replace(code, `"errors"`, `"errors";"os";"strconv"`, 1)
-			extra = `if plan.Selector=="#LIVE_NONDETERMINISTIC" {plan.NameFromSource=false;plan.Name="upload-"+strconv.Itoa(os.Getpid())+".bin"}`
+			code = strings.Replace(code, `"errors"`, `"errors";"crypto/rand"`, 1)
+			extra = `if plan.Selector=="#LIVE_NONDETERMINISTIC" {plan.NameFromSource=false;plan.Name="upload-"+rand.Text()+".bin"}`
 		}
 		replacement := `contract.BrowserUploadContract: func(ctx context.Context,call rsiplugin.Call)(rsiplugin.Result,error){facts,args,err:=readPlaywrightArguments(ctx,call);if err!=nil{return rsiplugin.Result{},err};if len(args)>0{original,_:=args[0].(map[string]any);for key:=range original{if key!="selector" && key!="timeoutMs"{return rsiplugin.Result{},errors.New("unexpected released resource")}}};plan:=normalizeBrowserUpload(facts,args);LIVE;return rsiplugin.JSONResult(ctx,plan)},`
 		code = strings.Replace(code, `contract.BrowserUploadContract: browserUploadParameters,`, strings.Replace(replacement, "LIVE;", extra+";", 1), 1)

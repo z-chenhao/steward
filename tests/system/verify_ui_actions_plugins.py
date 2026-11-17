@@ -16,6 +16,8 @@ from feishu_sandbox import Sandbox
 from provider_endpoint import Endpoint
 from verify_channels import ChannelHarness, require
 
+from verify_ui_plan_plugins import read_published_view, read_deactivated_view
+
 ROOT = Path(__file__).resolve().parents[2]
 
 def prepare(h, binary, folder):
@@ -51,10 +53,15 @@ def run(binary,evidence):
    def effects(count):
     with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
      db.execute('BEGIN');rows=db.execute('SELECT component_ref,source_id,arguments_json FROM ui_action_request ORDER BY rowid').fetchall();require(len(rows)==count,'action read/recovery created a new request');require(all(json.loads(r[2])==dict(query='task',limit=1) for r in rows),'feedback altered original request arguments');require(db.execute("SELECT count(*) FROM tool_invocation WHERE tool_name='builtin__tool_search' AND status='succeeded'").fetchone()[0]==count,'ordinary tool execution missing/duplicated');return rows
+   published = {}
    def browser(phase,ref,variant=False):
+    if phase.startswith('disabled'): return read_deactivated_view(h, 'actions', ref, published[ref])
     out=evidence.parent/phase;env=h.env.copy();chrome=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
     if chrome.exists():env['STEWARD_BROWSER_EXECUTABLE']=str(chrome)
-    result=process(['node',str(ROOT/'tests/system/ui_action_plugins_browser.mjs'),h.url,str(out),phase,ref,str(variant).lower()],cwd=ROOT,env=env,capture_output=True,text=True,timeout=45);require(result.returncode==0,'actual action feedback browser: '+result.stderr);return json.loads((out/'report.json').read_text())
+    result=process(['node',str(ROOT/'tests/system/ui_action_plugins_browser.mjs'),h.url,str(out),phase,ref,str(variant).lower()],cwd=ROOT,env=env,capture_output=True,text=True,timeout=45);require(result.returncode==0,'actual action feedback browser: '+result.stderr);
+    report = json.loads((out/'report.json').read_text())
+    if ref: published[ref] = dict(source=report.get('source',''), value=read_published_view(h, 'actions', ref, report.get('source','')))
+    return report
    h.start();h.wait_runtime_ready('action App ready');h.http('/api/message',dict(source_id='action-first',content=[dict(type='text',text='SHOW_UI_INTERACTIONS')]));h.wait(lambda _:len(snapshots())==1,'action delivered');before=snapshots()[0];require(before[2]==target and len(json.loads(before[1])['action_views'])==1,'original feedback missing from real receipt');ref=before[0]+'#1';formal=browser('formal',ref);original_effects=effects(1);selected=h.command('plugin','status');h.stop(kill=True);h.start();restart=browser('restart',ref);require(restart['source']==formal['source'] and effects(1)==original_effects and snapshots()[0]==before,'first cold read changed original request or feedback');require(h.command('plugin','status')==selected,'recovery reselected graph');h.wait_runtime_ready('original action cold runtime ready after first read');h.wait(lambda state:all(r['status'] in ['completed','cancelled','failed'] for r in state['runs']),'original action Main Run finished')
    h.stop();new_target,new_digest=prepare(h,binary,Path(temp)/'upgrade');h.start();h.wait_runtime_ready('action upgrade ready');browser('upgrade-retains-old',ref);effects(1);h.http('/api/message',dict(source_id='action-new',content=[dict(type='text',text='SHOW_UI_INTERACTIONS')]));h.wait(lambda _:len(snapshots())==2,'new action delivered');new=snapshots()[1];require(new[2]==new_target,'new feedback used wrong graph');new_ref=new[0]+'#1';upgraded=browser('upgraded',new_ref,True);effects(2);all_snapshots=snapshots();h.wait(lambda state:all(r['status'] in ['completed','cancelled','failed'] for r in state['runs']),'new action Main Run finished');h.stop()
    candidate='action-feedback-rollback';h.command('plugin','propose',text=json.dumps(dict(candidate_id=candidate,baseline=new_target,target=target,policy_id=base_policy,goal='Retain old/new original action feedback.')));decision=h.command('plugin','verify',candidate,timeout=90);h.command('plugin','activate',text=json.dumps(dict(operation_id=candidate,expected_graph_revision=new_target,target_graph_revision=target,decision_ref=decision['decision_ref'])),timeout=60);h.start();h.wait_runtime_ready('action rollback ready');browser('rollback-old',ref);browser('rollback-new',new_ref,True);effects(2);h.stop()

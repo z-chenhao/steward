@@ -37,7 +37,7 @@ or extending feature behavior; track its actual migration status in the
 
 ## Build, Test, and Development Commands
 
-Use Go 1.26.10+, Node 24.21.0 (`.node-version`), Python 3.10.12+, bash, and a C compiler.
+Use Go 1.26.11+, Node 24.21.0 (`.node-version`), Python 3.10.12+, bash, and a C compiler.
 
 - `make setup`: install pinned dependencies.
 - `make build` / `make run`: compile `bin/steward` / build and start locally.
