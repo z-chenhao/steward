@@ -3,6 +3,8 @@ package rsi
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -15,8 +17,17 @@ const verificationWorkers = 4
 
 type verifiedCase struct {
 	coverage string
+	failure  string
 	passed   bool
-	err      error
+}
+
+func failedVerificationInvocation(err error) verifiedCase {
+	failure := "invoke"
+	var startup *processStartupError
+	if errors.As(err, &startup) {
+		failure = fmt.Sprintf("invoke; joined_exit=%s; startup_report=%s", startup.status, startup.report)
+	}
+	return verifiedCase{failure: failure}
 }
 
 // Every case retains its own process, scratch, initial state and fixture ports.
@@ -53,7 +64,7 @@ func (h Host) verifyCases(ctx context.Context, graph rsiplugin.Graph, bindings m
 func (h Host) verifyCase(ctx context.Context, graph rsiplugin.Graph, bindings map[string]rsiplugin.Binding, pkg Package, test Case) verifiedCase {
 	b, ok := bindings[test.InstanceID]
 	if !ok {
-		return verifiedCase{}
+		return verifiedCase{failure: "binding"}
 	}
 	// Verify already loaded this exact graph's manifests. Invocation still checks
 	// every package's sealed bytes immediately before and after each fresh process;
@@ -69,18 +80,21 @@ func (h Host) verifyCase(ctx context.Context, graph rsiplugin.Graph, bindings ma
 		}
 		var output rsiplugin.HookResult
 		err = probe.runner(b).Invoke(ctx, b, "hook", rsiplugin.HookCall{OperationID: "verification", Input: visibleInput(*test.Hook, pkg.Manifest), State: state}, &output)
-		if !found || err != nil || validateHook(pkg.Manifest, *test.Hook, output.Output) != nil || output.State != nil && (!hasRequest(pkg.Manifest, "state.run.write") || !tool.Validate(string(pkg.Manifest.State.Schema), string(*output.State))) {
-			return verifiedCase{}
+		if err != nil {
+			return failedVerificationInvocation(err)
+		}
+		if !found || validateHook(pkg.Manifest, *test.Hook, output.Output) != nil || output.State != nil && (!hasRequest(pkg.Manifest, "state.run.write") || !tool.Validate(string(pkg.Manifest.State.Schema), string(*output.State))) {
+			return verifiedCase{failure: "output"}
 		}
 		actual, _ = json.Marshal(output.Output)
 	} else {
 		service, found := findService(pkg.Manifest, test.Contract)
 		if !found || !tool.Validate(string(service.InputSchema), string(test.Input)) {
-			return verifiedCase{}
+			return verifiedCase{failure: "input"}
 		}
 		scope, scopeErr := newInputScope(test.Inputs)
 		if scopeErr != nil || len(scope.descriptor) > 0 && !hasRequest(pkg.Manifest, "input.read") {
-			return verifiedCase{}
+			return verifiedCase{failure: "input"}
 		}
 		runner := probe.runner(b)
 		runner = h.withCompute(runner, &scope, nil, b, test.Contract, test.Input)
@@ -92,7 +106,7 @@ func (h Host) verifyCase(ctx context.Context, graph rsiplugin.Graph, bindings ma
 			var resourceErr error
 			runner.resources, complete, resourceErr = verificationResources(test.Resources)
 			if resourceErr != nil || !hasRequest(pkg.Manifest, "resource.call") {
-				return verifiedCase{}
+				return verifiedCase{failure: "resource"}
 			}
 			callCtx, cancel = context.WithTimeout(ctx, time.Duration(pkg.Manifest.Runtime.TimeoutMS)*time.Millisecond)
 		}
@@ -102,18 +116,21 @@ func (h Host) verifyCase(ctx context.Context, graph rsiplugin.Graph, bindings ma
 		if err == nil && test.Contract == webextract.Contract {
 			_, err = validateExtractComputation(&scope, output.Output)
 		}
-		if err != nil || !complete() || (test.Contract == webextract.Contract && !scope.computedAttempted) || !tool.ValidateBounded(string(service.OutputSchema), string(output.Output), rsiplugin.MaxResultBytes) || output.State != nil && (!hasRequest(pkg.Manifest, "state.run.write") || !tool.Validate(string(pkg.Manifest.State.Schema), string(*output.State))) {
-			return verifiedCase{}
+		if err != nil {
+			return failedVerificationInvocation(err)
+		}
+		if !complete() || (test.Contract == webextract.Contract && !scope.computedAttempted) || !tool.ValidateBounded(string(service.OutputSchema), string(output.Output), rsiplugin.MaxResultBytes) || output.State != nil && (!hasRequest(pkg.Manifest, "state.run.write") || !tool.Validate(string(pkg.Manifest.State.Schema), string(*output.State))) {
+			return verifiedCase{failure: "output"}
 		}
 		actual = output.Output
 	}
 	a, err := rsiplugin.Canonical(actual)
 	if err != nil {
-		return verifiedCase{}
+		return verifiedCase{failure: "canonical"}
 	}
 	expected, err := rsiplugin.Canonical(test.Expected)
 	if err != nil || string(a) != string(expected) {
-		return verifiedCase{}
+		return verifiedCase{failure: "expected"}
 	}
 	key := b.InstanceID + ":" + test.Contract
 	if test.Hook != nil {

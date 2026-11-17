@@ -23,6 +23,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/tool"
 	"github.com/z-chenhao/assistant/internal/webcontent/parserresource"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
+	"golang.org/x/sys/unix"
 )
 
 var fixtureExecutable string
@@ -73,6 +74,10 @@ func runFixture() {
 	raw, _ := os.ReadFile(filepath.Join(filepath.Dir(exe), "steward.plugin.json"))
 	var manifest rsiplugin.Manifest
 	_ = rsiplugin.Decode(raw, &manifest)
+	if manifest.Version == "99.0.0" {
+		fmt.Fprintln(os.Stderr, "PRIVATE_CANDIDATE_STDERR_NOT_DIAGNOSTIC")
+		os.Exit(2)
+	}
 	var config struct {
 		Tag string `json:"tag"`
 	}
@@ -98,6 +103,26 @@ func runFixture() {
 			}
 			if err := rsiplugin.Decode(c.Input, &in); err != nil {
 				return rsiplugin.Result{}, err
+			}
+			if in.Text == "kernel-limits" {
+				var limits testProcessLimits
+				for _, spec := range []struct {
+					resource   int
+					soft, hard *uint64
+				}{
+					{unix.RLIMIT_CPU, &limits.CPUSoft, &limits.CPUHard},
+					{unix.RLIMIT_FSIZE, &limits.FileSoft, &limits.FileHard},
+					{unix.RLIMIT_NOFILE, &limits.FDSoft, &limits.FDHard},
+					{unix.RLIMIT_AS, &limits.ASSoft, &limits.ASHard},
+				} {
+					var value unix.Rlimit
+					if err := unix.Getrlimit(spec.resource, &value); err != nil {
+						return rsiplugin.Result{}, err
+					}
+					*spec.soft, *spec.hard = value.Cur, value.Max
+				}
+				limits.RaiseDenied = unix.Setrlimit(unix.RLIMIT_NOFILE, &unix.Rlimit{Cur: limits.FDHard + 1, Max: limits.FDHard + 1}) != nil
+				return rsiplugin.JSONResult(ctx, limits)
 			}
 			if in.Text == "verification-delay" {
 				verificationCalls++
@@ -848,4 +873,26 @@ func TestHookChainCannotRestoreRemovedCapability(t *testing.T) {
 	if !errors.Is(err, rsi.ErrInvalid) {
 		t.Fatal("later plugin restored earlier restriction", err)
 	}
+}
+
+func TestMissingDescribeReportsJoinedStatusWithoutPrivateStderr(t *testing.T) {
+	requireSandbox(t)
+	f := newFixture(t)
+	m := manifest()
+	m.Version = "99.0.0"
+	pkg := install(t, f, m)
+	binding := rsiplugin.Binding{InstanceID: "test", PackageDigest: pkg.Digest, Config: json.RawMessage(`{"tag":""}`), StateNamespace: "test", StateVersion: 1}
+	var output rsiplugin.Result
+	err := (rsi.Runner{Catalog: f.host.Catalog}).Invoke(context.Background(), binding, "call", rsiplugin.Call{}, &output)
+	if !errors.Is(err, rsi.ErrUnknown) || !strings.Contains(err.Error(), "missing describe response") || !strings.Contains(err.Error(), "exit status 2") || strings.Contains(err.Error(), "PRIVATE_CANDIDATE") {
+		t.Fatal("missing/unsafe startup diagnostic", err)
+	}
+}
+
+type testProcessLimits struct {
+	CPUSoft, CPUHard   uint64
+	FileSoft, FileHard uint64
+	FDSoft, FDHard     uint64
+	ASSoft, ASHard     uint64
+	RaiseDenied        bool
 }

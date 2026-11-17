@@ -118,7 +118,8 @@ func TestVerificationBeyondFormerCaseLimitIncludesLateFailure(t *testing.T) {
 	for i := 0; i < 319; i++ {
 		policy.Cases = append(policy.Cases, rsi.Case{InstanceID: "test", Contract: "steward.echo/1", Input: json.RawMessage(`{"text":"owner"}`), Expected: json.RawMessage(`{"text":"owner"}`)})
 	}
-	policy.Cases[318].Expected = json.RawMessage(`{"text":"wrong"}`)
+	policy.Cases[318].Input = json.RawMessage(`{"text":"PRIVATE_INPUT_NOT_DIAGNOSTIC"}`)
+	policy.Cases[318].Expected = json.RawMessage(`{"text":"PRIVATE_EXPECTED_NOT_DIAGNOSTIC"}`)
 	if err := f.host.Store.PutPolicy(ctx, policy); err != nil {
 		t.Fatal(err)
 	}
@@ -127,6 +128,8 @@ func TestVerificationBeyondFormerCaseLimitIncludesLateFailure(t *testing.T) {
 	}
 	if _, err := f.host.Verify(ctx, policy.ID); !errors.Is(err, rsi.ErrVerification) {
 		t.Fatal("late case did not reject verification", err)
+	} else if !strings.Contains(err.Error(), "owner case 318 (test, steward.echo/1, expected)") || strings.Contains(err.Error(), "PRIVATE_") {
+		t.Fatal("failed owner case identity missing or private payload exposed", err)
 	}
 }
 

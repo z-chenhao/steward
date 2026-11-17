@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/tool"
@@ -223,9 +224,10 @@ func (h Host) Verify(ctx context.Context, id string) (string, error) {
 			passed = passed && allowedRequests[request]
 		}
 	}
-	for _, result := range h.verifyCases(ctx, g.Graph, bindings, packages, p.Cases) {
-		if result.err != nil {
-			return "", result.err
+	failedCase, failureStage := -1, ""
+	for index, result := range h.verifyCases(ctx, g.Graph, bindings, packages, p.Cases) {
+		if !result.passed && failedCase < 0 {
+			failedCase, failureStage = index, result.failure
 		}
 		passed = passed && result.passed
 		if result.passed {
@@ -256,6 +258,16 @@ func (h Host) Verify(ctx context.Context, id string) (string, error) {
 		return "", err
 	}
 	if !passed {
+		if failedCase >= 0 {
+			test := p.Cases[failedCase]
+			contract := test.Contract
+			if test.Hook != nil {
+				contract = "hook:" + string(test.Hook.Stage)
+			}
+			// Only bounded policy identities and a fixed stage are diagnostic.
+			// Inputs, expected/actual output and private process errors stay private.
+			return decision, fmt.Errorf("%w: owner case %d (%s, %s, %s)", ErrVerification, failedCase, test.InstanceID, contract, failureStage)
+		}
 		return decision, ErrVerification
 	}
 	return decision, nil

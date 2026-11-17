@@ -28,10 +28,14 @@ SQLITE = 'github.com/z-chenhao/assistant/internal/agent/sqlite'
 APP = 'github.com/z-chenhao/assistant/internal/app'
 APP_PATTERN = '^Test(ConnectedApps|Apps)'
 APPS_SQLITE_PATTERN = r'^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)'
+GITHUB_SQLITE_PATTERN = r'^Test(GitHub.*|StartupReconcilesRemovedOrChangedGitHubScopeBeforeActor|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$'
+CAPABILITIES_SQLITE_PATTERN = 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*|.*ModelMenu.*|Capability.*|Guided.*|FeishuStatus.*|FeedbackProjection.*|FeedbackUnavailableProjection.*|DeliveryProjection.*|FrozenDelivery.*|ManagedCard.*|CardPresentation.*|TerminalInterface.*|ModelPicker.*|ModelConnection.*|ModelSettings.*|SettingsDraft.*)'
+SQLITE_PATTERNS = {'apps-sqlite': APPS_SQLITE_PATTERN, 'github-sqlite': GITHUB_SQLITE_PATTERN,
+                   'capabilities-sqlite': CAPABILITIES_SQLITE_PATTERN}
 APP_BATCH_SIZE = 12
 RACE = ['go', 'test', '-race', '-count=1', '-timeout=15m']
 MEMORY_PATTERN = 'Memory|Layered|Semantic|AutomaticRecall|Recall|Forget|Evidence|ObjectIDs|RootFailureNotice'
-MEMORY_RACE = ['go', 'test', '-race', '-count=1', '-timeout=10m']
+TEN_MINUTE_RACE = ['go', 'test', '-race', '-count=1', '-timeout=10m']
 # The native and managed forms share one unchanged five-second context across
 # three approval/Drain phases. Give both the full CPU budget before overlap.
 SERIAL_SQLITE = ['TestChildApprovalIsPerInvocationAndWaitingTreeReleasesLeases',
@@ -58,7 +62,7 @@ def groups(packages, part=None):
         if APP not in packages:
             raise ValueError('missing App package inventory')
         return [('app', [APP])]
-    if part in ('sqlite', 'memory', 'apps-sqlite'):
+    if part in ('sqlite', 'memory') or part in SQLITE_PATTERNS:
         return [('remainder', [SQLITE])]
     # The recorder intentionally drops diagnostics after 100 ms. Its 60 ms
     # lock-release contract needs CPU time, just like Bridge's RPC deadlines;
@@ -175,7 +179,7 @@ def drive_batch(job, folder, stopped, package):
 
 def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     started = time.monotonic()
-    flags = MEMORY_RACE if memory else RACE
+    flags = TEN_MINUTE_RACE if memory or pattern == CAPABILITIES_SQLITE_PATTERN else RACE
     discovery, metrics = flags + ['-list', '.', SQLITE], {}
     listing = folder / 'sqlite-list.log'
     code = run_command(discovery, os.environ.copy(), listing, stopped, metrics)
@@ -279,7 +283,7 @@ def main(part=None):
                 continue
             if name == 'remainder':
                 row = run_remainder(selected, folder, stopped, memory=part == 'memory',
-                                    pattern=APPS_SQLITE_PATTERN if part == 'apps-sqlite' else None)
+                                    pattern=SQLITE_PATTERNS.get(part))
             elif name == 'app':
                 row = run_app(selected, folder, stopped, APP_PATTERN if part == 'apps' else '.')
             else:
@@ -307,5 +311,5 @@ def main(part=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--part', choices=['packages', 'sqlite', 'memory', 'apps', 'apps-sqlite'])
+    parser.add_argument('--part', choices=['packages', 'sqlite', 'memory', 'apps', *SQLITE_PATTERNS])
     raise SystemExit(main(parser.parse_args().part))

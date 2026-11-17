@@ -90,7 +90,8 @@ test-connected-apps:
 # Build the exact distribution before the mandatory real App lifecycle test.
 # Plugin/source oracles, SQL migration/recovery and CLI remain in the same race gate.
 test-github-plugins: build
-	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" go test -race -p 1 -timeout=15m ./internal/plugin/githubfollowup/... ./internal/observer/github ./internal/rsi ./internal/agent/sqlite ./internal/app ./cmd/steward -run '^Test(GitHub.*|StartupReconcilesRemovedOrChangedGitHubScopeBeforeActor|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$$' -count=1
+	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" go test -race -p 1 -timeout=15m ./internal/plugin/githubfollowup/... ./internal/observer/github ./internal/rsi ./internal/app ./cmd/steward -run '^Test(GitHub.*|StartupReconcilesRemovedOrChangedGitHubScopeBeforeActor|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$$' -count=1
+	python3 tests/system/race.py --part github-sqlite
 
 # Keep owner, Run, historical reference and pure-method regressions in CI.
 test-artifact-plugins: build

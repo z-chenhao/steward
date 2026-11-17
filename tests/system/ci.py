@@ -6,12 +6,15 @@ import os
 import sys
 
 from runner import CORE
+from race import CAPABILITIES_SQLITE_PATTERN
 from verify_channels import CHANNEL_GROUPS
 
 # Keep the public local Make targets intact. CI partitions their existing work
 # across isolated runners rather than rebuilding a shared, mutable worktree.
 SOFTWARE = {
-    'go': 'make test-prompts test-go test-tool-discovery',
+    'go': 'make test-go',
+    'prompts': 'make test-prompts',
+    'tool-discovery': 'make test-tool-discovery',
     'connected-apps': 'make test-connected-apps',
     'provider': 'npm test --prefix provider-bridge',
     'frontend': 'npm run check --prefix web\nnpm test --prefix web\nnpm test --prefix runtime/javascript',
@@ -25,7 +28,7 @@ SYSTEM = {
 }
 MEMORY_GATES = ('memory-maintenance', 'recall')
 CAPABILITIES = ('task-code-environments', 'task-code-recovery', 'tool-loading', 'main-business')
-RACE = "go test -race ./internal/agent ./internal/agent/sqlite ./internal/config/setup ./internal/interaction/web ./internal/interaction/feishu ./internal/llm/bridge ./internal/app ./internal/llm/secret ./internal/tui -run 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*|.*ModelMenu.*|Capability.*|Guided.*|FeishuStatus.*|FeedbackProjection.*|FeedbackUnavailableProjection.*|DeliveryProjection.*|FrozenDelivery.*|ManagedCard.*|CardPresentation.*|TerminalInterface.*|ModelPicker.*|ModelConnection.*|ModelSettings.*|SettingsDraft.*)' -count=1"
+RACE = "go test -race -p 1 ./internal/agent ./internal/config/setup ./internal/interaction/web ./internal/interaction/feishu ./internal/llm/bridge ./internal/app ./internal/llm/secret ./internal/tui -run '" + CAPABILITIES_SQLITE_PATTERN + "' -count=1"
 
 
 def plan(kind):
@@ -65,6 +68,7 @@ def command(lane):
         return f'make test-memory build\npython3 tests/system/runner.py {gates} --binary bin/steward --evidence evidence/e2e-{lane}'
     if lane == 'capabilities-race':
         commands = ['make build', 'make test-web-access', RACE,
+                    'python3 tests/system/race.py --part capabilities-sqlite',
                     "go test -race ./internal/observability/sqlite ./internal/rsi -run '^TestTrace(ManagedHistoryWithoutCatalog|ColdMissingCatalog|PartialActivationSchema)' -count=1"]
         commands.extend(f'python3 tests/system/verify_capabilities.py --binary bin/steward --scenario {scenario} --evidence evidence/{scenario}.json'
                         for scenario in CAPABILITIES)

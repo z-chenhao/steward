@@ -200,3 +200,5 @@ it does not certify real-model quality, real-account login or release acceptance
 Creating a version tag or publishing a release requires an explicit request.
 
 开源治理：项目采用 [Apache-2.0](../../LICENSE)，协作与分支策略见 [GOVERNANCE.md](../../GOVERNANCE.md)。README 提供首次安装和开发路径；GitHub Issue 表单与 CODEOWNERS 提供问题描述和评审入口。Dependabot 定期提出依赖 PR，仍需审核冻结能力兼容性、构建产物和第三方许可。原生安装包保留项目、Go 链接依赖及 Web 授权说明。
+
+Go 全量、提示／冻结上下文与工具发现 race 使用三个独立必需软件分片，分别调用现有 Make 目标；聚合 Ubuntu checks 仍要求全部成功。分离累计时长，不减少检查或复用可变构建目录。

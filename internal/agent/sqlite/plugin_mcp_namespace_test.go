@@ -230,10 +230,7 @@ func TestMCPPluginNamespaceProjectionLeavesWriterAndRechecksForget(t *testing.T)
 }
 
 func TestMCPPluginNamespaceOriginalLargeInstructionsUseBoundedDefaultProjection(t *testing.T) {
-	bin, err := os.Executable()
-	if err != nil {
-		t.Fatal(err)
-	}
+	bin := runtimeFeatureHost(t)
 	root := t.TempDir()
 	instructions := strings.Repeat("原", 340000) + "\nUNSELECTED_SERVER_INSTRUCTION_TAIL"
 	initialize, _ := json.Marshal(map[string]any{"protocolVersion": "2025-03-26", "capabilities": map[string]any{"tools": map[string]any{}}, "instructions": instructions})
@@ -243,7 +240,7 @@ func TestMCPPluginNamespaceOriginalLargeInstructionsUseBoundedDefaultProjection(
 	if err := os.WriteFile(filepath.Join(root, "mcp-initialize.json"), initialize, 0600); err != nil {
 		t.Fatal(err)
 	}
-	defs, err := mcp.Definitions(context.Background(), mcp.Config{Name: "managed", Command: bin, Directory: root, Args: []string{"-test.run=^TestMCPPluginPeer$", "--", "mcp-plugin-peer", root}, Tools: map[string]string{"read": "read_only", "send": "external_effect"}})
+	defs, err := mcp.Definitions(context.Background(), mcp.Config{Name: "managed", Command: bin, Directory: root, Args: []string{"-test-mcp-server", root}, Tools: map[string]string{"read": "read_only", "send": "external_effect"}})
 	if err != nil {
 		t.Fatal(err)
 	}

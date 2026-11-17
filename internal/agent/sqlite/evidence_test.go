@@ -326,7 +326,10 @@ func testEvidenceLinkPages(t *testing.T, managed bool) {
 	if err != nil || len(readPage.Links) != 20 {
 		t.Fatal("evidence page contended for WAL writer", err)
 	}
-	if _, err = r.ReadEvidence(readCtx, evidence.Request{Ref: readPage.Links[0].Ref}); err != nil {
+	// Each independent read keeps its own original deadline while the writer stays held.
+	artifactCtx, artifactCancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer artifactCancel()
+	if _, err = r.ReadEvidence(artifactCtx, evidence.Request{Ref: readPage.Links[0].Ref}); err != nil {
 		t.Fatal("evidence Artifact read contended for WAL writer", err)
 	}
 	if err = writer.Rollback(); err != nil {

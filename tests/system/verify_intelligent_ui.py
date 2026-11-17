@@ -70,7 +70,7 @@ def _run_visual_flow(binary, evidence):
             h.start()
             h.wait_runtime_ready('UI runtime ready')
             h.http('/api/message', dict(source_id='intelligent-ui-request', content=[dict(type='text', text='SHOW_INTELLIGENT_UI: compare the values and show a small calculator.')]))
-            first = h.wait(lambda s: len(s['deliveries']) == 1 and s['deliveries'][0]['status'] == 'sent', 'UI tool and reply delivered')
+            first = h.wait(lambda s: len(s['deliveries']) == 1 and s['deliveries'][0]['status'] == 'sent', 'UI tool and reply delivered', timeout=60)
             history = h.http('/api/conversation')
             require(not any('steward-result' in json.dumps(m) for m in history), 'UI protocol leaked into prose')
             with closing(sqlite3.connect(h.root / 'data/state.db')) as db, db:

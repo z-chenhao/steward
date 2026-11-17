@@ -43,6 +43,10 @@ class CIChecksTests(unittest.TestCase):
                     self.assertEqual(sum((first, second, third, fourth, fifth)), 1, f'{source}: {name} must run exactly once')
 
     def test_prompt_partitions_keep_inheritance_and_managed_lifecycles_required(self):
+        self.assertEqual(ci.command('prompts'), 'make test-prompts')
+        software = [ci.command(row['lane']) for row in ci.plan('software')['include']]
+        for target in ('test-go', 'test-prompts', 'test-tool-discovery'):
+            self.assertEqual(sum(target in shlex.split(command) for command in software), 1)
         root = Path(__file__).resolve().parents[2]
         commands = subprocess.check_output(['make', '-n', 'test-prompts'],
                                            cwd=root, text=True)
@@ -155,6 +159,9 @@ class CIChecksTests(unittest.TestCase):
         for flag in ('-race', '-count=1', '-timeout=15m'):
             self.assertIn(flag, args)
         pattern = args[args.index('-run') + 1]
+        self.assertEqual(pattern, race.GITHUB_SQLITE_PATTERN)
+        self.assertNotIn('./internal/agent/sqlite', args)
+        self.assertIn('python3 tests/system/race.py --part github-sqlite', recipe)
         for name in ('TestGitHubBootstrapIndependentOracleAndOriginalSelection',
                      'TestGitHubDefaultProductionControlPollAndColdLifecycle',
                      'TestGitHubNativeReadingMatchesOriginal27Cases',
@@ -200,7 +207,7 @@ class CIChecksTests(unittest.TestCase):
         self.assertNotIn('|| true', command)
 
     def test_tool_discovery_requires_owned_races_and_forward_schema_catalog(self):
-        self.assertIn('test-tool-discovery', ci.command('go'))
+        self.assertEqual(ci.command('tool-discovery'), 'make test-tool-discovery')
         recipe = subprocess.check_output(['make', '-n', 'test-tool-discovery'],
             cwd=Path(__file__).resolve().parents[2], text=True)
         args = shlex.split(recipe)
@@ -270,9 +277,11 @@ class CIChecksTests(unittest.TestCase):
         lanes = {row['lane']: row for row in ci.plan('system')['include']}
         self.assertEqual(lanes['startup-ui']['browser'], 'true')
         race = ci.command('capabilities-race')
-        for package in ('agent', 'agent/sqlite', 'interaction/web', 'llm/bridge'):
+        for package in ('agent', 'interaction/web', 'llm/bridge'):
             self.assertIn('./internal/' + package + ' ', ci.RACE)
         self.assertIn(ci.RACE, race)
+        self.assertNotIn('./internal/agent/sqlite ', ci.RACE)
+        self.assertIn('python3 tests/system/race.py --part capabilities-sqlite', race)
         self.assertIn('.*UI.*', ci.RACE)
         self.assertIn('ReplyStream.*', ci.RACE)
         browser_command = subprocess.check_output(['make', '-n', 'test-browser'],
@@ -300,6 +309,7 @@ class CIChecksTests(unittest.TestCase):
 
         tokens = shlex.split(ci.RACE)
         selected = tokens[tokens.index('-run') + 1]
+        self.assertEqual(selected, ci.CAPABILITIES_SQLITE_PATTERN)
         folder = Path(__file__).resolve().parents[2] / 'internal/agent/sqlite'
         for filename, names in {
             'plugin_ui_form_test.go': ['TestUIManagedFormAdmissionRollbackRetryAndOfflineRestore',

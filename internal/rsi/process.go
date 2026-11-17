@@ -10,12 +10,22 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/computer/sandbox"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
+
+// Only safe, bounded startup facts cross the process error boundary.
+// Joined status may include Host cleanup; a candidate report is not a cause.
+type processStartupError struct{ status, report string }
+
+func (e *processStartupError) Error() string {
+	return fmt.Sprintf("%v: missing describe response (joined_exit=%s, startup_report=%s)", ErrUnknown, e.status, e.report)
+}
+func (e *processStartupError) Unwrap() error { return ErrUnknown }
 
 // Runner uses an invocation-scoped process. Durable plugin state travels through
 // Host snapshots/CAS; no resident process or private scratch file is authoritative.
@@ -29,10 +39,13 @@ type Runner struct {
 	Compute        func(context.Context, rsiplugin.ComputeRequest) (rsiplugin.ComputeResult, error)
 }
 
-func (r Runner) Invoke(ctx context.Context, b rsiplugin.Binding, method string, input, output any) error {
+func (r Runner) Invoke(ctx context.Context, b rsiplugin.Binding, method string, input, output any) (resultErr error) {
 	p, err := r.Catalog.Load(b.PackageDigest)
 	if err != nil {
 		return err
+	}
+	if _, err = pluginLimitLauncher(); err != nil {
+		return fmt.Errorf("RSI_SANDBOX_UNAVAILABLE: %w", err)
 	}
 	if err = sandbox.Check(); err != nil {
 		return fmt.Errorf("RSI_SANDBOX_UNAVAILABLE: %w", err)
@@ -115,11 +128,28 @@ func (r Runner) Invoke(ctx context.Context, b rsiplugin.Binding, method string, 
 	if err = cmd.Start(); err != nil {
 		return err
 	}
-	waited := false
+	waited, missingDescribe := false, false
 	defer func() {
 		_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 		if !waited {
 			_ = cmd.Wait()
+		}
+		if missingDescribe && resultErr != nil && cmd.ProcessState != nil {
+			// Stderr is untrusted and private. Only fixed startup-report categories
+			// and the joined OS status may leave this boundary; neither proves a cause.
+			report := "unavailable"
+			message := string(cmd.Stderr.(*sandbox.Output).Bytes())
+			switch {
+			case strings.Contains(message, "runtime: failed to create new OS thread"), strings.Contains(message, "runtime/cgo: pthread_create failed"):
+				report = "thread_startup"
+			case strings.Contains(message, "fatal error: out of memory"), strings.Contains(message, "runtime: out of memory"), strings.Contains(message, "failed to reserve page summary memory"), strings.Contains(message, "fatal error: runtime: cannot allocate memory"):
+				report = "memory_startup"
+			case strings.HasPrefix(message, "prlimit:"):
+				report = "limit_launcher"
+			case strings.HasPrefix(message, "bwrap:"):
+				report = "sandbox_startup"
+			}
+			resultErr = &processStartupError{status: cmd.ProcessState.String(), report: report}
 		}
 	}()
 	outputLimit := int64(40 * rsiplugin.MaxFrameBytes)
@@ -155,6 +185,7 @@ func (r Runner) Invoke(ctx context.Context, b rsiplugin.Binding, method string, 
 					}
 					return ctx.Err()
 				}
+				missingDescribe = q.method == "describe"
 				return fmt.Errorf("%w: missing %s response", ErrUnknown, q.method)
 			}
 			var header struct {

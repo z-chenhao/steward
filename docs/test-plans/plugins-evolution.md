@@ -108,3 +108,5 @@ Trace 文案迁移的完成验收须覆盖：封存资源摘要与非法／重�
 工具输出页面回归须通过真实 loadTrace 选择 tool 节点，断言恰好一次托管调用、原 Selected／ReaderRevision／Field／Offset、原始回执不变和独立预览实际显示；覆盖已托管空预览、调用错误、managed=false 和缺少 projector，当前图均不得静默回退。只测插件函数或 Store 投影不足以证明页面接线。
 
 RSI 验证器的真实候选测试载体遵守生产32MiB单文件包限制。race 或平台调试符号令载体超限时，夹具编译去调试符号的非 race 候选载体；Host 仍按当前 race 模式验证，生产大小边界、新鲜隔离进程数量、完整 Owner trace 与晚失败断言不变。
+
+Owner 晚失败回归核对原例号与契约，确认输入和预期标记不进入错误文本。缺失 describe 的真实候选退出回归核对已清理进程的状态、原 unknown 类别，并拒绝原始 stderr 泄漏；退出状态可能包含 Host 清理，启动报告分类不视为权威原因。

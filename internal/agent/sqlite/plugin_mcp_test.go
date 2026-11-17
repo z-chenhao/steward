@@ -24,29 +24,15 @@ import (
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
-func TestMCPPluginPeer(t *testing.T) {
-	for i, arg := range os.Args {
-		if arg == "mcp-plugin-peer" && i+1 < len(os.Args) {
-			if err := mcpfake.Serve(os.Stdin, os.Stdout, os.Args[i+1]); err != nil {
-				os.Exit(2)
-			}
-			os.Exit(0)
-		}
-	}
-}
-
 func mcpPluginDefinitions(t *testing.T, description ...string) ([]tool.Definition, string) {
 	t.Helper()
-	bin, err := os.Executable()
-	if err != nil {
-		t.Fatal(err)
-	}
+	bin := runtimeFeatureHost(t)
 	root := t.TempDir()
 	text := ""
 	if len(description) == 1 {
 		text = description[0]
 	}
-	defs, err := mcp.Definitions(context.Background(), mcp.Config{Name: "managed", Command: bin, Directory: root, Args: []string{"-test.run=^TestMCPPluginPeer$", "--", "mcp-plugin-peer", root}, Tools: map[string]string{"read": "read_only", "send": "external_effect"}, Description: text})
+	defs, err := mcp.Definitions(context.Background(), mcp.Config{Name: "managed", Command: bin, Directory: root, Args: []string{"-test-mcp-server", root}, Tools: map[string]string{"read": "read_only", "send": "external_effect"}, Description: text})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -473,10 +459,7 @@ func TestMCPPluginRealReleaseRecoveryKeepsOriginalNeverCallAndGraph(t *testing.T
 
 func mcpPluginPagedDefinitions(t *testing.T, pageCount, toolsPerPage, allowedCount int) ([]tool.Definition, string) {
 	t.Helper()
-	bin, err := os.Executable()
-	if err != nil {
-		t.Fatal(err)
-	}
+	bin := runtimeFeatureHost(t)
 	root := t.TempDir()
 	allowlist := map[string]string{}
 	pages := map[string]any{}
@@ -505,7 +488,7 @@ func mcpPluginPagedDefinitions(t *testing.T, pageCount, toolsPerPage, allowedCou
 	if err := os.WriteFile(filepath.Join(root, "mcp-pages.json"), raw, 0600); err != nil {
 		t.Fatal(err)
 	}
-	defs, err := mcp.Definitions(context.Background(), mcp.Config{Name: "managed", Command: bin, Directory: root, Args: []string{"-test.run=^TestMCPPluginPeer$", "--", "mcp-plugin-peer", root}, Tools: allowlist})
+	defs, err := mcp.Definitions(context.Background(), mcp.Config{Name: "managed", Command: bin, Directory: root, Args: []string{"-test-mcp-server", root}, Tools: allowlist})
 	if err != nil || len(defs) != allowedCount {
 		t.Fatal("startup did not preserve the complete actual peer catalog", len(defs), err)
 	}
