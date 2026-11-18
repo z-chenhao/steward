@@ -74,7 +74,7 @@ def selected(h, configured=True):
             "SELECT p.plugin_id FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b "
             "JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?",
             (value['graph_revision'],))}
-    require(value['epoch'] == 1 and not value['stopped'] and len(packages) == 40 and
+    require(value['epoch'] == 1 and not value['stopped'] and len(packages) == 41 and
             {'steward.apps-directory', 'steward.apps-accounts', 'steward.apps-logos',
              'steward.apps-interface', 'steward.github-pr-followup','steward.artifact-workbench'}.issubset(packages),
             'complete default composition was not selected')

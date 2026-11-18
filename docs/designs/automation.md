@@ -194,3 +194,12 @@ Web 的已验证浏览器时区只作为新建表单的显示输入。工作台�
 ### 所有者试运行
 
 工作台插件提供显式表单，Host 将已授权的计划版本、隐私代次与相同请求回执绑定在同一事务。新任务使用当前托管 schedule 的指引与阈值算法，按原有 Root 的权限和审批冻结。每个试运行仅有一个已接纳的 fire，复制进入阈值状态，不进入生产的到期扫描和计划列表。试运行回报通过同一 Main 结果通道固定回 Web，按试运行任务分组。原配置、偏好与历史 fire 保持自己的身份。该接线是供本机所有者验证计划的一条私有路径。
+
+
+### 获准日历与邮件的只读研究
+
+操作者在既有 connected-apps CAS 文档中保存两个确切绑定摘要、一次性授权标识和时区。Host 在每次内容读取和交付前复核两份本地授权及供应商账户状态，关闭连接会同时清除研究授权。连接查询和凭证仍由受信适配器持有。Composio 代理只可发起固定的 Google Calendar 事件、Gmail 会话/主题和邮箱身份 GET；邮箱身份用于生成对应账号的来源链接。普通模型和插件没有通用代理入口。
+
+独立 `meeting-preparation` 包拥有标题和主题匹配策略；私有 `steward.meeting-preparation/1` 接收有界数组，返回选择的位置。Host 验证索引、绑定和当前组合，组装可信来源链接。内存缓存按授权、日期和图版本区分，停用、隔离或换源后停止交付。次日边界按所选时区的两个本地午夜计算。每次网页服务启动和跨日检查不依赖推理或发送消息。
+
+适配器依据 [Composio 代理协议](https://docs.composio.dev/reference/api-reference/tools/postToolsExecuteProxy)、[Calendar 事件查询](https://developers.google.com/workspace/calendar/api/v3/reference/events/list) 和 [Gmail 会话查询](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.threads/list) 实现。

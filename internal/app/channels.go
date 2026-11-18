@@ -135,6 +135,10 @@ func (a *App) WebProjection(ctx context.Context, m conversation.Message) (json.R
 	}{spec, bubbles, formDisplays})
 }
 func (a *App) ServeWeb(ctx context.Context, listener net.Listener, cfg web.Config) error {
+	worker, cancel := context.WithCancel(ctx)
+	done := make(chan struct{})
+	go a.meetingLoop(worker, done)
+	defer func() { cancel(); <-done }()
 	s := web.Server{Apps: a.connectedApps, Logos: a.readAppsLogos, Interface: a.readAppsInterface, Workers: a.store.Inspector(), Computer: a, Capabilities: a.capabilitySettings, CapabilityForms: a.readCapabilityForm, Config: cfg, Core: a, Tasks: a.store.TaskReader(), Feedbacks: a, Schedules: a, Inspector: a.store.Inspector(), Memory: a, Contexts: a.store.Inspector(), Traces: a.store.Inspector(), Models: a.Models(), Control: a.control, Accounts: a.accounts, Secrets: a.control.Secrets, AccountCatalog: a.AccountCatalog, ModelMenu: a.readModelMenu, ModelPicker: a.readModelPicker, WebWorkbench: a.readWebWorkbench, ModelSettings: a.readModelSettings, ModelConnectionPolicy: a.readModelConnection}
 	if a.feishu != nil {
 		s.Callback = feishu.Handler{Client: *a.feishu, Core: a, ProjectCard: a.readFeishuCard, Wake: func() {

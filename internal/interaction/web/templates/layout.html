@@ -36,7 +36,8 @@
  {{if .Error}}{{if not (and .Settings (eq .Settings.Section "preferences"))}}<div class="page-feedback feedback error" role="alert"{{if .Schedule}} id="schedule-page-error"{{end}}>{{appPageText . .Error}}</div>{{end}}{{end}}
  {{if and .Notice (ne .Notice "Language saved.")}}<div class="{{if and .Settings .Settings.TargetModel}}sr-only{{else}}page-feedback feedback success{{end}}" role="status">{{appPageText . .Notice}}</div>{{end}}
  {{if .FormDraft}}<details class="page-feedback rich-answer-form" open><summary>{{tr "Your unsent answers"}}</summary>{{range .FormDraft}}<label>{{.Label}}<textarea readonly rows="2">{{.Value}}</textarea></label>{{end}}</details>{{end}}
- {{if eq .View "app-accepted"}}{{template "app-accepted-page" .}}
+ {{if eq .View "meeting-preparation"}}{{template "meeting-preparation-page" .}}
+ {{else if eq .View "app-accepted"}}{{template "app-accepted-page" .}}
  {{else if eq .View "app-service"}}{{template "app-service-page" .}}
  {{else if eq .View "apps"}}{{template "apps-page" .}}
  {{else if eq .View "capabilities"}}{{template "capabilities-page" .}}

@@ -210,6 +210,8 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) error {
 		return s.trialSchedule(w, r)
 	case "/schedule/configure":
 		return s.configureSchedule(w, r)
+	case "/meeting-preparation/configure":
+		return s.configureMeeting(w, r)
 	case "/settings/language":
 		return s.setLanguage(w, r)
 	case "/capability/configure":

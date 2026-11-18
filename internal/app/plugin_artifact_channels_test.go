@@ -207,7 +207,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	graph, err := host.Store.Graph(ctx, first.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 40 {
+	if err != nil || len(graph.Graph.Bindings) != 41 {
 		t.Fatal("channel used partial composition", err)
 	}
 	var policyID string

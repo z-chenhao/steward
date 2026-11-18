@@ -155,7 +155,7 @@ def run(binary):
             h.setup(metadata=metadata)
             h.command('chat', 'work')
             selected, graph, packages, policy = composition(h)
-            require(selected['epoch'] == 1 and not selected['stopped'] and len(packages) == 40 and
+            require(selected['epoch'] == 1 and not selected['stopped'] and len(packages) == 41 and
                     {'steward.mcp-bridge', 'steward.apps-directory', 'steward.apps-accounts',
                      'steward.apps-logos', 'steward.apps-interface', 'steward.github-pr-followup','steward.artifact-workbench'}.issubset(packages),
                     'complete default MCP composition was not verified/selected')

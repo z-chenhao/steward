@@ -56,13 +56,13 @@ def run(binary, evidence):
                     "json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON "
                     "p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?",
                     (selected['graph_revision'],))}
-                require(len(packages) == 40 and {'steward.connected-apps', 'steward.github-pr-followup','steward.artifact-workbench','steward.memory-inspector'}.issubset(packages) and
-                    selected['epoch'] == 1 and not selected['stopped'], 'actual CLI did not verify/select all40 packages')
+                require(len(packages) == 41 and {'steward.connected-apps', 'steward.github-pr-followup','steward.artifact-workbench','steward.memory-inspector'}.issubset(packages) and
+                    selected['epoch'] == 1 and not selected['stopped'], 'actual CLI did not verify/select all41 packages')
                 state = json.loads(db.execute('SELECT document_json FROM connected_apps').fetchone()[0])
                 require(not state.get('connections') and not state.get('key_ref'),
                     'package installation created account or credential authority')
             report['default_packages'] = sorted(packages)
-            report['checks'].append(dict(actual_cli_initial_default40=True, no_account_authority=True))
+            report['checks'].append(dict(actual_cli_initial_default41=True, no_account_authority=True))
             h.command('chat', 'work')
             require(h.command('plugin', 'status') == selected, 'cold CLI rewrote original plugin selection')
             report['checks'].append(dict(actual_cli_cold_preserves_selection=True))
@@ -71,6 +71,13 @@ def run(binary, evidence):
     # App accepts the external protocol peer through its existing test-only
     # Client field. It uses the exact standard bundle just proven by the CLI.
     environment = dict(os.environ, STEWARD_TEST_APP_DEFAULT_BUNDLE=str(binary))
+    meeting_env = dict(environment, STEWARD_MEETING_BROWSER_EVIDENCE=str(evidence.parent / 'meeting-preparation'))
+    meeting = owned_run(['go', 'test', '-race', '-json', './internal/app', '-run', '^TestMeetingPreparationProductionWebAndRevocation$',
+                         '-count=1', '-timeout=10m'], cwd=ROOT, env=meeting_env, capture_output=True, text=True, timeout=660)
+    meeting_events = [json.loads(line) for line in meeting.stdout.splitlines() if line.strip()]
+    require(meeting.returncode == 0 and any(e.get('Test') == 'TestMeetingPreparationProductionWebAndRevocation' and e['Action'] == 'pass' for e in meeting_events),
+            'meeting preparation did not pass against bundled Host and owned API peer: ' + meeting.stdout[-5000:] + meeting.stderr[-2000:])
+    report['checks'].append(dict(readonly_next_day_meeting=True, both_source_links=True, revoked_between_reads=True))
     # Each composition owns its original 20-minute alarm; accumulated earlier
     # modes must not cancel later cold/version/unknown-effect verification.
     modes = ('managed33', 'managed32', 'prior30', 'prior29', 'prior28', 'prior24', 'prior23', 'prior22')
@@ -94,7 +101,7 @@ def run(binary, evidence):
         and event['Action'] in ('pass', 'fail', 'skip')] for suffix in modes}
     require(terminal == ['pass'] * len(modes) and all(value == ['pass'] for value in scenarios.values()),
         'default App composition coverage incomplete or duplicated')
-    report['checks'].append(dict(actual_app_default40_account_lifecycle=True,
+    report['checks'].append(dict(actual_app_default41_account_lifecycle=True,
         test=TEST, terminal=terminal, scenarios=scenarios, log=str(log), queued_scope=True, cold_read=True,
         exact_approval=True, unknown_non_replay=True, independent_disable_and_owner_control=True))
     require(hashlib.sha256(binary.read_bytes()).hexdigest() == report['binary_sha256'],

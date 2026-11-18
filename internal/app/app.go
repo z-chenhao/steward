@@ -50,6 +50,7 @@ import (
 )
 
 type App struct {
+	meetingCache            meetingCache
 	connectedApps           *connectedapps.Service
 	connectedAppsRegistryMu sync.Mutex
 	capabilitySettings      *configsetup.Manager

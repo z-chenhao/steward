@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"github.com/z-chenhao/assistant/internal/connectedapps"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -31,6 +32,7 @@ type shownProjection struct {
 	Spec, Fallback string
 }
 type page struct {
+	Meeting                                           *connectedapps.MeetingView
 	Workbench                                         *workbenchPresentation
 	WorkbenchUnavailable                              bool
 	CapabilityView                                    *capabilityViewAssets
@@ -93,6 +95,8 @@ func (s *Server) page(ctx context.Context, r *http.Request) (page, error) {
 		return p, err
 	}
 	switch p.View {
+	case "meeting-preparation":
+		err = s.meetingPage(ctx, &p)
 	case "app-service":
 		ui := s.appInterface(ctx, r.URL.Query().Get("interface_revision"), requestLanguage(r))
 		err = s.loadAppService(context.WithValue(ctx, appInterfaceKey{}, ui), r, &p)

@@ -129,8 +129,8 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 		t.Fatal(selected, err)
 	}
 	graph, err := a.Plugins().Store.Graph(ctx, selected.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 40 {
-		t.Fatal("source did not use all40", err)
+	if err != nil || len(graph.Graph.Bindings) != 41 {
+		t.Fatal("source did not use all41", err)
 	}
 	var source, method string
 	if err = a.store.Transaction(ctx, func(tx *sql.Tx) error {

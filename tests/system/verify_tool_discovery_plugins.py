@@ -167,7 +167,7 @@ def prove_full_bundle_upgrade(binary, prior, endpoint, current_graph, current_po
                             (pid,old_packages[pid][0])).fetchone()[0]==old_packages[pid][1],
                             'full update replaced original package identity')
             upgraded=activate_owner(h,target_graph,current_policy,original['graph_revision'],'full40-owner-upgrade')
-            require(len(packages(h,upgraded))==40,'full update did not activate complete40')
+            require(len(packages(h,upgraded))==41,'full update did not activate complete40')
             h.command('chat','work')
             checks=[check(h,queued,'code',original['graph_revision'],old_discovery)]
             for kind in ('native','code'):
@@ -289,21 +289,21 @@ def run(binary, evidence, prior=None, prior24=None, prior28=None):
     original = hashlib.sha256(binary.read_bytes()).hexdigest()
     report = dict(checks=[], binary_sha256=original, actual_prior23='not_run', actual_prior23_full_bundle='not_run', actual_prior23_tree='not_run', actual_prior24_full_bundle='not_run', actual_prior24_tree='not_run', actual_prior28_full_bundle='not_run', actual_prior28_tree='not_run', cleanup=False)
     with model_peer() as (endpoint, requests):
-        with tempfile.TemporaryDirectory(prefix='steward-default40-discovery-') as tmp:
+        with tempfile.TemporaryDirectory(prefix='steward-default41-discovery-') as tmp:
             root=Path(tmp).resolve();config(root);h=DiscoveryHarness(binary, root, fixture='');h.env.pop('COMPOSIO_API_KEY',None)
             try:
                 selected=setup(h, endpoint);pkgs=packages(h,selected)
-                require(len(pkgs)==40 and 'steward.tool-discovery' in pkgs and selected['epoch']==1 and not selected['stopped'],
+                require(len(pkgs)==41 and 'steward.tool-discovery' in pkgs and selected['epoch']==1 and not selected['stopped'],
                         'stock CLI did not independently verify/select complete40')
                 report['default_packages']=sorted(pkgs)
                 current_graph,current_policy=owner_state(h,selected)
                 for kind in ('native','code'):
-                    receipt=h.send('default40-'+kind, 'DISCOVERY_'+kind.upper()+' current')
+                    receipt=h.send('default41-'+kind, 'DISCOVERY_'+kind.upper()+' current')
                     h.command('chat','work')
                     report['checks'].append(check(h,receipt,kind,selected['graph_revision'],True))
                 # Every command is a fresh actual process. No select/update/reload repairs.
                 require(h.command('plugin','status')==selected, 'cold process replaced original29 selection')
-                receipt=h.send('default40-code-cold','DISCOVERY_CODE cold')
+                receipt=h.send('default41-code-cold','DISCOVERY_CODE cold')
                 h.command('chat','work');report['checks'].append(check(h,receipt,'code',selected['graph_revision'],True))
             finally:
                 h.cleanup()

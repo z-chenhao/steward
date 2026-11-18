@@ -57,7 +57,7 @@ func testConnectedAppsDefaultLifecycle(t *testing.T, mode string) {
 	}
 	// These named historical fixtures predate the seven later feature packages.
 	directories.ModelConnections, directories.Feishu, directories.CapabilityForms, directories.Terminal = "", "", "", ""
-	directories.ReferencePricing, directories.WebWorkbench, directories.ServiceWatchdog = "", "", ""
+	directories.ReferencePricing, directories.WebWorkbench, directories.ServiceWatchdog, directories.MeetingPreparation = "", "", "", ""
 	ctx := context.Background()
 	secrets := memory.New()
 	if err := secrets.Put(ctx, connectedapps.DefaultKeyRef, []byte("synthetic-app-project")); err != nil {

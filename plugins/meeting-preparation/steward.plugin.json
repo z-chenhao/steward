@@ -1,0 +1,81 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.meeting-preparation",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-045"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.meeting-preparation/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "meetings": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 300
+            },
+            "maxItems": 20
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 300
+            },
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "meetings",
+          "subjects"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "meeting": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 19
+          },
+          "thread": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 9
+          }
+        },
+        "required": [
+          "meeting",
+          "thread"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": []
+}

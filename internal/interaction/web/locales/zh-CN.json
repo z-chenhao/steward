@@ -1443,5 +1443,21 @@
   "The account action was accepted. App presentation is unavailable. Restore the plugin before continuing.": "账户操作已接受。应用界面暂不可用，请在恢复插件后继续。",
   "App presentation is unavailable. The operation could not be confirmed.": "应用界面暂不可用，无法确认此操作的结果。",
   "App presentation is unavailable. Reload after the owner restores the plugin.": "应用界面暂不可用，请在所有者恢复插件后重新加载。",
-  "Enable JavaScript to record and review a browser demonstration.": "请启用 JavaScript 以录制和复验浏览器示范。"
+  "Enable JavaScript to record and review a browser demonstration.": "请启用 JavaScript 以录制和复验浏览器示范。",
+  "Meeting preparation": "会议预备",
+  "Prepare tomorrow's first meeting with a matching email thread. The selected accounts are read while Steward Web is running.": "Steward 网页服务运行期间，将从获选账号为明日首个有匹配邮件的会议准备一条建议。",
+  "Before the meeting": "会前准备",
+  "Review the matching email thread before this meeting.": "请在会议前查看这封相关邮件。",
+  "No matching meeting and recent thread found for tomorrow.": "在选定范围内未找到明日会议对应的近期邮件。",
+  "Preparing the selected sources. Refresh to check the result.": "正在预备，刷新可查看结果。",
+  "A selected source is no longer authorized. Reconnect or turn off preparation.": "所选来源已撤权，请重新连接或关闭会议预备。",
+  "Preparation is unavailable. Check the selected connections and the active plugin.": "预备暂不可用，请检查所选账号和托管插件。",
+  "Turn off meeting preparation": "关闭会议预备",
+  "Calendar account": "日历账号",
+  "Mail account": "邮件账号",
+  "Meeting time zone": "会议时区",
+  "Choose an account": "请选择账号",
+  "Use an IANA time zone. Reads up to 20 timed events on the primary calendar and 10 threads from the last seven days. Only email subject metadata is used.": "请输入 IANA 时区名。读取主日历中最多 20 项定时会议及近七天的 10 个邮件会话，只取邮件主题元数据。",
+  "Allow read-only preparation": "授权只读预备",
+  "Connect Google Calendar and Gmail to choose your sources.": "连接 Google 日历和 Gmail 以选择来源。"
 }
