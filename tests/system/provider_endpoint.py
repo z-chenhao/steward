@@ -181,6 +181,9 @@ class Endpoint(BaseHTTPRequestHandler):
                             'actual discovery did not reach model continuation')
                     chunk({'content': 'DISCOVERY_RESULT_OBSERVED'})
                     chunk({}, 'stop')
+            elif self.server.mode == "model-menu" and text.startswith('Immediately send with the original model after '):
+                chunk({'content': 'Model recovery acknowledged: ' + text})
+                chunk({}, 'stop', {'prompt_tokens': 7, 'completion_tokens': 8, 'total_tokens': 15})
             elif self.server.mode == "web-plugins" and any(m.get('role') == 'user' and
                     str(m.get('content', '')).startswith('WEB_PLUGIN_SEARCH ') for m in body['messages']):
                 marker = max(i for i, m in enumerate(body['messages']) if m.get('role') == 'user' and

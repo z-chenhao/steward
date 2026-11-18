@@ -376,7 +376,7 @@ func TestWebPluginSourceFormattingLargeSanitizedInputUsesOriginalDescriptor(t *t
 		installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
 	defer r.Release(ctx, claim)
-	defer keepWebReadClaim(r, claim)()
+	defer keepRunClaim(r, claim)()
 	results, err := executor.Execute(ctx, exchange, calls)
 	if err != nil || len(results) != 1 || results[0].Error != nil || requests.Load() != 1 {
 		raw, _ := json.Marshal(results)
@@ -550,7 +550,7 @@ func TestWebPluginFetchRealReleaseRecoveryKeepsOriginalPreviewAndReceipt(t *test
 		r.ConfigureWebAccess(cfg, nil)
 		h = installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
-	stopRenew := keepWebReadClaim(r, claim)
+	stopRenew := keepRunClaim(r, claim)
 	defer stopRenew()
 	initial, err := h.Store.Status(ctx)
 	if err != nil {

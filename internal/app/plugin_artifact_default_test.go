@@ -14,7 +14,6 @@ import (
 	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/config"
 	secretmemory "github.com/z-chenhao/assistant/internal/llm/memory"
-	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/rsi/builtin"
 )
 
@@ -27,7 +26,7 @@ func TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	directories, err := shippedPluginDirectories(carrier)
+	directories, err := builtin.ShippedDirectories(carrier)
 	if err != nil || directories.Artifact == "" {
 		t.Fatal("complete Artifact distribution missing", err)
 	}
@@ -73,8 +72,8 @@ func TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle(t *testing.T
 		t.Fatal(err)
 	}
 	graph, err := a.Plugins().Store.Graph(ctx, selected.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 40 {
-		t.Fatal("owner used a partial distribution", err)
+	if err != nil {
+		t.Fatal(err)
 	}
 	var policyJSON string
 	if err := a.store.Transaction(ctx, func(tx *sql.Tx) error {
@@ -82,10 +81,7 @@ func TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle(t *testing.T
 	}); err != nil {
 		t.Fatal(err)
 	}
-	var policy rsi.Policy
-	if err := json.Unmarshal([]byte(policyJSON), &policy); err != nil || len(policy.Cases) != 387 {
-		t.Fatal("owner bootstrap omitted independent cases", len(policy.Cases), err)
-	}
+	assertDefaultOwnerInventory(t, graph.Graph.Bindings, policyJSON)
 	// No model, Skills or runtime execution has been required for creation.
 	diagnostics, err := a.Diagnostics(ctx)
 	if err != nil || diagnostics.ActiveModelProfileID != nil {

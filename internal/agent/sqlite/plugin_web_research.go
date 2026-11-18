@@ -44,11 +44,8 @@ func (t *tools) executeWebResearch(ctx context.Context, inv tool.Invocation, run
 	if t.runs.plugins == nil {
 		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 	}
-	h := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.fence
-	h.Store = store
-	revision, err := store.Binding(ctx, t.claim.RunID())
+	h := t.runs.pluginHostWithFence(t.fence)
+	revision, err := h.Store.Binding(ctx, t.claim.RunID())
 	if err != nil {
 		return tool.Result{}, err
 	}

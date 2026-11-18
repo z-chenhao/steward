@@ -8,83 +8,13 @@ import (
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/conversation"
-	"github.com/z-chenhao/assistant/internal/tool"
+	"github.com/z-chenhao/assistant/internal/delivery/uidocv1"
 )
 
-type nativeProps struct {
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Columns     []string   `json:"columns"`
-	Rows        [][]string `json:"rows"`
-	Source      string     `json:"source"`
-	Data        []struct {
-		Label string  `json:"label"`
-		Value float64 `json:"value"`
-	} `json:"data"`
-	Approach    string   `json:"approach"`
-	Technology  string   `json:"technology"`
-	KeyElements []string `json:"key_elements"`
-	Reason      string   `json:"reasonForScheduling"`
-	Duration    float64  `json:"meetingDuration"`
-	TimeSlots   []struct {
-		Date     string `json:"date"`
-		Time     string `json:"time"`
-		Duration string `json:"duration"`
-	} `json:"timeSlots"`
-}
+type nativeProps = uidocv1.NativeProps
 
 func validNative(c Component) bool {
-	raw, err := json.Marshal(struct {
-		Name  string          `json:"name"`
-		Props json.RawMessage `json:"props"`
-	}{c.Name, c.Props})
-	if err != nil || !tool.Validate(NativeSchema, string(raw)) {
-		return false
-	}
-	var p nativeProps
-	if json.Unmarshal(c.Props, &p) != nil {
-		return false
-	}
-	if strings.HasPrefix(c.Name, "steward.") {
-		return validExtension(c)
-	}
-	switch c.Name {
-	case "generateSandboxedUi":
-		var visual SandboxedUI
-		if json.Unmarshal(c.Props, &visual) != nil || strings.TrimSpace(visual.HTML) == "" {
-			return false
-		}
-	case "Table":
-		for _, r := range p.Rows {
-			if len(r) != len(p.Columns) {
-				return false
-			}
-		}
-	case "pieChart":
-		total := 0.0
-		for _, d := range p.Data {
-			if d.Value < 0 {
-				return false
-			}
-			total += d.Value
-		}
-		if len(p.Data) > 0 && total <= 0 {
-			return false
-		}
-	case "scheduleTime":
-		if p.Duration <= 0 || strings.TrimSpace(p.Reason) == "" {
-			return false
-		}
-		seen := map[string]bool{}
-		for _, slot := range p.TimeSlots {
-			key := slot.Date + "\x00" + slot.Time
-			if strings.TrimSpace(slot.Date) == "" || strings.TrimSpace(slot.Time) == "" || seen[key] {
-				return false
-			}
-			seen[key] = true
-		}
-	}
-	return true
+	return uidocv1.ValidComponent(c.Name, c.Props)
 }
 
 func nativeSummary(c Component) string {

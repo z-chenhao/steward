@@ -20,6 +20,19 @@ import runner as suite
 
 
 class FixturePoolTests(unittest.TestCase):
+
+    def test_json_events_preserve_cold_download_diagnostics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / 'regressions.log'
+            command = [sys.executable, '-c',
+                       'import json, sys; print("go: downloading fixture", file=sys.stderr); '
+                       'print(json.dumps({"Action": "pass", "Test": "TestOriginal"}))']
+            status, events = fixtures.run_json_lines(command, log, cwd=suite.ROOT,
+                                                     env=os.environ.copy(), timeout=5)
+            self.assertEqual(status, 0)
+            self.assertEqual(events, [{'Action': 'pass', 'Test': 'TestOriginal'}])
+            self.assertEqual(log.with_suffix('.stderr.log').read_text(), 'go: downloading fixture\n')
+
     def test_timeout_kills_descendant_holding_captured_pipes(self):
         scope = fixtures.Scope()
         with tempfile.TemporaryDirectory() as directory:

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"strings"
 
 	appsmethods "github.com/z-chenhao/assistant/internal/plugin/appsmethods/contract"
@@ -32,30 +31,13 @@ func (t *tools) InvocationContext(ctx context.Context, inv tool.Invocation) (con
 	if t.runs.plugins == nil {
 		return mcp.WithMethod(ctx, nil), nil
 	}
-	h := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.fence
-	h.Store = store
+	h := t.runs.pluginHostWithFence(t.fence)
 	return mcp.WithMethod(ctx, func(ctx context.Context, name, args string, source func(context.Context, string, contract.SourceRequest) (contract.SourceReply, error)) (contract.Plan, error) {
-		check := func(ctx context.Context) error {
-			return t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error {
-				_, acceptedName, acceptedArgs, err := t.acceptedBuiltin(ctx, tx, inv)
-				if err != nil {
-					return err
-				}
-				if acceptedName != name || acceptedArgs != args {
-					return tool.ErrApprovalDenied
-				}
-				if err := t.checkMCPResource(ctx, tx, inv.ID); err != nil {
-					return err
-				}
-				return t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID())
-			})
-		}
+		check := t.connectorInvocationFence(inv, name, args, t.checkMCPResource)
 		if err := check(ctx); err != nil {
 			return contract.Plan{}, err
 		}
-		revision, err := store.Binding(ctx, t.claim.RunID())
+		revision, err := h.Store.Binding(ctx, t.claim.RunID())
 		if err != nil || revision == "" {
 			if err == nil {
 				err = rsi.ErrNotFound
@@ -112,29 +94,4 @@ WHERE i.invocation_id=? AND i.run_id=? AND i.status='running' AND json_extract(j
 		return rsi.ErrRevoked
 	}
 	return nil
-}
-
-func (t *tools) commitMCPResult(ctx context.Context, tx *sql.Tx, id string, result tool.Result) (tool.Result, error) {
-	err := t.checkMCPResource(ctx, tx, id)
-	if err == nil {
-		err = t.runs.pluginDispatchFence(ctx, tx, t.claim.RunID())
-	}
-	if err == nil {
-		result.HostFence = nil
-		return result, nil
-	}
-	if !errors.Is(err, rsi.ErrRevoked) {
-		return tool.Result{}, err
-	}
-	// A still-authorized execution owner must record uncertainty when its
-	// already-dispatched effect loses source/graph authority before publication.
-	// This is the original Tool receipt, not a retry or another effect journal.
-	_, policy, err := t.load(ctx, tx, id)
-	if err != nil {
-		return tool.Result{}, err
-	}
-	if policy.Replay == "never" {
-		return tool.Failure("UNKNOWN_SIDE_EFFECT"), nil
-	}
-	return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 }

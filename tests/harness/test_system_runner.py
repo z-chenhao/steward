@@ -22,13 +22,16 @@ class SystemRunnerTests(unittest.TestCase):
         self.binary.touch()
         self.output = self.root / 'evidence'
 
-    def drive(self, gates=('fixture',), drift=False):
+    def drive(self, gates=('fixture',), drift=False, journey=None):
         registry = {'fixture': 'fixture.py', 'second': 'second.py'}
         before = {'source': 'one'}
         after = {'source': 'changed'} if drift else before
         argv = ['--binary', str(self.binary), '--evidence', str(self.output)]
-        for gate in gates:
-            argv += ['--gate', gate]
+        if journey is None:
+            for gate in gates:
+                argv += ['--gate', gate]
+        else:
+            argv += ['--journey', journey]
         with patch.object(runner, 'ROOT', self.root), \
              patch.object(runner, 'REGISTRY', registry), \
              patch.object(runner, 'source_state', side_effect=[before, after]):
@@ -74,3 +77,15 @@ class SystemRunnerTests(unittest.TestCase):
         result = json.loads((self.output / 'summary.json').read_text())
         self.assertTrue(result['passed'])
         self.assertTrue(result['results'][0]['owned_group_drained'])
+
+    def test_journey_runs_each_gate_in_order_and_retains_both_reports(self):
+        self.write_success()
+        shutil.copy2(self.script, self.script.with_name('second.py'))
+        with patch.object(runner, 'JOURNEYS', {'sample': ('second', 'fixture')}):
+            self.assertEqual(self.drive(journey='sample'), 0)
+        result = json.loads((self.output / 'summary.json').read_text())
+        self.assertEqual([row['gate'] for row in result['results']], ['second', 'fixture'])
+        self.assertTrue(result['passed'])
+        for name in ('second', 'fixture'):
+            observed = json.loads((self.output / f'{name}-1.json').read_text())
+            self.assertEqual(observed['checks'], ['ran'])

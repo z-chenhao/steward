@@ -84,9 +84,9 @@ Agent Loop 在实际复用结果和成功提交等待后发出 best-effort 事�
 
 ## F-035 最终 HTTP 证据
 
-- `provider-bridge/observability.mjs` 独立拥有脱敏与限额；`bridge.mjs` 在最终 SDK fetch 前和 headers/error 后通知。Account 路径也在 namespace 转换之后采集。每次重试独立 attempt ID，携带 generation ID、UTC 微秒时间、capture/SDK 格式版本、脱敏正文 hash 和状态。
+- Go Provider 在发送最终 HTTP 请求、收到响应头或发生错误时发出观测。Go Bridge 脱敏并限制通知大小；Account 请求在 namespace 转换之后采集。每次重试使用独立 attempt ID，记录 generation ID、UTC 微秒时间、采集格式版本、脱敏正文 hash 和状态。
 - `generation.observation` 是私有 RPC 的可选、独立诊断通知。只有 Host 在冻结请求外设置 observe 时才发送；不占用 generation.event 序号，不进入请求哈希或 Capability/ModelSnapshot。旧 peer 不产生证据时明确未知；probe 不持久化为业务 observation。
-- 不采集请求头/connection；Node 和 Host 都移除已知凭据。图片替换为已知 Artifact 引用、预览 JPEG hash 与原图/预览尺寸；不是原图像素 hash。正文最多 256 KiB，超限保留 hash/原因，不能当逐字原包或用于重放。模型输出仍来自既有已接受结果，不复制原始 SSE 流。
+- Go Bridge 和 Host 都移除已知凭据。图片以已知 Artifact 引用、预览 JPEG hash 与原图及预览尺寸表示。正文最多 256 KiB，超限保留 hash 和原因。请求头、connection 和原始 SSE 流不属于采集范围。
 - Host `bridge/observations.go` 校验 registration、字段与上限，诊断错误/回调 panic 不拒绝 generation。`observability/sqlite/recorder.go` 使用 32 条非阻塞邮箱与独立单写连接，busy_timeout 25ms、单条总写期限 100ms；只在该预算内重试本地幂等 INSERT 的 SQLITE_BUSY/LOCKED，其他失败或超时/拥塞可丢弃。Provider 无数据库访问；Web 不取得写连接。App 关闭 provider 后再排空 recorder，强制退出允许留空；已终结的 generation/Run 缺少 HTTP 结束证据时显示 unknown，不冒充仍在请求或补造结束时间。
 - capture 的 started 仅证明 fetch 尝试，headers 仅证明响应头被收到；取消、网络错误、丢失事件与终态不确定性各自保留。generation.attempt_count 不能被解释为 HTTP 次数，工具 Host execution starts 也不等于实际网络次数。
 
@@ -105,7 +105,7 @@ state schema **31** 引入 `dispatch_observation` 与 Root 查询索引。schema
 - [统一数据模型](../../internal/observability/trace.go)
 - [只读投影](../../internal/observability/sqlite/traces.go)
 - [可丢失采集器](../../internal/observability/sqlite/recorder.go)
-- [最终请求脱敏](../../provider-bridge/observability.mjs)
+- [最终请求脱敏](../../internal/llm/bridge/server_observations.go)
 - [Web 读取边界](../../internal/interaction/web/traces.go)
 - [Trace 模板](../../internal/plugin/traceinspector/view/trace.html)
 - [正文读取](../../internal/observability/sqlite/content.go)
@@ -280,7 +280,7 @@ Host 整体验收有限模式／原始索引和有界文案／时间后才启用
 
 Provider request 页面实际消费同包私有 `request_reader` 配方，只把当前语言发给冻结 Worker，不把已授权原始正文、模型参数或大请求内容发入控制程序。配方决定捕获／正文／遗漏标记字段、模型／系统指令／消息／角色／文本／工具定义的字段优先级、参数排除、摘要长度及原中英文文案。浏览器按有限配方绑定原先已经读出的 JSON，使用共享的精度／重复键保护；不新增原始内容读取权、分页请求、服务、进程或稳定公开 SDK，也不构建通用 UI DSL。
 
-`trace-request.ts` 的当前字段选择和文案常量已替换为配方消费，历史原实现仅保留于 `legacy/trace-request-v1.ts`，供原始 1.0.1 图与从未启用托管 reader 的直接嵌入消费者，随这些消费者退役删除。托管配方失败保留原始证据，不调用历史政策。异步配方在 root 销毁／冻结程序失效后不可绑定；新建 JSON 控件按当前已接纳模式显示，正文及原始源不因切换而改写。
+`trace-request.ts` 复用同一套有界 JSON 读取与 DOM 渲染。原始 1.0.1 图与从未启用托管 reader 的直接嵌入消费者使用 `legacy/trace-request-v1.ts` 中的固定配方，随这些消费者退役删除。托管配方失败时保留原始证据，历史配方仅在上述历史边界启用。异步配方在 root 销毁／冻结程序失效后不可绑定；新建 JSON 控件按当前已接纳模式显示，正文及原始源不因切换而改写。
 
 本步不是阅读器全部实现迁移：本地递归文本拼接、段落结构、隐式用户消息和末条默认展开仍在原绑定器，须与整套页面资源继续归属 owning 插件；不以正文保护为名把业务长期留在 Host。当前选择是先开放已存在、可单独验证的字段阅读变化轴，拒绝把大正文送回控制 Worker或预设任意 DOM／表达式执行契约。独立改变消息字段优先级已有真实配方消费回归，整个 UI 包的版本生命周期及全量验收仍另行完成。
 

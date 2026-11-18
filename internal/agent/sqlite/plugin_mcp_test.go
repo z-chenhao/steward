@@ -399,7 +399,7 @@ func TestMCPPluginRealReleaseRecoveryKeepsOriginalNeverCallAndGraph(t *testing.T
 		h = rsi.Host{Catalog: catalog, Store: s.Plugins()}
 		original, _ = selectMCPVersion(t, h, "", "1.0.1")
 	})
-	stop := keepWebReadClaim(r, owner)
+	stop := keepRunClaim(r, owner)
 	defer stop()
 	if _, err := executor.Execute(ctx, exchange, calls); !errors.Is(err, tool.ErrSuspended) {
 		t.Fatal("exact approval was not requested", err)

@@ -49,7 +49,7 @@ flowchart TB
 
 ## 1. Go 包契约
 
-实现方导入 `github.com/z-chenhao/assistant/pkg/rsiplugin`，实现以下接口或使用 `Handlers`。完整示例见 [context-notes](../../examples/plugins/context-notes/main.go) 与[清单模板](../../examples/plugins/context-notes/steward.plugin.json)，同时提供一个上下文 hook 和文本工具。
+实现方导入 `github.com/z-chenhao/assistant/pkg/rsiplugin`，实现以下接口或使用 `Handlers`。实际入口见 [task-progress](../../cmd/plugins/task-progress/main.go) 与[同包清单](../../plugins/task-progress/steward.plugin.json)。
 
 ```go
 type Plugin interface {
@@ -187,42 +187,13 @@ sequenceDiagram
 | `plugin retry-call RUN INSTANCE KEY` | 所有者核对后允许未知纯计算重算，完成结果不能重做 |
 | `plugin retry-event EVENT` | 重开失败订阅；未知调用须先协调，完成或已撤销事件不能重做 |
 
-### 构建示例
+### 可执行验收
 
-使用可丢弃数据根，不复制个人资料或凭据；安装不启用。
-
-```sh
-RSI_DEMO_ROOT=$(mktemp -d)
-export STEWARD_DATA_ROOT="$RSI_DEMO_ROOT/data"
-mkdir -p "$RSI_DEMO_ROOT/package"
-printf 'version: 1\n' > "$RSI_DEMO_ROOT/config.yaml"
-go build -o "$RSI_DEMO_ROOT/steward" ./cmd/steward
-go build -o "$RSI_DEMO_ROOT/package/plugin" ./examples/plugins/context-notes
-cp examples/plugins/context-notes/steward.plugin.json "$RSI_DEMO_ROOT/package/"
-"$RSI_DEMO_ROOT/steward" -config "$RSI_DEMO_ROOT/config.yaml" plugin seal "$RSI_DEMO_ROOT/package"
-"$RSI_DEMO_ROOT/steward" -config "$RSI_DEMO_ROOT/config.yaml" plugin install "$RSI_DEMO_ROOT/package"
-```
-
-`prepare` 输入示例，digest 使用安装实际返回值：
-
-```json
-{
-  "protocol":"steward-rsi-plugins/0.1",
-  "bindings":[{
-    "instance_id":"notes",
-    "package_digest":"sha256:replace-with-installed-digest",
-    "config":{"note":"保留来源，简洁回答。"},
-    "state_namespace":"notes",
-    "state_version":1
-  }]
-}
-```
-
-该包政策至少测试 `steward.text-normalize/1` 及 `before_model_request`，允许列表对应两项能力，无需正文读取或状态写权限。政策、候选和激活字段见[控制类型](../../internal/rsi/control.go)，验证入口见[测试方案](../test-plans/plugins-evolution.md)。
+使用 `make build` 构建 Steward 和标准功能包。实际产品通过[功能旅程](../test-plans/product.md#critical-user-journeys)验证首次选择、独立换版、回退和停用。策略、候选与激活输入见[控制类型](../../internal/rsi/control.go)，协议与恶意候选回归见[验收入口](../test-plans/plugins-evolution.md)。
 
 ## 默认业务包与迁移边界
 
-`make build` 和安装器独立构建、封装 DOCX、OCR、Trace 解释、上下文选择、Recall、Main 对话方法、自动记忆、证据分页、方法库、经验配方、Task 策略、进度方法、问答配方、委派方法、Code Mode 配方、文件方法、命令资源、Task 代码工作区、Computer 业务方法及 Web／Extract 插件到 `bin/plugins/{docx-reader,image-ocr,trace-inspector,context-compact,recall,conversation,memory-curator,evidence-reader,skill-library,experience-learning,task-control,task-progress,task-feedback,delegation,codemode,file-tools,shell-tools,coding-workspace,computer-use,web-access,web-extract}/`。正常运行时在尚无任何选择／停机操作的安装上，使用 Host 自持的正常／坏包用例验证，再激活初始组合；后续启动不覆盖所有者的选择、停机或停用。已有自定义组合需显式包含 DOCX 服务，不自动扩写其验收政策。未分发业务包的嵌入式 Host 和历史测试载体保留原生兼容路径。
+`make build` 与安装器从[受信分发目录](../../internal/rsi/builtin/distribution.go)构建标准插件。尚未选择且未停机的安装以 Host 自持的用例验收初始组合。已有组合、停用状态和未分发插件的嵌入边界沿原协议处理。实际首启与包身份由独立 Owner 清单和系统测试核对。
 
 首次成功激活服务后，新 Run 冻结已迁移服务清单；DOCX／OCR 的历史政策标记保留兼容。停用后不静默复活原生方法：必需解释器明确不可用；可选进度贡献关闭后保留业务和 Host 事实状态。历史 Run／Child 沿用原政策及解释器。DOCX 输入只读；授权、原文件、分页、接纳与隐私仍归领域 Host。所有者分页返回 `reader_revision`，继续读取时可携带该值选择同一已验收解释器；停用不破坏这类旧引用，停机／隔离仍优先。Main 不开放该选择字段，始终使用自己的冻结图。其他功能的迁移状态见[逐项清单](plugins-evolution.md#候选功能包清单)，不能把默认包分发当作全部迁移。
 

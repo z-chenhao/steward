@@ -107,6 +107,29 @@ func loopFixture(t *testing.T) (*Store, *Runs, *conversationsqlite.Store, agent.
 	a := agent.Actor{Store: r, Provider: p, Registry: registry, Ready: func(context.Context) bool { return true }}
 	return s, r, h, a, p
 }
+
+// Match the production actor's lease renewal for tests driving a Run directly.
+func keepRunClaim(r *Runs, claim agent.RunClaim) func() {
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		ticker := time.NewTicker(leaseDuration / 4)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if r.Renew(ctx, claim) != nil {
+					return
+				}
+			}
+		}
+	}()
+	return func() { cancel(); <-done }
+}
+
 func mustSubmit(t *testing.T, a agent.Actor, key, text string) agent.Receipt {
 	t.Helper()
 	receipt, err := a.Submit(context.Background(), key, text)

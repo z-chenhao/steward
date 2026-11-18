@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Actual CLI status, trusted credential facts and independent Feishu guidance."""
 import argparse
+from owner_inventory import check_default_owner
 from contextlib import closing
 import hashlib
 import json
@@ -95,14 +96,14 @@ def run(binary,evidence):
                 baseline=db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]
                 graph=json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?',(baseline,)).fetchone()[0])
                 policy=json.loads(db.execute('SELECT policy_json FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0])
-            require(len(graph['bindings'])==40 and len(policy['cases'])==387,'fresh default40/387 composition wrong')
+            check_default_owner(graph, policy)
             original_policy=policy['id']
             package=root/'independent';shutil.copytree(binary.parent/'plugins/feishu-chat',package)
             source=ROOT/'internal/plugin/feishuchat/status.go';code=source.read_text()
             require(code.count('Version: "1.0.0"')==1 and code.count('return contract.StatusProjection{Action: action}')==1,'guidance overlay markers missing')
             code=code.replace('Version: "1.0.0"','Version: "1.1.0"',1).replace('return contract.StatusProjection{Action: action}','if action!="" {action="v2 "+action};return contract.StatusProjection{Action: action}',1)
             replacement=root/'status.go';replacement.write_text(code)
-            card_source=ROOT/'internal/plugin/feishuchat/card.go'
+            card_source=ROOT/'internal/plugin/feishuchat/legacyv1/card.go'
             card_code=card_source.read_text().replace('Open full response and files','v2 Open full response and files').replace('Feedback saved. Ghost will review it.','v2 Feedback saved. Ghost will review it.')
             card_replacement=root/'card.go';card_replacement.write_text(card_code)
             overlay=root/'overlay.json';overlay.write_text(json.dumps(dict(Replace={str(source):str(replacement),str(card_source):str(card_replacement)})))
@@ -134,7 +135,7 @@ def run(binary,evidence):
             after=h.command('status')
             require(after['config_version']==before['config_version'] and after.get('active_model_profile_id')==before.get('active_model_profile_id'),'guidance mutated model authority')
             require(not platform.send_attempts and not platform.messages and not platform.uploads,'status/check sent messages or uploaded files')
-            report=dict(checks=['actual fresh default40/387','actual disabled/unchecked/ready/rejected trusted facts','independent executable guidance and exact rollback','stop/first cold read never restore native guidance','credential control remains available without presentation','zero message/upload effects and unchanged model configuration'],baseline=baseline,upgraded_graph=target,package_digest=installed['digest'],binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),scope='F-020 status and card/feedback presentation; trusted transport and authority retained')
+            report=dict(checks=['actual fresh default graph and reviewed Owner cases','actual disabled/unchecked/ready/rejected trusted facts','independent executable guidance and exact rollback','stop/first cold read never restore native guidance','credential control remains available without presentation','zero message/upload effects and unchanged model configuration'],baseline=baseline,upgraded_graph=target,package_digest=installed['digest'],binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),scope='F-020 status and card/feedback presentation; trusted transport and authority retained')
             report['delivery_lifecycle']=delivery_lifecycle(binary,package,root/'delivery')
             business=dict(checks=[],scenarios={})
             for scenario in (feishu_topic_delivery,feishu_task_questions,feishu_artifact_reviews):

@@ -130,10 +130,7 @@ func (t *tools) executeWebRead(ctx context.Context, inv tool.Invocation, run age
 	if t.runs.plugins == nil || revision == "" {
 		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 	}
-	h := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.fence
-	h.Store = store
+	h := t.runs.pluginHostWithFence(t.fence)
 	// Two fixed chunks cover the full existing 24 MiB artifact limit including
 	// base64/JSON overhead. No re-encoding or stricter JSON parser changes the
 	// legacy document interpretation (unknown/duplicate fields included).

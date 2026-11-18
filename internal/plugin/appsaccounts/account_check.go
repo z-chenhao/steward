@@ -3,7 +3,9 @@ package appsaccounts
 import (
 	"context"
 	"errors"
+
 	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/v1"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
@@ -15,19 +17,5 @@ func accountCheck(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, e
 	if len(call.Inputs) != 0 {
 		return rsiplugin.Result{}, errors.New("unexpected account check input")
 	}
-	return rsiplugin.JSONResult(ctx, chooseAccountCheck(request))
-}
-func chooseAccountCheck(request contract.AccountCheckRequest) contract.AccountCheckPlan {
-	if request.Public {
-		return contract.AccountCheckPlan{Status: "refresh"}
-	}
-	status := "expired"
-	switch {
-	case request.Disabled:
-	case request.Active:
-		status = "active"
-	case request.Initializing || request.Initiated:
-		status = "pending"
-	}
-	return contract.AccountCheckPlan{Status: status}
+	return rsiplugin.JSONResult(ctx, v1.Check(request))
 }

@@ -9,6 +9,9 @@ import (
 	"testing"
 
 	"github.com/z-chenhao/assistant/internal/agent"
+	"github.com/z-chenhao/assistant/internal/coding"
+	"github.com/z-chenhao/assistant/internal/computer/environment"
+	"github.com/z-chenhao/assistant/internal/computer/projectcontainer"
 	"github.com/z-chenhao/assistant/internal/config"
 	"github.com/z-chenhao/assistant/internal/llm/memory"
 	"github.com/z-chenhao/assistant/internal/skill"
@@ -126,6 +129,70 @@ func TestCoreExecutionAndSkillDiscoveryAreAvailableWithoutOptionalConfig(t *test
 	}
 	if _, err := os.Stat(cfg.Execution.Root); !os.IsNotExist(err) {
 		t.Fatal("registry discovery created execution files")
+	}
+}
+
+func TestCodingCheckRegistrationRequiresLocalRepositoryAndPreservesRoleSurface(t *testing.T) {
+	for _, configured := range []bool{false, true} {
+		root := t.TempDir()
+		cfg, err := config.Load("", func(key string) (string, bool) { return root, key == "STEWARD_DATA_ROOT" })
+		if err != nil {
+			t.Fatal(err)
+		}
+		if configured {
+			cfg.Execution.RepositorySource = filepath.Join(root, "source")
+		}
+		registry, err := (&App{}).runtimeRegistry(context.Background(), cfg, "", memory.New(), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, name := range []string{coding.StatusTool, coding.CheckTool} {
+			d, exists := registry.Resolve(name)
+			if exists != configured {
+				t.Fatal("check registered outside project scope", configured, name)
+			}
+			if exists && (!d.Host || !d.Spec.CodeModeOnly || d.Spec.ResourceHash != environment.ResourceHash(cfg.ExecutionConfig())) {
+				t.Fatal("check lost fixed execution scope", d.Spec)
+			}
+		}
+		for _, spec := range agent.MainTools(registry.Describe()) {
+			if coding.IsCheckTool(spec.Name) {
+				t.Fatal("Main acquired project execution authority")
+			}
+		}
+		if _, err := os.Stat(cfg.Execution.Root); !os.IsNotExist(err) {
+			t.Fatal("tool discovery created an execution environment")
+		}
+	}
+}
+
+func TestCodingContainerVerifyRequiresExplicitPinnedOwnerConfiguration(t *testing.T) {
+	root := t.TempDir()
+	cfg, err := config.Load("", func(key string) (string, bool) { return root, key == "STEWARD_DATA_ROOT" })
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Execution.RepositorySource = filepath.Join(root, "source")
+	registry, err := (&App{}).runtimeRegistry(context.Background(), cfg, "", memory.New(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := registry.Resolve(coding.VerifyTool); ok {
+		t.Fatal("prepared execution registered without owner-selected environment")
+	}
+	cfg.Execution.ProjectContainer = &projectcontainer.Config{Socket: "/private/docker.sock", Image: "sha256:" + strings.Repeat("a", 64)}
+	registry, err = (&App{}).runtimeRegistry(context.Background(), cfg, "", memory.New(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	verify, ok := registry.Resolve(coding.VerifyTool)
+	if !ok || !verify.Host || !verify.Spec.CodeModeOnly || verify.Spec.ResourceHash != cfg.Execution.ProjectContainer.ResourceHash(environment.ResourceHash(cfg.ExecutionConfig())) {
+		t.Fatal("prepared capability lost exact resource binding", verify.Spec)
+	}
+	for _, spec := range agent.MainTools(registry.Describe()) {
+		if coding.IsCheckTool(spec.Name) {
+			t.Fatal("Main acquired Worker execution", spec.Name)
+		}
 	}
 }
 

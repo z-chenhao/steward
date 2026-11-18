@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real Owner activation, Main streaming prefix, managed Plan, cold recovery."""
 import argparse
+from owner_inventory import check_default_owner_policy
 from contextlib import closing
 from http.server import ThreadingHTTPServer
 import hashlib
@@ -110,7 +111,7 @@ def run(binary,evidence):
     db.execute('BEGIN');target=db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]
     graph=json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?',(target,)).fetchone()[0]);digest=next(b['package_digest'] for b in graph['bindings'] if b['instance_id']=='intelligent-ui')
     manifest=json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?',(digest,)).fetchone()[0]);require(manifest['version']=='1.27.0' and any(s['contract']==CONTRACT for s in manifest['provides']),'default did not activate Plan1.15')
-    base_policy_id=db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0];owner_cases=db.execute("SELECT json_array_length(policy_json,'$.cases') FROM rsi_policy WHERE policy_id=?",(base_policy_id,)).fetchone()[0];require(owner_cases==387,'default Plan owner case missing')
+    base_policy_id=db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0];owner_cases = check_default_owner_policy(db, graph, base_policy_id)
    h.start();h.wait_runtime_ready('managed Plan App ready')
    published = {}
    def browser(phase,ref='',caption='Plan:'):
@@ -144,7 +145,7 @@ def run(binary,evidence):
    browser('disabled-old',ref);browser('disabled-new',new_ref,'Plan v124:');require(h.command('plugin','status')['graph_revision']=='','cold start reactivated plugins')
    with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
     db.execute('BEGIN');require(db.execute('SELECT invocation_id,graph_revision,result_json FROM ui_plan_view_snapshot ORDER BY invocation_id').fetchall()==snapshots,'version switch recomputed accepted views')
-   report=dict(checks=['actual App and production bridge','fresh default40 Plan1.27 with349 independent Owner cases','incomplete streaming Plan from original package','formal original ordinal1 iframe','SIGKILL cold recovery without reselect or view recomputation'],graph=graph,package_digest=digest,ref=ref,preview=preview,formal=formal,restart=restart,snapshot_sha256=hashlib.sha256(saved.encode()).hexdigest(),prefix_to_browser_upper_bound_seconds=prefix_upper_bound,binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),version_upgrade=dict(graph=new_target,package_digest=new_digest,ref=new_ref,preview=new_preview,prefix_to_browser_upper_bound_seconds=new_prefix_upper_bound),version_checks=['old reference immediately after upgrade','real new prefix and template','both references after rollback','both references after deactivation/cold start without reselect','all snapshot bytes unchanged'],default_owner_cases=owner_cases,scope='fresh default40 UI1.27 and independent1.28 template upgrade; remaining renderers and final delivery gates incomplete')
+   report=dict(checks=['actual App and production bridge','fresh default40 Plan1.27 with reviewed Owner cases','incomplete streaming Plan from original package','formal original ordinal1 iframe','SIGKILL cold recovery without reselect or view recomputation'],graph=graph,package_digest=digest,ref=ref,preview=preview,formal=formal,restart=restart,snapshot_sha256=hashlib.sha256(saved.encode()).hexdigest(),prefix_to_browser_upper_bound_seconds=prefix_upper_bound,binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),version_upgrade=dict(graph=new_target,package_digest=new_digest,ref=new_ref,preview=new_preview,prefix_to_browser_upper_bound_seconds=new_prefix_upper_bound),version_checks=['old reference immediately after upgrade','real new prefix and template','both references after rollback','both references after deactivation/cold start without reselect','all snapshot bytes unchanged'],default_owner_cases=owner_cases,scope='fresh default40 UI1.27 and independent1.28 template upgrade; remaining renderers and final delivery gates incomplete')
    evidence.write_text(json.dumps(report,indent=2)+'\n');return report
   finally:
    server.release.set();h.cleanup()

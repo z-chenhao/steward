@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/z-chenhao/assistant/internal/recall/lexical"
 	"math"
 	"sort"
 	"strings"
@@ -27,7 +28,7 @@ func SearchLocal(ctx context.Context, db *sql.DB, scope recall.Scope, q recall.Q
 			end = q.TimeRange.End.UnixMicro()
 		}
 	}
-	terms := recall.Terms(q.Query)
+	terms := lexical.Terms(q.Query)
 	out := []recall.Hit{}
 	if len(terms) == 0 {
 		return out, nil
@@ -66,7 +67,7 @@ AND (`+strings.Join(conditions, " OR ")+`)`, args...)
 			return nil, recall.ErrUnavailable
 		}
 		h.SourceType, h.OccurredAt = source, time.UnixMicro(at).UTC()
-		h.Relevance = recall.Relevance(terms, h.Content)
+		h.Relevance = lexical.Relevance(terms, h.Content)
 		if h.Relevance >= .25 && recall.QuotedMatch(q.Query, h.Content) {
 			if core {
 				h.Relevance += .001

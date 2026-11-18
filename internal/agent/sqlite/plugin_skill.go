@@ -89,10 +89,7 @@ func (t *tools) executeSkill(ctx context.Context, inv tool.Invocation) (tool.Res
 		if t.runs.plugins == nil || revision == "" {
 			return rsi.ErrNotFound
 		}
-		h := *t.runs.plugins
-		store := t.runs.host.Plugins()
-		store.Fence = t.fence
-		h.Store = store
+		h := t.runs.pluginHostWithFence(t.fence)
 		raw, e := json.Marshal(input)
 		if e != nil {
 			return e
@@ -171,10 +168,7 @@ func (t *tools) executeSkill(ctx context.Context, inv tool.Invocation) (tool.Res
 		result = t.runs.skillRead(ctx, args)
 	}
 	if managed {
-		h := *t.runs.plugins
-		store := t.runs.host.Plugins()
-		store.Fence = t.fence
-		h.Store = store
+		h := t.runs.pluginHostWithFence(t.fence)
 		if err = h.Store.CheckGraph(ctx, revision); err != nil {
 			return skillPolicyFailure(err)
 		}

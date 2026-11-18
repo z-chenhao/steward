@@ -107,10 +107,7 @@ func (t *tools) prepareComputerParameters(ctx context.Context, id string) (tool.
 	if t.runs.plugins == nil || request.revision == "" {
 		return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 	}
-	host := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.computerMethodFence
-	host.Store = store
+	host := t.runs.pluginHostWithFence(t.computerMethodFence)
 	if request.service == contract.BrowserUploadContract {
 		// This request is still queued/waiting and was fenced above. The running
 		// builtin admission check remains exclusive to actual execution.

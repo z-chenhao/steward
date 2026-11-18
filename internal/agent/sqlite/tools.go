@@ -152,6 +152,10 @@ func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCal
 						policy = p.Replay
 						if d, ok := t.catalog().Resolve(spec.Name); !undeclared && ok && d.ConflictKeys != nil && tool.Validate(spec.InputSchema, call.Arguments) {
 							keys = d.ConflictKeys(call.Arguments)
+							keys, err = t.environmentConflictKeys(ctx, tx, spec, keys)
+							if err != nil {
+								return err
+							}
 						}
 					}
 				}
@@ -370,11 +374,16 @@ func (t *tools) finish(ctx, outputCtx context.Context, id string, result tool.Re
 			t.runs.host.boundary("before_computer_inventory_commit")
 		}
 	}
-	if _, ok := result.HostFence.(mcp.ManagedReceipt); ok && result.Error == nil {
-		t.runs.host.boundary("before_mcp_method_commit")
-	}
-	if _, ok := result.HostFence.(connectedapps.ManagedReceipt); ok && result.Error == nil {
-		t.runs.host.boundary("before_apps_method_commit")
+	var connectorResource connectorResourceCheck
+	if result.Error == nil {
+		switch result.HostFence.(type) {
+		case mcp.ManagedReceipt:
+			connectorResource = t.checkMCPResource
+			t.runs.host.boundary("before_mcp_method_commit")
+		case connectedapps.ManagedReceipt:
+			connectorResource = t.checkAppsResource
+			t.runs.host.boundary("before_apps_method_commit")
+		}
 	}
 	if _, ok := result.HostFence.(webReadReceipt); ok && result.Error == nil {
 		t.runs.host.boundary("before_web_read_commit")
@@ -393,16 +402,9 @@ func (t *tools) finish(ctx, outputCtx context.Context, id string, result tool.Re
 		if err := t.fence(ctx, tx); err != nil {
 			return err
 		}
-		if _, ok := result.HostFence.(mcp.ManagedReceipt); ok && result.Error == nil {
+		if connectorResource != nil {
 			var err error
-			result, err = t.commitMCPResult(ctx, tx, id, result)
-			if err != nil {
-				return err
-			}
-		}
-		if _, ok := result.HostFence.(connectedapps.ManagedReceipt); ok && result.Error == nil {
-			var err error
-			result, err = t.commitAppsResult(ctx, tx, id, result)
+			result, err = t.commitConnectorResult(ctx, tx, id, result, connectorResource)
 			if err != nil {
 				return err
 			}

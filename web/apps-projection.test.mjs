@@ -1,9 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {transform} from 'esbuild';
-const source=readFileSync(new URL('./src/apps-browser.ts',import.meta.url),'utf8');
-const {code}=await transform(source,{loader:'ts',format:'esm'});
+import {fileURLToPath} from 'node:url';
+import {build} from 'esbuild';
+const {outputFiles:[{text:code}]}=await build({entryPoints:[fileURLToPath(new URL('./src/apps-browser.ts',import.meta.url))],bundle:true,format:'esm',write:false});
 const {validateAppsProjection,validateAppsPollPlans,validateAppsNotice,validateAppsActionView,validateAppsFailureView}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const facts={accounts:[{slug:'mail',state:'active',public:false},{slug:'drive',state:'active',public:false},{slug:'mail',state:'pending',public:false}],tiles:['mail'],details:[{slug:'mail',suggested:false,no_auth:false,require_alias:false}]};
 const projection=()=>({type:'projection',tiles:[{manage_hidden:false,add_hidden:true}],details:[{accounts:[0,2],empty_hidden:true,first_hidden:true,additional_hidden:false}]});

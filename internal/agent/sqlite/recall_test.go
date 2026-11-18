@@ -192,6 +192,8 @@ func testRecallFrozenPerTurn(t *testing.T, managed bool) {
 		t.Fatal(e)
 	}
 	defer r.Release(ctx, c)
+	stopRenewal := keepRunClaim(r, c)
+	defer stopRenewal()
 	if e = r.Initialize(ctx, c); e != nil {
 		t.Fatal(e)
 	}
@@ -300,6 +302,7 @@ func testRecallFrozenPerTurn(t *testing.T, managed bool) {
 		t.Fatal("legacy recall bytes changed", legacyQuery, legacy)
 	}
 	run.Checkpoint.Step++
+	stopRenewal()
 	if e = r.Release(ctx, c); e != nil {
 		t.Fatal(e)
 	}

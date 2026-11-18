@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.coding-workspace",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "feature_ids": [
     "F-026"
   ],
@@ -136,6 +136,15 @@
               "oldest",
               "recent"
             ]
+          },
+          "review_guide": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
           }
         },
         "required": [
@@ -145,6 +154,256 @@
           "order"
         ],
         "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.coding-check-limits/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ceilings": {
+            "type": "object",
+            "properties": {
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 120
+              },
+              "output_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 48000
+              }
+            },
+            "required": [
+              "timeout_seconds",
+              "output_bytes"
+            ],
+            "additionalProperties": false
+          },
+          "requested_timeout": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "ceilings"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "output_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 48000
+          }
+        },
+        "required": [
+          "timeout_seconds",
+          "output_bytes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.coding-project-plan/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "string",
+            "maxLength": 32768
+          },
+          "check": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "document",
+          "check"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "integer",
+                "const": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "check": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "requirement": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "prepare": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16384
+                  },
+                  "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 120
+                  }
+                },
+                "required": [
+                  "command",
+                  "timeout_seconds"
+                ],
+                "additionalProperties": false
+              },
+              "start": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16384
+                  },
+                  "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 120
+                  }
+                },
+                "required": [
+                  "command",
+                  "timeout_seconds"
+                ],
+                "additionalProperties": false
+              },
+              "doctor": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16384
+                  },
+                  "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 120
+                  }
+                },
+                "required": [
+                  "command",
+                  "timeout_seconds"
+                ],
+                "additionalProperties": false
+              },
+              "verify": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16384
+                  },
+                  "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 120
+                  }
+                },
+                "required": [
+                  "command",
+                  "timeout_seconds"
+                ],
+                "additionalProperties": false
+              },
+              "cleanup": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16384
+                  },
+                  "timeout_seconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 120
+                  }
+                },
+                "required": [
+                  "command",
+                  "timeout_seconds"
+                ],
+                "additionalProperties": false
+              },
+              "evidence": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024
+                }
+              }
+            },
+            "required": [
+              "version",
+              "name",
+              "check",
+              "requirement",
+              "prepare",
+              "doctor",
+              "verify",
+              "cleanup"
+            ],
+            "additionalProperties": false
+          },
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT",
+              "NOT_FOUND"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "plan"
+            ]
+          },
+          {
+            "type": "object",
+            "required": [
+              "error_code"
+            ]
+          }
+        ]
       }
     }
   ],

@@ -80,10 +80,7 @@ func (t *tools) executeManagedShell(ctx context.Context, inv tool.Invocation, dr
 	if t.runs.plugins == nil {
 		return environmentMethodFailure(rsi.ErrNotFound)
 	}
-	h := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.fence
-	h.Store = store
+	h := t.runs.pluginHostWithFence(t.fence)
 	revision, err := h.Store.Binding(ctx, t.claim.RunID())
 	if err != nil {
 		return environmentMethodFailure(err)

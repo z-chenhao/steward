@@ -190,7 +190,7 @@ func TestWebPluginImageCompleteEightMiBSourceAndLargeDerivedOutput(t *testing.T)
 		installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
 	defer r.Release(ctx, claim)
-	defer keepWebReadClaim(r, claim)()
+	defer keepRunClaim(r, claim)()
 	pixels := image.NewRGBA(image.Rect(0, 0, 2000, 2000))
 	seed := uint32(19421)
 	for i := 0; i < len(pixels.Pix); i += 4 {
@@ -414,7 +414,7 @@ func TestWebPluginImageRealReleaseRecoveryDoesNotReplayUnknownSource(t *testing.
 		r.ConfigureWebAccess(cfg, nil)
 		h = installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
-	stop := keepWebReadClaim(r, claim)
+	stop := keepRunClaim(r, claim)
 	defer stop()
 	status, err := h.Store.Status(ctx)
 	if err != nil {
