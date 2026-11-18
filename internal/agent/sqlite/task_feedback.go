@@ -43,14 +43,15 @@ func (t *tools) requestTaskFeedback(ctx context.Context, tx *sql.Tx, change *tas
 	if !validFeedbackPolicy(p.Policy) {
 		return tool.Result{}, rsi.ErrInvalid
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE task_feedback SET status='superseded' WHERE task_id=? AND status='pending'`, change.id); err != nil {
-		return tool.Result{}, err
-	}
-	change.feedbackRef = "feedback:" + newID()
 	kind := "input"
 	if change.request.Operation == "request_review" {
 		kind = "review"
 	}
+	if _, err := tx.ExecContext(ctx, `UPDATE task_feedback SET status='superseded'
+ WHERE task_id=? AND status='pending' AND (kind=? OR separate_kinds=0 OR NOT ?)`, change.id, kind, p.SeparateKinds); err != nil {
+		return tool.Result{}, err
+	}
+	change.feedbackRef = "feedback:" + newID()
 	// A Reporter source is a runtime event, not a user message. Preserve the
 	// actual original user message when available instead of labelling an event
 	// ID as a Conversation reference.
@@ -58,7 +59,7 @@ func (t *tools) requestTaskFeedback(ctx context.Context, tx *sql.Tx, change *tas
 	if err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT c.message_id FROM conversation_intent c WHERE c.message_id=?),(SELECT c.message_id FROM task_request q JOIN conversation_intent c ON c.message_id=q.source_message_id WHERE json_extract(q.receipt_json,'$.taskRef')=? ORDER BY c.sequence LIMIT 1),'')`, change.source, change.reference).Scan(&source); err != nil {
 		return tool.Result{}, err
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO task_feedback(feedback_ref,task_id,task_epoch,privacy_epoch,kind,prompt,source_message_id,artifact_refs,status,created_at,expires_at) VALUES(?,?,?,?,?,?,?,?,'pending',?,?)`, change.feedbackRef, change.id, change.epoch, epoch, kind, change.request.Prompt, source, change.artifactsJSON, change.at, change.at+p.LifetimeSeconds*int64(time.Second/time.Microsecond)); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO task_feedback(feedback_ref,task_id,task_epoch,privacy_epoch,kind,prompt,source_message_id,artifact_refs,status,created_at,expires_at,separate_kinds) VALUES(?,?,?,?,?,?,?,?,'pending',?,?,?)`, change.feedbackRef, change.id, change.epoch, epoch, kind, change.request.Prompt, source, change.artifactsJSON, change.at, change.at+p.LifetimeSeconds*int64(time.Second/time.Microsecond), p.SeparateKinds); err != nil {
 		return tool.Result{}, err
 	}
 	var revision any
@@ -226,6 +227,11 @@ func (r *Runs) respondTaskFeedback(ctx context.Context, ref, answer string, inbo
 	return r.submit(ctx, "task-feedback:"+ref, parts, inbound, ref, nil, nil)
 }
 
+// A Task-wide recipe conflicts with both kinds even after an upgrade or rollback.
+const feedbackNotReplaced = `NOT EXISTS(SELECT 1 FROM task_feedback newer
+ WHERE newer.task_id=f.task_id AND newer.rowid>f.rowid
+ AND (f.kind=newer.kind OR f.separate_kinds=0 OR newer.separate_kinds=0))`
+
 // requireCurrentFeedback joins ingress and later Main Task admission so a
 // pause/cancel/Forget/new epoch after an answer cannot be undone by that answer.
 func (s *Store) requireCurrentFeedback(ctx context.Context, tx *sql.Tx, ref, taskRef string, answered bool) error {
@@ -234,7 +240,7 @@ func (s *Store) requireCurrentFeedback(ctx context.Context, tx *sql.Tx, ref, tas
 		status = "answered"
 	}
 	var refs, agentID string
-	err := tx.QueryRowContext(ctx, `SELECT f.artifact_refs,t.agent_id FROM task_feedback f JOIN task t USING(task_id) LEFT JOIN memory_privacy p USING(agent_id) WHERE f.feedback_ref=? AND f.status=? AND (?='' OR t.task_ref=?) AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.status IN ('active','completed') AND t.task_epoch=f.task_epoch AND f.privacy_epoch=coalesce(p.epoch,0) AND t.created_at>coalesce(p.updated_at,0) AND f.expires_at>? AND NOT EXISTS(SELECT 1 FROM task_feedback newer WHERE newer.task_id=f.task_id AND newer.rowid>f.rowid)`, ref, status, taskRef, taskRef, time.Now().UnixMicro()).Scan(&refs, &agentID)
+	err := tx.QueryRowContext(ctx, `SELECT f.artifact_refs,t.agent_id FROM task_feedback f JOIN task t USING(task_id) LEFT JOIN memory_privacy p USING(agent_id) WHERE f.feedback_ref=? AND f.status=? AND (?='' OR t.task_ref=?) AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.status IN ('active','completed') AND t.task_epoch=f.task_epoch AND f.privacy_epoch=coalesce(p.epoch,0) AND t.created_at>coalesce(p.updated_at,0) AND f.expires_at>? AND `+feedbackNotReplaced, ref, status, taskRef, taskRef, time.Now().UnixMicro()).Scan(&refs, &agentID)
 	if err == sql.ErrNoRows {
 		return task.ErrFeedbackStale
 	}

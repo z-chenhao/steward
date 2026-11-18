@@ -23,6 +23,8 @@ func dispatchCommand(ctx context.Context, application *app.App, cfg config.Confi
 		application.StartMemory(ctx)
 	}
 	switch command.kind {
+	case commandTaskMail:
+		return runTaskMail(ctx, application, flags, in, out)
 	case commandPlugin:
 		if flags.Arg(1) == "parser-resource" {
 			return runParserResource(ctx, application, cfg, flags.Arg(2), out)
