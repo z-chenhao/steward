@@ -400,7 +400,8 @@ func (r *Runs) Recover(ctx context.Context) error {
 	if r.automationClock != nil {
 		now = r.automationClock()
 	}
-	if err := r.ScheduleAutomations(ctx, now); err != nil {
+	var missing *missingSchedulePackage
+	if err := r.ScheduleAutomations(ctx, now); err != nil && !errors.As(err, &missing) {
 		return err
 	}
 	if err := r.admitAutomations(ctx); err != nil {
