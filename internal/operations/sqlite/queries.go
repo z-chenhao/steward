@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -95,12 +96,17 @@ func (s Store) Report(ctx context.Context) (operations.Report, error) {
 
 func (s Store) Trace(ctx context.Context, id string) (operations.RunTrace, error) {
 	v := operations.RunTrace{RunID: id, Points: []operations.TracePoint{}}
-	if e := s.DB.QueryRowContext(ctx, `SELECT coalesce(parent_run_id,''),coalesce(root_run_id,''),status FROM run WHERE run_id=?`, id).Scan(&v.Parent, &v.Root, &v.Status); e != nil {
-		return v, agent.ErrNotFound
-	}
-	rows, e := s.DB.QueryContext(ctx, `SELECT sequence,event_json,occurred_at FROM run_trace WHERE run_id=? ORDER BY sequence DESC LIMIT 1000`, id)
+	tx, e := s.DB.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
 	if e != nil {
-		return v, e
+		return v, traceReadError(ctx, e)
+	}
+	defer tx.Rollback()
+	if e := tx.QueryRowContext(ctx, `SELECT coalesce(parent_run_id,''),coalesce(root_run_id,''),status FROM run WHERE run_id=?`, id).Scan(&v.Parent, &v.Root, &v.Status); e != nil {
+		return v, traceReadError(ctx, e)
+	}
+	rows, e := tx.QueryContext(ctx, `SELECT sequence,event_json,occurred_at FROM run_trace WHERE run_id=? ORDER BY sequence DESC LIMIT 1000`, id)
+	if e != nil {
+		return v, traceReadError(ctx, e)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -108,7 +114,7 @@ func (s Store) Trace(ctx context.Context, id string) (operations.RunTrace, error
 		var raw []byte
 		var at int64
 		if e = rows.Scan(&p.Sequence, &raw, &at); e != nil {
-			return v, e
+			return v, traceReadError(ctx, e)
 		}
 		p.At = time.UnixMicro(at).UTC().Format(time.RFC3339Nano)
 		var event agent.Event
@@ -119,5 +125,21 @@ func (s Store) Trace(ctx context.Context, id string) (operations.RunTrace, error
 		p.Tool = event.ToolCallID
 		v.Points = append(v.Points, p)
 	}
-	return v, rows.Err()
+	if e = rows.Err(); e != nil {
+		return v, traceReadError(ctx, e)
+	}
+	if e = tx.Commit(); e != nil {
+		return v, traceReadError(ctx, e)
+	}
+	return v, nil
+}
+
+func traceReadError(ctx context.Context, err error) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return agent.ErrNotFound
+	}
+	return agent.ErrStorage
 }
