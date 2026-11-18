@@ -82,6 +82,7 @@ type Store interface {
 	Install(context.Context, Package) error
 	PutGraph(context.Context, ResolvedGraph) error
 	Graph(context.Context, string) (ResolvedGraph, error)
+	ServiceBinding(context.Context, string, string) (rsiplugin.Binding, error)
 	PutPolicy(context.Context, Policy) error
 	Policy(context.Context, string) (Policy, error)
 	Propose(context.Context, Candidate) error

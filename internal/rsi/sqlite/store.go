@@ -101,6 +101,41 @@ func (s *Store) Graph(ctx context.Context, id string) (rsi.ResolvedGraph, error)
 	}
 	return out, nil
 }
+
+// ServiceBinding selects from Host-admitted manifests for exactly this frozen graph.
+// The caller verifies the addressed package before use; no filesystem cache
+// participates in integrity, quarantine or revocation checks.
+func (s *Store) ServiceBinding(ctx context.Context, revision, contract string) (rsiplugin.Binding, error) {
+	var b rsiplugin.Binding
+	rows, err := s.DB.QueryContext(ctx, `SELECT b.value FROM rsi_graph g, json_each(g.graph_json,'$.bindings') b
+      JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest')
+      WHERE g.revision=? AND EXISTS(SELECT 1 FROM json_each(p.manifest_json,'$.provides') service
+        WHERE json_extract(service.value,'$.contract')=?) LIMIT 2`, revision, contract)
+	if err != nil {
+		return b, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if b.InstanceID != "" {
+			return b, rsi.ErrConflict
+		}
+		var raw string
+		if err := rows.Scan(&raw); err != nil {
+			return b, err
+		}
+		if err := json.Unmarshal([]byte(raw), &b); err != nil || b.InstanceID == "" {
+			return b, rsi.ErrInvalid
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return b, err
+	}
+	if b.InstanceID == "" {
+		return b, rsi.ErrNotFound
+	}
+	return b, nil
+}
+
 func (s *Store) PutPolicy(ctx context.Context, p rsi.Policy) error {
 	if err := rsi.ValidatePolicy(p); err != nil {
 		return err

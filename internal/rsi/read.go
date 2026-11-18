@@ -11,27 +11,24 @@ import (
 // ServiceInstance selects a uniquely provided contract for a Host-owned feature
 // adapter. Explicit plugin-to-plugin dependencies continue to name an instance.
 func (h Host) ServiceInstance(ctx context.Context, revision, contract string) (rsiplugin.Binding, error) {
-	g, err := h.Store.Graph(ctx, revision)
+	b, _, err := h.servicePackage(ctx, revision, contract)
+	return b, err
+}
+
+// Resolve against immutable admission metadata, then verify the selected bytes.
+func (h Host) servicePackage(ctx context.Context, revision, contract string) (rsiplugin.Binding, Package, error) {
+	b, err := h.Store.ServiceBinding(ctx, revision, contract)
 	if err != nil {
-		return rsiplugin.Binding{}, err
+		return b, Package{}, err
 	}
-	var selected rsiplugin.Binding
-	for _, b := range g.Graph.Bindings {
-		pkg, err := h.Catalog.Load(b.PackageDigest)
-		if err != nil {
-			return selected, err
-		}
-		if _, ok := findService(pkg.Manifest, contract); ok {
-			if selected.InstanceID != "" {
-				return selected, ErrConflict
-			}
-			selected = b
-		}
+	p, err := h.Catalog.Load(b.PackageDigest)
+	if err != nil {
+		return b, p, err
 	}
-	if selected.InstanceID == "" {
-		return selected, ErrNotFound
+	if _, ok := findService(p.Manifest, contract); !ok {
+		return b, p, ErrInvalid
 	}
-	return selected, nil
+	return b, p, nil
 }
 
 // ReadService runs pure owner-side reads under a domain-supplied Fence, with no
@@ -53,11 +50,7 @@ func (h Host) readService(ctx context.Context, revision, contract string, input 
 	if err := h.Store.CheckGraph(ctx, revision); err != nil {
 		return nil, err
 	}
-	b, err := h.ServiceInstance(ctx, revision, contract)
-	if err != nil {
-		return nil, err
-	}
-	p, err := h.Catalog.Load(b.PackageDigest)
+	b, p, err := h.servicePackage(ctx, revision, contract)
 	if err != nil {
 		return nil, err
 	}
