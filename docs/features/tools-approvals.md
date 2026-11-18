@@ -108,3 +108,15 @@ Computer 实验参数方法的完整选择在原审批前固化；所有者控�
 
 
 Computer 实验导出审批同时展示已固化的名称／媒体类型，沿原 hash、决定 API 和共享控件；原文件授权与具体参数校验仍由 Host 执行。
+
+### 本机测试商户
+
+所有者可用 `scripts/sandbox_merchant.py` 试验一笔虚拟订单。建立私有目录，将脚本复制进去，用系统 Python 和专用账本创建报价：
+
+```sh
+python3 sandbox_merchant.py --ledger orders.db quote test-001 CNY 1299
+```
+
+在现有 MCP 配置中添加 `test_merchant`，工作目录指向该私有目录，命令使用受沙箱支持的系统 Python 绝对路径。参数依次为脚本绝对路径、`--ledger`、账本绝对路径、`serve`。将 `get_order` 配置为 `read_only`，将 `pay_order` 配置为 `external_effect`。使用已选定的 MCP 托管插件，先查询 `test-001`，再请求为该订单支付不超过 1500 分人民币。
+
+审批绑定商户 `steward-test-merchant`、订单号、币种和上限（以最小货币单位计）。商户按预先录入的价格结算；超出上限或币种不同会拒绝。查询结果列出实付金额、上限及唯一回执。丢失付款应答时只用 `get_order` 查询原单；商户回执与 Host 的未知执行历史可分别核对。此试验使用本机 SQLite 记录虚拟订单，无银行卡或真实支付机构接入。
