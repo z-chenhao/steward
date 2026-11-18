@@ -24,5 +24,7 @@ func experienceCases() []rsi.Case {
 		expected, _ := json.Marshal(contract.DemoResult{Steps: []string{`1. Activate "Preview".`}, Matched: 1, Verified: goal == 1})
 		out = append(out, rsi.Case{InstanceID: "experience-learning", Contract: contract.Demonstration, Input: input, Expected: expected})
 	}
-	return out
+	input, _ := json.Marshal(contract.CorrectionInput{Steps: []string{"Review the staged change.", "Run the focused checks."}})
+	expected, _ := json.Marshal(contract.CorrectionPlan{IndependentRuns: 2, Procedure: "1. Review the staged change.\n2. Run the focused checks."})
+	return append(out, rsi.Case{InstanceID: "experience-learning", Contract: contract.CorrectionRecipe, Input: input, Expected: expected})
 }

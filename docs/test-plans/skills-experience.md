@@ -44,8 +44,12 @@
 
 方法库发现／资源入口已迁入独立策略包，冻结文件与权限仍归 Host；设计边界见[插件设计](../designs/plugins-evolution.md#已提取的方法库边界)。相关回归为 `TestSkillPlugin*`、`make test-prompts` 与 `capabilities` 实际分发包场景。经验 Reviewer 的原始证据、验证和晋升不因此开放给普通插件。
 
-经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。F-023 的自动触发／编排仍待实现。
+经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。多次标记的纠正已有自动入口，恢复失败和重复成功的自动编排仍待实现。
 
 ### 从本机示范生成私有草案
 
 参考 Grok Bot 的示范教学。操作者在本机样例明确启停两次，修改步骤后看见不匹配的位置，恢复正确顺序后下载私有技能。Steward 的复验只消耗第二份样例的状态转移。运行 `tests/system/verify_channels.py` 的 Web Channels 场景（`browser_demonstration`）调用 [Chromium 驱动](../../guest-browser/demonstration.mjs)，检查密码与输入值均不在录制文件、同一次录制被拒绝、编辑后重新校验、下载正文及目标服务器的请求计数；留存桌面／手机与明暗截图。托管 Owner 用例另测错误终态，`TestExperiencePlugin*` 验证包真实升级、回退和停用。
+
+### 独立授权纠正
+
+`TestExperienceAuthorizedCorrectionsBecomeOneRejectableCandidate` 经实际 Main 入口提交普通输入、同键重试、同一 Run 的第二条输入和另一 Run 的纠正。检查候选引用原始两条证据、拒绝未验证晋升、CAS 拒绝后不再创建、停用后拒绝新学习且旧输入仍可读回。memory-maintenance 系统门禁复验真实 CLI Chat 和本机 Reviewer 列出、查看、拒绝自动候选。

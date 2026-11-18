@@ -258,7 +258,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, meetingPreparationCases()...)
 	}
 	if d.Experience != "" {
-		policy.AllowedContracts = append(policy.AllowedContracts, "steward.experience-policy/1", "steward.browser-demonstration/1")
+		policy.AllowedContracts = append(policy.AllowedContracts, "steward.experience-policy/1", "steward.browser-demonstration/1", "steward.correction-recipe/1")
 		policy.Cases = append(policy.Cases, experienceCases()...)
 	}
 	if d.Task != "" {
