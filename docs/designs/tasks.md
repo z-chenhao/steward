@@ -6,6 +6,8 @@
 
 ## 当前架构
 
+只读搜索使用同一 Unicode 简单折叠规则。新分页游标以固定长度摘要绑定查询作用域；旧的明文作用域游标仍可继续读取。
+
 GitHub 精确 PR 的显式 Task 关联复用现有 Main/Task 控制，机制与私有因果 fencing 见 [集成方案](integrations.md#明确-task-关联与-main-接续)。Task 的 private explicit_end_epoch 记录人工 complete 的停止边界，区分 once Root 的自然结束；不增加新的 Task 状态，不向第三方事件授予权限。
 
 Task 保存目标和指令；Root Run 表示一轮执行。Task epoch 与 claim 拒绝旧结果，Reporter 将业务结果交给 Main。进度是单独投影，不承担通知或调度。

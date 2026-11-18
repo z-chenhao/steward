@@ -4,6 +4,8 @@
 
 ## 范围与证据
 
+用带重音拉丁字母、希腊文、中文及 150 个 HTML 特殊字符的同一搜索查询连续读取两页，并验证不同条件拒绝原游标。
+
 F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../internal/agent/sqlite/github_followup_test.go) 的真实 HTTP/SQLite/Actor/Tool 链路；覆盖自然完成、人工结束、重复与不同追加、旧 owner/晚模型与工具、停止/Forget 和 unknown 效果。原飞书 Task 的 GitHub 接续经真实 HTTP peer 验证原话题交付；平台登录、真实飞书渲染和真实模型范围判断不由该确定性回归证明，参见 [集成测试方案](integrations.md)。
 
 本方案回答如何证明需求完成，不是测试执行报告。已有入口只表示测试存在，不能推导特定版本已通过或真实模型效果已达标。
