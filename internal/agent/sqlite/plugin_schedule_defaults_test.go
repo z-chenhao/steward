@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/z-chenhao/assistant/internal/automation"
 	"github.com/z-chenhao/assistant/internal/interaction/web"
+	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/task"
 	"net/http/httptest"
@@ -106,5 +107,53 @@ func TestScheduleManagedDefaultFactsCannotDisappearIntoLegacy(t *testing.T) {
 	}
 	if _, err = s.TaskReader().ScheduledDetail(ctx, receipt.Ref); !errors.Is(err, task.ErrInvalid) {
 		t.Fatal("managed defaults silently recovered old recipe", err)
+	}
+}
+
+func TestScheduleRejectsUnreachableThresholdAtAdmission(t *testing.T) {
+	ctx := context.Background()
+	s, r, a, p := automationFixture(t)
+	now := time.Date(2030, 1, 2, 0, 0, 0, 0, time.UTC)
+	zero, one := int64(0), int64(1)
+	q := automation.OwnerConfiguration{Instruction: "Check remaining stock", Type: "cron", Spec: "* * * * *", Timezone: "UTC", Below: &zero, Enabled: true}
+	old, err := r.ConfigureAutomation(ctx, "old-zero", q, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	installScheduleOwnerMethod(t, s, r)
+	if replay, err := r.ConfigureAutomation(ctx, "old-zero", q, now); err != nil || replay != old {
+		t.Fatal("historical receipt lost", replay, err)
+	}
+	var minimum automation.ThresholdMinimumError
+	if _, err = r.ConfigureAutomation(ctx, "new-zero", q, now); !errors.As(err, &minimum) || minimum.Minimum != 1 {
+		t.Fatal("owner accepted unreachable threshold", err)
+	}
+	cli := automation.Request{Operation: "create", Instruction: q.Instruction, Type: q.Type, Spec: q.Spec, Timezone: q.Timezone, Below: &zero}
+	if _, err = r.ManageAutomation(ctx, "cli-zero", cli, now); !errors.As(err, &minimum) {
+		t.Fatal("CLI accepted unreachable threshold", err)
+	}
+	r.SetTestAutomationClock(now)
+	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		if req.Messages[len(req.Messages)-1].Role == "tool" {
+			return llm.GenerationResult{Text: "Use one to detect zero."}, nil
+		}
+		return calls(automation.ManageName, `{"operation":"create","instruction":"Check zero","triggerType":"cron","triggerSpec":"* * * * *","timezone":"UTC","below":0}`), nil
+	}
+	mustSubmit(t, a, "main-zero", "Notify me when stock runs out.")
+	mustDrain(t, a)
+	if scalar(t, s, `SELECT count(*) FROM tool_invocation WHERE tool_name=? AND json_extract(result_json,'$.error.code')='INVALID_ARGUMENT'`, automation.ManageName) != 1 || scalar(t, s, `SELECT count(*) FROM automation`) != 1 {
+		t.Fatal("Main created a new zero threshold")
+	}
+	q.Below = &one
+	if _, err = r.ConfigureAutomation(ctx, "new-zero", q, now); err != nil {
+		t.Fatal("corrected same draft rejected", err)
+	}
+	oldDetail, err := s.TaskReader().ScheduledDetail(ctx, old.Ref)
+	if err != nil || oldDetail.Below == nil || *oldDetail.Below != 0 {
+		t.Fatal("historical below-zero plan reinterpreted", oldDetail, err)
+	}
+	q.Ref, q.Version, q.Enabled, q.Below = old.Ref, old.Version, false, &zero
+	if _, err = r.ConfigureAutomation(ctx, "disable-old-zero", q, now); err != nil {
+		t.Fatal("local historical stop required positive threshold", err)
 	}
 }

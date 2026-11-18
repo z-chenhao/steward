@@ -11,7 +11,7 @@ import (
 func TestDefaultsPreserveOriginalDraftWithoutAuthority(t *testing.T) {
 	out, err := Plugin().Call(context.Background(), rsiplugin.Call{Contract: contract.Defaults, Input: json.RawMessage(`{}`)})
 	var value contract.DefaultsResult
-	if err != nil || rsiplugin.Decode(out.Output, &value) != nil || value.Frequency != "daily" || value.Clock != "08:00" || value.Timezone != "UTC" || !value.Enabled || value.Weekday != "1" || value.Day != "1" || out.State != nil || out.OutputData != nil {
+	if err != nil || rsiplugin.Decode(out.Output, &value) != nil || value.MinBelow != 1 || value.Frequency != "daily" || value.Clock != "08:00" || value.Timezone != "UTC" || !value.Enabled || value.Weekday != "1" || value.Day != "1" || out.State != nil || out.OutputData != nil {
 		t.Fatal(value, err)
 	}
 	if _, err = Plugin().Call(context.Background(), rsiplugin.Call{Contract: contract.Defaults, Input: json.RawMessage(`{"agent_id":"private"}`)}); err == nil {

@@ -134,5 +134,8 @@ func (r *Runs) ConfigureAutomation(ctx context.Context, key string, q automation
 		}
 		return automationEvent(ctx, tx, result.Ref, "changed")
 	})
+	if err == automation.ErrInvalid && plan.minimumBelow > 0 {
+		return result, automation.ThresholdMinimumError{Minimum: plan.minimumBelow}
+	}
 	return result, err
 }

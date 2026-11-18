@@ -1,5 +1,7 @@
 # 自动化与安静监控：测试方案
 
+`TestScheduleRejectsUnreachableThresholdAtAdmission` 经实际托管插件核对 Web 所有者写入、CLI 和 Main 工具：零阈值拒绝，同一草稿改为 1 可保存，历史零阈值可重放及停用。
+
 [功能与验收目标](../features/automation.md) · [技术方案](../designs/automation.md) · [主索引](../feature-map.md) · [统一测试入口](product.md)
 
 ## 范围与证据

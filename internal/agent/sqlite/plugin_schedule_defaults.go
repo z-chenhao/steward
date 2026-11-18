@@ -20,7 +20,7 @@ func readScheduleDefaults(ctx context.Context, host rsi.Host, graph string) (aut
 	if err = rsiplugin.DecodeResult(raw, &value); err != nil {
 		return automation.EditorDefaults{}, err
 	}
-	result := automation.EditorDefaults{Frequency: value.Frequency, Date: value.Date, Clock: value.Clock, Timezone: value.Timezone, Cron: value.Cron, Weekday: value.Weekday, Day: value.Day, Enabled: value.Enabled}
+	result := automation.EditorDefaults{MinBelow: value.MinBelow, Frequency: value.Frequency, Date: value.Date, Clock: value.Clock, Timezone: value.Timezone, Cron: value.Cron, Weekday: value.Weekday, Day: value.Day, Enabled: value.Enabled}
 	if err = result.Validate(); err != nil {
 		return result, rsi.ErrInvalid
 	}

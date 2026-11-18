@@ -9,7 +9,7 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Next: nextTime, contract.LocalTime: localTime, contract.Frequency: frequencyTime, contract.Projection: editorProjection, contract.Display: scheduleDisplay, contract.InstructionLabel: instructionLabel, contract.Guidance: guidance, contract.Defaults: editorDefaults, contract.Threshold: thresholdDecision}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Next: nextTime, contract.LocalTime: localTime, contract.Frequency: frequencyTime, contract.Projection: editorProjection, contract.Display: scheduleDisplay, contract.InstructionLabel: instructionLabel, contract.Guidance: guidance, contract.Defaults: editorDefaults, contract.Threshold: thresholdDecision}}
 }
 
 func nextTime(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {

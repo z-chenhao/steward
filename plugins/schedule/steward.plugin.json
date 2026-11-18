@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.schedule",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "feature_ids": [
     "F-015",
     "F-016"
@@ -444,6 +444,11 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "min_below": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
           }
         },
         "required": [

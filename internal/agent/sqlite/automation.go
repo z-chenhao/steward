@@ -29,11 +29,14 @@ func (r *Runs) ManageAutomation(ctx context.Context, key string, q automation.Re
 	}
 	var plan *ownerSchedulePlan
 	if q.Operation == "create" || q.Operation == "update" {
-		prepared, err := r.prepareOwnerScheduleRequest(ctx, key, digest(raw), automation.OwnerConfiguration{Instruction: q.Instruction, Ref: q.Ref, Version: q.Version, Enabled: true, Type: q.Type, Spec: q.Spec, Timezone: q.Timezone}, now, false)
+		prepared, err := r.prepareOwnerScheduleRequest(ctx, key, digest(raw), automation.OwnerConfiguration{Instruction: q.Instruction, Ref: q.Ref, Version: q.Version, Enabled: true, Type: q.Type, Spec: q.Spec, Timezone: q.Timezone, Below: q.Below}, now, false)
 		if err != nil {
 			return result, err
 		}
 		if prepared.invalid {
+			if prepared.minimumBelow > 0 {
+				return result, automation.ThresholdMinimumError{Minimum: prepared.minimumBelow}
+			}
 			return result, automation.ErrInvalid
 		}
 		plan = &prepared

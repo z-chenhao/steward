@@ -19,6 +19,8 @@ type ScheduleSettings interface {
 	ConfigureSchedule(context.Context, string, automation.OwnerConfiguration) (automation.OwnerReceipt, error)
 }
 type scheduleEditor struct {
+	MinBelow                                                                         int64
+	ThresholdRejected                                                                bool
 	Ref, Key, Instruction, Frequency, Date, Time, Timezone, Cron, Threshold, TaskRef string
 	Version                                                                          int64
 	Weekday, Day                                                                     string
@@ -178,6 +180,13 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 		}
 	}
 	message := "Check the instructions, schedule, time zone and threshold. One-time local times must be valid and unambiguous; enabled occurrences must be in the future."
+	statusCode := http.StatusConflict
+	var minimum automation.ThresholdMinimumError
+	if errors.As(err, &minimum) {
+		e.MinBelow, e.ThresholdRejected = minimum.Minimum, true
+		message = "Check the notification threshold under Advanced."
+		statusCode = http.StatusUnprocessableEntity
+	}
 	if errors.Is(err, agent.ErrConflict) {
 		message = "This schedule changed or can no longer be edited. Your draft is preserved. Reload the saved schedule before making a new change."
 	}
@@ -193,7 +202,7 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 		p.Status = status
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusConflict)
+	w.WriteHeader(statusCode)
 	s.render(w, r, p)
 	return nil
 }
@@ -225,5 +234,6 @@ func (s *Server) trialSchedule(w http.ResponseWriter, r *http.Request) error {
 }
 
 func applyScheduleDefaults(e *scheduleEditor, v automation.EditorDefaults) {
+	e.MinBelow = v.MinBelow
 	e.Frequency, e.Date, e.Time, e.Timezone, e.Cron, e.Weekday, e.Day, e.Enabled = v.Frequency, v.Date, v.Clock, v.Timezone, v.Cron, v.Weekday, v.Day, v.Enabled
 }

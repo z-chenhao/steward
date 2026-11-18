@@ -31,6 +31,7 @@ type ownerSchedulePlan struct {
 	epoch              int64
 	next               time.Time
 	invalid            bool
+	minimumBelow       int64
 	managed            bool
 	localDisable       bool
 	requireActive      bool
@@ -351,6 +352,11 @@ func (r *Runs) computeSchedule(ctx context.Context, plan ownerSchedulePlan, q au
 		value, err := readScheduleDefaults(ctx, host, plan.graph)
 		if err != nil {
 			return plan, err
+		}
+		if q.Below != nil && *q.Below < value.MinBelow {
+			plan.invalid = true
+			plan.minimumBelow = value.MinBelow
+			return plan, nil
 		}
 		plan.presentation.EditorDefaults = &value
 	}
