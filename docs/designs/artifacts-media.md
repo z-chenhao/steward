@@ -6,6 +6,8 @@
 
 ## 当前架构
 
+渠道先暂存附件字节，随后在同一 Host 写事务复核绑定、查重、接纳 Artifact 和写渠道引用。并发重投只保留最先接纳的引用。
+
 文件字节位于 Artifact store，引用与权限由 Host 解析。Conversation 保留语义引用；支持的用户图片与显式选择的工具图片在 dispatch 时由 Host 解码，再送入冻结 Provider envelope。
 
 <a id="artifact-插件边界迁移中"></a>

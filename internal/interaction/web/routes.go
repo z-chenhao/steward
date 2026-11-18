@@ -159,7 +159,10 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 		defer src.Close()
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": d.Name}))
-		_, _ = io.Copy(w, src)
+		w.Header().Set("Content-Length", strconv.FormatInt(d.ByteSize, 10))
+		if n, err := io.Copy(w, src); err != nil || n != d.ByteSize {
+			panic(http.ErrAbortHandler)
+		}
 	default:
 		fail(w, 404)
 	}
