@@ -42,6 +42,9 @@ func navigate(q contract.Query, key, value string) string {
 	case "layer":
 		q = contract.Query{Layer: value}
 	case "ref":
+		if q.View == "maintenance" && strings.HasPrefix(value, "memory:") && !strings.HasPrefix(value, "memory:maintenance-") {
+			q = contract.Query{}
+		}
 		if q.View == "maintenance" {
 			value = strings.Replace(value, "memory-event:", "memory:maintenance-", 1)
 		}

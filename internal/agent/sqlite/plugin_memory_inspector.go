@@ -69,6 +69,9 @@ func memoryInspectionNavigation(q memory.InspectionQuery, page memory.Inspection
 	}
 	for _, m := range page.Maintenance {
 		add("ref", m.Ref)
+		for _, change := range m.Changes {
+			add("ref", change.Ref)
+		}
 	}
 	for _, item := range page.Items {
 		add("ref", item.Ref)

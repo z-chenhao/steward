@@ -146,7 +146,16 @@ type InspectionRelated struct {
 	Ref   string `json:"ref"`
 	Title string `json:"title"`
 }
+
+// MaintenanceChange is limited to an inspection-visible document identity and its
+// committed effect. The document body and the Curator proposal stay private.
+type MaintenanceChange struct {
+	Ref       string `json:"ref"`
+	Operation string `json:"operation"`
+}
+
 type MaintenanceRecord struct {
+	Changes     []MaintenanceChange     `json:"changes,omitempty"`
 	Generations []MaintenanceGeneration `json:"generations,omitempty"`
 	Metrics     *MaintenanceMetrics     `json:"metrics,omitempty"`
 	Ref         string                  `json:"ref"`

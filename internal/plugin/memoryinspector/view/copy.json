@@ -28,6 +28,10 @@
     "chinese": "缓存输入 Tokens"
   },
   {
+    "english": "Changed documents",
+    "chinese": "变更的记忆文档"
+  },
+  {
     "english": "Clear all",
     "chinese": "清除全部"
   },
@@ -46,6 +50,10 @@
   {
     "english": "Created before",
     "chinese": "创建于此前"
+  },
+  {
+    "english": "Created document",
+    "chinese": "新增"
   },
   {
     "english": "Created time",
@@ -276,6 +284,10 @@
     "chinese": "尚无模型调用记录。"
   },
   {
+    "english": "No visible document changes.",
+    "chinese": "暂无可查看的文档变更。"
+  },
+  {
     "english": "Not priced",
     "chinese": "未计价"
   },
@@ -348,6 +360,10 @@
     "chinese": "后继记录"
   },
   {
+    "english": "Replaced document",
+    "chinese": "替代"
+  },
+  {
     "english": "Replacement history",
     "chinese": "替代历史"
   },
@@ -358,6 +374,10 @@
   {
     "english": "Resize memory sources",
     "chinese": "调整记忆来源宽度"
+  },
+  {
+    "english": "Retired document",
+    "chinese": "撤回"
   },
   {
     "english": "Revision",

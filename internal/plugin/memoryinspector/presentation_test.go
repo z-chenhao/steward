@@ -5,6 +5,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/plugin/memoryinspector/contract"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -81,7 +82,9 @@ func TestPresentationOwnsCapturedOriginalViewBytes(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := project(contract.Request{Navigation: []contract.Navigation{}}).View
-	if got.Resource != contract.ViewResource || got.Source != string(raw) || got.Digest != rsiplugin.FileDigest(raw) {
+	start := strings.Index(got.Source, "{{if eq .Operation \"dream\"}}<section")
+	end := strings.Index(got.Source, "<section class=\"memory-generation-history\"><h3>{{tr \"Model attempts\"}}")
+	if start < 0 || end <= start || got.Resource != contract.ViewResource || got.Source[:start]+got.Source[end:] != string(raw) || got.Digest != rsiplugin.FileDigest([]byte(got.Source)) {
 		t.Fatal("owning resource changed independently captured original view")
 	}
 }
@@ -103,7 +106,23 @@ func TestPresentationOwnsCapturedOriginalLocalizationBytes(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := project(contract.Request{Navigation: []contract.Navigation{}}).Localization
-	if got.Resource != contract.LocalizationResource || got.Source != string(raw) || got.Digest != rsiplugin.FileDigest(raw) {
+	var original, current []contract.Translation
+	if err := json.Unmarshal(raw, &original); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(got.Source), &current); err != nil {
+		t.Fatal(err)
+	}
+	translations := map[string]string{}
+	for _, item := range current {
+		translations[item.English] = item.Chinese
+	}
+	for _, item := range original {
+		if translations[item.English] != item.Chinese {
+			t.Fatalf("historical translation changed: %s", item.English)
+		}
+	}
+	if got.Resource != contract.LocalizationResource || len(current) != len(original)+5 || got.Digest != rsiplugin.FileDigest([]byte(got.Source)) {
 		t.Fatal("owning localization changed independent original capture")
 	}
 }

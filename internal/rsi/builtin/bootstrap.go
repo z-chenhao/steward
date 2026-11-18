@@ -74,6 +74,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	uiVersion := ""
 	feedbackVersion := ""
 	scheduleVersion := ""
+	var memoryInspectorVersion, memoryInspectorDirectory string
 	appsClient := false
 	appsInventory := false
 	codingChecks := false
@@ -94,6 +95,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if p.Name == "schedule" {
 			scheduleVersion = installed.Manifest.Version
+		}
+		if p.Name == "memory-inspector" {
+			memoryInspectorVersion = installed.Manifest.Version
+			memoryInspectorDirectory = h.Catalog.Path(installed.Digest)
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
@@ -393,7 +398,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, cases...)
 	}
 	if d.MemoryInspector != "" {
-		cases, err := memoryInspectorCases()
+		cases, err := MemoryInspectorCases(memoryInspectorVersion, memoryInspectorDirectory)
 		if err != nil {
 			return err
 		}
