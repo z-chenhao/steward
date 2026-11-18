@@ -167,3 +167,6 @@ CLI 入口 `verify_artifacts.py --ocr-only` 使用独立政策验收分发包，
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
 
 从审阅任务验证受信工作台引用、文本以纯文字呈现、PNG 实际格式匹配、原件下载及撤权。类型不支持或 MIME 与字节不一致时预览拒绝，下载保留原文件。
+
+
+视觉模型 WebP 回归用自制的 8×4 红色无损样例，经真实模型桥转码成有界 JPEG，核对像素和原件引用。动画标志、超出像素预算、伪造 MIME 都在供应商调用前拒绝。OCR 保持原先的格式边界。

@@ -40,7 +40,7 @@
 
 **当前实现**：Web 上传和 CLI `chat send-parts` 的显式用户图片进入冻结的 ImageRefs 投影；已启用图片能力的选定模型会在实际供应商请求中收到授权缩图；ChatGPT 账户按认证目录默认启用，自定义兼容端点经过视觉 Probe。Main/Worker 默认获得 `builtin__image_ocr`，可由独立版本化 OCR 插件制定识别策略并处理本地 Tesseract 结果，提取授权图片中的文字、词框和引擎置信分数，完整结果保存为关联原图的 Artifact。
 
-**边界**：支持 PNG/JPEG，单图最多 8 MiB、约 3355 万像素（32 × 1024²）。工作集最多保留 8 张不同图片，激进上下文重试最多 4 张；省略的像素保留引用与说明。文本模型保留引用并明确说明未看到图片，不读取或发送像素。格式不支持、图片损坏或越界在供应商调用前失败，不把文件名当作图像理解。真实模型的理解质量独立评测。
+**边界**：支持 PNG/JPEG 和静态 WebP，单图最多 8 MiB、约 3355 万像素（32 × 1024²）。工作集最多保留 8 张不同图片，激进上下文重试最多 4 张；省略的像素保留引用与说明。文本模型保留引用并明确说明未看到图片，不读取或发送像素。格式不支持、图片损坏或越界在供应商调用前失败，不把文件名当作图像理解。真实模型的理解质量独立评测。
 
 **验收目标**：通过真实消息入口上传图片，在最终供应商请求中验证图片存在，并验证无权限/不支持模型的行为；纯文本模型通过真实 OCR 工具收到文字，已提交 OCR 结果在重启后复用。
 
@@ -64,7 +64,7 @@ CLI 可用 DOCX MIME 保存文件，再用 `chat send-parts` 的 `file` ContentP
 
 Web 的附件选择器可随文字提交文件。CLI 用 `steward artifact save NAME MEDIA_TYPE` 从 stdin 保存，随后用 `steward artifact describe REF` 或 `steward artifact open REF` 检查和读取。
 
-在 Settings 添加 ChatGPT 账户模型后，图片能力按模型目录默认启用，无需勾选或连接测试；自定义兼容端点默认请求图片能力并在连接时验证。随后随消息上传 PNG/JPEG 即可。CLI 的模型 JSON 输入使用 `capabilities.image_input: true`，图片 ContentPart 必须为 `{"type":"image","artifact_ref":"artifact:..."}`；普通 `file` 不自动加载像素。
+在 Settings 添加 ChatGPT 账户模型后，图片能力按模型目录默认启用，无需勾选或连接测试；自定义兼容端点默认请求图片能力并在连接时验证。随后可随消息上传 PNG/JPEG 或静态 WebP。CLI 的模型 JSON 输入使用 `capabilities.image_input: true`，图片 ContentPart 必须为 `{"type":"image","artifact_ref":"artifact:..."}`；普通 `file` 不自动加载像素。
 
 新 Run 才启用这条用户图片投影；升级前的活动 Run 沿用其冻结表示。正常停止旧进程后统一升级，不混跑不同投影版本。音视频和复杂文档仍由 F-014 跟踪，文件运输不等于内容理解。
 
