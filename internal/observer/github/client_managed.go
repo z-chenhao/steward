@@ -46,6 +46,11 @@ func (c Client) readManaged(ctx context.Context, cfg Config, ticket Ticket, step
 		if err != nil {
 			return Batch{}, interval, err
 		}
+		// Only an empty lookahead proves the preceding full page was final.
+		// Later rows never enter the observation batch or plugin input.
+		if next.Number == maxPages+1 && len(rows) != 0 {
+			return Batch{}, interval, &Failure{"HISTORY_LIMIT"}
+		}
 		next.Count = len(rows)
 		req.History = append(req.History, next)
 		flags := make([]byte, len(rows))
@@ -107,7 +112,7 @@ func validPlan(p contract.Plan, cfg Config) bool {
 	return p.DisplayBytes > 0 && p.DisplayBytes <= 4<<20 && len(p.DisplaySuffix) <= 512 && utf8.ValidString(p.DisplaySuffix) && ValidRecipe(p.Followup) && p.IntervalSeconds >= 5 && p.IntervalSeconds <= 3600 && (cfg.PollSeconds == 0 || p.IntervalSeconds == cfg.PollSeconds)
 }
 func validNext(history []contract.Page, next contract.Page) bool {
-	if next.Kind != "review_comment" && next.Kind != "review" && next.Kind != "check_run" || next.Number < 1 || next.Number > maxPages || next.Count != 0 {
+	if next.Kind != "review_comment" && next.Kind != "review" && next.Kind != "check_run" || next.Number < 1 || next.Number > maxPages+1 || next.Count != 0 {
 		return false
 	}
 	var previous *contract.Page

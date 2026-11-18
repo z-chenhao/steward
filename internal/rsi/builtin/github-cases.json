@@ -407,7 +407,11 @@
       }
     ],
     "expected": {
-      "next": null,
+      "next": {
+        "kind": "review_comment",
+        "number": 21,
+        "count": 0
+      },
       "rows": [
         0,
         1,
@@ -517,8 +521,7 @@
         "goal_bytes": 4096,
         "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
       },
-      "interval_seconds": 60,
-      "error_code": "HISTORY_LIMIT"
+      "interval_seconds": 60
     }
   },
   {
