@@ -126,7 +126,7 @@ func (s *Server) page(ctx context.Context, r *http.Request) (page, error) {
 			if s.Tasks == nil {
 				return p, errPageNotFound
 			}
-			d, e := s.Tasks.Detail(ctx, ref, "")
+			d, e := s.Tasks.DetailPage(ctx, ref, "", 0)
 			if e != nil {
 				return p, e
 			}

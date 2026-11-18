@@ -149,7 +149,7 @@ func (r *Reader) Execution(ctx context.Context, id string) (task.ExecutionDetail
 		return out, err
 	}
 	slices.Reverse(out.Instructions)
-	out.Messages, err = relatedDeliveries(ctx, tx, v.TaskRef, id)
+	out.Messages, _, err = relatedDeliveries(ctx, tx, v.TaskRef, id, 0)
 	if err != nil {
 		return out, err
 	}

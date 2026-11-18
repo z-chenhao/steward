@@ -183,3 +183,5 @@ Task 搜索／默认标题已独立迁移；状态、Root、epoch、审批、原
 ### 版本方法的实际冷恢复
 
 `TestTaskPluginIndependentUpgradeRollbackKeepsOriginalRequests` 和 `TestFeedbackPluginIndependentUpgradeRetainsAcceptedQuestionsAndResponseData` 在回退并退役后关闭原 Store、新建 Store／Catalog，直接 drain 已排队请求；核对原默认标题、canonical hash、确切问题和所选配方。停用后再次重开，禁止新标签／问题恢复 native，但所有已接纳问答仍可按原配方、原来源去重回答。`TestProgressPluginIndependentUpgradeRetainedRootsChildIsolationAndDisable` 同样直接恢复原 Root，保留原版本／Child 隔离，停用不阻断业务也不恢复摘要。
+
+超过 50 条计划和 10 条 Main 交付时，用下一页逐项验证末页和不重复；保留原查询和 live 刷新游标。检查任务和审阅的文本/图片预览、原文件下载、错误媒体和撤权。

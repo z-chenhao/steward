@@ -156,3 +156,5 @@ provides scoped file transfer. Those paths have separate proof limits.
 
 
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
+
+审阅工作中的小文本、JSON（最多 1 MiB）和 PNG/JPEG（最多 8 MiB）可在 Web 打开被动预览。HTML 类文本按纯文字显示。其他文件保留原件下载；预览照常检查授权。

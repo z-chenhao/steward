@@ -220,3 +220,5 @@ Root 执行失败时，Task 保持可续作；Host 同时持久保存带任务�
 Task 搜索／默认标题已独立迁移；状态、Root、epoch、审批、原始 brief 与回执仍归 Host，已定位任务的安全控制保持独立。契约与恢复取舍见[插件设计](../designs/plugins-evolution.md#已提取的-task-发现与标题边界)。验证为 `TestTaskPlugin*`、`make test-prompts`、`tasks` 和 `task-control` 的实际分发包门禁。
 
 Task 搜索／标题及问答配方的原生兼容入口集中在具名 `task_legacy_v1.go`，只服务无迁移标记的历史执行与 never-managed 嵌入，随这些消费者退役删除。实际重开 Store／Catalog 后，原排队请求和已接纳问答继续使用原版本；停用不阻断原问题回答，也不恢复新标签／问题创建。状态、epoch、单活动 Root、来源与交付事务仍由 Host 保持。
+
+任务详情可以按消息序号向前翻阅全部正式交付，并跳转到原消息；配置列表的计划与普通任务有独立翻页入口。较小的纯文本、JSON、PNG 和 JPEG 文件在审阅入口可直接预览，原件仍可下载。

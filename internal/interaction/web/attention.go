@@ -56,7 +56,7 @@ func (s *Server) loadAttention(ctx context.Context, p *page, ref, before string,
 			for _, artifactRef := range f.ArtifactRefs {
 				d, err := s.Core.DescribeArtifact(ctx, artifactRef)
 				if err == nil {
-					entry.Artifacts = append(entry.Artifacts, shownArtifact{Ref: artifactRef, Name: d.Name})
+					entry.Artifacts = append(entry.Artifacts, shownArtifact{Ref: artifactRef, Name: d.Name, Previewable: artifactPreviewType(d) != ""})
 				}
 			}
 			v.Feedbacks = append(v.Feedbacks, entry)

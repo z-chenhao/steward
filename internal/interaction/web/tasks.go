@@ -14,15 +14,18 @@ import (
 
 type TaskReader interface {
 	List(context.Context, task.ListQuery) (task.List, error)
-	Detail(context.Context, string, string) (task.Detail, error)
+	DetailPage(context.Context, string, string, int64) (task.Detail, error)
 }
 type executionReader interface {
 	Executions(context.Context, task.ListQuery) (task.ExecutionList, error)
 	Execution(context.Context, string) (task.ExecutionDetail, error)
 }
-type shownArtifact struct{ Ref, Name string }
+type shownArtifact struct {
+	Ref, Name   string
+	Previewable bool
+}
 type scheduledTaskReader interface {
-	Scheduled(context.Context, string) ([]task.ScheduledWork, error)
+	ScheduledPage(context.Context, string, string) ([]task.ScheduledWork, string, error)
 }
 type taskView struct {
 	Configurations       bool
@@ -35,6 +38,7 @@ type taskView struct {
 	Approvals            []approvalView
 	Artifacts            []shownArtifact
 	Scheduled            []task.ScheduledWork
+	ScheduledNext        string
 	SchedulesUnavailable bool
 }
 
@@ -64,6 +68,10 @@ func tasksQuery(r *http.Request) (task.ListQuery, error) {
 			q.NeedsMe = true
 		case "cursor":
 			q.Cursor = values[0]
+		case "schedules_after":
+			if r.URL.Path != "/tasks/configurations" || len(values[0]) > 256 {
+				return q, task.ErrInvalid
+			}
 		case "feedback_before":
 			if len(values[0]) > 256 {
 				return q, task.ErrInvalid
@@ -74,6 +82,9 @@ func tasksQuery(r *http.Request) (task.ListQuery, error) {
 	}
 	if q.View == "" {
 		q.View = "all"
+	}
+	if r.URL.Query().Get("schedules_after") != "" && q.Cursor != "" {
+		return q, task.ErrInvalid
 	}
 	return q, q.Validate()
 }
@@ -142,12 +153,15 @@ func (s *Server) loadTasks(ctx context.Context, r *http.Request, p *page) error 
 			q.NeedsMe = false
 			v.Query.NeedsMe = false
 			v.Query.View = "all"
-			v.List, err = s.Tasks.List(ctx, q)
-			if err != nil {
-				return err
+			after := r.URL.Query().Get("schedules_after")
+			if after == "" {
+				v.List, err = s.Tasks.List(ctx, q)
+				if err != nil {
+					return err
+				}
 			}
 			if reader, ok := s.Tasks.(scheduledTaskReader); ok && q.Cursor == "" {
-				v.Scheduled, err = reader.Scheduled(ctx, q.Query)
+				v.Scheduled, v.ScheduledNext, err = reader.ScheduledPage(ctx, q.Query, after)
 				if err != nil {
 					v.SchedulesUnavailable = true
 					v.Scheduled = nil
@@ -166,11 +180,19 @@ func (s *Server) loadTasks(ctx context.Context, r *http.Request, p *page) error 
 	}
 	ref := strings.TrimPrefix(r.URL.Path, "/tasks/")
 	for key, values := range r.URL.Query() {
-		if key != "history" || len(values) != 1 {
+		if (key != "history" && key != "delivery_before") || len(values) != 1 {
 			return task.ErrInvalid
 		}
 	}
-	d, err := s.Tasks.Detail(ctx, ref, r.URL.Query().Get("history"))
+	var before int64
+	if raw := r.URL.Query().Get("delivery_before"); raw != "" {
+		var err error
+		before, err = strconv.ParseInt(raw, 10, 64)
+		if err != nil || before <= 0 {
+			return task.ErrInvalid
+		}
+	}
+	d, err := s.Tasks.DetailPage(ctx, ref, r.URL.Query().Get("history"), before)
 	if err != nil {
 		return err
 	}
@@ -178,7 +200,7 @@ func (s *Server) loadTasks(ctx context.Context, r *http.Request, p *page) error 
 	for _, ref := range d.Artifacts {
 		descriptor, e := s.Core.DescribeArtifact(ctx, ref)
 		if e == nil {
-			v.Artifacts = append(v.Artifacts, shownArtifact{Ref: ref, Name: descriptor.Name})
+			v.Artifacts = append(v.Artifacts, shownArtifact{Ref: ref, Name: descriptor.Name, Previewable: artifactPreviewType(descriptor) != ""})
 		}
 	}
 	if len(d.ApprovalIDs) > 0 {

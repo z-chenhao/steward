@@ -179,8 +179,8 @@ type schedulePresentationReader struct {
 	value *task.Schedule
 }
 
-func (f schedulePresentationReader) Detail(ctx context.Context, ref, after string) (task.Detail, error) {
-	v, err := f.workspaceReader.Detail(ctx, ref, after)
+func (f schedulePresentationReader) DetailPage(ctx context.Context, ref, after string, before int64) (task.Detail, error) {
+	v, err := f.workspaceReader.DetailPage(ctx, ref, after, before)
 	v.Schedule = f.value
 	return v, err
 }
@@ -202,7 +202,8 @@ func TestScheduleTaskPageUsesAcceptedBilingualPresentationAsText(t *testing.T) {
 	}
 }
 
-func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
+func currentWorkbenchReader(t *testing.T) func(context.Context, string) (contract.Presentation, string, bool, error) {
+	t.Helper()
 	ctx := context.Background()
 	result, err := webworkbench.Plugin().Services[contract.Service](ctx, rsiplugin.Call{Input: json.RawMessage("{}")})
 	if err != nil {
@@ -213,13 +214,17 @@ func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
 		t.Fatal(err)
 	}
 	revision := "sha256:" + strings.Repeat("b", 64)
+	return func(context.Context, string) (contract.Presentation, string, bool, error) {
+		return presentation, revision, true, nil
+	}
+}
+
+func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
 	s := &Server{
-		Core:      &updatesCore{allowed: true, status: "idle"},
-		Schedules: &scheduleServiceFixture{},
-		Tasks:     schedulePresentationReader{value: &task.Schedule{Ref: "automation:render", Type: "cron", Spec: "0 8 * * *", Timezone: "America/New_York", Enabled: true, NextAt: "2026-12-15T13:00:00Z"}},
-		WebWorkbench: func(context.Context, string) (contract.Presentation, string, bool, error) {
-			return presentation, revision, true, nil
-		},
+		Core:         &updatesCore{allowed: true, status: "idle"},
+		Schedules:    &scheduleServiceFixture{},
+		Tasks:        schedulePresentationReader{value: &task.Schedule{Ref: "automation:render", Type: "cron", Spec: "0 8 * * *", Timezone: "America/New_York", Enabled: true, NextAt: "2026-12-15T13:00:00Z"}},
+		WebWorkbench: currentWorkbenchReader(t),
 	}
 	for _, c := range []struct{ path, zone, expected string }{
 		{"/tasks/schedules/new", "Europe/London", `name="timezone" value="Europe/London"`},
