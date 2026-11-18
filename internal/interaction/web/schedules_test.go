@@ -195,7 +195,7 @@ func TestScheduleFormsUseOwnerWriterAndPreserveConflictingDraft(t *testing.T) {
 	}
 	f.err = errors.New("PRIVATE_OWNER_ERROR")
 	w = request("POST", "/schedule/configure", v, false)
-	if w.Code != 409 || strings.Contains(w.Body.String(), "PRIVATE_OWNER_ERROR") || !strings.Contains(w.Body.String(), "Draft &lt;img src=x&gt;") {
+	if w.Code != 503 || strings.Contains(w.Body.String(), "PRIVATE_OWNER_ERROR") || !strings.Contains(w.Body.String(), "Draft &lt;img src=x&gt;") {
 		t.Fatal("private failure leaked or lost draft", w.Code)
 	}
 	f.restricted = true
@@ -273,5 +273,44 @@ func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
 		if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), c.expected) {
 			t.Fatalf("%s %s: HTTP %d, want %q", c.path, c.zone, w.Code, c.expected)
 		}
+	}
+}
+
+func TestManagedScheduleFieldDiagnosticsAndFoldChoice(t *testing.T) {
+	f := &scheduleServiceFixture{}
+	s := &Server{Core: &updatesCore{allowed: true, status: "idle"}, Tasks: workspaceReader{}, Schedules: f, WebWorkbench: currentWorkbenchReader(t)}
+	v := scheduleValues()
+	v.Set("instruction", "Keep this original draft")
+	v.Set("frequency", "once")
+	v.Set("date", "2026-11-01")
+	v.Set("time", "01:30")
+	v.Set("timezone", "America/New_York")
+	v.Del("threshold")
+	post := func() *httptest.ResponseRecorder {
+		r := httptest.NewRequest("POST", "http://127.0.0.1:8080/schedule/configure", strings.NewReader(v.Encode()))
+		r.RemoteAddr = "127.0.0.1:9000"
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		return w
+	}
+	for _, c := range []struct{ issue, field, text string }{{"timezone", "timezone", "IANA time zone"}, {"cron", "cron", "five-field cron"}, {"future", "date", "future date and time"}} {
+		f.err = automation.ScheduleInputError{Issue: c.issue}
+		w := post()
+		body := w.Body.String()
+		if w.Code != 422 || !strings.Contains(body, `name="`+c.field+`" aria-invalid="true" aria-describedby="schedule-page-error"`) || !strings.Contains(body, `id="schedule-page-error"`) || !strings.Contains(body, c.text) || !strings.Contains(body, v.Get("instruction")) || !strings.Contains(body, v.Get("source_id")) {
+			t.Fatal("field or draft lost", c.issue, w.Code)
+		}
+	}
+	f.err = automation.ScheduleInputError{Issue: "utc_offset", UTCOffsets: []string{"-04:00", "-05:00"}}
+	w := post()
+	if w.Code != 422 || !strings.Contains(w.Body.String(), `name="utc_offset" required aria-invalid="true"`) || !strings.Contains(w.Body.String(), "UTC-04:00") || !strings.Contains(w.Body.String(), "UTC-05:00") {
+		t.Fatal("missing distinct fold offsets", w.Code)
+	}
+	f.err = nil
+	v.Set("utc_offset", "-05:00")
+	w = post()
+	if w.Code != 303 || f.q.UTCOffset != "-05:00" || f.q.LocalDate != "2026-11-01" || f.q.LocalClock != "01:30" || f.key != v.Get("source_id") {
+		t.Fatal("offset or original identity lost", w.Code, f.q)
 	}
 }

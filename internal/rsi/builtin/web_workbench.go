@@ -9,7 +9,7 @@ import (
 
 // Owner expectation retains the captured v1 structure and the reviewed schedule timezone fields.
 //
-//go:embed web-workbench-owner-v1.0.4.json
+//go:embed web-workbench-owner-v1.0.5.json
 var webWorkbenchOwner []byte
 
 func webWorkbenchCases() ([]rsi.Case, error) {

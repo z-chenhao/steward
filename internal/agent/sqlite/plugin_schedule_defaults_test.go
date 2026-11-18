@@ -157,3 +157,66 @@ func TestScheduleRejectsUnreachableThresholdAtAdmission(t *testing.T) {
 		t.Fatal("local historical stop required positive threshold", err)
 	}
 }
+
+func TestScheduleOwnerSelectsFoldAndFiresOnlyAtChosenInstant(t *testing.T) {
+	ctx := context.Background()
+	for _, choice := range []struct {
+		offset string
+		hour   int
+	}{{"-04:00", 5}, {"-05:00", 6}} {
+		t.Run(choice.offset, func(t *testing.T) {
+			s, r, _, _ := automationFixture(t)
+			installScheduleMethodVersion(t, s, r, "1.0.3", 0)
+			now := time.Date(2026, 10, 31, 12, 0, 0, 0, time.UTC)
+			q := automation.OwnerConfiguration{Type: "at", LocalDate: "2026-11-01", LocalClock: "01:30", Timezone: "America/New_York", Instruction: "Review incident report", Enabled: true}
+			var diagnostic automation.ScheduleInputError
+			if _, err := r.ConfigureAutomation(ctx, "fold", q, now); !errors.As(err, &diagnostic) || diagnostic.Issue != "utc_offset" || strings.Join(diagnostic.UTCOffsets, ",") != "-04:00,-05:00" {
+				t.Fatal("missing fold choices", diagnostic, err)
+			}
+			if scalar(t, s, `SELECT count(*) FROM automation_request`) != 0 {
+				t.Fatal("unresolved choice persisted")
+			}
+			q.UTCOffset = "+01:00"
+			if _, err := r.ConfigureAutomation(ctx, "fold", q, now); !errors.As(err, &diagnostic) || diagnostic.Issue != "utc_offset" {
+				t.Fatal("foreign offset accepted", err)
+			}
+			q.UTCOffset = choice.offset
+			receipt, err := r.ConfigureAutomation(ctx, "fold", q, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			chosen := time.Date(2026, 11, 1, choice.hour, 30, 0, 0, time.UTC)
+			if scalar(t, s, `SELECT count(*) FROM automation WHERE automation_id=? AND trigger_spec=? AND next_fire_at=?`, receipt.Ref, chosen.Format(time.RFC3339), chosen.UnixMicro()) != 1 {
+				t.Fatal("wrong instant persisted")
+			}
+			if err = r.ScheduleAutomations(ctx, chosen.Add(-time.Second)); err != nil || scalar(t, s, `SELECT count(*) FROM automation_fire`) != 0 {
+				t.Fatal("early fire", err)
+			}
+			for _, at := range []time.Time{chosen, chosen.Add(2 * time.Hour)} {
+				if err = r.ScheduleAutomations(ctx, at); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if scalar(t, s, `SELECT count(*) FROM automation_fire WHERE automation_id=? AND fire_at=?`, receipt.Ref, chosen.UnixMicro()) != 1 || scalar(t, s, `SELECT count(*) FROM automation_fire`) != 1 {
+				t.Fatal("incorrect one-time fire count")
+			}
+		})
+	}
+}
+
+func TestScheduleOwnerDistinguishesZoneCronAndPastInstant(t *testing.T) {
+	ctx := context.Background()
+	s, r, _, _ := automationFixture(t)
+	installScheduleMethodVersion(t, s, r, "1.0.3", 0)
+	now := time.Date(2030, 1, 2, 0, 0, 0, 0, time.UTC)
+	for _, c := range []struct{ kind, spec, zone, field string }{{"cron", "0 8 * * *", "Missing/Zone", "timezone"}, {"cron", "80 * * * *", "UTC", "cron"}, {"at", "2029-12-01T08:00:00Z", "UTC", "future"}} {
+		q := automation.OwnerConfiguration{Type: c.kind, Spec: c.spec, Timezone: c.zone, Instruction: "Keep this draft", Enabled: true}
+		var d automation.ScheduleInputError
+		if _, err := r.ConfigureAutomation(ctx, "draft", q, now); !errors.As(err, &d) || d.Issue != c.field {
+			t.Fatalf("expected %s: %v (%+v)", c.field, err, d)
+		}
+	}
+	if scalar(t, s, `SELECT count(*) FROM automation`) != 0 {
+		t.Fatal("invalid draft persisted")
+	}
+}

@@ -3,6 +3,7 @@ package automation
 import (
 	"fmt"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -17,6 +18,7 @@ type OwnerConfiguration struct {
 	Below        *int64
 	// Unresolved Web minute; omitted so existing command hashes remain byte-stable.
 	LocalDate  string          `json:",omitempty"`
+	UTCOffset  string          `json:",omitempty"`
 	LocalClock string          `json:",omitempty"`
 	Frequency  *OwnerFrequency `json:",omitempty"`
 }
@@ -47,6 +49,23 @@ func (e ThresholdMinimumError) Error() string {
 }
 func (e ThresholdMinimumError) Unwrap() error { return ErrInvalid }
 
+// ScheduleInputError carries bounded editor diagnostics from a rejected request.
+type ScheduleInputError struct {
+	Issue      string
+	UTCOffsets []string
+}
+
+func (e ScheduleInputError) Error() string { return "invalid schedule " + e.Issue }
+func (e ScheduleInputError) Unwrap() error { return ErrInvalid }
+
+func ValidUTCOffset(value string) bool {
+	if len(value) != 6 || (value[0] != '+' && value[0] != '-') {
+		return false
+	}
+	t, err := time.Parse("-07:00", value)
+	return err == nil && t.Format("-07:00") == value
+}
+
 // ValidateShape preserves owner command bounds without interpreting calendar policy.
 func (q OwnerConfiguration) ValidateShape() error {
 	if len(q.PreserveSpec) > 256 || (q.PreserveSpec != "" && (q.Ref == "" || q.Type != "at" || (q.PreserveSpec != q.Spec && q.LocalDate == ""))) {
@@ -63,6 +82,9 @@ func (q OwnerConfiguration) ValidateShape() error {
 		return ErrInvalid
 	}
 	local := q.LocalDate != "" || q.LocalClock != ""
+	if q.UTCOffset != "" && (!local || !ValidUTCOffset(q.UTCOffset)) {
+		return ErrInvalid
+	}
 	if local && (q.Type != "at" || q.Spec != "" || q.LocalDate == "" || q.LocalClock == "" || len(q.LocalDate) > 10 || len(q.LocalClock) > 5) {
 		return ErrInvalid
 	}
