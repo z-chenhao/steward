@@ -95,7 +95,7 @@ execution:
 
 ## 固定准备与可执行检查地图
 
-所有者执行 `python3 scripts/prepare_coding_image.py --socket /absolute/local/docker.sock --evidence evidence/新的准备目录`，从固定 Debian 根文件系统、官方校验的 Go/Node、仓库锁定依赖和 Playwright 构建本地镜像。公开下载可复用原生缓存，每次均核对身份；源码按明确 Git 工作树清单复制，安装后只保留依赖和工具，删除准备时源码与旧二进制。`image.txt` 是本次成功准备的完整镜像 ID；失败只保存诊断及未完成 checkpoint，不标记就绪。该脚本是显式所有者联网准备，Worker 的每次验证仍离线。
+所有者执行 `python3 scripts/prepare_coding_image.py --socket /absolute/local/docker.sock --evidence evidence/新的准备目录`，从固定 Debian 根文件系统、官方校验的 Go/Node、仓库锁定依赖和 Playwright 构建本地镜像。公开下载可复用原生缓存，每次均核对身份；源码按明确 Git 工作树清单复制，安装后只保留依赖和工具，删除准备时源码与旧二进制。`image.txt` 是本次成功准备的完整镜像 ID；证据和缓存在仓外或 Git 忽略的输出目录中。清理准备容器后才发布就绪标志，成功流程只提交最终镜像；失败只保存诊断及未完成 checkpoint，不标记就绪。该脚本是显式所有者联网准备，Worker 的每次验证仍离线。
 
 源码内的 `coding.project.json` 提供 build、frontend-contracts 和 policy-boundaries 三个具名入口。Worker 读取原项目/AGENTS 指引，再用对应文件名与检查名取得具体计划。原需求文字、确切命令与产物声明均保留；改动配方会体现在文档变化和候选身份中。完整入口、判据及范围见[检查地图](../test-plans/coding.md#可执行检查地图)。
 
