@@ -1050,3 +1050,54 @@ func TestCompletionAtIdleBoundaryCannotStrandFollowup(t *testing.T) {
 		})
 	}
 }
+
+func TestReporterBoundsBacklogAndAcceptsIngressBetweenCommits(t *testing.T) {
+	ctx := context.Background()
+	s, r, a := controlFixture(t, nil)
+	controlMain(t, r, a, "create", "create")
+	const backlog = 10000
+	if _, err := s.db.Exec(`WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<?)
+        INSERT INTO task(task_id,task_ref,agent_id,conversation_id,title,anchor_task,anchor_artifact_refs,status,task_epoch,created_at,updated_at,version)
+        SELECT 'batch-task-'||i,'task:batch-'||i,agent_id,conversation_id,title,anchor_task,'[]','active',1,created_at,updated_at,1 FROM n CROSS JOIN (SELECT * FROM task LIMIT 1)`, backlog); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.db.Exec(`INSERT INTO run(run_id,agent_id,conversation_id,task_id,root_run_id,kind,worker_position,status,task_epoch,depth,capability_snapshot_id,model_snapshot_id,checkpoint_json,history_boundary,created_at,updated_at,version)
+        SELECT t.task_id,t.agent_id,t.conversation_id,t.task_id,t.task_id,'worker','root','queued',1,0,r.capability_snapshot_id,r.model_snapshot_id,'{}',0,t.created_at,t.updated_at,1 FROM task t CROSS JOIN (SELECT * FROM run WHERE worker_position='root' LIMIT 1) r WHERE t.task_id LIKE 'batch-task-%';
+        UPDATE run SET status='running',version=version+1 WHERE run_id LIKE 'batch-task-%';
+        UPDATE run SET status='completed',ended_at=updated_at,version=version+1 WHERE run_id LIKE 'batch-task-%';
+        INSERT INTO task_update SELECT 'event:'||run_id,task_id,run_id,task_epoch,'completed','bounded message','[]',updated_at FROM run WHERE run_id LIKE 'batch-task-%'`); err != nil {
+		t.Fatal(err)
+	}
+	recoverCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	calls := 0
+	s.MainBoundary = func(boundary string) {
+		if boundary != "after_report_commit" {
+			return
+		}
+		calls++
+		if calls == 1 {
+			if got := scalar(t, s, `SELECT count(*) FROM main_inbox`); got != reportBatchSize {
+				t.Fatalf("first commit has %d updates", got)
+			}
+			start := time.Now()
+			if _, err := r.Submit(ctx, "during-recovery", conversation.Text("new input")); err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("accepted ingress before backlog drained in %s", time.Since(start))
+			cancel()
+		}
+	}
+	if err := r.Report(recoverCtx); err == nil {
+		t.Fatal("cancelled drain succeeded")
+	}
+	if err := r.Report(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Report(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if calls != (backlog+reportBatchSize-1)/reportBatchSize || scalar(t, s, `SELECT count(*) FROM event_inbox WHERE consumer='task_reporter'`) != backlog || scalar(t, s, `SELECT count(*) FROM main_inbox`) != backlog {
+		t.Fatal("incomplete or duplicate batch", calls)
+	}
+}
