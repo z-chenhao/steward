@@ -89,6 +89,10 @@
 - 既有 `verify_local_provider.py` 从 CLI 上传同一实际 PNG，正常选择纯文本模型，由协议 peer 请求 OCR；读取真实 Tesseract 的 Tool 结果，检查 Pi HTTP 没有图片像素且含识别文字。结果提交后、下一轮模型响应前 SIGKILL，恢复必须保留 invocation/attempt、Artifact 与 generation/hash，不重复识别。沿用已有 gate，不新增脚本或 CI 评测阶段。
 - 软件回归证明支持的格式、处理链路和失败边界。多语种准确率、低分辨率/手写/复杂版面质量、真实 DeepSeek 选择工具与答案效果属于独立 Live/eval；不能由受控 HTTP peer 通过推定。
 
+### F-014 私有 PDF 正文回归
+
+`TestPrivatePDFEvidenceUsesOriginalArtifactAndPinnedParser` 将带文字的 PDF 保存为私人原件，以真实已激活的隔离解析器读取文件。检查页码、原件引用、换版后的旧页与新读，以及删除文件后旧续页拒绝访问。
+
 ### F-014 DOCX 正文回归
 
 - [插件业务集成](../../internal/rsi/docx_test.go) 编译真实独立 DOCX 程序，经 Host 安装／验证／激活后走原 Main 证据工具。覆盖大于 1 MiB 的原文件、分页、历史原生解释器、新 Run 固定图、源摘要冲突、隔离及停用后不可用、独立 v1/v1.1 二进制升级回退、所有者旧分页修订及未激活版本拒绝。SDK 输入回归覆盖坏块、截断、摘要与尺寸上限；构建命令覆盖离线封装不初始化用户状态。

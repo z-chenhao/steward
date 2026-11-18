@@ -18,13 +18,17 @@ import (
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/evidence"
 	"github.com/z-chenhao/assistant/internal/media/docx"
+	webextract "github.com/z-chenhao/assistant/internal/plugin/webextract/contract"
+	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/tool"
+	"github.com/z-chenhao/assistant/internal/webcontent/parserresource"
 )
 
 type evidenceAccess struct {
 	scope        artifact.Scope
 	conversation string
 	githubScope  string
+	pdfText      bool
 	docxText     bool
 	docxPlugin   bool
 	pluginGraph  string
@@ -51,6 +55,7 @@ func (r *Runs) evidenceAccess(ctx context.Context, tx *sql.Tx, c agent.RunClaim)
 	if c == nil {
 		a.scope.Owner = true
 		a.docxText = true
+		a.pdfText = true
 		err = tx.QueryRowContext(ctx, `SELECT agent_id FROM agent_config WHERE singleton=1`).Scan(&a.scope.AgentID)
 		a.conversation = a.scope.AgentID
 	} else {
@@ -58,8 +63,8 @@ func (r *Runs) evidenceAccess(ctx context.Context, tx *sql.Tx, c agent.RunClaim)
 			return
 		}
 		var kind string
-		err = tx.QueryRowContext(ctx, `SELECT kind,agent_id,conversation_id,coalesce((SELECT json_extract(policy_json,'$.docx_text') FROM run_context_policy WHERE run_id=run.run_id),0),coalesce((SELECT json_extract(policy_json,'$.docx_plugin') FROM run_context_policy WHERE run_id=run.run_id),0)
-		 FROM run WHERE run_id=?`, c.RunID()).Scan(&kind, &a.scope.AgentID, &a.conversation, &a.docxText, &a.docxPlugin)
+		err = tx.QueryRowContext(ctx, `SELECT kind,agent_id,conversation_id,coalesce((SELECT json_extract(policy_json,'$.private_pdf_text') FROM run_context_policy WHERE run_id=run.run_id),0),coalesce((SELECT json_extract(policy_json,'$.docx_text') FROM run_context_policy WHERE run_id=run.run_id),0),coalesce((SELECT json_extract(policy_json,'$.docx_plugin') FROM run_context_policy WHERE run_id=run.run_id),0)
+		 FROM run WHERE run_id=?`, c.RunID()).Scan(&kind, &a.scope.AgentID, &a.conversation, &a.pdfText, &a.docxText, &a.docxPlugin)
 		if err == nil && kind != "main" {
 			err = artifact.ErrNotFound
 		}
@@ -224,7 +229,7 @@ func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c age
 		return
 	}
 	if q.ReaderRevision != "" {
-		if c != nil || !access.docxPlugin {
+		if c != nil || (!access.docxPlugin && !access.pdfText) {
 			return evidence.Page{}, evidence.ErrInvalid
 		}
 		access.pluginGraph = q.ReaderRevision
@@ -387,8 +392,46 @@ func (r *Runs) evidenceArtifact(ctx context.Context, a evidenceAccess, q evidenc
 	page.Offset = q.Offset
 	page.TotalBytes = d.ByteSize
 	media, _, _ := mime.ParseMediaType(d.MediaType)
-	if q.ReaderRevision != "" && media != docx.MediaType {
+	if q.ReaderRevision != "" && !(media == docx.MediaType && a.docxPlugin || media == "application/pdf" && a.pdfText) {
 		return evidence.ErrInvalid
+	}
+	if a.pdfText && media == "application/pdf" {
+		if d.ByteSize > parserresource.MaxDocumentBytes {
+			return artifact.ErrLimit
+		}
+		if r.plugins == nil || a.pluginGraph == "" {
+			return evidence.ErrUnavailable
+		}
+		data, err := io.ReadAll(io.LimitReader(f, parserresource.MaxDocumentBytes+1))
+		if err != nil {
+			return err
+		}
+		if len(data) > parserresource.MaxDocumentBytes {
+			return artifact.ErrLimit
+		}
+		check := func(c context.Context) error {
+			return r.evidenceReadTx(c, func(tx *sql.Tx) error { _, err := authorize(tx); return err })
+		}
+		// The private bytes have no public URL. Only the frozen, isolated
+		// pure parser may receive them after an original-source authorization.
+		out, err := r.plugins.ExtractService(ctx, a.pluginGraph, webextract.Request{InputID: "document", MediaType: media}, data, check)
+		if err != nil {
+			if errors.Is(err, rsi.ErrNotFound) || errors.Is(err, rsi.ErrRevoked) || err.Error() == "WEB_EXTRACTOR_UNAVAILABLE" {
+				return evidence.ErrUnavailable
+			}
+			if err.Error() == "WEB_EXTRACTION_FAILED" {
+				return evidence.ErrInvalid
+			}
+			return err
+		}
+		if err = check(ctx); err != nil {
+			return err
+		}
+		page.Representation = "pdf_text"
+		if a.claim == nil {
+			page.ReaderRevision = a.pluginGraph
+		}
+		return r.evidenceWindow(ctx, a, page, out.Text, q)
 	}
 	if a.docxText && media == docx.MediaType {
 		text, err := r.docxText(ctx, a, q.Ref, f)

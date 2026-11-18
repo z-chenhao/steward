@@ -74,6 +74,10 @@ Settings 不再提供图片复选框。ChatGPT 账户模型按认证目录的图
 - 通过共享 Executor/Code Mode/OutputStore 处理期限、并发、取消、错误和重放。已完成调用不重新识别；未完成的只读调用可按原冻结身份重试。OCR 不自动 publish，不写长期 Memory，不修改 system prompt，也不切换模型。返回的文字是低信任证据，空结果不证明图片没有文字或无需视觉分析。
 - 比较 [Codex view_image](https://github.com/openai/codex/blob/ce2d47bdc4dd2513d5b3567090593b07b0fdfa0a/codex-rs/core/src/tools/handlers/view_image.rs#L99)：它要求视觉模型并返回 InputImage，本链路没有 OCR 回退。借鉴统一媒体处理，保留 Steward 的 Artifact 引用和独立 OCR 语义。本增强不新增 feature 编号，也不把 OCR 质量评测放入 CI。
 
+### 私有 PDF 正文证据（F-014）
+
+Main 在新执行的上下文政策中固定 `private_pdf_text`，Child 继承该政策，历史快照继续原有元数据读取。Host 在同一已验证文件描述符读取受大小限制的字节，按原授权和隐私代际调用冻结图中的 Web Extract。解析器无需公开 URL，证据页保留原 Artifact 引用与文档页码。本地所有者的续页使用上一页返回的 `reader_revision`。解析前后检查源文件存活、授权和图的可用性。
+
 ### DOCX 正文证据（F-014）
 
 - 用户提供 DOCX Artifact ref 后，Main 与本地操作者可沿用证据读取。工具定义、输入 schema、角色、审批与授权均沿用现有入口。新 Run 在 `run_context_policy` 冻结 `docx_text:true`；缺失字段时沿用原二进制元数据结果，已提交调用照常复用。统一停止旧进程后再升级。
