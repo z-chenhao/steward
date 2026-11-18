@@ -30,6 +30,12 @@ async function chooseSharedOption(page,control,label,value){
  await popup.waitFor({state:'hidden'});
  if(await native.inputValue()!==value||await popup.isVisible())throw Error('shared select did not confirm into the native form control');
 }
+if (phase === 'feishu-review') {
+ const {reviewOnPhone}=await import('./feishu_mobile_review.mjs');
+ await reviewOnPhone(chromium,options,url,process.env.STEWARD_MOBILE_REVIEW_URL,
+   process.env.STEWARD_MOBILE_REVIEW_FILE,process.env.STEWARD_WEB_TEST_TOKEN);
+ process.exit(0);
+}
 const browser=await chromium.launch(options);
 let page;
 const diagnostics=[];

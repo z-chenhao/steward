@@ -127,10 +127,10 @@ steward -config config.yaml channel check
 ```yaml
 feishu:
   # 与上述必需应用/SecretStore 配置合并。
-  workspace_url: http://127.0.0.1:8787
+  workspace_url: https://steward.example.org
 ```
 
-`workspace_url` 是操作员确认的工作台 origin，只接受 HTTPS 或 literal loopback HTTP，不含账号、密码、路径、查询参数或 fragment。它不部署工作台、不改变监听地址或权限，不携带登录 token。loopback 链接只适合同一电脑，飞书手机或其他设备不能据此访问；远程地址需操作员已有的 HTTPS 部署与访问控制。点击后仍经过现有 Web 身份检查。
+`workspace_url` 是操作员确认的工作台 origin，只接受 HTTPS 或 literal loopback HTTP，不含账号、密码、路径、查询参数或 fragment。它不部署工作台、不改变监听地址或权限，不携带登录 token。loopback 链接只适合同一电脑，飞书手机或其他设备不能据此访问；远程地址需操作员已有的 HTTPS 部署与访问控制。点击后仍经过现有 Web 身份检查。发送卡片前运行 `steward channel status` 查看 `workspace_link_scope`。`same_device_only` 表示链接仅适合同一设备，`configured_https` 表示已配置 HTTPS；手机需能到达该地址并通过身份检查。未配置地址时省略该字段。
 
 配置后普通结果显示最多 1200 个字符的确定性预览和 **Open full response and files**，链接直接定位保存的完整 Conversation 消息与附件。它不是另一次模型摘要，不删除完整语义。已有可访问文件保留在工作台，不机械上传到 IM；未配置地址时保持完整卡片和原附件投递。链接、卡片和原消息目标在第一次传输准备时持久冻结，改配置或重启不会重定向同一交付。原消息不可回复或发送结果未知时，不降级到别的收件人或顶层新消息。
 
