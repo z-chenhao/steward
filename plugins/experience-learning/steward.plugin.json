@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.experience-learning",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "feature_ids": [
     "F-023"
   ],
@@ -177,6 +177,48 @@
           "steps",
           "matched",
           "verified"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.correction-recipe/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 16,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "independent_runs": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 16
+          },
+          "procedure": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 8192
+          }
+        },
+        "required": [
+          "independent_runs",
+          "procedure"
         ],
         "additionalProperties": false
       }

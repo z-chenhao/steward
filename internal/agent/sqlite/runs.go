@@ -236,6 +236,7 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 			return agent.Receipt{}, conversation.ErrInvalid
 		}
 	}
+	correction, correctionErr := r.planCorrection(ctx, parts, inbound)
 	receipt := agent.Receipt{RequestKey: key}
 	content, _ := encoded(parts)
 	err = r.write(ctx, func(tx *sql.Tx) error {
@@ -295,6 +296,9 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 				return err
 			}
 		}
+		if correctionErr != nil {
+			return correctionErr
+		}
 		if profile == "" || status != "ready" {
 			return agent.ErrSetup
 		}
@@ -350,6 +354,9 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 			}
 		}
 		if _, err = tx.ExecContext(ctx, `INSERT INTO conversation_intent(message_id,message_json) VALUES(?,?)`, receipt.MessageID, raw); err != nil {
+			return err
+		}
+		if err = r.materializeCorrection(ctx, tx, agentID, correction); err != nil {
 			return err
 		}
 		if feedbackRef != "" {

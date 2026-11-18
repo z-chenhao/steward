@@ -21,7 +21,7 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 		return nil, agent.ErrConflict
 	}
 	if q.Operation == "list" {
-		rows, e := r.host.db.QueryContext(ctx, `SELECT candidate_id,name,status,version FROM skill_candidate ORDER BY created_at,candidate_id`)
+		rows, e := r.host.db.QueryContext(ctx, `SELECT candidate_id,name,status,version FROM skill_candidate WHERE NOT `+forgottenCorrection+` ORDER BY created_at,candidate_id`)
 		if e != nil {
 			return nil, agent.ErrStorage
 		}
@@ -59,79 +59,9 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 			return e
 		}
 		if q.Operation == "propose" {
-			if err := experiencePolicyFence(ctx, tx, policy); err != nil {
-				return err
-			}
-			sourceUser, sourceFailure := false, false
-			for _, ref := range q.SourceRefs {
-				var n int
-				if strings.HasPrefix(ref, "conversation:") {
-					if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM conversation_intent WHERE message_id=? AND json_extract(message_json,'$.conversation_id')=?`, strings.TrimPrefix(ref, "conversation:"), owner).Scan(&n); e != nil {
-						return e
-					}
-				} else if strings.HasPrefix(ref, "run:") {
-					if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM run WHERE run_id=? AND agent_id=? AND status IN('completed','failed')`, strings.TrimPrefix(ref, "run:"), owner).Scan(&n); e != nil {
-						return e
-					}
-				}
-				if n != 1 {
-					return agent.ErrConflict
-				}
-				if strings.HasPrefix(ref, "conversation:") {
-					var user bool
-					if e := tx.QueryRowContext(ctx, `SELECT json_extract(message_json,'$.role')='user' FROM conversation_intent WHERE message_id=?`, strings.TrimPrefix(ref, "conversation:")).Scan(&user); e != nil {
-						return e
-					}
-					sourceUser = sourceUser || user
-				}
-				if strings.HasPrefix(ref, "run:") {
-					var failed bool
-					if e := tx.QueryRowContext(ctx, `SELECT status='failed' FROM run WHERE run_id=?`, strings.TrimPrefix(ref, "run:")).Scan(&failed); e != nil {
-						return e
-					}
-					sourceFailure = sourceFailure || failed
-				}
-			}
-			if q.Reason == "correction" && !sourceUser || q.Reason == "recovered_failure" && !sourceFailure {
-				return agent.ErrConflict
-			}
-			id := newID()
-			now := time.Now().UnixMicro()
-			refs, _ := encoded(q.SourceRefs)
-			hash := digest(q.Procedure)
-			if policy.Managed {
-				var err error
-				hash, err = rsiplugin.Digest("steward.experience-method/1", struct {
-					Procedure    string `json:"procedure"`
-					Revision     string `json:"policy_revision"`
-					RequiredRuns int    `json:"required_runs"`
-				}{q.Procedure, policy.Revision, policy.RequiredRuns})
-				if err != nil {
-					return err
-				}
-			}
-			if _, e := tx.ExecContext(ctx, `INSERT INTO skill_candidate VALUES(?,?,?,?,?,?,?,?, 'candidate',?,?,1) ON CONFLICT(agent_id,name,method_hash) DO NOTHING`, id, owner, q.Name, q.Description, q.Procedure, q.Reason, refs, hash, now, now); e != nil {
-				return e
-			}
-			if e := tx.QueryRowContext(ctx, `SELECT candidate_id,status,version FROM skill_candidate WHERE agent_id=? AND name=? AND method_hash=?`, owner, q.Name, hash).Scan(&id, &q.Operation, &q.Version); e != nil {
-				return e
-			}
-			var previousDescription, previousReason, previousRefs string
-			if e := tx.QueryRowContext(ctx, `SELECT description,reason,source_refs FROM skill_candidate WHERE candidate_id=?`, id).Scan(&previousDescription, &previousReason, &previousRefs); e != nil {
-				return e
-			}
-			if previousDescription != q.Description || previousReason != q.Reason || previousRefs != refs {
-				return agent.ErrConflict
-			}
-			var revision any
-			if policy.Managed {
-				revision = policy.Revision
-			}
-			if _, err := tx.ExecContext(ctx, `INSERT INTO experience_policy_binding(candidate_id,managed,graph_revision,required_runs,introduction,original_procedure) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM experience_policy_binding WHERE candidate_id=?)`, id, policy.Managed, revision, policy.RequiredRuns, policy.Introduction, originalProcedure, id); err != nil {
-				return err
-			}
-			result = map[string]any{"candidate_ref": "experience:" + id, "status": q.Operation, "version": q.Version}
-			return runEvent(ctx, tx, id, "skill.candidate", q.Version)
+			var proposalErr error
+			result, proposalErr = r.proposeExperience(ctx, tx, owner, q, originalProcedure, policy)
+			return proposalErr
 		}
 		id := strings.TrimPrefix(q.CandidateRef, "experience:")
 		var name, description, procedure, reason, status, hash, refs string
@@ -139,9 +69,27 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 		if e := tx.QueryRowContext(ctx, `SELECT name,description,procedure,reason,status,method_hash,source_refs,version FROM skill_candidate WHERE candidate_id=? AND agent_id=?`, id, owner).Scan(&name, &description, &procedure, &reason, &status, &hash, &refs, &version); e != nil {
 			return e
 		}
+		if q.Operation == "view" || q.Operation == "verify" || q.Operation == "promote" {
+			var hidden bool
+			if e := tx.QueryRowContext(ctx, "SELECT "+forgottenCorrection+" FROM skill_candidate WHERE candidate_id=?", id).Scan(&hidden); e != nil {
+				return e
+			}
+			if hidden {
+				return agent.ErrConflict
+			}
+		}
 		if q.Version != version {
 			return agent.ErrConflict
 		}
+		if q.Operation == "view" {
+			var evidence []string
+			if err := json.Unmarshal([]byte(refs), &evidence); err != nil {
+				return err
+			}
+			result = map[string]any{"candidate_ref": q.CandidateRef, "version": version, "name": name, "description": description, "procedure": procedure, "status": status, "source_refs": evidence}
+			return nil
+		}
+
 		var binding experiencePolicy
 		var revision sql.NullString
 		if err := tx.QueryRowContext(ctx, `SELECT managed,graph_revision,required_runs,introduction FROM experience_policy_binding WHERE candidate_id=?`, id).Scan(&binding.Managed, &revision, &binding.RequiredRuns, &binding.Introduction); err != nil {
@@ -228,4 +176,79 @@ func (r *Runs) ReviewExperience(ctx context.Context, c skill.Config, q skill.Rev
 		return nil, errExperienceUnavailable
 	}
 	return result, e
+}
+
+func (r *Runs) proposeExperience(ctx context.Context, tx *sql.Tx, owner string, q skill.ReviewRequest, originalProcedure string, policy experiencePolicy) (map[string]any, error) {
+	if err := experiencePolicyFence(ctx, tx, policy); err != nil {
+		return nil, err
+	}
+	sourceUser, sourceFailure := false, false
+	for _, ref := range q.SourceRefs {
+		var n int
+		if strings.HasPrefix(ref, "conversation:") {
+			if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM conversation_intent WHERE message_id=? AND json_extract(message_json,'$.conversation_id')=?`, strings.TrimPrefix(ref, "conversation:"), owner).Scan(&n); e != nil {
+				return nil, e
+			}
+		} else if strings.HasPrefix(ref, "run:") {
+			if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM run WHERE run_id=? AND agent_id=? AND status IN('completed','failed')`, strings.TrimPrefix(ref, "run:"), owner).Scan(&n); e != nil {
+				return nil, e
+			}
+		}
+		if n != 1 {
+			return nil, agent.ErrConflict
+		}
+		if strings.HasPrefix(ref, "conversation:") {
+			var user bool
+			if e := tx.QueryRowContext(ctx, `SELECT json_extract(message_json,'$.role')='user' FROM conversation_intent WHERE message_id=?`, strings.TrimPrefix(ref, "conversation:")).Scan(&user); e != nil {
+				return nil, e
+			}
+			sourceUser = sourceUser || user
+		}
+		if strings.HasPrefix(ref, "run:") {
+			var failed bool
+			if e := tx.QueryRowContext(ctx, `SELECT status='failed' FROM run WHERE run_id=?`, strings.TrimPrefix(ref, "run:")).Scan(&failed); e != nil {
+				return nil, e
+			}
+			sourceFailure = sourceFailure || failed
+		}
+	}
+	if q.Reason == "correction" && !sourceUser || q.Reason == "recovered_failure" && !sourceFailure {
+		return nil, agent.ErrConflict
+	}
+	id := newID()
+	now := time.Now().UnixMicro()
+	refs, _ := encoded(q.SourceRefs)
+	hash := digest(q.Procedure)
+	if policy.Managed {
+		var err error
+		hash, err = rsiplugin.Digest("steward.experience-method/1", struct {
+			Procedure    string `json:"procedure"`
+			Revision     string `json:"policy_revision"`
+			RequiredRuns int    `json:"required_runs"`
+		}{q.Procedure, policy.Revision, policy.RequiredRuns})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if _, e := tx.ExecContext(ctx, `INSERT INTO skill_candidate VALUES(?,?,?,?,?,?,?,?, 'candidate',?,?,1) ON CONFLICT(agent_id,name,method_hash) DO NOTHING`, id, owner, q.Name, q.Description, q.Procedure, q.Reason, refs, hash, now, now); e != nil {
+		return nil, e
+	}
+	if e := tx.QueryRowContext(ctx, `SELECT candidate_id,status,version FROM skill_candidate WHERE agent_id=? AND name=? AND method_hash=?`, owner, q.Name, hash).Scan(&id, &q.Operation, &q.Version); e != nil {
+		return nil, e
+	}
+	var previousDescription, previousReason, previousRefs string
+	if e := tx.QueryRowContext(ctx, `SELECT description,reason,source_refs FROM skill_candidate WHERE candidate_id=?`, id).Scan(&previousDescription, &previousReason, &previousRefs); e != nil {
+		return nil, e
+	}
+	if previousDescription != q.Description || previousReason != q.Reason || previousRefs != refs {
+		return nil, agent.ErrConflict
+	}
+	var revision any
+	if policy.Managed {
+		revision = policy.Revision
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO experience_policy_binding(candidate_id,managed,graph_revision,required_runs,introduction,original_procedure) SELECT ?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM experience_policy_binding WHERE candidate_id=?)`, id, policy.Managed, revision, policy.RequiredRuns, policy.Introduction, originalProcedure, id); err != nil {
+		return nil, err
+	}
+	return map[string]any{"candidate_ref": "experience:" + id, "status": q.Operation, "version": q.Version}, runEvent(ctx, tx, id, "skill.candidate", q.Version)
 }

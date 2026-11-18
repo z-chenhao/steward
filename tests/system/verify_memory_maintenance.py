@@ -443,6 +443,27 @@ def run(binary, failure_evidence=None):
                     'automatic health Memory ignored category opt-out')
             report['scenarios'].append(dict(name='persistent-category-opt-out', before=before['memory']['records'],
                                             after=after['memory']['records']))
+            # Exercise the actual chat ingress and the local trusted Reviewer.
+            marker = '/learn-correction verified-release\nCheck a release before publication.\nReview the staged files.\nRun the focused validation.'
+            first = h.send('correction-first', marker)
+            replay = h.send('correction-first', marker)
+            h.send('correction-same-run', marker)
+            h.command('chat', 'work')
+            def candidates():
+                return [c for c in h.command('skill', 'manage', text='{"operation":"list"}')['candidates'] if c['name'] == 'verified-release']
+            require(first['message_id'] == replay['message_id'] and not candidates(), 'replay or one Run created a candidate')
+            second = h.send('correction-second', marker)
+            candidate, = candidates()
+            def review(op):
+                return h.command('skill', 'manage', text=json.dumps(dict(operation=op,candidate_ref=candidate['candidate_ref'],version=candidate['version'])))
+            detail = review('view')
+            require(detail['status'] == 'candidate' and detail['source_refs'] == ['conversation:'+first['message_id'],'conversation:'+second['message_id']],
+                    'automatic experience lacks independent accepted sources')
+            review('reject')
+            h.command('chat', 'work')
+            h.send('correction-after-rejection', marker)
+            require(len(candidates()) == 1 and candidates()[0]['status'] == 'rejected', 'rejected correction reopened')
+            report['scenarios'].append(dict(name='opted-in-independent-corrections', sources=detail['source_refs'], reviewed_status='rejected'))
             report['final'] = readback(h)
         except Exception as error:
             # Capture before the disposable stores disappear. Preserve the

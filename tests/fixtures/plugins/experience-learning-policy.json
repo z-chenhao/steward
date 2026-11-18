@@ -2,7 +2,8 @@
   "id": "experience-system-policy",
   "allowed_contracts": [
     "steward.experience-policy/1",
-    "steward.browser-demonstration/1"
+    "steward.browser-demonstration/1",
+    "steward.correction-recipe/1"
   ],
   "allowed_requests": [],
   "allowed_hooks": [],
@@ -100,6 +101,20 @@
         ],
         "matched": 1,
         "verified": false
+      }
+    },
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.correction-recipe/1",
+      "input": {
+        "steps": [
+          "Review the staged change.",
+          "Run the focused checks."
+        ]
+      },
+      "expected": {
+        "independent_runs": 2,
+        "procedure": "1. Review the staged change.\n2. Run the focused checks."
       }
     }
   ]
