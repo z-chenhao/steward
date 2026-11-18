@@ -2,6 +2,7 @@ package artifactworkbench
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -11,7 +12,7 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Recipe: recipe, contract.Read: read, contract.Search: search, contract.Cleanup: cleanup}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.2", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Recipe: recipe, contract.Read: read, contract.Search: search, contract.BodyMatch: matchBody, contract.Cleanup: cleanup}}
 }
 func recipe(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 	var request contract.RecipeRequest
@@ -75,4 +76,19 @@ func cleanup(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error)
 		return rsiplugin.JSONResult(ctx, contract.Selection{Indices: []int{}, ErrorCode: "INVALID_ARGUMENT"})
 	}
 	return consume(ctx, call, contract.CleanupInput, func(input io.Reader) (contract.Selection, error) { return SelectCleanup(ctx, request, input) })
+}
+
+func matchBody(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
+	var q contract.BodyRequest
+	if err := rsiplugin.Decode(call.Input, &q); err != nil {
+		return rsiplugin.Result{}, err
+	}
+	if q.Query == "" || len(call.Inputs) != 1 || call.Inputs[0].ID != contract.BodyInput {
+		return rsiplugin.Result{}, errors.New("invalid text search")
+	}
+	data, err := rsiplugin.ReadInput(ctx, call.Inputs[0])
+	if err != nil {
+		return rsiplugin.Result{}, err
+	}
+	return rsiplugin.JSONResult(ctx, contract.BodyResult{Match: bytes.Contains(data, []byte(q.Query))})
 }

@@ -21,8 +21,12 @@ type artifactSearchCursor struct {
 	Ref       string
 }
 
-func artifactSearchKey(run, graph, query string) string {
-	data, _ := json.Marshal([3]string{run, graph, query})
+func artifactSearchKey(run, graph, query string, content bool) string {
+	parts := []string{run, graph, query}
+	if content {
+		parts = append(parts, "body")
+	}
+	data, _ := json.Marshal(parts)
 	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:])
 }

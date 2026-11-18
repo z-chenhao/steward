@@ -57,7 +57,7 @@ func artifactHTTPMediaPackage(t *testing.T) string {
 	directory := t.TempDir()
 	replace := map[string]string{}
 	for file, change := range map[string][2]string{
-		"plugin.go": {`Version: "1.0.1"`, `Version: "1.2.0"`},
+		"plugin.go": {`Version: "1.0.2"`, `Version: "1.2.0"`},
 		"recipe.go": {`[]string{"image", "audio", "video"}`, `[]string{"audio", "video"}`},
 	} {
 		path, err := filepath.Abs(filepath.Join("../plugin/artifactworkbench", file))
@@ -217,7 +217,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	basePolicy, err := host.Store.Policy(ctx, policyID)
-	if err != nil || len(basePolicy.Cases) != 390 {
+	if err != nil || len(basePolicy.Cases) != len(readDefaultOwnerInventory(t).Cases) {
 		t.Fatal("full owner cases missing", err)
 	}
 	var pixels bytes.Buffer

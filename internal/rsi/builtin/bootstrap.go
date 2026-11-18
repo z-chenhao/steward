@@ -74,6 +74,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	uiVersion := ""
 	appsClient := false
 	appsInventory := false
+	artifactBody := false
 	codingChecks := false
 	codingProject := false
 	for _, p := range bundledPlugins(&d) {
@@ -86,6 +87,13 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "artifact-workbench" {
+			for _, service := range installed.Manifest.Provides {
+				if service.Contract == artifact.BodyMatch {
+					artifactBody = true
+				}
+			}
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
@@ -323,6 +331,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	if d.Artifact != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, artifact.Recipe, artifact.Read, artifact.Search, artifact.Cleanup)
 		policy.Cases = append(policy.Cases, artifactCases()...)
+		if artifactBody {
+			policy.AllowedContracts = append(policy.AllowedContracts, artifact.BodyMatch)
+			policy.Cases = append(policy.Cases, artifactBodyCase())
+		}
 	}
 	if d.ServiceWatchdog != "" {
 		cases, err := serviceWatchdogCases()

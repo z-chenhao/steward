@@ -1,5 +1,5 @@
 // Package contract is the repository-private Artifact policy seam. Host-owned
-// scopes, references, file paths, content, SQL and credentials never enter it.
+// scopes, references, file paths, SQL and credentials never enter it. Only BodyMatch receives authorized text windows.
 package contract
 
 const PluginID = "steward.artifact-workbench"
@@ -7,6 +7,8 @@ const Recipe = "steward.artifact-recipe/1"
 const Search = "steward.artifact-selection/1"
 const Read = "steward.artifact-read/1"
 const Cleanup = "steward.artifact-cleanup/1"
+const BodyMatch = "steward.artifact-body-match/1"
+const BodyInput = "text-window"
 const SearchInput = "artifact-metadata"
 const CleanupInput = "expired-metadata"
 
@@ -62,3 +64,10 @@ type CleanupRequest struct {
 // The Host supplies only expired, unreferenced, owner-eligible rows. Candidate
 // selection cannot authorize deletion, remove pins or change stored expiry.
 type CleanupRow struct{ ExpiresAt int64 }
+
+type BodyRequest struct {
+	Query string `json:"query"`
+}
+type BodyResult struct {
+	Match bool `json:"match"`
+}
