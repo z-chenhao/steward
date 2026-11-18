@@ -95,6 +95,10 @@
 
 `TestPrivatePDFEvidenceUsesOriginalArtifactAndPinnedParser` 将带文字的 PDF 保存为私人原件，以真实已激活的隔离解析器读取文件。检查页码、原件引用、换版后的旧页与新读，以及删除文件后旧续页拒绝访问。
 
+### F-014 英文 WAV 转写
+
+通过 CLI 保存测试 WAV 后显式启用包和转写，核对每段真实起止毫秒、可重新打开的原件和字节摘要。普通证据读取、未启用、错误模型、过大或格式不支持、无声录音、缺失时间点、失败命令和沙箱撤权分别覆盖。独立原始 CLI JSON 及二进制、模型和音频 SHA-256 记录在 [语音协议夹具](../../tests/fixtures/speech/README.md)。本地准备模型和 JFK 音频后，设置 `STEWARD_TEST_WHISPER_MODEL`、`STEWARD_TEST_WHISPER_WAV` 并运行 `go test ./internal/agent/sqlite -run '^TestAudioTranscriptOfficialLocalCLI$' -v -count=1`。常规回归通过真实验证的插件消费受控协议样本并在发布前执行 Forget；该夹具不评估会议语音准确率。
+
 ### F-014 DOCX 正文回归
 
 覆盖块、行内、嵌套和表格内容控件，比较旧原生解释，并从授权原件经独立构建插件读取大文档。

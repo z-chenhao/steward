@@ -58,7 +58,17 @@
 
 上传的 PDF 可用同一入口读取带页码的正文。每页保留原文件引用，`pdf_text` 的偏移按 UTF-8 字节计算。原件留在本地，冻结的 Web Extract 插件直接读取经授权的字节。大小上限为 8 MiB，扫描图像中的文字需要独立 OCR。
 
-**边界与剩余工作**：DOCX 仅读取标准 MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。音视频转写、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
+**边界与剩余工作**：DOCX 仅读取标准 MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。其他音频／视频编码、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
+
+本地英文录音转写支持最长十分钟的单声道、16 kHz、16-bit PCM WAV。先安装 whisper.cpp 1.9.2 并准备官方 ggml-tiny.en.bin，然后执行下列命令。最后一条命令是对这一个原件的本次转写授权。
+
+```sh
+steward audio enable-plugin /absolute/path/to/plugins/audio-transcript
+steward artifact save meeting.wav audio/wav < meeting.wav
+steward audio transcribe-local artifact:ID /absolute/path/to/ggml-tiny.en.bin
+```
+
+返回 JSON 包含原件名称、可打开的原件引用、内容摘要，以及每段转写的起止毫秒与文本。使用 `steward artifact open artifact:ID` 可核对原音。系统可分别报告格式不支持、模型缺失或不匹配、解码器不可用、识别失败、输出不兼容和静音。普通附件保存与证据读取只显示原有元数据；启用后，本地 owner 读取 WAV 元数据还可看到转写命令。音频与识别文本只在本地处理，转写结果由命令返回，未写入 Agent 或任务历史。
 
 **验收目标**：逐格式验证可获取的内容、原始文件关联、失败反馈和实际任务输出；质量由独立评测衡量。
 

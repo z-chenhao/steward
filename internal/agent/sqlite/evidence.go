@@ -449,6 +449,15 @@ func (r *Runs) evidenceArtifact(ctx context.Context, a evidenceAccess, q evidenc
 		}
 		return r.evidenceWindow(ctx, a, page, text, q)
 	}
+	if a.claim == nil && wavMediaType(media) {
+		enabled, err := r.localTranscriptionEnabled(ctx, a)
+		if err != nil {
+			return err
+		}
+		if enabled {
+			page.LocalTranscriptionCommand = "audio transcribe-local"
+		}
+	}
 	if !strings.HasPrefix(media, "text/") && media != "application/json" && !strings.HasSuffix(media, "+json") {
 		if q.Offset != 0 {
 			return evidence.ErrInvalid
