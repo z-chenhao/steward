@@ -595,6 +595,11 @@
     "zh_cn": "运行中 / 排队中 / 等待中"
   },
   {
+    "key": "Runs the saved instructions in a separate task with its own approvals and results. Unsaved edits are excluded.",
+    "en": "Runs the saved instructions in a separate task with its own approvals and results. Unsaved edits are excluded.",
+    "zh_cn": "使用已保存的指令创建独立任务，可单独查看审批和结果。当前未保存的修改不会进入试运行。"
+  },
+  {
     "key": "Saturday",
     "en": "Saturday",
     "zh_cn": "周六"
@@ -753,6 +758,11 @@
     "key": "Technical details",
     "en": "Technical details",
     "zh_cn": "技术详情"
+  },
+  {
+    "key": "Test saved schedule",
+    "en": "Test saved schedule",
+    "zh_cn": "试运行已保存的计划"
   },
   {
     "key": "The original objective and completion rule are fixed for this task. Create a new task to use a different completion rule.",

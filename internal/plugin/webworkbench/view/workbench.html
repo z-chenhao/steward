@@ -156,6 +156,11 @@
 
   <div class="actions"><button type="submit">{{tr "Save schedule"}}</button><a class="button secondary" href="/tasks">{{tr "Cancel"}}</a>{{if .Ref}}<a class="text-link" href="/tasks/schedules/{{.Ref}}">{{tr "Reload saved schedule"}}</a>{{end}}</div>
  </form>
+ {{if .Ref}}<form class="schedule-trial" method="post" action="/schedule/trial">
+  <input type="hidden" name="ref" value="{{.Ref}}"><input type="hidden" name="version" value="{{.Version}}"><input type="hidden" name="source_id" value="{{.Key}}">
+  <button class="secondary" type="submit">{{tr "Test saved schedule"}}</button>
+  <p class="field-help">{{tr "Runs the saved instructions in a separate task with its own approvals and results. Unsaved edits are excluded."}}</p>
+ </form>{{end}}
  {{end}}
 </section>
 {{end}}

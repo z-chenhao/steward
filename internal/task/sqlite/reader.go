@@ -89,7 +89,7 @@ const progressCTE = `WITH current_runs AS (
  EXISTS(SELECT 1 FROM tool_invocation i JOIN current_runs r USING(run_id) WHERE r.task_id=t.task_id AND i.status='unknown') unknown
  ,coalesce(a.automation_id,'') schedule_id,coalesce(a.instruction,'') schedule_instruction,coalesce(a.trigger_type,'') trigger_type,coalesce(a.trigger_spec,'') trigger_spec,coalesce(a.timezone,'') timezone,coalesce(a.version,0) schedule_revision,coalesce(a.enabled,0) schedule_enabled,a.next_fire_at,a.below_value,a.presentation_json schedule_presentation,
  EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-display/1') schedule_display_managed,coalesce(a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=t.agent_id),0),0) schedule_visible
- FROM task t LEFT JOIN counts c USING(task_id) LEFT JOIN current_runs root ON root.task_id=t.task_id AND root.worker_position='root' LEFT JOIN automation a ON a.task_id=t.task_id AND a.agent_id=t.agent_id
+ FROM task t LEFT JOIN counts c USING(task_id) LEFT JOIN current_runs root ON root.task_id=t.task_id AND root.worker_position='root' LEFT JOIN automation a ON a.task_id=t.task_id AND a.agent_id=t.agent_id AND a.automation_id NOT LIKE 'trial:%'
  WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
 )
 `

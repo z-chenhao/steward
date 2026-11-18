@@ -183,7 +183,9 @@ func freezeMessageRoute(ctx context.Context, tx *sql.Tx, messageID, runID string
 		if err = tx.QueryRowContext(ctx, `SELECT channel,binding_id FROM channel_preference WHERE singleton=1`).Scan(&channel, &preferred); err != nil {
 			return err
 		}
-		if preferred.Valid {
+		if origin.trialTask != "" {
+			binding = origin.binding
+		} else if preferred.Valid {
 			binding = preferred.String
 			if binding == origin.binding {
 				source = origin.source

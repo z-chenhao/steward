@@ -198,6 +198,32 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
+// The owner confirms a saved revision. The editor draft never becomes executable input.
+func (s *Server) trialSchedule(w http.ResponseWriter, r *http.Request) error {
+	service, ok := s.Schedules.(interface {
+		TrialSchedule(context.Context, string, string, int64) (string, error)
+	})
+	if !ok {
+		return errPageNotFound
+	}
+	f := r.PostForm
+	if len(f) != 3 || len(f["version"]) != 1 || len(f["source_id"]) != 1 || len(f["ref"]) != 1 {
+		fail(w, 400)
+		return nil
+	}
+	version, err := strconv.ParseInt(f.Get("version"), 10, 64)
+	if err != nil {
+		fail(w, 400)
+		return nil
+	}
+	ref, err := service.TrialSchedule(r.Context(), f.Get("source_id"), f.Get("ref"), version)
+	if err != nil {
+		return err
+	}
+	http.Redirect(w, r, taskURL(ref), http.StatusSeeOther)
+	return nil
+}
+
 func applyScheduleDefaults(e *scheduleEditor, v automation.EditorDefaults) {
 	e.Frequency, e.Date, e.Time, e.Timezone, e.Cron, e.Weekday, e.Day, e.Enabled = v.Frequency, v.Date, v.Clock, v.Timezone, v.Cron, v.Weekday, v.Day, v.Enabled
 }

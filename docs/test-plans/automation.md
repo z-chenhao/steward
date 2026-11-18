@@ -120,3 +120,9 @@ Main 迁移回归通过真实 Actor／模型／工具调用：在模型返回前
 Schedule 的 Main／Root 指引与阈值冻结回归纳入 `make test-prompts` 的现有方法／Task 分组；CI 回归保证新增同族用例仍在必跑入口中，普通全量测试继续逐根覆盖。
 
 任务配置应在伦敦浏览器新建时使用 Europe/London，损坏的时区偏好恢复到原配方默认时区；在该浏览器编辑上海计划仍显示 Asia/Shanghai。上海浏览器查看纽约冬令时 08:00 的下次触发时，断言正文含 08:00 和 -05:00。HTTP 路径回归见 TestManagedScheduleFormAndOccurrenceRespectTimezones。
+
+### 试运行已保存的计划
+
+参考 Grok Bot 的周期任务测试。所有者在已有阈值计划点击试运行，将进入独立任务。HTTP 重试应打开相同结果，正式计划版本、下次触发、阈值、进入状态及通知历史保持原值。
+
+`TestOwnerScheduleTrialIsolatedThroughRootAndThreshold` 经真实 HTTP、托管插件、原 Root 观察工具及 Main 交付核对结果、Web 路由、重复提交与停止后的已有回执。

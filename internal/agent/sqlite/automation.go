@@ -55,7 +55,7 @@ func (r *Runs) manageAutomation(ctx context.Context, tx *sql.Tx, key string, q a
 	}
 	if q.Operation == "list" {
 		rows, e := tx.QueryContext(ctx, `SELECT automation_id,instruction,trigger_type,trigger_spec,timezone,enabled,version,next_fire_at,below_value,intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=automation.agent_id),0),json_extract(presentation_json,'$.instruction_label'),
- EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=automation.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-instruction-label/1') FROM automation WHERE agent_id=? ORDER BY created_at,automation_id LIMIT 50`, owner)
+ EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=automation.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-instruction-label/1') FROM automation WHERE agent_id=? AND automation_id NOT LIKE 'trial:%' ORDER BY created_at,automation_id LIMIT 50`, owner)
 		if e != nil {
 			return tool.Result{}, e
 		}

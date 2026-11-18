@@ -203,6 +203,8 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) error {
 	switch r.URL.Path {
 	case "/task/feedback":
 		return s.respondFeedback(w, r)
+	case "/schedule/trial":
+		return s.trialSchedule(w, r)
 	case "/schedule/configure":
 		return s.configureSchedule(w, r)
 	case "/settings/language":
