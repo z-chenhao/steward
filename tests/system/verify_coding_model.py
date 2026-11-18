@@ -8,10 +8,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import signal
-import subprocess
 
 from coding_verification_model import explore
+from fixture_pool import run_json_lines
 
 ROOT = Path(__file__).resolve().parents[2]
 REPLAY = 'TestCodingProjectStaleOwnerCannotPublishReceipt'
@@ -43,23 +42,13 @@ def verify(evidence, env, baseline_roots):
                    './internal/agent/sqlite', '-run', '^' + REPLAY + '$', '-count=1', '-timeout=3m']
         report['command'] = command
         log = evidence / 'actual-mutant.log'
-        with log.open('w') as output:
-            with subprocess.Popen(command, cwd=ROOT, env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True) as child:
-                try:
-                    child.wait(timeout=200)
-                finally:
-                    try:
-                        os.killpg(child.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    child.wait()
-        report['returncode'] = child.returncode
-        events = [json.loads(line) for line in log.read_text().splitlines()]
+        returncode, events = run_json_lines(command, log, cwd=ROOT, env=env, timeout=200)
+        report['returncode'] = returncode
         rejected = any(event.get('Action') == 'fail' and event.get('Test') == REPLAY for event in events)
         diagnostic = 'model counterexample: stale owner published a container receipt'
         reproduced = any(diagnostic in event.get('Output', '') for event in events)
         report.update(mutant_rejected=rejected, counterexample_reproduced=reproduced)
-        if child.returncode != 1 or not rejected or not reproduced:
+        if returncode != 1 or not rejected or not reproduced:
             raise RuntimeError('actual mutation did not reproduce the model counterexample')
         if source.read_text() != original:
             raise RuntimeError('production source changed during counterexample replay')

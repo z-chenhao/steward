@@ -13,6 +13,7 @@ import sys
 import tempfile
 import time
 
+from fixture_pool import run_json_lines
 from runner import source_state
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -116,26 +117,17 @@ def main():
                    '-run', '^TestCodingDevelopment', '-count=1', '-timeout=10m']
         report['command'] = command
         log = args.evidence / 'regressions.log'
-        with log.open('w') as output:
-            with subprocess.Popen(command, cwd=ROOT, env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True) as child:
-                try:
-                    child.wait(timeout=620)
-                finally:
-                    try:
-                        os.killpg(child.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    child.wait()
-        report['returncode'] = child.returncode
-        events = [json.loads(line) for line in log.read_text().splitlines()]
+        returncode, events = run_json_lines(command, log, cwd=ROOT, env=env, timeout=620)
+        report['returncode'] = returncode
         passed = sorted(event['Test'] for event in events if event.get('Action') == 'pass' and 'Test' in event and '/' not in event['Test'])
         skipped = [event.get('Test', event.get('Package')) for event in events if event.get('Action') == 'skip']
         report.update(test_roots=passed, skipped=skipped)
         required = {'TestCodingDevelopmentActualSQLiteBrowserRecoveryAndRetainedArtifacts',
                     'TestCodingDevelopmentParallelPortDatabaseAndBrowserProfiles',
                     'TestCodingDevelopmentExactFreshStewardBuild'}
-        if child.returncode or skipped or not required.issubset(passed):
+        if returncode or skipped or not required.issubset(passed):
             print(log.read_text()[-12000:])
+            print(log.with_suffix('.stderr.log').read_text()[-4000:])
             raise RuntimeError('required real development scenarios did not all pass')
         report['flows'] = {}
         for marker in ('candidate-alpha', 'parallel-alpha', 'parallel-beta'):

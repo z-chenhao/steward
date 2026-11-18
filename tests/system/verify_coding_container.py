@@ -6,11 +6,11 @@ import json
 import os
 from pathlib import Path
 import shutil
-import signal
 import subprocess
 import tempfile
 import time
 
+from fixture_pool import run_json_lines
 from runner import source_state
 from verify_coding_model import verify as verify_model
 
@@ -63,19 +63,9 @@ def main():
                    './internal/agent/sqlite', '-run', '^Test(CodingContainer|CodingProject)',
                    '-count=1', '-timeout=15m']
         report['command'] = command
-        with (args.evidence / 'regressions.log').open('w') as output:
-            with subprocess.Popen(command, cwd=ROOT, env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True) as child:
-                try:
-                    child.wait(timeout=900)
-                    result = child
-                finally:
-                    try:
-                        os.killpg(child.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    child.wait()
-        report['returncode'] = result.returncode
-        events = [json.loads(line) for line in (args.evidence / 'regressions.log').read_text().splitlines()]
+        log = args.evidence / 'regressions.log'
+        returncode, events = run_json_lines(command, log, cwd=ROOT, env=env, timeout=900)
+        report['returncode'] = returncode
         roots = sorted(event['Test'] for event in events if event.get('Action') == 'pass'
                        and 'Test' in event and '/' not in event['Test'])
         skipped = sorted(event.get('Test', event['Package']) for event in events if event.get('Action') == 'skip')
@@ -93,11 +83,12 @@ def main():
                     'TestCodingProjectEvidenceTerminalFailureRollsBackRefsWithoutReexecution',
                     'TestCodingProjectEvidenceLateForgetReleasesResourcesWithoutPublishing',
                     'TestCodingProjectMissingEvidenceDoesNotTurnZeroExitIntoAcceptance'}
-        if not result.returncode and (skipped or not required.issubset(roots)):
+        if not returncode and (skipped or not required.issubset(roots)):
             raise RuntimeError('required actual container scenarios did not all run')
-        if result.returncode:
-            print((args.evidence / 'regressions.log').read_text()[-12000:])
-            return result.returncode
+        if returncode:
+            print(log.read_text()[-12000:])
+            print(log.with_suffix('.stderr.log').read_text()[-4000:])
+            return returncode
         report['model'] = verify_model(args.evidence / 'model', env, roots)['outcome']
         report['outcome'] = 'passed'
         return 0
