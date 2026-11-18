@@ -44,7 +44,7 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	directories, err := shippedPluginDirectories(carrier)
+	directories, err := builtin.ShippedDirectories(carrier)
 	if err != nil || directories.GitHub == "" {
 		t.Fatal("actual complete40 distribution missing", err)
 	}

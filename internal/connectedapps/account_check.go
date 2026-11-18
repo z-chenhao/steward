@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/v1"
 )
 
 type AccountCheckPolicy struct {
@@ -22,7 +23,7 @@ func (p AccountCheckPolicy) decide(ctx context.Context, revision int64, request 
 	var plan contract.AccountCheckPlan
 	var err error
 	if p.mode == accountPolicyNative {
-		plan = accountCheckLegacyV1(request)
+		plan = v1.Check(request)
 	} else {
 		if !p.available() {
 			return "", ErrUnavailable

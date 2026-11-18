@@ -64,7 +64,7 @@ Main 创建 Task 是因果关联，不是 Main 直接创建 Child。Child 结果
 
 保留上述架构，补齐用户流程中的断点：阶段进度生产、附件理解、富 UI 生成、自动经验、语义记忆和真实服务接入。逐项状态以 Feature Map 为准，不能由本页图推断完成。
 
-Developer 包含 [Traces](observability.md) 与 [Memory](memory.md)。Traces 查询既有执行记录与供应商边界观测；Memory 提供所有者可见的记忆正文、来源和维护回执。两者只读，不接管执行、召回或维护生命周期。通用 Database 检查入口已移除。[Evals](evals.md) 仍为待定义页面，不改变独立评测项目的职责。
+Developer 包含 [Traces](observability.md) 与 [Memory](memory.md)。Traces 查询既有执行记录与供应商边界观测；Memory 提供所有者可见的记忆正文、来源和维护回执。两者只读，不接管执行、召回或维护生命周期。通用 Database 检查入口已移除。真实模型效果由[独立评测](../test-plans/product.md#testing-agent-evaluation)覆盖。
 
 ## 验证
 

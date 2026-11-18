@@ -118,7 +118,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 	if err != nil {
 		t.Fatal(err)
 	}
-	directories, err := shippedPluginDirectories(carrier)
+	directories, err := builtin.ShippedDirectories(carrier)
 	if err != nil || directories.Artifact == "" {
 		t.Fatal("actual complete40 required", err)
 	}
@@ -217,7 +217,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	basePolicy, err := host.Store.Policy(ctx, policyID)
-	if err != nil || len(basePolicy.Cases) != 387 {
+	if err != nil || len(basePolicy.Cases) != 390 {
 		t.Fatal("full owner cases missing", err)
 	}
 	var pixels bytes.Buffer

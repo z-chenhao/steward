@@ -16,6 +16,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/recall"
+	"github.com/z-chenhao/assistant/internal/recall/lexical"
 )
 
 // scheduleDream coalesces observations into bounded background work. It uses
@@ -208,7 +209,7 @@ func (r *Runs) dreamInput(ctx context.Context, scope recall.Scope, event string,
 	for _, o := range in.Observations {
 		query += "\n" + o.Text
 	}
-	terms := navigationTerms(query)
+	terms := memory.NavigationQueryTerms(query)
 	docs, err := store.ListDocuments(ctx, scope, floor, memory.Injected, 1)
 	if err != nil {
 		return in, err
@@ -264,7 +265,7 @@ func (r *Runs) dreamInput(ctx context.Context, scope recall.Scope, event string,
 	}
 	sort.SliceStable(docs, func(i, j int) bool {
 		score := func(d memory.Document) float64 {
-			v := recall.Relevance(terms, d.Title+"\n"+d.Content)
+			v := lexical.Relevance(terms, d.Title+"\n"+d.Content)
 			if d.Layer == memory.Injected {
 				v += 1000
 			}
@@ -277,7 +278,7 @@ func (r *Runs) dreamInput(ctx context.Context, scope recall.Scope, event string,
 		if len(chosen) >= 12 {
 			break
 		}
-		if doc.Layer == memory.Injected || recall.Relevance(terms, doc.Title+"\n"+doc.Content) > 0 || len(chosen) < 4 || doc.CreatedAt.Equal(at) {
+		if doc.Layer == memory.Injected || lexical.Relevance(terms, doc.Title+"\n"+doc.Content) > 0 || len(chosen) < 4 || doc.CreatedAt.Equal(at) {
 			chosen = append(chosen, doc)
 		}
 	}

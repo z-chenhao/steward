@@ -29,7 +29,7 @@
 | [F-015 一次性与周期自动化](automation.md#f-015) | `schedule` | 现有业务迁移已验证 | schedule 实际持有日历计算、本地／频率输入解释、草稿缺省、标题／展示与工具方法；独立版本实际改变后续时间配方，旧安排／原 fire／排队 Root 按原图推进。真实 HTTP、升级／精确回退／停用／冷准备、原输入／时刻与保存回执、Forget／unknown 已验证。普通旧解释已清理，automation_legacy.go、schedules_legacy.go 等仅服务明确旧图／记录；权威时钟、去重、事务、授权与实际入队留 Host。 |
 | [F-016 阈值状态与安静通知](automation.md#f-016) | `schedule` | 现有业务迁移已验证 | 同一 schedule 生命周期持有阈值判断、观察工具说明及 Root 方法；真实独立版本改变通知决策，原 Root 在回退／停用后仍保留原方法，冷准备与 Forget 围栏已验证。Host 保存确切观察值、版本和 notify 回执并拒绝迟到观察制造新状态；Reporter 仅按已接纳事实交付，不比较阈值。旧判断只服务不含该服务的冻结 Root，随历史消费者退役删除。 |
 | [F-017 终端交互](channels.md#f-017) | `terminal-interface`／可信渠道机制 | 现有业务迁移已验证 | 56 项提示／展示格式与实际选模规则由新包持有，已核对原四组完整 setup profile／输出；独立二进制换版改变实际终端输出及数字／确切 ID 歧义的选择，原会话冻结、精确回退、退役、Guardian stop／恢复、停用／冷读不回退均已验证。stdin／PTY、命令权限与显式控制、SecretStore、模型激活、持久输入／历史与真实交付保留 Host；共享 Intelligent UI 内容降级由 F-028 单独核对。 |
-| [F-018 基础 Web 工作台](channels.md#f-018) | `web-workbench`／共享 Host 控件 | 现有业务迁移已验证 | Task／Execution、Attention／反馈、Chat 和安排模板、专属样式、中英文文案与客户端配方均走真实托管路径；独立版本同时修改实际文案、字号、轮询和区域，原图／回退／退役／停用首次冷读已有 HTTP 回归。四类页面中英文 DOM、桌面／手机明暗计算样式及侧栏前进后退通过。默认39包／386项已接线；原普通模板、CSS 和政策已移除，仅具名旧公开协议／显式未托管嵌入保留 legacy。整批完整门禁尚未完成。原始回复、审批身份、事实和共享控件留 Host。 |
+| [F-018 基础 Web 工作台](channels.md#f-018) | `web-workbench`／共享 Host 控件 | 现有业务迁移已验证 | Task／Execution、Attention／反馈、Chat 和安排模板、专属样式、中英文文案与客户端配方均走真实托管路径；独立版本同时修改实际文案、字号、轮询和区域，原图／回退／退役／停用首次冷读已有 HTTP 回归。四类页面中英文 DOM、桌面／手机明暗计算样式及侧栏前进后退通过。默认组合由独立清单验收；原普通模板、CSS 和政策已移除，仅具名旧公开协议／显式未托管嵌入保留 legacy。原始回复、审批身份、事实和共享控件留 Host。 |
 | [F-019 Web 实时状态与回复更新](channels.md#f-019) | `web-workbench`／可信实时传输 | 现有业务迁移已验证 | 原七类实时区域、页面启用、轮询参数与文案由插件提供，客户端／更新端点使用同一原 Reader；独立区域／间隔换版及实际浏览器读取已验证。原审批、反馈与安排错误页接入托管回归；headerless updates v0 仅保留旧公开消费者，managed 失败不选原生政策。SSE、游标、原始回复、授权与 unknown 效果不重放仍留 Host；整批验收已完成。 |
 | [F-020 可维护的飞书交互与通知](channels.md#f-020) | `feishu-chat`／可信机制 | 现有业务迁移已验证 | 状态指引、卡片与反馈提示真实托管调用、独立进程换版／回退／停用／首次冷读、已冻结投影与旧 UISpec 兼容、原消息回复、签名／回执与撤权、unknown 不重发已有专项及完整 test／lint 证据。普通替代代码已清理；legacyv1 仅服务明确的从未激活图／嵌入及旧投影。凭据、认证／来源、固定 wire 接纳、实际投递与授权／回执留 Host；详细边界见渠道设计／测试方案，未用沙盒证明真实平台 Live。 |
 | [F-021 富组件从生成到交互的闭环](intelligent-ui.md#f-021) | `intelligent-ui` | 现有业务迁移已验证 | intelligent-ui 实际拥有 Plan／Cards／Table／Charts／Forms／Meeting／Action 的有限视图、样式、文案与浏览器策略；七组真实原组件／换版／回退／旧引用／停用冷读已有系统及浏览器验收，当前 owning 实现未变。Host 保留原 UISpec／动作接纳、身份／表单证明、原始数据、权限与提交回执，共享控件和受限渲染原语不重复插件化。具名旧图／引用解释器随消费者退役删除。 |
@@ -46,7 +46,6 @@
 | [F-034 逐轮上下文、来源与 Diff](observability.md#f-034) | `trace-inspector` | 现有业务迁移已验证 | 布局、指标、显隐、页面／字典／客户端策略及工具预览已实际托管；旧派发、独立换版、回退与冻结引用已有验收证据。后端仅保留来源／权限／隐私／unknown 与读预算。发现缺失 Catalog 会丢失托管判断，现统一改用持久激活事实，真实激活后首次冷读、停用后冷读、Diff／Workbench／分桶／布局均不回退，原始事实仍可检查；实际冷恢复与专项 race 已通过，完整 lint 已通过。 |
 | [F-035 供应商最终请求观测](observability.md#f-035) | `trace-inspector` | 现有业务迁移已验证 | 布局、指标、显隐、页面／字典／客户端策略及工具预览已实际托管；旧派发、独立换版、回退与冻结引用已有验收证据。后端仅保留来源／权限／隐私／unknown 与读预算。发现缺失 Catalog 会丢失托管判断，现统一改用持久激活事实，真实激活后首次冷读、停用后冷读、Diff／Workbench／分桶／布局均不回退，原始事实仍可检查；实际冷恢复与专项 race 已通过，完整 lint 已通过。 |
 | [F-036 调用、等待、恢复与用量时间线](observability.md#f-036) | `trace-inspector` | 现有业务迁移已验证 | 布局、指标、显隐、页面／字典／客户端策略及工具预览已实际托管；旧派发、独立换版、回退与冻结引用已有验收证据。后端仅保留来源／权限／隐私／unknown 与读预算。发现缺失 Catalog 会丢失托管判断，现统一改用持久激活事实，真实激活后首次冷读、停用后冷读、Diff／Workbench／分桶／布局均不回退，原始事实仍可检查；实际冷恢复与专项 race 已通过，完整 lint 已通过。 |
-| [F-032 Web Evals 入口](evals.md#f-032) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
 | [F-033 Web Memory 记忆浏览](memory.md#f-033) | `memory-inspector` | 现有业务迁移已验证 | memory-inspector 实际持有浏览投影、页面／样式／文案和浏览器规则；独立实际进程换版、原页面图／引用、精确回退／停用与首次冷读取、晚 Forget／替换竞态已有验收。当前完整 test-memory 已通过；Host 保留原 Memory 内容、来源／隐私代次、解密与精确分页，不向界面插件开放数据库或原始秘密。具名历史视图随消费者退役删除。 |
 | [F-037 安装、首次启动与显式部署](installation.md#f-037) | 待归属／可信机制 | 共享工程／静态产品机制 | 安装与发布授权、构建／工程结构、共享品牌资产不按业务插件重新实现；核查是否夹带可替换业务策略。 |
 | [F-038 标准开发与显式发布流程](engineering.md#f-038) | 待归属／可信机制 | 共享工程／静态产品机制 | 安装与发布授权、构建／工程结构、共享品牌资产不按业务插件重新实现；核查是否夹带可替换业务策略。 |
@@ -56,26 +55,6 @@
 | [F-042 可靠的环境事件监听](integrations.md#f-042) | `github-pr-followup` | 现有业务迁移已验证 | 现有监听实现为 github-pr-followup：实际持有精确 PR 拉取配方、观察取舍与后续工作方法；真实在途扫描换版、回退／停用／冷恢复、27组原扫描预期、原回执与 Forget 已验证。Host 保留认证、精确仓库／PR 身份、网络驱动、游标事务与幂等接纳；其他未实现事件源不在本轮新增。 |
 | [F-045 主动规则的观察与启用](automation.md#f-045) | `github-pr-followup` | 现有业务迁移已验证 | 当前已实现的主动规则消费者复用 github-pr-followup 的冻结观察／工作方法；显式所有者启用、原跟踪身份、升级／回退／停用、在途恢复与撤权由同一实际入口验证。Host 保留授权、精确规则身份和后续 Task 接纳，不为聚合 feature 另建规则框架；其他未实现主动规则不在本轮新增。 |
 | [F-046 Tavily 搜索与网页正文](integrations.md#f-046) | 待归属／可信机制 | 现有子功能归属已验证 | 现有 Tavily Search 请求经 web-access 的已授权路由／搜索方法派发，来源格式与结果取舍已托管；固定端点、SecretStore 与 wire 编码属于可信网络 driver。独立 Extract 与真实供应商 Live 尚未实现／验收，不在本轮扩建；不把摘要当原网页全文。 |
-| [F-047 GitHub Connector](integrations.md#f-047) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-048 能力候选：macOS 本机文件与运行状态](integrations.md#f-048) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-049 能力候选：SSH 远端设备与服务](integrations.md#f-049) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-050 能力候选：用户选择的 Chrome 页面与会话](integrations.md#f-050) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-051 能力候选：ChatGPT 选定历史与附件导入](integrations.md#f-051) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-052 能力候选：Codex 选定工程会话导入](integrations.md#f-052) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-053 能力候选：Pi 选定会话导入](integrations.md#f-053) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-054 能力候选：图片生成与编辑服务](integrations.md#f-054) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-055 Google Maps Connector](integrations.md#f-055) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-056 高德地图 Connector](integrations.md#f-056) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-057 Apple Health／HealthKit Connector 候选](integrations.md#f-057) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-058 飞书云文档与知识库](integrations.md#f-058) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-059 Gmail Connector](integrations.md#f-059) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-060 Jellyfin 家庭媒体库](integrations.md#f-060) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-061 AWS 资源与费用只读接入](integrations.md#f-061) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-062 Google Calendar 候选](integrations.md#f-062) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-063 Apple Calendar／Reminders 候选](integrations.md#f-063) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-064 Google Drive 选定资料候选](integrations.md#f-064) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-065 X 帖子与讨论只读接入](integrations.md#f-065) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
-| [F-066 YouTube 视频资料候选](integrations.md#f-066) | 待归属／可信机制 | 未来项，不新增实现 | 仅在已有代码实际被其他 feature 使用时核对其归属。 |
 | [F-067 Exa MCP 搜索候选](integrations.md#f-067) | 待归属／可信机制 | 现有子功能归属已验证 | 现有 Exa MCP 适配经 web-access 的托管路由及来源格式消费；Host 保留固定免密端点、独立协议 session 和网络／限额错误事实，插件不能注入账户凭据或放宽过滤。已有本地协议与原 limit／独立格式回归；真实远端协议／质量是原产品剩余验证，不另建同义插件。 |
 | [F-068 SearXNG 自托管搜索候选](integrations.md#f-068) | 待归属／可信机制 | 现有子功能归属已验证 | 现有 SearXNG JSON 适配经 web-access 的托管路由／搜索／来源方法消费；Host 保留显式配置端点、可选凭据、固定 wire 与真实网络事实。路由、来源、过滤和换版／回退沿用 F-069 的真实入口证据；真实实例部署／维护责任与 Live 仍待用户侧验证，不在本轮新增部署。 |
 | [F-069 Web Access Plugin](integrations.md#f-069) | `web-access`、`web-extract` | 现有业务迁移已验证 | web-access／web-extract 及同组 HTML／图片实现实际持有路由、搜索、正文提取、来源格式、页面与图像处理和研究配方；真实网络 fixture／Node／CodeMode、原 Run／Child／引用、独立换版、回退／退役／停用、完整大输入／结果、Forget 与 unknown 不重放已有验收。Host 保留原网络身份、授权／来源／内容字节、限额、Artifacts 和回执，旧解释仅服务明确旧执行／引用。真实供应商 Live 与搜索质量另行评测。 |

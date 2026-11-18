@@ -20,7 +20,7 @@ func ValidFixture(f string) bool {
 		return llm.NormalizeError(code).Error() == code
 	}
 	switch f {
-	case "local", "agenda", "research", "monitor", "wedding", "meeting", "automation", "computer", "recall", "core", "codemode", "children", "capabilities", "artifacts", "approval", "approval-never", "tasks", "terminal-input", "golden", "main", "success", "incompatible", "crash", "partial-crash", "completed-crash", "no-tools", "bad-sequence", "drift", "malformed", "auth-required", "raw-error", "event-error":
+	case "local", "agenda", "research", "monitor", "wedding", "meeting", "automation", "computer", "recall", "core", "codemode", "children", "capabilities", "artifacts", "approval", "approval-never", "tasks", "terminal-input", "golden", "main", "main-responsive", "success", "incompatible", "crash", "partial-crash", "completed-crash", "no-tools", "bad-sequence", "drift", "malformed", "auth-required", "raw-error", "event-error":
 		return true
 	}
 	return false
@@ -218,21 +218,22 @@ func serve(in io.Reader, out io.Writer, fixture string, audit io.Writer) error {
 				err = event(llm.GenerationEvent{GenerationID: request.GenerationID, Sequence: 2, Kind: "completed"})
 				break
 			}
-			if (fixture == "main" || fixture == "golden") && (hasTool(request.Tools, "mcp__fixture__echo") || hasTool(request.Tools, "builtin__artifact_search")) {
+			if (fixture == "main" || fixture == "main-responsive" || fixture == "golden") && (hasTool(request.Tools, "mcp__fixture__echo") || hasTool(request.Tools, "builtin__artifact_search")) {
 				last = mainFixtureMessage(request.Messages)
 				// Same call IDs on distinct exchanges deliberately exercise the
 				// (run, exchange, call) association, never global call-ID dedup.
 				sequence := int64(1)
-				if last.Origin == "runtime" && strings.HasPrefix(last.Text, "Runtime tool_results") || last.Role == "user" && last.Text == "F003:ping" {
+				deferred := last.Origin == "runtime" && last.Source != nil && last.Source.Kind == "tool_results"
+				if fixture == "main-responsive" && (deferred || last.Role == "user" && last.Text == "F003:ping") {
 					text := "F003:pong"
-					if last.Origin == "runtime" {
+					if deferred {
 						text = "F003:finished " + last.Text
 					}
 					if err = event(llm.GenerationEvent{GenerationID: request.GenerationID, Sequence: sequence, Kind: "text_delta", Text: text}); err != nil {
 						return err
 					}
 					sequence++
-				} else if last.Role == "user" {
+				} else if last.Role == "user" && !deferred {
 					for _, id := range []string{"echo-a", "echo-b"} {
 						args := []byte(`{}`)
 						call := llm.ToolCall{ID: id, Name: "builtin__artifact_search", Arguments: string(args)}
@@ -241,7 +242,7 @@ func serve(in io.Reader, out io.Writer, fixture string, audit io.Writer) error {
 						}
 						sequence++
 					}
-				} else if last.Role == "tool" {
+				} else if last.Role == "tool" || deferred {
 					user := ""
 					for i := len(request.Messages) - 1; i >= 0; i-- {
 						m := request.Messages[i]

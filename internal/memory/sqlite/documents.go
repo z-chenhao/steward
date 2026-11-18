@@ -249,7 +249,7 @@ func (s *Store) WriteDocument(ctx context.Context, scope recall.Scope, floor int
 				return memory.Document{}, recall.ErrUnavailable
 			}
 		}
-		meta, _ := json.Marshal(documentMetadata{NavigationTerms: navigationTerms(w.Title + "\n" + w.Content), Title: w.Title, Links: w.Links, Evidence: w.Evidence, Origin: func() string {
+		meta, _ := json.Marshal(documentMetadata{NavigationTerms: memory.NavigationIndexTerms(w.Title + "\n" + w.Content), Title: w.Title, Links: w.Links, Evidence: w.Evidence, Origin: func() string {
 			if strings.HasPrefix(eventID, "dream:") {
 				return "dream"
 			}

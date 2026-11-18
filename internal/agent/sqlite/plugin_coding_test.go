@@ -28,9 +28,11 @@ import (
 
 func installCodingPlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
 	t.Helper()
-	return installRuntimeFeature(t, s, r, "coding-workspace", rsi.Policy{ID: "coding-owner-fixture", AllowedContracts: []string{contract.ImportContract, contract.ReportContract}, Cases: []rsi.Case{
+	return installRuntimeFeature(t, s, r, "coding-workspace", rsi.Policy{ID: "coding-owner-fixture", AllowedContracts: []string{contract.ImportContract, contract.ReportContract, contract.CheckContract, contract.ProjectContract}, Cases: []rsi.Case{
+		{InstanceID: "coding-workspace", Contract: contract.ProjectContract, Input: json.RawMessage(`{"document":"{\"version\":1,\"name\":\"fixture\",\"prepare\":{\"command\":\"true\",\"timeout_seconds\":5},\"doctor\":{\"command\":\"true\",\"timeout_seconds\":5},\"checks\":[{\"name\":\"build\",\"requirement\":\"Build exits successfully\",\"command\":\"true\",\"timeout_seconds\":5}],\"cleanup\":{\"command\":\"true\",\"timeout_seconds\":5}}","check":"build"}`), Expected: json.RawMessage(`{"plan":{"version":1,"name":"fixture","check":"build","requirement":"Build exits successfully","prepare":{"command":"true","timeout_seconds":5},"doctor":{"command":"true","timeout_seconds":5},"verify":{"command":"true","timeout_seconds":5},"cleanup":{"command":"true","timeout_seconds":5}}}`)},
+		{InstanceID: "coding-workspace", Contract: contract.CheckContract, Input: json.RawMessage(`{"ceilings":{"timeout_seconds":120,"output_bytes":48000}}`), Expected: json.RawMessage(`{"timeout_seconds":60,"output_bytes":48000}`)},
 		{InstanceID: "coding-workspace", Contract: contract.ImportContract, Input: json.RawMessage(`{"ceilings":{"entries":4096,"file_bytes":8388608,"tree_bytes":67108864}}`), Expected: json.RawMessage(`{"entries":4096,"file_bytes":8388608,"tree_bytes":67108864}`)},
-		{InstanceID: "coding-workspace", Contract: contract.ReportContract, Input: json.RawMessage(`{"ceilings":{"commands":256,"command_bytes":4194304,"patch_bytes":8388608}}`), Expected: json.RawMessage(`{"commands":256,"command_bytes":4194304,"patch_bytes":8388608,"order":"oldest"}`)},
+		{InstanceID: "coding-workspace", Contract: contract.ReportContract, Input: json.RawMessage(`{"ceilings":{"commands":256,"command_bytes":4194304,"patch_bytes":8388608}}`), Expected: json.RawMessage(`{"commands":256,"command_bytes":4194304,"patch_bytes":8388608,"order":"oldest","review_guide":["Compare the original instructions and later changes with the candidate diff; record unmet requirements.","Check candidate, environment and method identities for each receipt; a historical pass may not cover this candidate.","Inspect retained evidence, failures, unknown effects and unverified behavior before accepting the result.","Review reported time, usage and prices with missing observations left unavailable.","Confirm the exact remote revision and content before delivery; record the human acceptance decision separately."]}`)},
 	}})
 }
 func TestCodingPluginActualImportAndReportPreserveSourceAndOriginalFacts(t *testing.T) {
@@ -64,12 +66,35 @@ func TestCodingPluginActualImportAndReportPreserveSourceAndOriginalFacts(t *test
 		t.Fatal("method changed original source", string(data), err)
 	}
 	report, err := s.CodeReport(context.Background(), ref, true)
-	if err != nil || report.Diff == nil || report.Diff.Changed {
+	if err != nil || report.Diff == nil || report.Diff.Changed || len(report.CandidateSHA256) != 64 {
 		t.Fatal("default report lost actual evidence", report, err)
 	}
 	artifact, err := s.SaveCodeReport(context.Background(), ref)
 	if err != nil {
 		t.Fatal(err)
+	}
+	readSaved := func() coding.Report {
+		t.Helper()
+		reader, err := s.Artifacts().Open(context.Background(), artifactOwner(t, s), artifact.Ref)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer reader.Close()
+		var saved coding.Report
+		if err := json.NewDecoder(reader).Decode(&saved); err != nil {
+			t.Fatal(err)
+		}
+		return saved
+	}
+	if saved := readSaved(); saved.CandidateSHA256 != report.CandidateSHA256 || saved.Directory != "" {
+		t.Fatal("review artifact did not retain its exact candidate identity", saved)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "file.txt"), []byte("next candidate"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	changed, err := s.CodeReport(context.Background(), ref, true)
+	if err != nil || changed.CandidateSHA256 == report.CandidateSHA256 || readSaved().CandidateSHA256 != report.CandidateSHA256 {
+		t.Fatal("new code rebound a retained review artifact", changed, err)
 	}
 	var graph, recipe string
 	if err = s.db.QueryRow(`SELECT graph_revision,recipe_json FROM code_report_method_binding WHERE artifact_ref=?`, artifact.Ref).Scan(&graph, &recipe); err != nil {
@@ -99,8 +124,9 @@ func codingVersionPackage(t *testing.T, version string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.1"`, `Version: "`+version+`"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.3"`, `Version: "`+version+`"`, 1)
 	if version == "1.1.0" {
+		code = strings.Replace(code, `TimeoutSeconds: timeout, OutputBytes: facts.Ceilings.OutputBytes`, `TimeoutSeconds: min(timeout,30), OutputBytes: min(facts.Ceilings.OutputBytes,1024)`, 1)
 		code = strings.Replace(code, `return rsiplugin.JSONResult(ctx, facts.Ceilings)`, `facts.Ceilings.Entries=min(facts.Ceilings.Entries,64);return rsiplugin.JSONResult(ctx,facts.Ceilings)`, 1)
 		code = strings.Replace(code, `Commands: facts.Ceilings.Commands`, `Commands: min(facts.Ceilings.Commands,1)`, 1)
 		code = strings.Replace(code, `Order: "oldest"`, `Order: "recent"`, 1)
@@ -108,6 +134,9 @@ func codingVersionPackage(t *testing.T, version string) string {
 	if version == "1.2.0" {
 		code = strings.Replace(code, `return rsiplugin.JSONResult(ctx, facts.Ceilings)`, `facts.Ceilings.Entries++;return rsiplugin.JSONResult(ctx,facts.Ceilings)`, 1)
 		code = strings.Replace(code, `Commands: facts.Ceilings.Commands`, `Commands: facts.Ceilings.Commands+1`, 1)
+	}
+	if version == "1.6.0" {
+		code = strings.Replace(code, `TimeoutSeconds: timeout, OutputBytes: facts.Ceilings.OutputBytes`, `TimeoutSeconds: max(timeout,facts.Ceilings.TimeoutSeconds+1), OutputBytes: facts.Ceilings.OutputBytes`, 1)
 	}
 
 	if version == "1.3.0" || version == "1.4.0" {
@@ -141,6 +170,9 @@ func codingVersionPackage(t *testing.T, version string) string {
 		t.Fatal(err)
 	}
 	manifest.Version = version
+	if version == "1.6.0" {
+		manifest.Provides[2].OutputSchema = json.RawMessage(strings.Replace(strings.NewReplacer(" ", "", "\n", "", "\t", "").Replace(string(manifest.Provides[2].OutputSchema)), `"maximum":120`, `"maximum":121`, 1))
+	}
 	if version == "1.2.0" {
 		compact := strings.NewReplacer(" ", "", "\n", "", "\t", "")
 		manifest.Provides[0].OutputSchema = json.RawMessage(strings.Replace(compact.Replace(string(manifest.Provides[0].OutputSchema)), `"maximum":4096`, `"maximum":4097`, 1))
@@ -173,6 +205,20 @@ func selectCodingVersion(t *testing.T, h rsi.Host, baseline, version string) (st
 	}
 	policy.ID = "coding-owner-" + version
 	for i := range policy.Cases {
+		if policy.Cases[i].Contract == contract.CheckContract {
+			var value contract.CheckLimits
+			if json.Unmarshal(policy.Cases[i].Expected, &value) != nil {
+				t.Fatal("invalid check fixture")
+			}
+			if version == "1.1.0" {
+				value.TimeoutSeconds = min(value.TimeoutSeconds, 30)
+				value.OutputBytes = min(value.OutputBytes, 1024)
+			}
+			if version == "1.6.0" {
+				value.TimeoutSeconds = 121
+			}
+			policy.Cases[i].Expected, _ = json.Marshal(value)
+		}
 		if policy.Cases[i].Contract == contract.ImportContract {
 			var value contract.ImportLimits
 			if json.Unmarshal(policy.Cases[i].Expected, &value) != nil {

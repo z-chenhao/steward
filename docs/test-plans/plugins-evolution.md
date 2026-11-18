@@ -43,7 +43,7 @@
 
 ## CLI 与系统验收
 
-使用示例 [context-notes](../../examples/plugins/context-notes/main.go) 构建真实二进制，按协议文档操作 `seal → install → prepare → policy → propose → verify → activate`，检查激活回执幂等、状态与审计；随后 `stop／resume → deactivate → uninstall`。所有命令使用可丢弃的 `STEWARD_DATA_ROOT`，每次系统流程选择新的 evidence 目录。
+真实默认组合通过 `first-reply` 验证首次启动后可正确执行；模型策略的独立验收通过 `model-recovery` 验证升级、回退、停用以及原模型继续可用。两条旅程由[产品测试入口](product.md#critical-user-journeys)运行。
 
 跨模块变更执行 `make test lint`，相关 Agent／工具行为执行 `make test-e2e E2E_EVIDENCE=<fresh-path>`；插件状态并发执行 `go test -race ./pkg/rsiplugin ./internal/rsi/...`。Linux 需另外进行真实 bubblewrap／seccomp 运行验证，交叉编译只证明构建兼容。macOS 验证 Seatbelt 的文件／网络／fork 拒绝，不宣称提供硬内存配额。
 

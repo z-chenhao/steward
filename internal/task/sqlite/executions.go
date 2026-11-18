@@ -3,10 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
+	"slices"
 
-	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/task"
 )
 
@@ -149,32 +148,10 @@ func (r *Reader) Execution(ctx context.Context, id string) (task.ExecutionDetail
 	if err != nil {
 		return out, err
 	}
-	for i, j := 0, len(out.Instructions)-1; i < j; i, j = i+1, j-1 {
-		out.Instructions[i], out.Instructions[j] = out.Instructions[j], out.Instructions[i]
-	}
-	// Only Main's finalized, related deliveries are user-facing results. Never
-	// expose raw Worker checkpoints, return values or provider exchanges here.
-	rows, err = tx.QueryContext(ctx, `SELECT DISTINCT c.sequence,c.message_json FROM task_update u JOIN task t USING(task_id) JOIN main_inbox i USING(event_id) JOIN main_reply m ON m.run_id=i.run_id JOIN conversation_intent c ON json_extract(c.message_json,'$.message_id')=m.message_id WHERE u.root_run_id=? AND t.task_ref=? AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND json_extract(c.message_json,'$.conversation_id')=t.conversation_id ORDER BY c.sequence DESC LIMIT 10`, id, v.TaskRef)
+	slices.Reverse(out.Instructions)
+	out.Messages, err = relatedDeliveries(ctx, tx, v.TaskRef, id)
 	if err != nil {
 		return out, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var seq int64
-		var raw string
-		var m conversation.Message
-		if err = rows.Scan(&seq, &raw); err != nil {
-			return out, err
-		}
-		if err = json.Unmarshal([]byte(raw), &m); err != nil {
-			return out, err
-		}
-		m.Sequence = seq
-		out.Messages = append(out.Messages, m)
-	}
-	if err = rows.Err(); err != nil {
-		return out, err
-	}
-	rows.Close()
 	return out, tx.Commit()
 }

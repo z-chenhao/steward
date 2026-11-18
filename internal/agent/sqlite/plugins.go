@@ -19,9 +19,12 @@ func (r *Runs) ConfigurePlugins(c rsi.Catalog) {
 	r.plugins = &rsi.Host{Catalog: c, Store: r.host.Plugins()}
 }
 func (r *Runs) pluginHost(c agent.RunClaim) rsi.Host {
+	return r.pluginHostWithFence(func(ctx context.Context, tx *sql.Tx) error { return fence(ctx, tx, c) })
+}
+func (r *Runs) pluginHostWithFence(guard func(context.Context, *sql.Tx) error) rsi.Host {
 	h := *r.plugins
 	s := r.host.Plugins()
-	s.Fence = func(ctx context.Context, tx *sql.Tx) error { return fence(ctx, tx, c) }
+	s.Fence = guard
 	h.Store = s
 	return h
 }
@@ -163,22 +166,12 @@ func (r *Runs) pluginSpecs(ctx context.Context, tx *sql.Tx, base []tool.Spec) ([
 	if json.Unmarshal([]byte(raw), &g) != nil {
 		return nil, agent.ErrStorage
 	}
-	for _, b := range g.Bindings {
-		resourceHash, err := pluginToolResource(revision, b)
-		if err != nil {
-			return nil, err
-		}
-		p, e := r.plugins.Catalog.Load(b.PackageDigest)
-		if e != nil {
-			return nil, e
-		}
-		for _, t := range p.Manifest.Tools {
-			for _, s := range p.Manifest.Provides {
-				if s.Contract == t.Contract {
-					base = append(base, tool.Spec{Name: t.Name, Description: t.Description, InputSchema: string(s.InputSchema), ResourceHash: resourceHash, Version: 1, Permission: "read_only", ReplayPolicy: "safe", TimeoutMS: p.Manifest.Runtime.TimeoutMS, OutputBytes: 65536})
-				}
-			}
-		}
+	tools, err := pluginTools(r.plugins.Catalog, revision, g.Bindings)
+	if err != nil {
+		return nil, err
+	}
+	for _, contribution := range tools {
+		base = append(base, contribution.spec)
 	}
 	return base, nil
 }
@@ -221,39 +214,61 @@ func (r *Runs) RegistryForRun(ctx context.Context, c agent.RunClaim, base *tool.
 			defs = append(defs, d)
 		}
 	}
-	for _, b := range g.Graph.Bindings {
+	tools, err := pluginTools(h.Catalog, revision, g.Graph.Bindings)
+	if err != nil {
+		return nil, err
+	}
+	for _, contribution := range tools {
+		defs = append(defs, tool.Definition{Spec: contribution.spec, Execute: func(ctx context.Context, args string) tool.Result {
+			key := tool.AcceptedInvocationID(ctx)
+			if key == "" {
+				return tool.Failure("PERMISSION_DENIED")
+			}
+			value, err := h.Call(ctx, rsiplugin.Execution{RunID: c.RunID()}, contribution.instance, contribution.contract, "tool:"+key, json.RawMessage(args))
+			if err != nil {
+				if errors.Is(err, rsi.ErrUnknown) {
+					return tool.Failure("UNKNOWN_SIDE_EFFECT")
+				}
+				return tool.Failure("PROVIDER_UNAVAILABLE")
+			}
+			return tool.Result{Text: string(value)}
+		}})
+	}
+	return tool.NewRegistry(defs)
+}
+
+type pluginTool struct {
+	spec               tool.Spec
+	instance, contract string
+}
+
+func pluginTools(catalog rsi.Catalog, revision string, bindings []rsiplugin.Binding) ([]pluginTool, error) {
+	var tools []pluginTool
+	for _, b := range bindings {
 		resourceHash, err := pluginToolResource(revision, b)
 		if err != nil {
 			return nil, err
 		}
-		p, e := h.Catalog.Load(b.PackageDigest)
-		if e != nil {
-			return nil, e
+		p, err := catalog.Load(b.PackageDigest)
+		if err != nil {
+			return nil, err
 		}
 		for _, contribution := range p.Manifest.Tools {
-			for _, s := range p.Manifest.Provides {
-				if s.Contract != contribution.Contract {
+			for _, service := range p.Manifest.Provides {
+				if service.Contract != contribution.Contract {
 					continue
 				}
-				binding, t, service := b, contribution, s
-				defs = append(defs, tool.Definition{Spec: tool.Spec{Name: t.Name, Description: t.Description, InputSchema: string(service.InputSchema), ResourceHash: resourceHash, Version: 1, Permission: "read_only", ReplayPolicy: "safe", TimeoutMS: p.Manifest.Runtime.TimeoutMS, OutputBytes: 65536}, Execute: func(ctx context.Context, args string) tool.Result {
-					key := tool.AcceptedInvocationID(ctx)
-					if key == "" {
-						return tool.Failure("PERMISSION_DENIED")
-					}
-					value, err := h.Call(ctx, rsiplugin.Execution{RunID: c.RunID()}, binding.InstanceID, t.Contract, "tool:"+key, json.RawMessage(args))
-					if err != nil {
-						if errors.Is(err, rsi.ErrUnknown) {
-							return tool.Failure("UNKNOWN_SIDE_EFFECT")
-						}
-						return tool.Failure("PROVIDER_UNAVAILABLE")
-					}
-					return tool.Result{Text: string(value)}
-				}})
+				spec := tool.Spec{
+					Name: contribution.Name, Description: contribution.Description,
+					InputSchema: string(service.InputSchema), ResourceHash: resourceHash,
+					Version: 1, Permission: "read_only", ReplayPolicy: "safe",
+					TimeoutMS: p.Manifest.Runtime.TimeoutMS, OutputBytes: 65536,
+				}
+				tools = append(tools, pluginTool{spec: spec, instance: b.InstanceID, contract: service.Contract})
 			}
 		}
 	}
-	return tool.NewRegistry(defs)
+	return tools, nil
 }
 
 func pluginToolResource(revision string, b rsiplugin.Binding) (string, error) {
@@ -281,10 +296,7 @@ func (r *Runs) pluginBeforeTools(ctx context.Context, c agent.RunClaim, exchange
 	if r.plugins == nil {
 		return out, reject, nil
 	}
-	host := *r.plugins
-	store := r.host.Plugins()
-	store.Fence = guard
-	host.Store = store
+	host := r.pluginHostWithFence(guard)
 	for i, call := range calls {
 		stages := []rsiplugin.Stage{rsiplugin.BeforeToolCall}
 		if call.Name == agent.RunToolName {

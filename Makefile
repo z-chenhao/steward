@@ -1,4 +1,4 @@
-.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-connected-apps test-github-plugins test-artifact-plugins test-go test-node test-browser test-infra test-e2e test-full test-race lint lint-actions audit
+.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-connected-apps test-github-plugins test-artifact-plugins test-go test-go-core test-go-domains test-node test-browser test-infra test-e2e test-full test-race test-coding-environment test-coding-development lint lint-actions audit
 
 .DEFAULT_GOAL := setup
 
@@ -44,20 +44,18 @@ test-prompts:
 	go test ./internal/agent ./internal/agent/sqlite -run '^Test(CodingPlugin.*|V61CodingMethods.*|ShellPlugin.*|V60ShellMethod.*|FilePlugin.*|V59FileMethod.*|CodeModePlugin.*|V58CodeDescription.*)$$' -count=1
 	go test ./internal/agent ./internal/agent/sqlite -run '^Test(Progress.*|V63TaskLabel.*|DelegationPlugin.*|DelegationMethods.*|FeedbackPlugin.*|TaskPlugin.*|SkillPlugin.*|ScheduleGuidance.*|ScheduleThreshold.*)$$' -count=1
 
-# Real isolated version suites need separate cumulative package alarms. Keep
-# every root exactly once, and avoid parallel package compiler/startup bursts
-# consuming the native driver's unchanged two-second discovery deadline.
-# UI lifecycle tests have their own cumulative package alarm. The all-package
-# UI partition preserves every TestUI root; neither partition runs it twice.
-# Schedule lifecycle tests run separately after reaching the cumulative SQLite
-# alarm; preserve every root exactly once and keep the original 15-minute limit.
-# Memory Inspector isolated-version cases share the managed Web partition;
-# every root stays exactly once under the original per-package alarm.
-test-go:
+# Run each Go root once under its original package limit. Keep local
+# execution sequential while CI runs the two sets in independent jobs.
+test-go: test-go-core
+	$(MAKE) test-go-domains
+
+test-go-core:
 	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable|Apps|ConnectedApp|Memory|Recall|Context|Compaction|Forget|Curator|Dream|Experience|Plugin|Shipped|Runtime|Native|ToolDiscovery|ToolSearch|Skill|MCP|Coding|Computer|File|Shell)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(WebPlugin|MemoryInspector)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^TestUI' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
+
+test-go-domains:
 	go test -p 1 -timeout=15m ./... -run '^Test(Apps|ConnectedApp)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Memory|Recall|Context|Compaction|Forget|Curator|Dream|Experience)' -skip '^TestMemoryInspector' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Plugin|Shipped|Runtime|Native|ToolDiscovery|ToolSearch|Skill|MCP|Coding|Computer|File|Shell)' -count=1
@@ -106,11 +104,24 @@ test-node:
 	npm test --prefix provider-bridge
 	npm test --prefix runtime/javascript
 
+apps_browser_env = STEWARD_TEST_APP_BROWSER=1 \
+	STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-browser}" \
+	STEWARD_APP_SETTINGS_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-browser}" \
+	STEWARD_APP_LOGO_BROWSER_EVIDENCE="$${STEWARD_APP_LOGO_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-logos-browser}" \
+	STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE="$${STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-localization-browser}" \
+	STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE="$${STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-composition-browser}" \
+	STEWARD_APP_INTERFACE_BROWSER_EVIDENCE="$${STEWARD_APP_INTERFACE_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-interface-browser}" \
+	STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-card-view-browser}" \
+	STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-sidebar-view-browser}" \
+	STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE="$${STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-graphics-browser}" \
+	STEWARD_APP_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-markup-browser}" \
+	STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-account-markup-browser}"
+
 test-browser:
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_BROWSER_EVIDENCE="$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}" go test ./internal/interaction/web -run '^Test(MemoryProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures|TraceProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures|AppsBrowserActualOpaqueWorkerTransport|AppsBrowserConnectionLifecycle|ComposerModelsBrowserLoadingAndRefresh|MemoryMaintenanceBrowser|TracePageBrowserKeepsOneFrozenAssetVersion|WorkbenchBrowserOriginalStylesAndPinnedUpdates|TraceWorkbenchBrowserReadOnlyControls|TraceWorkbenchBrowserManagedTreeAndColumnPolicies|TraceTimelineMalformedProjectionKeepsOriginalSSR|TraceBrushActualDelayedRepliesCoalesceAndCancel|TraceActivityActualDelayedRepliesCoalesceAndCancel|ApprovalParametersBrowser|UIPlanViewBrowserIsolationAndDetails|UICardsViewBrowserIsolationAndOriginalStyles|UICardsWorkerBrowserIsolationAndBoundedProjection|UICardsControllerBrowserProjectionCASGroupAndRecovery|UICardsImagesBrowserOriginalBlobAndBoundRequests|UICardsPreviewBrowserReadOnlyAndRevision|UITableWorkerBrowserIsolationAndBoundedProjection|UITableControllerBrowserProjectionCASGroupAndExport|UITablePreviewBrowserReadOnlyAndRevision|UIChartWorkerBridgeBrowser|UIChartControllerBrowserProjectionCASAndRange|UIChartPreviewBrowserReadOnlyAndRevision|UIFormViewControllerBrowserOriginalControlsDraftAndBoundSubmit|UIFormViewPreviewBrowserReadOnlyAndRevision|UIMeetingViewBrowserOriginalControlsChoiceAndPreview|UIActionViewBrowserFeedbackRecoveryAndOriginalSource)$$' -count=1
-	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-browser}" STEWARD_APP_SETTINGS_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-browser}" STEWARD_APP_LOGO_BROWSER_EVIDENCE="$${STEWARD_APP_LOGO_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-logos-browser}" STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE="$${STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-localization-browser}" STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE="$${STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-composition-browser}" STEWARD_APP_INTERFACE_BROWSER_EVIDENCE="$${STEWARD_APP_INTERFACE_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-interface-browser}" STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-card-view-browser}" STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-sidebar-view-browser}" STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE="$${STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-graphics-browser}" STEWARD_APP_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-markup-browser}" STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-account-markup-browser}" go test ./internal/app -run '^TestApps(EditorialActualOwnerHTTPVersionsSnapshotRollbackAndDisable|SettingsActualOriginalHTTPRowsDraftAndSave|LogoActualOwnerHTTPOriginal65FrozenReferencesColdAndDisable|InterfaceActualManagedBrowserLifecycle)$$' -count=1 -timeout=5m
-	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-browser}" STEWARD_APP_SETTINGS_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-browser}" STEWARD_APP_LOGO_BROWSER_EVIDENCE="$${STEWARD_APP_LOGO_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-logos-browser}" STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE="$${STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-localization-browser}" STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE="$${STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-composition-browser}" STEWARD_APP_INTERFACE_BROWSER_EVIDENCE="$${STEWARD_APP_INTERFACE_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-interface-browser}" STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-card-view-browser}" STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-sidebar-view-browser}" STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE="$${STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-graphics-browser}" STEWARD_APP_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-markup-browser}" STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-account-markup-browser}" go test ./internal/app -run '^TestApps(CompositionActualVersionsColdOriginalProfileOnlyAndUnavailable|LocalizationActualBrowserOwnedFeedbackAndNative|CardViewActualManagedResourceBrowser|SidebarViewActualBrowserAndAcceptedLink)$$' -count=1 -timeout=5m
-	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-browser}" STEWARD_APP_SETTINGS_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-browser}" STEWARD_APP_LOGO_BROWSER_EVIDENCE="$${STEWARD_APP_LOGO_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-logos-browser}" STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE="$${STEWARD_APP_LOCALIZATION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-localization-browser}" STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE="$${STEWARD_APP_COMPOSITION_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-composition-browser}" STEWARD_APP_INTERFACE_BROWSER_EVIDENCE="$${STEWARD_APP_INTERFACE_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-interface-browser}" STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CARD_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-card-view-browser}" STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SIDEBAR_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-sidebar-view-browser}" STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE="$${STEWARD_APP_GRAPHICS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-graphics-browser}" STEWARD_APP_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-markup-browser}" STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-account-markup-browser}" go test ./internal/app -run '^TestApps(MarkupActualBrowserAndRecoveryLink|GraphicsActualBrowserAndRecoveryLink|AccountMarkupActualBrowserAndRecoveryLink)$$' -count=1 -timeout=5m
+	$(apps_browser_env) go test ./internal/app -run '^TestApps(EditorialActualOwnerHTTPVersionsSnapshotRollbackAndDisable|SettingsActualOriginalHTTPRowsDraftAndSave|LogoActualOwnerHTTPOriginal65FrozenReferencesColdAndDisable|InterfaceActualManagedBrowserLifecycle)$$' -count=1 -timeout=5m
+	$(apps_browser_env) go test ./internal/app -run '^TestApps(CompositionActualVersionsColdOriginalProfileOnlyAndUnavailable|LocalizationActualBrowserOwnedFeedbackAndNative|CardViewActualManagedResourceBrowser|SidebarViewActualBrowserAndAcceptedLink)$$' -count=1 -timeout=5m
+	$(apps_browser_env) go test ./internal/app -run '^TestApps(MarkupActualBrowserAndRecoveryLink|GraphicsActualBrowserAndRecoveryLink|AccountMarkupActualBrowserAndRecoveryLink)$$' -count=1 -timeout=5m
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_CONNECT_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_CONNECT_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-connect-view-browser}" go test ./internal/app -run '^TestAppsConnectViewActualBrowserAndRecoveryLink$$' -count=1 -timeout=4m
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_SETTINGS_VIEW_BROWSER_EVIDENCE="$${STEWARD_APP_SETTINGS_VIEW_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-settings-view-browser}" go test ./internal/app -run '^TestAppsSettingsViewActualBrowserDraftSave$$' -count=1 -timeout=4m
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_DIRECTORY_CONTROLS_BROWSER_EVIDENCE="$${STEWARD_APP_DIRECTORY_CONTROLS_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-directory-controls-browser}" go test ./internal/app -run '^TestAppsDirectoryControlsActualBrowserNavigationFilterAndPagination$$' -count=1 -timeout=4m
@@ -136,10 +147,18 @@ test-full: build
 test-race:
 	python3 tests/system/race.py
 
+# A real namespace/Engine protocol gate; never silently skips when unavailable.
+test-coding-environment:
+	python3 tests/system/verify_coding_container.py --evidence "$${CODING_ENV_EVIDENCE:-evidence/coding-container}"
+
+# Cold preparation by default; an explicit image reuses a recorded owner basis.
+test-coding-development:
+	python3 tests/system/verify_coding_development.py --evidence "$${CODING_DEVELOPMENT_EVIDENCE:-evidence/coding-development}"
+
 lint: lint-actions
 	python3 scripts/check_docs.py
 	sh -n install.sh scripts/package.sh scripts/build-plugins.sh
-	@files="$$(gofmt -l cmd internal pkg examples/plugins)"; if [ -n "$$files" ]; then echo "$$files"; exit 1; fi
+	@files="$$(gofmt -l cmd internal pkg)" || exit $$?; if [ -n "$$files" ]; then echo "$$files"; exit 1; fi
 	go vet ./...
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
 	go mod verify
@@ -148,31 +167,10 @@ lint: lint-actions
 	npm run lint --prefix guest-browser
 	npm run lint --prefix web
 	node --check internal/plugin/webextract/extract.mjs
-	node --check tests/system/ui_cards_legacy_browser.mjs
+	@for file in tests/system/*.mjs; do node --check "$$file" || exit $$?; done
 	node --check internal/interaction/web/view/cards-gestures.js
-	node --check tests/system/ui_cards_plugins_browser.mjs
-	node --check tests/system/ui_cards_runtime_legacy_browser.mjs
-	node --check tests/system/ui_chart_legacy_browser.mjs
-	node --check tests/system/ui_form_plugins_browser.mjs
-	node --check tests/system/ui_form_legacy_browser.mjs
-	node --check tests/system/ui_meeting_plugins_browser.mjs
-	node --check tests/system/ui_meeting_legacy_browser.mjs
-	node --check tests/system/ui_action_plugins_browser.mjs
-	node --check tests/system/ui_action_legacy_browser.mjs
 	node --check guest-browser/meeting-controller-browser.mjs
 	node --check guest-browser/action-controller-browser.mjs
-	node --check tests/system/ui_chart_plugins_browser.mjs
-	node --check tests/system/ui_table_plugins_browser.mjs
-	node --check tests/system/ui_table_legacy_browser.mjs
-	node --check tests/system/apps_account_markup_browser.mjs
-	node --check tests/system/apps_connections_browser.mjs
-	node --check tests/system/apps_localization_browser.mjs
-	node --check tests/system/apps_directory_plugins_browser.mjs
-	node --check tests/system/apps_settings_plugins_browser.mjs
-	node --check tests/system/apps_logos_plugins_browser.mjs
-	node --check tests/system/channels_help.mjs
-	node --check tests/system/channels_task_executions.mjs
-	node --check tests/system/channels_trace_time.mjs
 
 # Tool versions are explicit and do not alter the application's go.mod.
 lint-actions:

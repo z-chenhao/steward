@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/legacyv1"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -16,7 +16,7 @@ func (m *Manager) presentation(ctx context.Context) (*contract.Presentation, err
 	facts := contract.PresentationFacts{Root: m.active.App.DataRoot}
 	var out contract.Presentation
 	if m.Presentation == nil {
-		out = legacyv1.ProjectPresentation(facts)
+		out = v1.ProjectPresentation(facts)
 	} else {
 		var err error
 		out, err = m.Presentation(ctx, facts)

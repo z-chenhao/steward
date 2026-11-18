@@ -6,6 +6,7 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/connector/composio"
 	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/v1"
 )
 
 // EditorialReader is an owner control-plane binding, never a model tool.
@@ -216,8 +217,8 @@ func editorialLegacyV1(query contract.Query) contract.Catalogue {
 	for _, item := range suggestions {
 		value.Items = append(value.Items, contract.Entry{Slug: item.slug, Name: item.name, Description: descriptions[item.slug], CategoryID: item.category, CategoryName: names[item.category]})
 	}
-	value.Discovery = discoveryLegacyV1(value.Items)
-	value.Filter = filterLegacyV1(value.Items, query)
+	value.Discovery = v1.Discovery(value.Items)
+	value.Filter = v1.Filter(value.Items, query)
 	value.Lookup = &contract.Lookup{PreferLive: query.LiveConfigured, LocalFirst: "editorial", OnLiveError: "local"}
 	value.Route = &contract.Route{Source: "editorial"}
 	if query.LiveConfigured {

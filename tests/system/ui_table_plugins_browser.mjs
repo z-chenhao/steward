@@ -27,17 +27,24 @@ try{
   await page.screenshot({path:out+'/preview.png'});await writeFile(out+'/report.json',JSON.stringify({phase,source,detectedAt,isolation,actualApp:true,originalOrdinal:1,originalRows:true,literalBudgetPreserved:literal},null,2));
  }else{
   const groupRef=ref.replace(/#1$/,'#0'),outer=page.locator('section[data-view-ref='+JSON.stringify(ref)+']');
-  const menu=async label=>{await outer.getByRole('button',{name:'Options',exact:true}).click();await outer.getByRole('menuitem',{name:label,exact:true}).click()};
+  const openMenu=async label=>{
+   await outer.getByRole('button',{name:'Options',exact:true}).click();
+   return outer.getByRole('menuitem',{name:label,exact:true});
+  };
+  const downloadCSV=async()=>{
+   const item=await openMenu('Download CSV');
+   await item.click({trial:true});
+   const [file]=await Promise.all([page.waitForEvent('download'),item.click()]);
+   return readFile(await file.path());
+  };
   if(phase.startsWith('formal')){
-   const fullDownload=page.waitForEvent('download');await menu('Download CSV');const fullFile=await fullDownload;
-   assert.deepEqual(await readFile(await fullFile.path()),Buffer.from(original.csv.all,'base64'),'original complete CSV retains formula shielding, signed numbers, Unicode and quotes');
+   assert.deepEqual(await downloadCSV(),Buffer.from(original.csv.all,'base64'),'original complete CSV retains formula shielding, signed numbers, Unicode and quotes');
    await frame.getByRole('button',{name:'Amount',exact:true}).click();await frame.locator('th[aria-sort=ascending]').waitFor();
    await frame.getByRole('button',{name:'Amount',exact:true}).click();await frame.locator('th[aria-sort=descending]').waitFor();
-   await menu('Filter');await outer.getByRole('searchbox',{name:'Filter rows'}).fill('same');
+   await (await openMenu('Filter')).click();await outer.getByRole('searchbox',{name:'Filter rows'}).fill('same');
    await waitForUIState(page,groupRef,state=>state.state.query==='same');
    await frame.locator('tbody').evaluate(node=>new Promise((resolve,reject)=>{const deadline=performance.now()+5000;const check=()=>node.rows.length===2?resolve():performance.now()>deadline?reject(Error('original query did not filter Table')):setTimeout(check,25);check()}));
-   const pending=page.waitForEvent('download');await menu('Download CSV');const file=await pending;
-   assert.deepEqual(await readFile(await file.path()),Buffer.from(original.csv.filtered,'base64'),'original authorized CSV bytes');
+   assert.deepEqual(await downloadCSV(),Buffer.from(original.csv.filtered,'base64'),'original authorized CSV bytes');
    await frame.getByRole('button',{name:'Alpha',exact:true}).click();
    await waitForUIState(page,groupRef,state=>state.state.query==='same'&&state.state.selected==='Alpha');
   }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real default App meeting contribution, original answers, versions and recovery."""
 import argparse
+from owner_inventory import check_default_owner_policy
 from contextlib import closing
 from http.server import ThreadingHTTPServer
 import hashlib
@@ -82,7 +83,7 @@ def run(binary, evidence):
    with closing(sqlite3.connect(h.root / 'data/state.db')) as db, db:
     db.execute('BEGIN'); target = db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]; graph = json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?', (target,)).fetchone()[0]); require(len(graph['bindings']) == 40, 'not actual default40')
     digest = next(b['package_digest'] for b in graph['bindings'] if b['instance_id'] == 'intelligent-ui'); manifest = json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?', (digest,)).fetchone()[0]); require(manifest['version'] == '1.27.0' and len(manifest['provides']) == 9, 'new meeting added a service or default version wrong')
-    base_policy = db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0]; owner_cases = db.execute("SELECT json_array_length(policy_json,'$.cases') FROM rsi_policy WHERE policy_id=?", (base_policy,)).fetchone()[0]; require(owner_cases == 387, 'default meeting Owner cases missing')
+    base_policy = db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0]; owner_cases = check_default_owner_policy(db, graph, base_policy)
    def browser(phase, ref='', caption='Review'):
     out = evidence.parent / phase; env = h.env.copy(); chrome = Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
     if chrome.exists(): env['STEWARD_BROWSER_EXECUTABLE'] = str(chrome)

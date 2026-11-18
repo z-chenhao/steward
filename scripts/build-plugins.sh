@@ -7,7 +7,10 @@ plugin_dependencies=${3:-}
 case "$plugin_host:$plugin_output" in /*:/*) ;; *) echo 'Plugin build paths must be absolute.' >&2; exit 1 ;; esac
 plugin_source=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 if [ -z "$plugin_dependencies" ]; then plugin_dependencies=$plugin_source/runtime/javascript/node_modules; fi
-for plugin_name in docx-reader image-ocr trace-inspector context-compact recall conversation memory-curator evidence-reader skill-library experience-learning task-control task-progress task-feedback delegation codemode file-tools shell-tools coding-workspace computer-use web-access web-extract mcp-bridge connected-apps tool-discovery apps-directory apps-accounts apps-logos apps-interface github-pr-followup artifact-workbench intelligent-ui schedule memory-inspector model-connections feishu-chat capability-settings terminal-interface reference-pricing web-workbench service-watchdog; do
+plugin_names=$("$plugin_host" -builtin-plugin-names)
+[ -n "$plugin_names" ]
+set -f
+for plugin_name in $plugin_names; do
   plugin_directory=$plugin_output/$plugin_name
   mkdir -p "$plugin_directory"
   (cd "$plugin_source" && go build -trimpath -o "$plugin_directory/plugin" "./cmd/plugins/$plugin_name")
@@ -30,8 +33,8 @@ for plugin_name in docx-reader image-ocr trace-inspector context-compact recall 
   fi
   if [ "$plugin_name" = capability-settings ]; then
     mkdir -p "$plugin_directory/view"
-    cp "$plugin_source/internal/plugin/capabilityforms/view/capabilities.html" "$plugin_directory/view/capabilities.html"
-    cp "$plugin_source/internal/plugin/capabilityforms/view/copy.json" "$plugin_directory/view/copy.json"
+    cp "$plugin_source/internal/plugin/capabilityforms/v1/view/capabilities.html" "$plugin_directory/view/capabilities.html"
+    cp "$plugin_source/internal/plugin/capabilityforms/v1/view/copy.json" "$plugin_directory/view/copy.json"
   fi
   if [ "$plugin_name" = model-connections ]; then
     mkdir -p "$plugin_directory/views"

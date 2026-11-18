@@ -1,0 +1,12 @@
+{
+  "version": "3.24.4",
+  "source": "https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/",
+  "artifacts": {
+    "arm64": {"arch": "aarch64", "sha256": "4b14c18f7e90a063b61462ea1462a5732c154bf6adad594974fe6487cd98a8de"},
+    "amd64": {"arch": "x86_64", "sha256": "cdaa38cb8de3537967ee5b6c9b6cd00cc962da2b018e6eea48696bb274923012"}
+  },
+  "protocol_reference": "https://docs.docker.com/reference/api/engine/version/v1.44/",
+  "observed_engine": "29.4.0",
+  "observed_api": "1.54",
+  "observed_min_api": "1.40"
+}

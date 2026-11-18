@@ -83,7 +83,7 @@ and scripted peers; ordinary regressions do not require paid model accounts.
 | --- | --- |
 | `make help` | Available development commands |
 | `make test lint` | Go, Node, browser, Python harness, generated assets, types, docs and workflow checks |
-| `make test-e2e` | Nine core deterministic system gates |
+| `make test-e2e` | Core deterministic system gates |
 | `make test-full` | Complete deterministic system suite |
 | `make test-race` | All Go packages, including the partitioned SQLite inventory |
 | `make audit` | Current Go/npm vulnerability advisories; requires network access |

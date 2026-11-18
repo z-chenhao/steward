@@ -5,8 +5,9 @@ import (
 	"errors"
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/interaction"
-	"github.com/z-chenhao/assistant/internal/plugin/feishuchat"
+
 	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
+	feishuv1 "github.com/z-chenhao/assistant/internal/plugin/feishuchat/legacyv1"
 	"github.com/z-chenhao/assistant/internal/task"
 	"net/http/httptest"
 	"strings"
@@ -53,7 +54,7 @@ func TestFeedbackProjectionIsPreparedBeforeEffectAndOwnsAllResponses(t *testing.
 			client.Config.TenantKey = "tenant"
 			handler := Handler{Client: client, Core: core, Wake: func() { wakes++ }, ProjectCard: func(_ context.Context, f contract.CardFacts) (contract.CardProjection, error) {
 				projected++
-				out := feishuchat.ProjectCard(f)
+				out := feishuv1.ProjectCard(f)
 				out.FeedbackCopy = &contract.FeedbackCopy{Invalid: "v2 invalid", Empty: "v2 empty", Saved: "v2 saved", Stale: "v2 stale", Unknown: "v2 unknown"}
 				return out, nil
 			}}
@@ -72,7 +73,7 @@ func TestFeedbackUnavailableProjectionCannotCommitAnswer(t *testing.T) {
 			client := fixtureClient()
 			client.Config.TenantKey = "tenant"
 			handler := Handler{Client: client, Core: core, ProjectCard: func(_ context.Context, f contract.CardFacts) (contract.CardProjection, error) {
-				out := feishuchat.ProjectCard(f)
+				out := feishuv1.ProjectCard(f)
 				switch broken {
 				case "stopped":
 					return contract.CardProjection{}, errors.New("private plugin failure")

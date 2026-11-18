@@ -16,11 +16,21 @@ F-026 验证 Worker 四工具在真实隔离环境与统一 ToolExecutor 中的�
 
 ## 需求场景矩阵
 
+本地并行接纳由 `TestTaskCodeIndependentWorkspacesDoNotConsumeEachOthersConflictSlot` 驱动两个真实 Task 和具体审批，要求两个命令同时持有执行槽并在各自实际沙箱写入，源目录保持原样；`TestTaskCodeSharedWorkspaceStillSerializesApprovedCommands` 要求同一 Task 的后一个命令在前一个结束后才能取得槽。既有 Child、Guest、额度、unknown 和恢复回归继续保留。
+
+`TestReviewSnapshotIdentifiesExactFilesAndExecutableModes` 覆盖候选身份重现、正文、执行位、空文件、二进制和删除；`TestCodingPluginActualImportAndReportPreserveSourceAndOriginalFacts` 通过真实受管方法/Artifact 检查当前候选变化不会重绑旧报告。该层只证明识别，不证明验证适用性或真实模型开发质量；完整升级按设计中的逐项结果继续验收。
+
+候选和 Task 工作区回归同时进入必需 `capabilities-race`：`internal/coding` 的快照用例由原 Go race 命令执行，SQLite 的 TaskCode、共享 Child 和真实报告用例由原 `capabilities-sqlite` 动态分批清单执行。`test_coding_candidates_and_parallel_workspaces_remain_required_races` 从实际 Go 测试清单核对选择规则，避免用例只在普通 Go 测试中存在而失去 PR 竞态覆盖。
+
 | 需求 | 可观察行为与验证方式 | 覆盖边界 |
 | --- | --- | --- |
 | [F-026](../features/coding.md#f-026) | 隔离 fixture 仓库含未提交修改，两个 Task 并行准备、修改和验证；检查修改集分离、原文件保留、准备失败隔离、重启复用与证据真实。远端受控 peer 验证幂等/unknown；真实 GitHub 授权及模型代码质量独立验证，沿用现有 coding 系统入口。 | 本地 CLI、SQLite、内核 scope 与进程重启回归已接通。远端交付与 Live/效果评测待补 |
 
 ## 仍需独立验证
+
+`TestCodingCheck*` 使用实际独立插件、Task、具体审批、内核沙箱和 JavaScript runtime，覆盖从状态取得候选、批准后漂移拒绝、验证副本修改不回流、作者和验证者真实同时执行、旧 Artifact 保持原候选、原非零退出、超时/截断不通过、Code Mode 挂起恢复单次执行、计划/终态提交故障后直接 Drain 不重放。独立方法换版验证已冻结调用保留旧预算、新调用采用新预算、回退与 Host 拒绝超过上限的恶意配方；无受管服务时明确失败。
+
+LateForget/Guardian 在计划提交前撤权，必须不接纳计划或输出；运行中 Forget 等待真实进程取消、临时副本清理并保留 ErrClaimLost。检查新工具只在本地代码 Task 注册，Main 固定角色仍不取得执行能力。`CodingCheck` 清单进入必需 capabilities SQLite race，Forget 用例同时匹配原 memory race；迁移 082 更新共享系统 schema 预期和旧 schema 重建层，并由原 migration-catalog 与兼容回归检验。上述回归不证明工具链/依赖可复现、判据充分、Guest 隔离或真实模型开发质量。
 
 真实 Lume/SSH Guest 命令与桌面文件互通仍须在相应平台验证。真实模型质量、联网依赖、真实仓库导入与远端交付按实际接入单独验收。
 
@@ -58,4 +68,41 @@ capabilities 的 coding／dirty-index／audit／crash／task-code-environments�
 
 ## Task 导入／报告配方
 
+`TestCodingProjectPolicy*` 验证具名需求选择、重复/缺失检查与预算拒绝。`TestCodingProjectExactApprovedLifecycleUsesFrozenImage` 从 Main → Task → 状态计划 → 具体审批 → 真实容器执行，核对各阶段、不可变镜像基准、作者目录与所有者报告。`TestCodingProjectRealCodeModeKeepsOneApprovedInvocationAndImage` 验证实际 JS cell 的审批续接不重做检查。计划/回执写失败、晚到 Forget/Guardian、未确认回收及原资源恢复，均保留原候选、方法、镜像和单次尝试；恢复后立即读取原报告，不补 select/update/reload。`TestCodingProjectRecoveryDoesNotLoseDelayedRealCreate` 在真正的 Engine 前延迟创建，断开原调用后先执行普通恢复，验证不存在不能提前释放；随后放行真实创建，再恢复并立即核对原 unknown、方法/镜像、单次尝试和实际清理。
+
+`make test-coding-environment CODING_ENV_EVIDENCE=evidence/新的目录` 是 `coding-development` CI 分片的必需真实容器门禁。显式本地 socket 可用 `STEWARD_TEST_PROJECT_CONTAINER_SOCKET`；默认 `/var/run/docker.sock`。门禁验证 Docker CLI 版本/摘要与真实 Engine，下载官方固定 Alpine 最小 rootfs 并核对 SHA-256，导入后使用不可变镜像 ID，执行实际容器与 SQLite 管线 race。缺少 Engine 直接失败，不能用单元测试中的显式 skip 作为验收。两环境须同时到达验证屏障再释放，证明同端口和独立状态可并行；取消后验证 setsid 子进程无迟到写入。协议 fixture 另覆盖成功帧、非零退出、坏帧、缺失终态和命令故障，私有 socket/名称/标签不匹配不能清理。门禁只回收自身工作目录对应的具名资源。
+
+门禁保留完整 `go test -json` 日志、非空实际用例清单、零跳过、源码前后身份、Engine/CLI 与镜像来源。必需模型检查在同一已验证镜像中回放 claim 变体，记录最短模型反例、实际 Go 失败断言及原/变体摘要；编译失败或其他故障不能算成功检出。`TestCodingProjectStatusSeparatesCurrentEnvironmentFromRetainedPass` 在真实检查后连续读取状态，验证当前匹配、镜像变化和运行时缺失，且原成功回执不被改写。结构约束由 `TestCodingArchitecture*` 的真实依赖图与两项错误变体验证，进入普通 Go 与能力 race；模型穷举另随普通 Python harness 执行。
+
+`TestCodingProjectEvidence*` 通过真实容器及 Coding+Artifact 独立包组合，验证原生/真实 Code Mode 具体审批、候选回收后仍可读取图片及结构化产物、原方法/字节摘要/引用位置、终态故障的引用回滚及普通恢复不重做。晚到 Forget 不暴露证据并保留原资源回收。`TestCodingProjectMissingEvidenceDoesNotTurnZeroExitIntoAcceptance` 保留真实零退出阶段并标记缺失产物的 incomplete。文件捕获回归检查锚定路径、越界/链接/特殊文件、单文件上限、取消和删除后的字节；真实 FIFO 回归有及时失败与解阻，不依赖包超时兜底。单像素协议图片只证明传输与持久化，不是实际浏览器截图的验收。
+
+这组证据证明容器与 shell/TCP 生命周期，状态文件不能冒充真实数据库或浏览器操作，Alpine 也不能冒充完整 Steward 工具链。真实项目冷构建、持久视觉证据与完整环境适用性仍需独立场景。schema 083 同步迁移目录及共享系统预期；历史 native 文件/命令和冻结调用身份不因新镜像配置改变。
+
 `TestCodingPlugin*` 已接入真实独立 Go 包、Task 副本、原命令审批、报告和 Artifact；`TestImportLimitsRejectWholeTreeWithoutDroppingOwnerFiles` 检查低限额整体拒绝且不发布部分源树。独立版本用例检查旧 Task 导入不重绑、报告切换最近窗口且保留截断、原 Task 编辑及旧 Artifact；只读用例在另一 WAL writer 下生成真实报告。行为回归覆盖超上限但通过候选机械验收的恶意配方、旧 native/schema61、停用／退役、排队冻结版本、Root／Child、Forget／Guardian、发布及 Artifact commit 故障。故障移除后直接普通 Drain／Save 重试，验证原 Task／副本／graph 不被重绑；Forget 阻断新报告与证据路径，历史显式 Artifact 保留既有审计授权。App 检查完整分发缺项不能悄悄启用部分 native 组合；capabilities 六条真实 CLI 场景同时检查 Task 导入 scope／限额及报告 Artifact 的原子方法来源。该边界须通过完整分发 CLI、12 项 Core、capabilities／CodeMode／memory-maintenance／recall、完整 test/lint、prompts/memory 与 owning／RSI race；具体执行结果保留在 evidence，不把测试存在视为通过。导入与报告方法验收不代表整个 F-026 或全部业务迁移完成。
+
+## 可执行检查地图
+
+`TestCodingProjectDocumentRejectsFIFOWithoutWaitingForWriter` 直接读取临时工作区中的特殊文件，要求返回无效配方错误且无需等待写入端。恢复阻塞式打开时，同一断言会失败。
+
+| 范围 | 稳定入口 | 前置条件 | 真实判据与证据 |
+| --- | --- | --- | --- |
+| 确切源码构建 | `coding.project.json` → build | 固定 Go/依赖镜像、当前候选与环境审批 | 离线重建候选，执行新二进制的模型桥协议版本入口；原回执/版本产物。不是完整应用启动。 |
+| 前端代码约束 | `coding.project.json` → frontend-contracts | 镜像内锁定 Node 依赖 | 生成资产一致性及当前前端行为测试；不代替浏览器或人工审阅。 |
+| 政策/权威归属 | `coding.project.json` → policy-boundaries | 固定 Go、当前源树 | 编译器真实依赖图及两个错误导入变体均被拒绝，诊断给出所属入口。 |
+| 状态应用与恢复 | `tests/fixtures/coding-development/project.json` → state | 真实 Chromium/SQLite、独立 loopback/profile | 点击保存，重启原服务后立即核对原输入与 SQL 事实，重开浏览器保留状态；PNG 与断言 Artifact。 |
+| 可用并行 | `make test-coding-development` | 两个独立验证环境 | 两个实际服务先同时通过端口 3000 的 doctor，再释放屏障；各自空数据库/浏览器起步、保存不同数据并完成恢复，截图可复查。 |
+| 原审批/撤权/恢复 | `make test-coding-environment` | 本地 Engine、官方固定小镜像 | 精确输入、Code Mode、Forget/Guardian、旧 claim、迟到创建、终态故障、原 Artifact 原子性以及模型反例回放。 |
+
+`coding-development` 是必需独立 PR 分片。默认冷准备及接受者回归记录 Docker/Go/Node/系统包/来源清单、实际非空用例、零跳过、源码稳定与拥有资源回收；显式旧镜像只证明其对应验证路径。`TestCodingDevelopmentExactFreshStewardBuild` 使用新工作树清单，通过原 Task → 计划 → 具体审批 → 容器 → Artifact，不能用镜像内旧源码或旧二进制替代。`TestCodingDevelopmentActualSQLiteBrowserRecoveryAndRetainedArtifacts` 与并行用例运行真实 UI/SQL；截图须视觉检查为非空代表内容。原脚本中的 SQL 与浏览器状态都由真实保存动作生成，不通过恢复后的额外 select/update/reload 修复。
+
+以上地图是验证入口和范围，不是自动质量总分。需求/测试判据修改、未覆盖场景、历史通过的适用性、成本与人审，以及远端确切交付仍须在审阅包中说明。完整 `make test lint`、prompts、memory 与所属系统流程继续使用 Host 平台门禁。
+
+## 审阅包与确切 Git 内容
+
+`TestCodingCheckReview*` 经实际 Task 和托管方法，验证最初指令、跨指令窗口截断、原 Artifact 不回绑，以及真实 provider 缺失用量保持 null、真实 priced 费用只来自原账本。保存 staging 后新增指令必须无 Artifact 提交。`TestCodingCheckExactRemoteContentArtifactAndFinalFences` 使用真实本地 Git commit 和独立 Coding+Artifact 组合，在当前观察 fixture 的确切 head 上验证成功，再验证未跟踪文件、源配置不符、指令变化、同 head 刷新和 Forget 的失败；随后修改源码不改变历史交接。
+
+`TestCodingCheckGit*` 用实际 Git 验证 SHA-1/SHA-256、嵌套排序、二进制、执行位、额外文件、replacement refs、缺失对象与符号链接。实际 promisor helper 先在无传输围栏时写出测试 marker，随后相同对象在生产读取边界不得执行 helper。`tests/fixtures/git-cat-file.json` 来自固定官方安装版本，保留版本、launcher/实际工具 SHA 和原始字节：成功、tag 类型不兼容及实际命令失败；解析测试使用原始帧并重算对象哈希。它不是版本 probe 冒充集成。上述 roots 名为 CodingCheck，纳入普通 Go 与 required capabilities race；确切内容测试不依赖网络或远端写入，不证明真实 GitHub 发布。
+
+冷准备门禁先启动真实准备脚本，记录并核对原容器 ID/name/label，在运行中发送 SIGTERM；五秒内退出后立即断言原资源已消失、原准备失败且清理确认，然后才运行完整冷准备。失败清理不会把断言改成通过。取消时跳过昂贵诊断快照，优先回收进程和容器；普通准备失败可保留不完整镜像，永不当作 ready。模型错误变体文件使用 Go 忽略的下划线前缀，验证产物不进入后续源码包扫描。
+
+确切内容入口额外验证缺少 Coding 方法、仅有 Coding 而无托管 Artifact 时均拒绝且无产物，保留旧 report/report-pr 的历史兼容。required capabilities 新增 `task-code-exact-report`：通过实际所有者 CLI、真实 Task、原 Git 对象及规范化观察，验证完整托管导入/报告、确切内容和原任务指南、错误 head、候选额外字节、源/index/refs/钩子不变，以及撤销绑定后的原 Artifact 字节。远端没有写入，不使用已知 head 代替逐文件比较。

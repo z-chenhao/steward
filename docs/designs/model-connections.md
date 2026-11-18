@@ -417,7 +417,17 @@ Account login and catalog discovery remain owned by the isolated Bridge: random-
 loopback, expiring one-use state, PKCE S256, verified ID-token identity and a
 dynamic account-specific catalog. The business Host continues to own SecretStore,
 frozen model snapshots, authentication fences and final result acceptance.
-No Pi SDK or provider SDK process is required.
+The Node compatibility launcher starts the same Go bridge for existing configured
+installations. Account and observation tests exercise that implementation.
+
+The JSON, SSE and WebSocket transports select the same credential-bearing HTTP
+client and stop redirects at the first response. WebSocket continuation and
+session cancellation remain provider-owned. The available transport libraries
+have different wire boundaries here. The pinned x/net module's client dials
+without the configured HTTP client and exposes frame limits. Coder WebSocket
+supports the HTTP client but retains only 1024 bytes of failed handshakes,
+compared with the current 8192-byte bounded classification. Its client path
+also lacks the current server-frame mask rejection. [x/net dial and frame limits](https://pkg.go.dev/golang.org/x/net/websocket) · [Coder handshake](https://github.com/coder/websocket/blob/v1.8.15/dial.go) · [Coder frame reader](https://github.com/coder/websocket/blob/v1.8.15/read.go)
 
 Device Authorization is deferred until a supported **current-provider** grant
 is established. It remains an explicit future requirement and is excluded from

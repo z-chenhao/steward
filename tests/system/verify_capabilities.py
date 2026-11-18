@@ -218,7 +218,7 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             folder = root / name
             folder.mkdir()
             metadata = None
-            if name in ('task-code-environments', 'task-code-recovery', 'tool-loading', 'main-business', 'discovery'):
+            if name in ('task-code-environments', 'task-code-recovery', 'task-code-exact-report', 'tool-loading', 'main-business', 'discovery'):
                 # Keep coding calls/approvals and repeated publication recovery
                 # receipts inside the profile's protected-context budget.
                 metadata = dict(name='Capability workload', provider_kind='openai_compatible',
@@ -605,6 +605,72 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
             return dict(name='task_code_environment_scope_diff_and_evidence', reports=reports, pr_handoff=artifact, preparation_failure='isolated', source_preserved=True)
         scenario('task-code-environments', task_code_environments)
 
+        def task_code_exact_report(h):
+            source, _ = enable_task_code_source(h)
+            def owner(*args, text=None, ok=True):
+                # Control operations use the production composition; only model
+                # execution below uses the explicit protocol peer fixture.
+                result = fixture_run([str(h.binary), '-config', str(h.root/'config.yaml'), *args],
+                                     input=text, text=True, capture_output=True, env=h.env, cwd=h.root, timeout=320)
+                require(not ok or result.returncode==0, f'{args}: {result.stderr}')
+                return json.loads(result.stdout) if ok else result
+            git_env = dict(PATH='/usr/bin:/bin', HOME='/nonexistent', GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')
+            def git(*args):
+                return fixture_run(['git', '-C', str(source), '-c', 'core.hooksPath=/dev/null', '-c', 'maintenance.auto=false', '-c', 'gc.auto=0', *args],
+                                   env=git_env, capture_output=True, text=True, check=True).stdout.strip()
+            # Explicit fixture-owner commit precedes the source-preservation
+            # boundary. No Task imports Git metadata or executes its hook.
+            git('add', '.')
+            git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', 'commit', '-qm', 'exact owner fixture')
+            head, original = git('rev-parse', 'HEAD'), tree(source)
+            owner('artifact', 'save', 'bootstrap.txt', 'text/plain', text='Activate the actual managed owner composition.')
+            h.send('exact-task', 'Delegate capabilities: '+json.dumps([dict(name='builtin__read', arguments=dict(path='AGENTS.md'))]))
+            h.command('chat', 'work')
+            with closing(sqlite3.connect(h.root/'data/state.db')) as db:
+                rows = db.execute("SELECT t.task_ref,e.directory,t.task_id FROM task t JOIN task_code_environment e USING(task_id) WHERE e.status='ready'").fetchall()
+                require(len(rows)==1, 'exact owner Task was not actually prepared')
+                ref, directory, task_id = rows[0]
+                graph = db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]
+                require(graph and graph.startswith('sha256:'), 'production owner composition was not prepared')
+                require(db.execute('SELECT graph_revision FROM code_import_policy_binding WHERE task_id=?',(task_id,)).fetchone()==(graph,), 'exact Task used native import instead of its managed recipe')
+            config = h.root/'config.yaml'
+            config.write_text(config.read_text()+'\ngithub:\n  repository: fixture/repo\n  pull_number: 7\n  poll_seconds: 60\n  credential_ref: env:STEWARD_SYNTHETIC_HANDOFF_TOKEN\n')
+            observed = time.time_ns()//1000
+            with closing(sqlite3.connect(h.root/'data/state.db')) as db, db:
+                db.execute("""INSERT INTO github_watch(scope,repository,pull_number,repository_id,enabled,intent_privacy_epoch,state,head_sha,last_success_at,version)
+                            VALUES('fixture/repo#7','fixture/repo',7,99,1,0,'healthy',?,?,1)""",(head,observed))
+            binding = owner('github','bind',text=json.dumps(dict(task_ref=ref,task_epoch=1,version=0,mode='observe',event_kind='review')))
+            watch = owner('github','status')
+            artifact = owner('coding','report-pr-exact',ref,head)
+            review = owner('artifact','open',artifact['artifact_ref'])
+            association = review['pr_association']
+            require(association['kind']=='owner_verified_exact_content' and association['head_sha']==head and
+                    association['content']['head']==head and association['content']['tree_sha256']==review['candidate_sha256'] and
+                    association['content']['git_version'] and len(association['content']['git_command_sha256'])==64 and
+                    review['review']['original_task'] and review['review']['guide'], 'actual CLI did not retain exact content and managed review facts')
+            with closing(sqlite3.connect(h.root/'data/state.db')) as db:
+                require(db.execute('SELECT graph_revision FROM code_report_method_binding WHERE artifact_ref=?',(artifact['artifact_ref'],)).fetchone()==(graph,), 'exact CLI report bypassed its managed producer')
+                before = db.execute('SELECT count(*) FROM artifact').fetchone()[0]
+            wrong = ('b' if head[0]!='b' else 'c')*len(head)
+            rejected = owner('coding','report-pr-exact',ref,wrong,ok=False)
+            require(rejected.returncode!=0 and not rejected.stdout, 'exact CLI accepted another observed head')
+            Path(directory,'unreviewed.txt').write_text('extra candidate bytes\n')
+            changed = owner('coding','diff',ref)
+            require(changed['candidate_sha256']!=review['candidate_sha256'], 'extra untracked bytes did not change the real candidate')
+            rejected = owner('coding','report-pr-exact',ref,head,ok=False)
+            require(rejected.returncode!=0 and not rejected.stdout and time.time_ns()//1000-observed<120_000_000,
+                    'exact CLI did not reject a mismatching candidate under a fresh observation')
+            with closing(sqlite3.connect(h.root/'data/state.db')) as db:
+                require(db.execute('SELECT count(*) FROM artifact').fetchone()[0]==before, 'rejected exact handoff wrote an Artifact')
+            require(owner('github','status')==watch and owner('github','binding')==binding, 'exact read changed observer or binding facts')
+            owner('github','unbind',text=json.dumps(dict(version=binding['version'])))
+            require(owner('artifact','open',artifact['artifact_ref'])==review, 'original exact Artifact changed after candidate drift or unbind')
+            require(tree(source)==original and not (source/'hook-ran').exists(), 'exact read changed owner source, index, refs, or hook')
+            return dict(name='task_code_exact_remote_content_report',artifact=artifact,head=head,candidate_sha256=review['candidate_sha256'],
+                        git=association['content'],managed_graph=graph,source_preserved=True,
+                        scope='real owner CLI and local raw objects under normalized observer fixture; no GitHub publication')
+        scenario('task-code-exact-report',task_code_exact_report)
+
         def task_code_recovery(h):
             source, _ = enable_task_code_source(h)
             note = source / 'docs/notes.md'
@@ -655,7 +721,8 @@ def run(binary, selected=None, fixture_context=None, scenario_jobs=1):
                         'reads_automatic_mutations_require_exact_approval',
                         'MCP_transport_Skill_scope_role_denial_unknown',
                         'malformed_stdio_effect_replies_stay_unknown',
-                        'task_code_environment_scope_diff_and_evidence'}
+                        'task_code_environment_scope_diff_and_evidence',
+                        'task_code_exact_remote_content_report'}
             require(len(report['checks']) == len(expected) and
                     {row['name'] for row in report['checks']} == expected and
                     {row['name'] for row in report['crashes']} == {'edit_after_effect_before_result_commit', 'task_code_publish_recovery'} and
@@ -670,7 +737,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--evidence', type=Path, required=True)
-    parser.add_argument('--scenario', choices=['coding', 'dirty-index', 'audit', 'quotes', 'discovery', 'main-business', 'tool-loading', 'mcp-reply', 'crash', 'task-code-environments', 'task-code-recovery'],
+    parser.add_argument('--scenario', choices=['coding', 'dirty-index', 'audit', 'quotes', 'discovery', 'main-business', 'tool-loading', 'mcp-reply', 'crash', 'task-code-environments', 'task-code-recovery', 'task-code-exact-report'],
                         help='Run one maintained scenario; omit for the complete gate')
     parser.add_argument("--scenario-jobs",type=int,choices=[1,2,4],default=int(os.environ.get("STEWARD_VERIFY_CASE_JOBS","1")))
     args = parser.parse_args()

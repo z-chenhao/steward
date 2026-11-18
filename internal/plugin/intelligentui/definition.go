@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/z-chenhao/assistant/internal/delivery/uidocv1"
 	"github.com/z-chenhao/assistant/internal/plugin/intelligentui/contract"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
@@ -30,7 +31,7 @@ func definition(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, err
 	if err != nil {
 		return rsiplugin.Result{}, err
 	}
-	return rsiplugin.JSONResult(ctx, contract.Definition{InputSchema: ShowSchema, ModelInputSchema: modelShowSchema, Description: "Show visuals; read intelligent_ui. text precedes a visual; replace corrects a staged ui_ref. Staged is success.", Runtime: contract.ViewResource{Name: contract.RuntimeResource, Digest: runtime}, Styles: contract.ViewResource{Name: contract.StylesResource, Digest: styles}})
+	return rsiplugin.JSONResult(ctx, contract.Definition{InputSchema: uidocv1.ShowSchema, ModelInputSchema: uidocv1.ModelShowSchema, Description: "Show visuals; read intelligent_ui. text precedes a visual; replace corrects a staged ui_ref. Staged is success.", Runtime: contract.ViewResource{Name: contract.RuntimeResource, Digest: runtime}, Styles: contract.ViewResource{Name: contract.StylesResource, Digest: styles}})
 }
 
 func ownViewDigest(name string) (string, error) {

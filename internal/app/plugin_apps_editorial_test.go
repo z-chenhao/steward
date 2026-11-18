@@ -42,7 +42,7 @@ func editorialVersionPackage(t *testing.T, version string) string {
 	if !strings.Contains(code, needle) {
 		t.Fatal("editorial candidate source marker changed")
 	}
-	code = strings.Replace(code, "value.Discovery = discovery(value.Items)", `value.Items[0].Name="Mailbox beta";value.Items[0].Description="Versioned editorial beta";value.Discovery = discovery(value.Items)`, 1)
+	code = strings.Replace(code, "value.Discovery = v1.Discovery(value.Items)", `value.Items[0].Name="Mailbox beta";value.Items[0].Description="Versioned editorial beta";value.Discovery = v1.Discovery(value.Items)`, 1)
 	code = strings.Replace(code, needle, `value.Labels=&contract.LabelPolicy{Named:contract.LabelPlan{NameSource:"slug"},Unnamed:contract.LabelPlan{NameSource:"slug"}};value.Lookup.PreferLive=false;value.Lookup.LocalFirst="connection";if input.LiveConfigured {if !input.HasCursor {value.Route.PageSize=20};value.Route.OnLiveError="editorial";if input.Search=="prefer-local" {value.Route=&contract.Route{Source:"editorial"}}};if input.Search=="uniquehint" {value.Filter.Slugs=[]string{"gmail"}};value.Discovery.Home[0].Slugs[0],value.Discovery.Home[0].Slugs[1]=value.Discovery.Home[0].Slugs[1],value.Discovery.Home[0].Slugs[0];`+needle, 1)
 
 	if version == "1.2.0" {

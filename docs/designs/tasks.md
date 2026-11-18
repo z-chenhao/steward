@@ -64,7 +64,7 @@ sequenceDiagram
 
 所有读取按 agent_config 当前 Agent 归属；同一 CTE 只聚合 Task 当前 epoch。Open/Needs me/Finished/All 是查询视图，Task 仍只有 active/paused/completed/cancelled。阶段与 attention 由当前 Root/Child/等待/unknown 事实推导；摘要只保留已提交值。
 
-详情读取完整 anchor goal 和可访问 ArtifactRef，指令/里程碑每页 20 项。用户交付只由 task_update → main_inbox → main_reply → conversation_intent 精确关联，最多最近 10 条；原始 Root/Child result 不进入页面，完整用户历史仍在 Conversation。原始请求按 task_request 回执的 taskRef/source_message_id 定位。审批只按该任务 Run 归属收集 ID，再由现有授权投影/决定校验精确 frozen action。
+详情用同一只读事务读取任务、指令、审批和交付，避免并发续作混入下一代指令。详情包含完整 anchor goal 和可访问 ArtifactRef，指令/里程碑每页 20 项。Task 与 Execution 共用 task_update → main_inbox → main_reply → conversation_intent 的交付投影，Execution 另外限定所选 Root。两处均返回最近 10 条 Main 交付，完整用户历史仍在 Conversation。原始请求按 task_request 回执的 taskRef/source_message_id 定位。审批只按该任务 Run 归属收集 ID，再由现有授权投影/决定校验精确 frozen action。
 
 没有新持久化模型、迁移、Task 状态、模型工具或控制入口。页面继续沟通通过普通 Main 用户输入，不直接改变 Task。
 

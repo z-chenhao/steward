@@ -1,5 +1,6 @@
 """Bounded independent fixtures with owned process groups and joined cleanup."""
 from concurrent.futures import ThreadPoolExecutor
+import json
 import signal
 import subprocess
 import threading
@@ -143,3 +144,11 @@ def run_cases(items, action, jobs):
 def run(*args, **kwargs):
     scope = current()
     return scope.run(*args, **kwargs) if scope is not None else subprocess.run(*args, **kwargs)
+
+
+def run_json_lines(command, log, *, cwd, env, timeout):
+    """Retain diagnostics separately from the command's JSON event stream."""
+    with log.open('w') as output, log.with_suffix('.stderr.log').open('w') as diagnostics:
+        result, = run_cases([command], lambda argv: run(argv, cwd=cwd, env=env,
+                            stdout=output, stderr=diagnostics, timeout=timeout), 1)
+    return result.returncode, [json.loads(line) for line in log.read_text().splitlines()]

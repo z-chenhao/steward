@@ -409,6 +409,9 @@ func (r *Runs) Recover(ctx context.Context) error {
 	if err := r.recoverCode(ctx); err != nil {
 		return err
 	}
+	if err := r.recoverProjectResources(ctx); err != nil {
+		return err
+	}
 	if err := r.recoverApprovals(ctx); err != nil {
 		return err
 	}
