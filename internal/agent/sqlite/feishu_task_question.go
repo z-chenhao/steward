@@ -81,7 +81,7 @@ const feishuFeedbackCurrent = `((f.kind='input' AND q.review_url='') OR (f.kind=
  )))
  AND t.status IN ('active','completed') AND t.explicit_end_epoch<t.task_epoch
  AND f.privacy_epoch=coalesce(p.epoch,0) AND t.created_at>coalesce(p.updated_at,0) AND f.expires_at>?
- AND NOT EXISTS(SELECT 1 FROM task_feedback newer WHERE newer.task_id=f.task_id AND newer.rowid>f.rowid)`
+ AND ` + feedbackNotReplaced
 
 // FeishuTaskFeedbackCard reads the frozen presentation and live eligibility in
 // one snapshot. Receipt queries can still settle an inactive card.

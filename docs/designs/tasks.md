@@ -72,7 +72,7 @@ sequenceDiagram
 
 当前消费者是 Main 的既有 Task 工具、本机所有者 CLI、已认证 Web 及个人飞书反馈卡。`request_input` 和 `request_review` 是 Main-only `task_manage` 的严格 union 分支；后者必须包含 1–16 个现有作用域内的不可变 ArtifactRef。ToolInvocation、请求源去重、Main claim fencing 与 Task 接纳事务不另建管线。Task 仍只有原四种状态。
 
-schema v34 的私有 `task_feedback` 保存确切 Task/epoch、隐私 epoch、问题种类/正文、可定位的原用户消息、成果引用、七天有效期与回应消息。一次事务替代旧 pending 并保存新记录、原有工具回执和事件；成果经原 ArtifactStore 保留。源是 Reporter 运行时事件时，回溯真实用户消息，而不把事件 ID 冒充消息 ID。新请求也使旧的已回答记录失去接续因果效力。
+schema v34 的私有 `task_feedback` 保存确切 Task/epoch、隐私 epoch、问题种类/正文、可定位的原用户消息、成果引用、七天有效期与回应消息。一次事务按创建时固定的替代范围更新旧 pending 并保存新记录、原有工具回执和事件；成果经原 ArtifactStore 保留。源是 Reporter 运行时事件时，回溯真实用户消息，而不把事件 ID 冒充消息 ID。同一范围的新请求也使旧的已回答记录失去接续因果效力。
 
 所有者 `task feedbacks` 仅读取当前可处理 pending，按不可变行顺序以不透明 feedback ref 分页，每页最多 50 条，并可按确切 TaskRef 筛选。过期、停止、旧 epoch 和隐私撤销在读谓词中排除；同一个只读事务复用 ArtifactStore 的访问与 Task 保护型到期规则，过滤缺失、删除和不可访问成果而不打开 blob。每页检查至多 50 个候选，过滤后仍按已检查位置推进游标；历史记录保留作审计，不作为待办回传。回答先载入不可变记录构造具名上下文，再在现有 Main submit 的同一事务中权威验证当前状态/隐私/成果可访问性，提交确定性 request key、Main input、Conversation intent、已回答状态和原有唤醒事件。任何失败全部回滚；相同重试回原 receipt，不同文本冲突。
 
@@ -100,7 +100,7 @@ flowchart LR
     V --> M[既有 Main ingress／去重／接续]
 ```
 
-`steward.task-feedback-policy/1` 不收到 Task／问题／回答／成果身份，只收到 `kind`；返回 `lifetime_seconds` 和单行 `response_guidance`。当前 Host 上限保持原七天（1–604800 秒），指引限制为 2048 UTF-8 字节且拒绝控制字符。这是本机可逆的当前政策约束，不是永久 SDK 保证。默认与原生期限和指引逐字一致；独立版本可以缩短期限并调整续作方法。
+`steward.task-feedback-policy/1` 不收到 Task／问题／回答／成果身份，只收到 `kind`；返回 `lifetime_seconds` 和单行 `response_guidance`。1.0.2 还返回 `separate_kinds`，由 schema 84 固定到每条记录，独立保留同一轮的信息问题和成果审阅。若任一记录来自旧单槽配方，新记录按原全任务范围取代旧记录。Web、CLI 与飞书卡使用同一当前性谓词，跨轮、失效成果和隐私检查优先。当前 Host 上限保持原七天（1–604800 秒），指引限制为 2048 UTF-8 字节且拒绝控制字符。这是本机可逆的当前政策约束，不是永久 SDK 保证。默认与原生期限和指引逐字一致；独立版本可以缩短期限并调整续作方法。
 
 Host 保留问题／成果的原文与引用、原消息来源、权限、审批、隐私／Task epoch、单 pending、过期与陈旧拒绝、第一回答及跨渠道幂等、Artifact pin、飞书签名／路由和完整事务。回答的固定 JSON 数据框架与“不授予外部动作批准”提示由 Host 重建，插件无法改写这些事实。
 

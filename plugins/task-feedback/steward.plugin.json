@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.task-feedback",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "feature_ids": [
     "F-004"
   ],
@@ -41,11 +41,15 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 2048
+          },
+          "separate_kinds": {
+            "type": "boolean"
           }
         },
         "required": [
           "lifetime_seconds",
-          "response_guidance"
+          "response_guidance",
+          "separate_kinds"
         ],
         "additionalProperties": false
       }
