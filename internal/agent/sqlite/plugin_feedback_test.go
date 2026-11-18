@@ -24,8 +24,8 @@ import (
 func installFeedbackPlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
 	t.Helper()
 	return installRuntimeFeature(t, s, r, "task-feedback", rsi.Policy{ID: "feedback-owner-fixture", AllowedContracts: []string{contract.Contract}, Cases: []rsi.Case{
-		{InstanceID: "task-feedback", Contract: contract.Contract, Input: json.RawMessage(`{"kind":"input"}`), Expected: json.RawMessage(`{"lifetime_seconds":604800,"response_guidance":"If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"}`)},
-		{InstanceID: "task-feedback", Contract: contract.Contract, Input: json.RawMessage(`{"kind":"review"}`), Expected: json.RawMessage(`{"lifetime_seconds":604800,"response_guidance":"If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"}`)},
+		{InstanceID: "task-feedback", Contract: contract.Contract, Input: json.RawMessage(`{"kind":"input"}`), Expected: json.RawMessage(`{"separate_kinds":true,"lifetime_seconds":604800,"response_guidance":"If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"}`)},
+		{InstanceID: "task-feedback", Contract: contract.Contract, Input: json.RawMessage(`{"kind":"review"}`), Expected: json.RawMessage(`{"separate_kinds":true,"lifetime_seconds":604800,"response_guidance":"If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"}`)},
 	}})
 }
 
@@ -40,7 +40,7 @@ func feedbackVersionPackage(t *testing.T, version string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.1"`, `Version: "`+version+`"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.2"`, `Version: "`+version+`"`, 1)
 	if version == "1.1.0" {
 		code = strings.Replace(code, `LifetimeSeconds: 604800`, `LifetimeSeconds: 86400`, 1)
 		code = strings.Replace(code, `ResponseGuidance: "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"`, `ResponseGuidance: "VERSION_1_1: Verify the saved scope and retain the exact Task and artifact references."`, 1)
@@ -113,9 +113,9 @@ func selectFeedbackVersion(t *testing.T, h rsi.Host, baseline, version string) (
 		t.Fatal(err)
 	}
 	policy.ID = "feedback-owner-" + version
-	expected := contract.Policy{LifetimeSeconds: 86400, ResponseGuidance: "VERSION_1_1: Verify the saved scope and retain the exact Task and artifact references."}
+	expected := contract.Policy{SeparateKinds: true, LifetimeSeconds: 86400, ResponseGuidance: "VERSION_1_1: Verify the saved scope and retain the exact Task and artifact references."}
 	if version == "1.2.0" {
-		expected = contract.Policy{LifetimeSeconds: 604801, ResponseGuidance: legacyFeedbackGuidanceV1}
+		expected = contract.Policy{SeparateKinds: true, LifetimeSeconds: 604801, ResponseGuidance: legacyFeedbackGuidanceV1}
 	}
 	for i := range policy.Cases {
 		policy.Cases[i].Expected, _ = json.Marshal(expected)
@@ -366,5 +366,61 @@ func TestFeedbackPluginRecipeAndQuestionCommitTogetherAndAcceptedReceiptDrains(t
 	result, err := r.ToolStore(c).(*tools).ExecuteBuiltin(ctx, inv)
 	if err != nil || result.Error != nil || result.Text != stored || scalar(t, s, `SELECT count(*) FROM task_feedback`) != 1 {
 		t.Fatal("accepted feedback depended on redispatching quarantined recipe", result, err)
+	}
+}
+
+func TestFeedbackPluginSeparatesInputAndArtifactReviewWithinEpoch(t *testing.T) {
+	ctx := context.Background()
+	s, r, a, p, ref := feedbackFixture(t)
+	old := requestFeedback(t, s, a, p, ref)
+	installFeedbackPlugin(t, s, r)
+	artifactRef := putArtifact(t, s, artifactOwner(t, s), "Immutable report")
+	review := requestFeedback(t, s, a, p, ref, artifactRef)
+	if _, err := r.RespondTaskFeedback(ctx, old.Ref, "Historical input"); !errors.Is(err, task.ErrFeedbackStale) {
+		t.Fatalf("historical Task-wide slot remained active: %v", err)
+	}
+	input := requestFeedback(t, s, a, p, ref)
+	current := func(want ...string) {
+		t.Helper()
+		page, err := s.TaskFeedbacks(ctx, ref, "")
+		if err != nil || len(page.Items) != len(want) {
+			t.Fatal(page, err)
+		}
+		for i, v := range want {
+			if page.Items[i].Ref != v {
+				t.Fatal("wrong live feedback", page, want)
+			}
+		}
+	}
+	current(input.Ref, review.Ref)
+	if _, err := s.db.Exec(`UPDATE task_feedback SET separate_kinds=0 WHERE feedback_ref=?`, review.Ref); err == nil {
+		t.Fatal("accepted replacement scope was mutable")
+	}
+	secondInput := requestFeedback(t, s, a, p, ref)
+	current(secondInput.Ref, review.Ref)
+	if _, err := r.RespondTaskFeedback(ctx, input.Ref, "Replaced input"); !errors.Is(err, task.ErrFeedbackStale) {
+		t.Fatal(err)
+	}
+	receipt, err := r.RespondTaskFeedback(ctx, review.Ref, "Please shorten the report.")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := r.RespondTaskFeedback(ctx, secondInput.Ref, "Use Q2."); err != nil {
+		t.Fatal(err)
+	}
+	current()
+	if scalar(t, s, `SELECT count(*) FROM main_input WHERE message_id=? AND json_extract(message_json,'$.content[1].artifact_ref')=?`, receipt.MessageID, artifactRef) != 1 || scalar(t, s, `SELECT count(*) FROM approval`) != 0 {
+		t.Fatal("review evidence or approval boundary changed")
+	}
+	if err := s.Transaction(ctx, func(tx *sql.Tx) error { return s.requireCurrentFeedback(ctx, tx, review.Ref, ref, true) }); err != nil {
+		t.Fatal("independent input invalidated answered review", err)
+	}
+	newReview := requestFeedback(t, s, a, p, ref, artifactRef)
+	current(newReview.Ref)
+	if err := s.Transaction(ctx, func(tx *sql.Tx) error { return s.requireCurrentFeedback(ctx, tx, review.Ref, ref, true) }); !errors.Is(err, task.ErrFeedbackStale) {
+		t.Fatal("obsolete review remained actionable", err)
+	}
+	if err := s.Transaction(ctx, func(tx *sql.Tx) error { return s.requireCurrentFeedback(ctx, tx, secondInput.Ref, ref, true) }); err != nil {
+		t.Fatal("independent review invalidated answered input", err)
 	}
 }

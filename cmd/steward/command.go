@@ -36,6 +36,7 @@ const (
 	commandCoding
 	commandEvidence
 	commandPlugin
+	commandTaskMail
 )
 
 type command struct {
@@ -50,6 +51,7 @@ type commandGrammar struct {
 // Arity includes the command and operation. The grammar is validated before
 // configuration/state is opened; handlers do not independently admit commands.
 var commandGrammars = map[string]commandGrammar{
+	"mailbox":    {commandTaskMail, map[string][]int{"enable-plugin": {3}, "bind": {4}, "close": {3}, "receive": {4}, "messages": {3, 4}}},
 	"plugin":     {commandPlugin, map[string][]int{"parser-bundle": {5}, "parser-resource": {3}, "deactivate": {2}, "uninstall": {3}, "calls": {3}, "retry-call": {5}, "retry-event": {3}, "work": {2}, "seal": {3}, "install": {3}, "prepare": {2}, "policy": {2}, "propose": {2}, "verify": {3}, "activate": {2}, "status": {2}, "audit": {2}, "stop": {2}, "resume": {2}, "quarantine": {3}}},
 	"evidence":   {commandEvidence, map[string][]int{"read": {2}}},
 	"task":       {commandTask, map[string][]int{"feedbacks": {2, 3, 4}, "respond": {3}}},

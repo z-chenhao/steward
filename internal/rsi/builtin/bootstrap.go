@@ -72,6 +72,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	traceWorkbench, traceActivity, traceLegacy := false, false, false
 	uiPlan, uiCards, uiTable, uiChart, uiForm := false, false, false, false, false
 	uiVersion := ""
+	feedbackVersion := ""
 	appsClient := false
 	appsInventory := false
 	codingChecks := false
@@ -86,6 +87,9 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "task-feedback" {
+			feedbackVersion = installed.Manifest.Version
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
@@ -246,7 +250,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	}
 	if d.Feedback != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.task-feedback-policy/1")
-		policy.Cases = append(policy.Cases, feedbackCases()...)
+		policy.Cases = append(policy.Cases, feedbackCases(feedbackVersion)...)
 	}
 	if d.Delegation != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.delegation-policy/1")

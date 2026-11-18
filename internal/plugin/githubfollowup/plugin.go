@@ -10,14 +10,14 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: step}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: step}}
 }
 func step(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 	var req contract.Request
 	if err := rsiplugin.Decode(call.Input, &req); err != nil {
 		return rsiplugin.Result{}, err
 	}
-	if len(req.History) > 60 || len(call.Inputs) != 1 || call.Inputs[0].ID != contract.InputID {
+	if len(req.History) > 63 || len(call.Inputs) != 1 || call.Inputs[0].ID != contract.InputID {
 		return rsiplugin.Result{}, errors.New("invalid source step")
 	}
 	var facts bytes.Buffer
@@ -55,7 +55,7 @@ func step(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 			break
 		}
 		if last.Count >= 100 {
-			if last.Number >= 20 {
+			if last.Number >= 21 {
 				plan.ErrorCode = "HISTORY_LIMIT"
 				break
 			}
