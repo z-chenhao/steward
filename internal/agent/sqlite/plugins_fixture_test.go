@@ -1,7 +1,17 @@
 package sqlite
 
 // Newer fixture layers must be removed by every older reconstructed schema.
-const removeCodingProjectFixtureSchema = `DROP TABLE IF EXISTS coding_project_resource; DROP TABLE IF EXISTS coding_project_plan; DROP TABLE IF EXISTS coding_task_environment; `
+const removeFeedbackScopeFixtureSchema = `DROP TRIGGER task_feedback_scope_immutable;
+DROP TRIGGER task_feedback_no_replace;
+DROP INDEX task_feedback_pending;
+ALTER TABLE task_feedback DROP COLUMN separate_kinds;
+CREATE UNIQUE INDEX task_feedback_pending ON task_feedback(task_id) WHERE status='pending';
+CREATE TRIGGER task_feedback_no_replace BEFORE INSERT ON task_feedback WHEN
+ EXISTS(SELECT 1 FROM task_feedback WHERE feedback_ref=NEW.feedback_ref OR
+ (task_id=NEW.task_id AND status='pending' AND NEW.status='pending'))
+ BEGIN SELECT RAISE(ABORT,'task feedback identity exists'); END; `
+
+const removeCodingProjectFixtureSchema = removeFeedbackScopeFixtureSchema + `DROP TABLE IF EXISTS coding_project_resource; DROP TABLE IF EXISTS coding_project_plan; DROP TABLE IF EXISTS coding_task_environment; `
 
 const removeCodingCheckFixtureSchema = removeCodingProjectFixtureSchema + `DROP TABLE IF EXISTS coding_check_plan; `
 
