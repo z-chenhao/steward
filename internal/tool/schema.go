@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/z-chenhao/assistant/internal/jsonwire"
 )
 
 // The registry accepts this deliberately bounded JSON Schema vocabulary. An
@@ -74,48 +76,6 @@ func parseSchema(raw string) (schema, bool) {
 	return s, valid(s, 0)
 }
 
-// uniqueJSON rejects duplicate object keys at every depth before validation.
-func uniqueJSON(d *json.Decoder, depth int) bool {
-	if depth > 32 {
-		return false
-	}
-	token, err := d.Token()
-	if err != nil {
-		return false
-	}
-	delim, ok := token.(json.Delim)
-	if !ok {
-		return true
-	}
-	switch delim {
-	case '{':
-		seen := map[string]bool{}
-		for d.More() {
-			k, e := d.Token()
-			if e != nil {
-				return false
-			}
-			key, ok := k.(string)
-			if !ok || seen[key] {
-				return false
-			}
-			seen[key] = true
-			if !uniqueJSON(d, depth+1) {
-				return false
-			}
-		}
-	case '[':
-		for d.More() {
-			if !uniqueJSON(d, depth+1) {
-				return false
-			}
-		}
-	default:
-		return false
-	}
-	end, e := d.Token()
-	return e == nil && ((delim == '{' && end == json.Delim('}')) || (delim == '[' && end == json.Delim(']')))
-}
 func Validate(schemaJSON, raw string) bool {
 	return ValidateBounded(schemaJSON, raw, 65536)
 }
@@ -132,10 +92,7 @@ func ValidateBounded(schemaJSON, raw string, maxBytes int) bool {
 		return false
 	}
 	d := json.NewDecoder(strings.NewReader(raw))
-	if !uniqueJSON(d, 0) {
-		return false
-	}
-	if _, err := d.Token(); err != io.EOF {
+	if jsonwire.Check(d) != nil {
 		return false
 	}
 	var v any

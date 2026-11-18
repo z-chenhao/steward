@@ -29,6 +29,13 @@ func dispatchCommand(ctx context.Context, application *app.App, cfg config.Confi
 		}
 		return runPlugin(ctx, application, flags, in, out)
 	case commandCoding:
+		if flags.Arg(1) == "report-pr-exact" {
+			value, err := application.SaveCodePRExactReport(ctx, flags.Arg(2), flags.Arg(3), cfg.ExecutionConfig().RepositorySource)
+			if err != nil {
+				return err
+			}
+			return json.NewEncoder(out).Encode(value)
+		}
 		if flags.Arg(1) == "report-pr" {
 			value, err := application.SaveCodePRReport(ctx, flags.Arg(2), flags.Arg(3))
 			if err != nil {

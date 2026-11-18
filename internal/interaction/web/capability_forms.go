@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/legacyv1"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 	"net/url"
 	"strconv"
 	"strings"
@@ -29,7 +29,7 @@ func formRequest(operation string, v Capability, action string, values url.Value
 func (s *Server) projectCapabilityForm(ctx context.Context, in contract.Request) (contract.Result, error) {
 	var out contract.Result
 	if s.CapabilityForms == nil {
-		out = legacyv1.Project(in)
+		out = v1.Project(in)
 	} else {
 		var err error
 		out, err = s.CapabilityForms(ctx, in)

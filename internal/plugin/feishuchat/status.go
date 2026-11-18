@@ -3,6 +3,7 @@ package feishuchat
 import (
 	"context"
 	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/legacyv1"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
@@ -30,7 +31,7 @@ func Plugin() rsiplugin.Handlers {
 		if err := rsiplugin.Decode(call.Input, &facts); err != nil {
 			return rsiplugin.Result{}, err
 		}
-		return rsiplugin.JSONResult(ctx, ProjectCard(facts))
+		return rsiplugin.JSONResult(ctx, legacyv1.ProjectCard(facts))
 	}, contract.Status: func(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 		var facts contract.StatusFacts
 		if err := rsiplugin.Decode(call.Input, &facts); err != nil {

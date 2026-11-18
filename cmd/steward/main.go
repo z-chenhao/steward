@@ -18,6 +18,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/config"
 	"github.com/z-chenhao/assistant/internal/llm/bridge"
 	"github.com/z-chenhao/assistant/internal/rsi"
+	"github.com/z-chenhao/assistant/internal/rsi/builtin"
 	"github.com/z-chenhao/assistant/internal/startup"
 	"github.com/z-chenhao/assistant/internal/webcontent/parserresource"
 )
@@ -48,6 +49,14 @@ func run(ctx context.Context, args []string, in io.Reader, out, errOut io.Writer
 	if len(args) == 1 && args[0] == "-model-bridge-version" {
 		_, err := fmt.Fprintln(out, bridge.Version)
 		return err
+	}
+	if len(args) == 1 && args[0] == "-builtin-plugin-names" {
+		for _, name := range builtin.BundledPluginNames() {
+			if _, err := fmt.Fprintln(out, name); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 	if handled, err := runTestPeer(ctx, args, in, out); handled {
 		return err

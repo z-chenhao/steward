@@ -176,6 +176,28 @@ capacity, operations, Computer, capabilities and additional terminal behavior.
 They protect software mechanics and never assign semantic scores. Full inventory
 and exact commands come from `tests/system/runner.py --list --suite full`.
 
+<a id="critical-user-journeys"></a>
+
+### 关键用户旅程
+
+用同一个已构建的 `bin/steward` 和本次独立证据目录运行受影响的旅程。`--list --journey first-reply` 可查看旅程实际选择的门禁。`summary.json` 记录运行结果、源码和二进制身份，各门禁保留自己的报告与日志。
+
+```sh
+python3 tests/system/runner.py --binary bin/steward --journey first-reply \
+  --evidence evidence/first-reply-my-change
+```
+
+| `--journey` | 从真实入口验证的行为 | 门禁和可核对结果 |
+| --- | --- | --- |
+| `first-reply` | 安装发行包、首次配置和对话、进程崩溃后继续。缺失随包发行的必需插件时，首次 Artifact 写入被拒绝 | `startup` 的真实 CLI、选中的组合、Artifact 和恢复后的最终回复 |
+| `delegated-work` | 通过 Main 启动 Task、委派 Child、交付成果 | `main`、`tasks`、`children`、`artifacts` 的交接、子任务状态和可读产物 |
+| `approved-effects` | 工具获批后执行，未知结果在恢复时保持原身份和尝试次数 | `tools` 的 `unknown_without_evidence_retained`，以及 `codemode`、`code-recovery` 的执行与恢复回执 |
+| `coding-handoff` | 启用工作区、隔离候选、核对审阅报告与已观察的 PR 提交 | `capabilities` 的 `task-code-environments`、`task-code-recovery`、`task-code-exact-report` |
+| `model-recovery` | 换版、回退模型插件后直接在 Chat 发送，原模型收到请求且回复送达 | `model-menu-plugins` 的 `recovery_send`、首个交互截图和请求观察 |
+| `forget` | 冻结请求后执行 Forget，原进程中断，再发送新消息。新请求不含撤销内容，原回执保留 | `memory-maintenance` 的 `forget-fences-frozen-recovery` 和 `recall` 的真实检索结果 |
+
+功能维护时重新走 affected gate，并把发现归为文档过时、验证驱动缺口或产品回归。行为预期的变化需要由所有者确认，修复后的驱动应重新执行。
+
 <a id="testing-agent-evaluation"></a>
 
 ### Agent evaluation
@@ -185,6 +207,11 @@ large run records belong in a separate evaluation repository. Version those
 assets there. Bind a run to the product commit or binary digest, model/version,
 configuration and evaluation-set version. Keep raw traces and results as run
 artifacts. Do not copy them into this product checkout on every code submission.
+
+When comparing workflow or harness variants, give both the same task, model,
+budget and starting state. Score observable results using shared held-out
+criteria and hide variant labels during review. Report completion, interventions,
+time and observed usage independently.
 
 This repository retains only synthetic software-test fixtures needed by actual
 regressions. Tool schemas, CLI/API behavior and ordinary user controls are the

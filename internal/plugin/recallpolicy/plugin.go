@@ -5,6 +5,7 @@ package recallpolicy
 import (
 	"context"
 	"errors"
+	"github.com/z-chenhao/assistant/internal/recall/lexical"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -85,9 +86,9 @@ func Select(f contract.Facts) contract.Plan {
 				proofs[i] = i
 			}
 			if f.EvidenceFirst {
-				terms := Terms(f.Query)
+				terms := lexical.Terms(f.Query)
 				sort.SliceStable(proofs, func(i, j int) bool {
-					return Relevance(terms, c.Quotes[proofs[i]]) > Relevance(terms, c.Quotes[proofs[j]])
+					return lexical.Relevance(terms, c.Quotes[proofs[i]]) > lexical.Relevance(terms, c.Quotes[proofs[j]])
 				})
 			}
 			p.Evidence = append(p.Evidence, proofs[:min(2, len(proofs))]...)
@@ -101,7 +102,7 @@ func excerpt(text, query string, limit int) (int, int) {
 	if len(text) <= limit {
 		return 0, len(text)
 	}
-	terms := Terms(query)
+	terms := lexical.Terms(query)
 	best, start := -1., 0
 	lower := strings.ToLower(text)
 	for _, term := range terms {
@@ -114,7 +115,7 @@ func excerpt(text, query string, limit int) (int, int) {
 			offset = at + len(term)
 			left := max(0, min(len(text)-limit, at-limit/3))
 			right := min(len(text), left+limit)
-			score := Relevance(terms, text[left:right])
+			score := lexical.Relevance(terms, text[left:right])
 			if score > best {
 				best, start = score, left
 			}

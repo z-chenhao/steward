@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Actual default App action feedback, unchanged effects and version lifecycle."""
 import argparse
+from owner_inventory import check_default_owner_policy
 from contextlib import closing
 from http.server import ThreadingHTTPServer
 import hashlib
@@ -46,7 +47,7 @@ def run(binary,evidence):
    h.setup(metadata=dict(name='Action feedback peer',provider_kind='openai_compatible',endpoint=f'http://127.0.0.1:{peer.server_port}/v1',wire_api='openai_completions',model_id='fixture-model',context_window=131072,max_output_tokens=4096,compatibility=dict(tool_result_format='openai'),capabilities=dict(text_input=True)))
    peer.mode='ui-interactions';peer.widgets=[dict(title='Action feedback',fallback='Explicit refresh request',components=[dict(name='Table',props=dict(title='Values',columns=['Name'],rows=[['A']],source='Fixture')),dict(name='steward.action',props=dict(id='refresh',label='Refresh catalog',tool='builtin__tool_search',arguments=dict(query='task',limit=1)))])]
    with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
-    db.execute('BEGIN');target=db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0];graph=json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?',(target,)).fetchone()[0]);require(len(graph['bindings'])==40,'not fresh default40');digest=next(b['package_digest'] for b in graph['bindings'] if b['instance_id']=='intelligent-ui');manifest=json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?',(digest,)).fetchone()[0]);require(manifest['version']=='1.27.0' and len(manifest['provides'])==9,'default action feedback version/services wrong');base_policy=db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0];owner_cases=db.execute("SELECT json_array_length(policy_json,'$.cases') FROM rsi_policy WHERE policy_id=?",(base_policy,)).fetchone()[0];require(owner_cases==387,'default action Owner cases missing')
+    db.execute('BEGIN');target=db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0];graph=json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?',(target,)).fetchone()[0]);require(len(graph['bindings'])==40,'not fresh default40');digest=next(b['package_digest'] for b in graph['bindings'] if b['instance_id']=='intelligent-ui');manifest=json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?',(digest,)).fetchone()[0]);require(manifest['version']=='1.27.0' and len(manifest['provides'])==9,'default action feedback version/services wrong');base_policy=db.execute('SELECT policy_id FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0];owner_cases = check_default_owner_policy(db, graph, base_policy)
    def snapshots():
     with closing(sqlite3.connect(h.root/'data/state.db')) as db,db:
      db.execute('BEGIN');return db.execute("SELECT w.ui_ref,c.result_json,b.graph_revision,w.message_id FROM ui_widget w JOIN rsi_call c ON c.run_id=w.run_id AND c.operation_id='ui-normalize:'||w.invocation_id JOIN rsi_run b ON b.run_id=w.run_id WHERE w.message_id IS NOT NULL ORDER BY w.rowid").fetchall()

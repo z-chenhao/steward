@@ -86,7 +86,7 @@ func TestCapabilityFormsActualUpgradeRollbackStopAndCold(t *testing.T) {
 	}
 	directory := t.TempDir()
 	replace := map[string]string{}
-	for _, name := range []string{"forms.go", "project.go", "presentation.go"} {
+	for _, name := range []string{"v1/forms.go", "plugin.go", "v1/presentation.go"} {
 		source, e := filepath.Abs(filepath.Join("../plugin/capabilityforms", name))
 		if e != nil {
 			t.Fatal(e)
@@ -96,25 +96,25 @@ func TestCapabilityFormsActualUpgradeRollbackStopAndCold(t *testing.T) {
 			t.Fatal(e)
 		}
 		text := string(code)
-		if name == "forms.go" {
+		if name == "v1/forms.go" {
 			if strings.Count(text, `c.Port = "22"`) != 1 {
 				t.Fatal("port marker missing")
 			}
 			text = strings.Replace(text, `c.Port = "22"`, `c.Port = "2222"`, 1)
-		} else if name == "presentation.go" {
+		} else if name == "v1/presentation.go" {
 			text = strings.Replace(text, `v.Title = "Memory"`, `v.Title = "v2 Memory"`, 1)
 			text = strings.Replace(text, "The referenced 32-byte encryption key is available. No memory was read or written.", "v2 The referenced 32-byte encryption key is available. No memory was read or written.", 1)
 		} else {
 			text = strings.Replace(text, `Version: "1.0.0"`, `Version: "1.1.0"`, 1)
 		}
-		replacement := filepath.Join(t.TempDir(), name)
+		replacement := filepath.Join(t.TempDir(), filepath.Base(name))
 		if e = os.WriteFile(replacement, []byte(text), 0600); e != nil {
 			t.Fatal(e)
 		}
 		replace[source] = replacement
 	}
 	for _, name := range []string{"capabilities.html", "copy.json"} {
-		source, e := filepath.Abs(filepath.Join("../plugin/capabilityforms/view", name))
+		source, e := filepath.Abs(filepath.Join("../plugin/capabilityforms/v1/view", name))
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -286,7 +286,7 @@ func copyCapabilityAssets(t *testing.T, directory string) {
 		t.Fatal(err)
 	}
 	for _, name := range []string{"capabilities.html", "copy.json"} {
-		raw, err := os.ReadFile(filepath.Join("../plugin/capabilityforms/view", name))
+		raw, err := os.ReadFile(filepath.Join("../plugin/capabilityforms/v1/view", name))
 		if err != nil {
 			t.Fatal(err)
 		}

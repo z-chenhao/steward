@@ -3,6 +3,7 @@ package bridge
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -68,5 +69,49 @@ func TestDispatchEvidenceIsOptionalBoundedAndCannotRejectGeneration(t *testing.T
 	s.accept(llm.GenerationEvent{GenerationID: s.id, Sequence: 1, Kind: "text_delta", Text: "model still works"})
 	if s.terminal || (<-s.events).event.Text != "model still works" {
 		t.Fatal("diagnostics changed generation event sequence")
+	}
+}
+
+func TestServerObservationBoundsSanitizedRequest(t *testing.T) {
+	var pipe bytes.Buffer
+	server := Server{out: &pipe}
+	req := generationRequest{
+		GenerationRequest: llm.GenerationRequest{GenerationID: "generation"},
+		Connection:        llm.Connection{APIKey: "PRIVATE_KEY", AccessToken: "PRIVATE_ACCESS"},
+	}
+	observation := provider.Observation{
+		Phase: "started", Attempt: "attempt", At: time.Now(),
+		Body: []byte(`{"authorization":"PRIVATE_KEY","messages":[{"text":"PRIVATE_ACCESS"}]}`),
+	}
+	server.observe(req, observation)
+	if pipe.Len() != 0 {
+		t.Fatal("unrequested wire observation")
+	}
+	req.Observe = true
+	server.observe(req, observation)
+	decode := func() llm.Dispatch {
+		t.Helper()
+		var f frame
+		var dispatch llm.Dispatch
+		if err := json.Unmarshal(pipe.Bytes(), &f); err != nil || f.Method != "generation.observation" {
+			t.Fatalf("wire observation frame: %v %s", err, pipe.Bytes())
+		}
+		if err := json.Unmarshal(f.Params, &dispatch); err != nil {
+			t.Fatal(err)
+		}
+		pipe.Reset()
+		return dispatch
+	}
+	captured := decode()
+	if captured.Format != "steward-wire-v1/go-ai-v1" ||
+		len(captured.BodyHash) != 64 || bytes.Contains(captured.Body, []byte("PRIVATE_")) ||
+		bytes.Count(captured.Body, []byte("[credential redacted]")) != 2 {
+		t.Fatal("incorrect sanitized request observation", captured)
+	}
+	observation.Body = []byte(`{"text":"` + strings.Repeat("x", 300000) + `"}`)
+	server.observe(req, observation)
+	captured = decode()
+	if len(captured.Body) != 0 || len(captured.BodyHash) != 64 || captured.Omitted != "sanitized body exceeds 256 KiB" {
+		t.Fatal("oversized observation missing bounded identity", captured)
 	}
 }

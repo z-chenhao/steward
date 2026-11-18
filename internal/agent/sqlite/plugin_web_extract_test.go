@@ -547,7 +547,7 @@ func TestWebPluginExtractRealReleaseRecoveryDoesNotReplayOriginalNeverTool(t *te
 		t.Fatal(err)
 	}
 	executor.Registry = bound
-	stop := keepWebReadClaim(r, claim)
+	stop := keepRunClaim(r, claim)
 	defer stop()
 	fetches, reached := 0, 0
 	r.webContentFetch = func(c context.Context, _ webcontent.Config, url, _ string) (webaccess.Page, error) {
@@ -611,7 +611,7 @@ func TestWebPluginExtractCustomAbsoluteCommandAndScriptKeepFullInputAndLargeResu
 		}
 	})
 	defer r.Release(ctx, claim)
-	defer keepWebReadClaim(r, claim)()
+	defer keepRunClaim(r, claim)()
 	bound, err := r.RegistryForRun(ctx, claim, executor.Registry)
 	if err != nil {
 		t.Fatal(err)

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "name": "Steward 源码检查入口",
+  "prepare": {
+    "command": "mkdir -p .tmp .state .evidence .cache/go-build; cp -R /opt/steward/go-build/. .cache/go-build/; for component in provider-bridge runtime/javascript guest-browser web; do if test -d /opt/steward/deps/\"$component\"/node_modules; then cp -R /opt/steward/deps/\"$component\"/node_modules \"$component\"/; fi; done",
+    "timeout_seconds": 120
+  },
+  "doctor": {
+    "command": "test \"$(go env GOVERSION)\" = go1.26.11 && test \"$(node --version)\" = v24.21.0 && node scripts/setup_browser.cjs",
+    "timeout_seconds": 15
+  },
+  "checks": [
+    {
+      "name": "build",
+      "requirement": "当前确切候选能在已固定的 Linux Go 工具链与依赖中构建，并实际执行新二进制的模型桥协议版本入口。构建不代表行为验收。",
+      "command": "go build -p 2 -trimpath -o .state/steward ./cmd/steward && .state/steward -model-bridge-version > .evidence/bridge-version.txt && test -s .evidence/bridge-version.txt",
+      "timeout_seconds": 100,
+      "evidence": [
+        ".evidence/bridge-version.txt"
+      ]
+    },
+    {
+      "name": "frontend-contracts",
+      "requirement": "当前候选的生成资产与前端行为约束保持一致。此检查不代替端到端浏览器或人工审阅。",
+      "command": "npm run check --prefix web && npm test --prefix web",
+      "timeout_seconds": 100
+    },
+    {
+      "name": "policy-boundaries",
+      "requirement": "实际编译依赖保持项目政策与资源权威分离，网络导入和领域依赖的错误变体必须被拒绝。",
+      "command": "go test -p 1 -trimpath ./internal/coding -run '^TestCodingArchitecture' -count=1",
+      "timeout_seconds": 100
+    }
+  ],
+  "cleanup": {
+    "command": "true",
+    "timeout_seconds": 5
+  }
+}

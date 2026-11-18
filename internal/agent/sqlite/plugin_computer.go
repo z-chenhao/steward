@@ -40,18 +40,15 @@ func (t *tools) computerMethodHost(ctx context.Context, inv tool.Invocation, ser
 	if err != nil {
 		return nil, "", err
 	}
-	host := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.computerMethodFence
-	host.Store = store
-	revision, err := store.Binding(ctx, t.claim.RunID())
+	host := t.runs.pluginHostWithFence(t.computerMethodFence)
+	revision, err := host.Store.Binding(ctx, t.claim.RunID())
 	if err != nil {
 		return nil, "", err
 	}
 	if revision == "" {
 		return nil, "", rsi.ErrNotFound
 	}
-	if err = store.CheckGraph(ctx, revision); err != nil {
+	if err = host.Store.CheckGraph(ctx, revision); err != nil {
 		return nil, "", err
 	}
 	if _, err = host.ServiceInstance(ctx, revision, service); err != nil {

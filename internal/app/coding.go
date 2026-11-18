@@ -32,3 +32,15 @@ func (a *App) SaveCodePRReport(ctx context.Context, ref, head string) (artifact.
 	}
 	return a.store.SaveCodePRReport(ctx, ref, a.github.Config, head)
 }
+
+func (a *App) SaveCodePRExactReport(ctx context.Context, ref, head, source string) (artifact.Descriptor, error) {
+	if a.github == nil {
+		return artifact.Descriptor{}, agent.ErrConflict
+	}
+	if a.prepareArtifactPlugins != nil {
+		if err := a.prepareArtifactPlugins(ctx); err != nil {
+			return artifact.Descriptor{}, err
+		}
+	}
+	return a.store.SaveCodePRExactReport(ctx, ref, a.github.Config, head, source)
+}

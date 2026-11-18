@@ -1,6 +1,7 @@
 package recall
 
 import (
+	"github.com/z-chenhao/assistant/internal/recall/lexical"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -14,10 +15,10 @@ func TestExcerptIsBoundedVerbatimAndKeepsReadPosition(t *testing.T) {
 	}
 }
 func TestPrecisionKeepsWordsAndCompleteQuotedReferencesDistinct(t *testing.T) {
-	if Relevance(Terms("art"), "We started research in particle physics") != 0 {
+	if lexical.Relevance(lexical.Terms("art"), "We started research in particle physics") != 0 {
 		t.Fatal("substring was treated as an event match")
 	}
-	if Relevance(Terms("art"), "An art exhibition") <= 0 {
+	if lexical.Relevance(lexical.Terms("art"), "An art exhibition") <= 0 {
 		t.Fatal("lost a real word")
 	}
 	if QuotedMatch(`"session_ac7_4"`, "session_ac7_2") || !QuotedMatch(`"session_ac7_4"`, "Original session_ac7_4 evidence") {

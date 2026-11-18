@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 )
 
 func TestCapabilityFormCandidateRetainsEveryUnshownSetting(t *testing.T) {
@@ -32,7 +32,7 @@ func TestCapabilityFormCandidateRetainsEveryUnshownSetting(t *testing.T) {
 			for name, value := range values {
 				in.Values = append(in.Values, contract.Field{Name: name, Value: value})
 			}
-			out := capabilityforms.Project(in)
+			out := v1.Project(in)
 			if out.ErrorCode != "" {
 				t.Fatal(out.Message)
 			}
@@ -56,7 +56,7 @@ func TestCapabilityFormCandidateRetainsEveryUnshownSetting(t *testing.T) {
 }
 func TestCapabilityFormCandidateRejectsImplicitYAMLAndForeignProvider(t *testing.T) {
 	in := contract.Request{Operation: "submit", ID: "mcp", Text: "- name: old\n  env: {private: retained}\n", Action: "apply", Values: []contract.Field{{Name: "mode", Value: "custom"}, {Name: "provider_count", Value: "1"}, {Name: "provider.0.original", Value: "0"}, {Name: "provider.0.name", Value: "new"}, {Name: "provider.0.command", Value: "/private/server"}, {Name: "provider.0.directory", Value: "/private/state"}, {Name: "provider.0.args", Value: ""}, {Name: "provider.0.tool_count", Value: "1"}, {Name: "provider.0.tool.0.name", Value: "lookup.v1"}, {Name: "provider.0.tool.0.permission", Value: "external_effect"}}}
-	out := capabilityforms.Project(in)
+	out := v1.Project(in)
 	if out.ErrorCode != "" {
 		t.Fatal(out.Message)
 	}

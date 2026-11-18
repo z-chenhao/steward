@@ -58,13 +58,12 @@ F-031 复用真实 Actor/store 和现有 Web。测试用显式 scripted provider
 | [traces_test.go](../../internal/agent/sqlite/traces_test.go) | 真实 Main/Root/递归 Child 的统一查询、输入输出、角色与 Agent/trace 隔离、缺失网络证据不猜测、同时间 100 节点分页及跨 trace 游标拒绝；元数据搜索与 Session/角色/状态/时间交集、字面特殊字符及搜索分页；完整查询计数/时间桶总和与分页隔离 |
 | [channels_traces.mjs](../../tests/system/channels_traces.mjs)（沿用 native-trace 浏览器场景） | 搜索/角色/时间组合、预设时间、列显隐持久化、半屏非模态预览、关闭/history/前后 Trace/展开/全页、共享紧凑尺寸、内外分栏的键盘/指针调宽、节点/JSON 分支折叠、Formatted/JSON 原文保持、类型语义色、无 JS 搜索；桌面/手机、明暗主题截图和日期面板边界 |
 | [web/traces_test.go](../../internal/interaction/web/traces_test.go) | 树/时间线与详情模板、授权/绑定、参数验证、转义、真实 parent 分支、页外 parent 与几何上限；搜索条件往返详情 URL、清除条件/时间预设重置游标；真实父子连接线/分支标记及归档大整数/小数的展示精度 |
-| [bridge/observations_test.go](../../internal/llm/bridge/observations_test.go) / [images_test.go](../../internal/llm/bridge/images_test.go) | 可选诊断不改变 generation.event 序号；跨 registration 丢弃、上限、凭据、异常 sink；实际 Pi 收到图片而观测仅含安全引用/hash |
-| [Node capture tests](../../provider-bridge/test/observability.test.mjs) | Node 侧 opt-in、凭据/像素替换、尺寸/hash、超限标记与 callback 故障隔离 |
+| [bridge/observations_test.go](../../internal/llm/bridge/observations_test.go) / [images_test.go](../../internal/llm/bridge/images_test.go) | 实际 Go Bridge 通知验证 opt-in、凭据脱敏、超限 hash 与省略原因。Host 丢弃跨 registration 的诊断并隔离 sink 故障。独立 HTTP peer 实际收到图片，诊断仅含安全引用和 hash。 |
 | [verify_channels.py](../../tests/system/verify_channels.py) 的 native_trace_inspection | 生产 Bridge + 独立 HTTP peer；实际重试、最终 JSON 比对、usage/cost 缺失、完成后重启不重发；桌面/移动/无 JS、详情滚动/history、只读账本；计数前等待 Task 的后续 Main、全部投递及终态后的 agent_end，前后计数使用一致读事务；随现有 channels gate 运行，截图为受控 peer 下的真实产品页面 |
 
 - **F-031 证明范围**：O-01 导航、O-09 的关系元数据分页、O-10 的认证/只读/转义已有入口。缺少来源记录时明确未知；标题裁切、跨页状态变化和树片段有说明。截图不证明模型质量。
 - **F-034 证明范围**：O-02/03/04/09/10 由实际冻结记录比对、语义压缩/恢复检查、SQL 边界测试和真实浏览器共同覆盖。完整内容是保存的 Host 请求和已接纳结果；旧来源缺失明确未知，压缩归档仅显示引用，不授予新 Artifact 访问。
-- **F-035 证明范围**：生产 Go/Node/Pi 请求与独立 HTTP peer 收到的 JSON 比对；503 重试与 attempt 对应。实际图片发送测试核对 Artifact/预览 hash 证据且无 Base64；Node 与 Host 验证凭据移除、限额与诊断故障隔离。Capture 本身 best-effort，不能用空记录证明没有网络调用。
+- **F-035 证明范围**：生产 Go Bridge 请求与独立 HTTP peer 收到的 JSON 比对，503 重试与 attempt 对应。实际图片发送测试核对 Artifact、预览 hash 和像素脱敏。Go Bridge 与 Host 验证凭据移除、限额与诊断故障隔离。采集允许丢失事件，空记录保持未知。
 - **F-036 证明范围**：统一树/时间线、当前状态、唯一 generation 的已有 token/cost；同一接纳结果在 checkpoint 前 SIGKILL 后只调用一次 provider，并显示 reuse 事件。旧细粒度时间缺失保持未知，tool unknown 不触发重试；等待和未知效果仍由既有 tools/children/recovery gates 保护。
 
 ## 执行与完成判定

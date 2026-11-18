@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -187,28 +186,6 @@ func TestWebPluginReadPublishedInterpreterSurvivesUpgradeRetirementAndDisable(t 
 	}
 }
 
-// Match the production actor's lease renewal while a direct Tool fixture runs.
-func keepWebReadClaim(r *Runs, claim agent.RunClaim) func() {
-	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		ticker := time.NewTicker(leaseDuration / 4)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if r.Renew(ctx, claim) != nil {
-					return
-				}
-			}
-		}
-	}()
-	return func() { cancel(); <-done }
-}
-
 func TestWebPluginReadComplete24MiBDocumentAndExactUnicodeFind(t *testing.T) {
 	ctx := context.Background()
 	cfg := webaccess.Config{}
@@ -225,7 +202,7 @@ func TestWebPluginReadComplete24MiBDocumentAndExactUnicodeFind(t *testing.T) {
 	})
 	defer r.Release(ctx, claim)
 	grantWebReadFixture(t, s, claim, ref)
-	defer keepWebReadClaim(r, claim)()
+	defer keepRunClaim(r, claim)()
 	results, err := executor.Execute(ctx, exchange, calls)
 	if err != nil || len(results) != 1 || results[0].Error != nil {
 		data, _ := json.Marshal(results)

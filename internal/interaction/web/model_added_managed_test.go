@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/z-chenhao/assistant/internal/llm"
-	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	connectionv1 "github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -106,7 +107,7 @@ func TestModelConnectionManagedAddedConnectionMatchesExecutedNativeActions(t *te
 					if f.Added == nil || f.Added.HasCurrent != c.HasCurrent || f.AccountBacked != c.AccountBacked {
 						t.Fatal("incorrect source facts", f)
 					}
-					out := owner.ProjectConnection(f)
+					out := connectionv1.Connection(f)
 					switch mode {
 					case "independent-save":
 						out.AddedAction = "save"

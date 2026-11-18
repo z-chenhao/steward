@@ -2,7 +2,9 @@
   "id": "coding-system-owner",
   "allowed_contracts": [
     "steward.coding-import-limits/1",
-    "steward.coding-report-recipe/1"
+    "steward.coding-report-recipe/1",
+    "steward.coding-check-limits/1",
+    "steward.coding-project-plan/1"
   ],
   "cases": [
     {
@@ -35,7 +37,75 @@
         "commands": 256,
         "command_bytes": 4194304,
         "patch_bytes": 8388608,
-        "order": "oldest"
+        "order": "oldest",
+        "review_guide": [
+          "Compare the original instructions and later changes with the candidate diff; record unmet requirements.",
+          "Check candidate, environment and method identities for each receipt; a historical pass may not cover this candidate.",
+          "Inspect retained evidence, failures, unknown effects and unverified behavior before accepting the result.",
+          "Review reported time, usage and prices with missing observations left unavailable.",
+          "Confirm the exact remote revision and content before delivery; record the human acceptance decision separately."
+        ]
+      }
+    },
+    {
+      "instance_id": "coding-workspace",
+      "contract": "steward.coding-check-limits/1",
+      "input": {
+        "ceilings": {
+          "timeout_seconds": 120,
+          "output_bytes": 48000
+        }
+      },
+      "expected": {
+        "timeout_seconds": 60,
+        "output_bytes": 48000
+      }
+    },
+    {
+      "instance_id": "coding-workspace",
+      "contract": "steward.coding-check-limits/1",
+      "input": {
+        "ceilings": {
+          "timeout_seconds": 120,
+          "output_bytes": 48000
+        },
+        "requested_timeout": 5
+      },
+      "expected": {
+        "timeout_seconds": 5,
+        "output_bytes": 48000
+      }
+    },
+    {
+      "instance_id": "coding-workspace",
+      "contract": "steward.coding-project-plan/1",
+      "input": {
+        "document": "{\"version\":1,\"name\":\"fixture\",\"prepare\":{\"command\":\"true\",\"timeout_seconds\":5},\"doctor\":{\"command\":\"true\",\"timeout_seconds\":5},\"checks\":[{\"name\":\"build\",\"requirement\":\"Build exits successfully\",\"command\":\"true\",\"timeout_seconds\":5}],\"cleanup\":{\"command\":\"true\",\"timeout_seconds\":5}}",
+        "check": "build"
+      },
+      "expected": {
+        "plan": {
+          "version": 1,
+          "name": "fixture",
+          "check": "build",
+          "requirement": "Build exits successfully",
+          "prepare": {
+            "command": "true",
+            "timeout_seconds": 5
+          },
+          "doctor": {
+            "command": "true",
+            "timeout_seconds": 5
+          },
+          "verify": {
+            "command": "true",
+            "timeout_seconds": 5
+          },
+          "cleanup": {
+            "command": "true",
+            "timeout_seconds": 5
+          }
+        }
       }
     }
   ]

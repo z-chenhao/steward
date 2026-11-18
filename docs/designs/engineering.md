@@ -249,6 +249,10 @@ and account/storage cannot depend on the RPC transport.
 
 PR checks use GitHub’s proposed merge commit, so the checked code includes the current base. Artifact names identify that checked commit.
 
+The private built-in distribution catalog identifies each shipped folder, expected package ID and typed startup setting. Source packaging reads the folder names from the freshly built binary. Startup checks the same catalog before activation, and the bootstrap checks the supplied manifests and owner policy. An incomplete installed bundle fails before activation. Explicit historical or embedded configurations continue to supply their own directories. The build query is internal to distribution tooling.
+
+Fresh full-distribution tests share the [reviewed default inventory](../../tests/fixtures/plugins/default-owner-inventory.json). Plugin entries identify instances. Owner case entries identify the instance, contract and canonical inputs, including fixture resources. The active graph and installed policy supply observed identities. Compare both inventories and report missing, extra or duplicate entries. Feature-specific assertion values remain in their owning policy cases. Review a planned inventory change with the feature change and retain the observed production bootstrap as evidence.
+
 Documentation-only PRs run the local link/index check without installing Go,
 Node or Chromium. The `Ubuntu checks` job still executes and reports a status;
 there is no workflow-level path filter that leaves branch protection pending.
@@ -321,6 +325,32 @@ historical clause-audit ledgers are maintained outside the product checkout.
 They are not PR prerequisites. See [evaluation boundaries](../test-plans/product.md#testing-agent-evaluation).
 
 ## Dependency and repository maintenance
+
+The tool argument validator, model object-ID projection, and plugin SDK share
+one internal JSON token check for duplicate members, trailing data, and depth.
+Each caller keeps its byte budget, number behavior, schema and error handling.
+The pinned Go 1.26 toolchain gates `encoding/json/v2` behind a build experiment.
+A general JSON Schema engine supports a broader dialect and would still need
+Steward's fail-closed vocabulary and compatibility checks. The project container
+is pinned to a Unix socket and Engine API 1.44. The Moby client can pin that API,
+but its transport alone does not replace response limits, image and invocation
+identity, or the recovery rules for an unknown create result.
+[Go JSON](https://go.dev/blog/jsonv2-exp) · [JSON Schema for Go](https://github.com/santhosh-tekuri/jsonschema) · [Moby client](https://pkg.go.dev/github.com/moby/moby/client)
+
+Recovery metadata readers and writers use the filesystem primitives that match
+their publication rules. Service metadata replaces the file and syncs the parent
+directory. VM intent markers are created exclusively and retained across an
+unknown dispatch. A library for atomic replacement covers only one operation
+in these lifecycles. Project recipes use the standard library's anchored root
+with nonblocking open and verify the opened file is regular before reading.
+[renameio durability scope](https://github.com/google/renameio#atomicity-vs-durability) · [Go os.Root](https://pkg.go.dev/os#Root)
+
+For versioned pure projections, an explicitly retained native v1 and the
+shipped plugin can compile the same v1 implementation. The runtime still
+selects a plugin by the active or frozen graph. A future plugin version can
+select a new implementation while old binaries and explicit native v1 readers
+keep their existing behavior. Schema, bound resource verification and authority
+checks remain at their respective owners.
 
 `make lint` includes SHA-pinned workflow validation with actionlint v1.7.12. The independent dependency-audit workflow uses govulncheck v1.9.0 and npm lockfile audits, and runs weekly/manually/on dependency PRs. Dependabot proposes updates without automatic merging. Go 1.26.11 is the current minimum patched toolchain; the application module import path remains compatible.
 

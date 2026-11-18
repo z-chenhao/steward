@@ -14,8 +14,9 @@ import (
 	"github.com/z-chenhao/assistant/internal/delivery"
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
 	"github.com/z-chenhao/assistant/internal/interaction"
-	"github.com/z-chenhao/assistant/internal/plugin/feishuchat"
+
 	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
+	feishuv1 "github.com/z-chenhao/assistant/internal/plugin/feishuchat/legacyv1"
 )
 
 func TestReplyUsesOnlyEscapedFrozenSourceAndNeverFallsBack(t *testing.T) {
@@ -195,7 +196,7 @@ func TestDeliveryProjectionFreezesLinkAndPreservesLegacyCard(t *testing.T) {
 				if projections > 1 || legacy {
 					return contract.CardProjection{}, errors.New("current plugin unavailable")
 				}
-				return feishuchat.ProjectCard(f), nil
+				return feishuv1.ProjectCard(f), nil
 			}}
 			if observed := a.Send(context.Background(), e); observed.Outcome != delivery.Retry {
 				t.Fatal(observed)

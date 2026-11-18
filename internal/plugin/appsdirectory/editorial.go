@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/appsdirectory/v1"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
@@ -25,8 +26,8 @@ func editorial(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, erro
 	if err := json.Unmarshal(editorialData, &value); err != nil {
 		return rsiplugin.Result{}, err
 	}
-	value.Discovery = discovery(value.Items)
-	value.Filter = filter(value.Items, input)
+	value.Discovery = v1.Discovery(value.Items)
+	value.Filter = v1.Filter(value.Items, input)
 	value.Route = route(input)
 	value.Lookup = lookup(input)
 	value.Labels = labels()

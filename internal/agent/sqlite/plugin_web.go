@@ -84,11 +84,8 @@ func (t *tools) managedWebSearch(ctx context.Context, inv tool.Invocation, run a
 	if err := check(ctx); err != nil {
 		return base, err
 	}
-	h := *t.runs.plugins
-	store := t.runs.host.Plugins()
-	store.Fence = t.fence
-	h.Store = store
-	revision, err := store.Binding(ctx, t.claim.RunID())
+	h := t.runs.pluginHostWithFence(t.fence)
+	revision, err := h.Store.Binding(ctx, t.claim.RunID())
 	if err != nil || revision == "" {
 		if err == nil {
 			err = rsi.ErrNotFound

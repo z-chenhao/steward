@@ -9,6 +9,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/agent/sqlite"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/automation"
+	"github.com/z-chenhao/assistant/internal/coding"
 	"github.com/z-chenhao/assistant/internal/computer"
 	"github.com/z-chenhao/assistant/internal/computer/environment"
 	computerfake "github.com/z-chenhao/assistant/internal/computer/fake"
@@ -179,6 +180,12 @@ func (a *App) runtimeRegistry(ctx context.Context, cfg config.Config, fixture st
 		identity = cfg.Computer
 	}
 	defs = append(defs, environment.Definitions(environment.ResourceHash(identity))...)
+	if cfg.Computer == nil && cfg.ExecutionConfig().RepositorySource != "" {
+		defs = append(defs, coding.CheckDefinitions(environment.ResourceHash(identity))...)
+		if container := cfg.ExecutionConfig().ProjectContainer; container != nil {
+			defs = append(defs, coding.VerificationDefinition(container.ResourceHash(environment.ResourceHash(identity))))
+		}
+	}
 	defs = append(defs, ocr.Definition(imageOCR.ResourceHash()))
 
 	if (fixture == "core" || fixture == "codemode") && cfg.JavaScript != nil {

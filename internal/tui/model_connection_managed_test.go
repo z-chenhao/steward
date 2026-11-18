@@ -5,8 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/z-chenhao/assistant/internal/llm"
-	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	connectionv1 "github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 	"os"
 	"reflect"
 	"strings"
@@ -76,7 +77,7 @@ func TestModelConnectionTerminalSetupMatches4NativeProfilesAndPrompts(t *testing
 					if f.Preset != contract.TerminalSetup || f.AccountBacked != (c.Name == "account") {
 						t.Fatal("terminal facts lost", f)
 					}
-					out := owner.ProjectConnection(f)
+					out := connectionv1.Connection(f)
 					switch mode {
 					case "independent":
 						out.ContextWindow = 96000

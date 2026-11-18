@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 	"strings"
 	"testing"
 )
@@ -35,7 +35,7 @@ func TestCapabilityStatusDistinguishesConfigurationFromConnectionProof(t *testin
 				t.Run(fmt.Sprintf("%s/%s/verified=%t", tc.name, language, verified), func(t *testing.T) {
 					v := tc.capability
 					v.Verified = verified
-					projection := capabilityforms.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
+					projection := v1.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
 					var copy []contract.Translation
 					if err := json.Unmarshal([]byte(projection.Copy.Source), &copy); err != nil {
 						t.Fatal(err)

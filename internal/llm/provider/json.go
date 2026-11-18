@@ -36,16 +36,7 @@ func (c *Client) JSON(ctx context.Context, m Model, method, path string, body ma
 			return nil, ErrIncompatible
 		}
 	}
-	client := o.HTTPClient
-	if client == nil {
-		client = c.HTTPClient
-	}
-	if client == nil {
-		client = &http.Client{}
-	}
-	copyClient := *client
-	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-	client = &copyClient
+	client := c.directHTTPClient(o.HTTPClient)
 	retries := o.MaxRetries
 	if retries < 0 {
 		retries = 0

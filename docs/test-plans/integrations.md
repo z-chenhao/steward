@@ -18,26 +18,13 @@
 
 ## 个人 Connector 验收计划
 
-F-046–F-070 的[分类与范围](../features/integrations.md#术语与登记边界)、[接入顺序](../feature-map.md#personal-connector-priorities)和[待实现方案](../designs/integrations.md#个人-connector-待实现方案)是以下验收的依据。16 项外部系统／服务 connector、F-069 Web Access Plugin、F-070 插件生命周期与 7 项非 connector 能力候选分别验收，最后一类不构成已确认开发任务。F-069 及其 F-067 后备已有工具入口和专项测试，F-071 已提供 Composio 应用通道；原生条目与各服务领域验收仍按计划分别验证，不用目录可见代替真实业务证明。已有 MCP、Guest、Artifact、Memory 或精确 PR 测试不能证明新服务已可用；待定义项先确认数据来源、平台和行为范围，再固化场景。
+本节覆盖已有 Web Access 及其搜索适配器、MCP／外部连接的产品接入边界。其他服务形成可操作场景后再扩展验收。
 
 ### 分项场景矩阵
 
 | 独立需求 | 正常场景与可观察交付 | 关键失败／边界 | 计划层级与当前缺口 |
 | --- | --- | --- | --- |
 | [F-046 Tavily](../features/integrations.md#f-046) | 找到指定原文→读取正文→返回可打开来源与时间，摘要／全文可区分 | 零命中、正文提取失败、截断、旧文章／转载、429、恶意网页指令 | HTTP 协议 peer＋产品系统链路；真实站点／中文覆盖需 Live，全部待补 |
-| [F-047 GitHub](../features/integrations.md#f-047) | 在指定仓库读 PR/diff/CI，经授权发草稿 PR／评论后核对确切结果 | 错账户／仓库、权限不足、head 已变化、限流、未知写结果、重复发布 | 协议＋系统；复用现有监听回归但新协作链路待补，真实 App/PAT 需 Live |
-| [F-055 Google Maps](../features/integrations.md#f-055) | 解析海外地点链接，核对城市／入口并给出指定方式路线 | 同名地点、站点入口偏差、短链失效、无公交方案、时区错误、过期营业信息 | 协议＋系统；真实地点／地区数据质量需 Live，待补 |
-| [F-056 高德](../features/integrations.md#f-056) | 国内 POI／天气／路线可追溯，导航／打车链接正确交接 App | 坐标体系混淆、天气过期、配额耗尽、URL 日志泄钥、把唤端当交易完成 | 协议／MCP 视实际方案＋系统；真实 API 配额与 App 唤端 Live，待补 |
-| [F-057 Apple Health／HealthKit](../features/integrations.md#f-057) | 来源确认后通过授权设备端组件读取选定时间窗，区分单位／设备 | 时区跨日、重复设备、缺失值被当正常、设备离线、授权撤销 | 先确认来源；设备端协议及隐私系统链路、真实 HealthKit 授权需 Live，XML 文件导入不计本项接通 |
-| [F-058 飞书云文档](../features/integrations.md#f-058) | 搜索并读取明确资源／版本，生成草稿或授权更新确切位置 | token 身份混淆、知识库未授权、权限撤销、并发编辑冲突、写入未知 | 协议＋产品系统；用户／应用身份和真实租户授权 Live，待补 |
-| [F-059 Gmail](../features/integrations.md#f-059) | 找到指定线程和附件，形成未发送的本地草稿 | OAuth 过期／撤销、分页、过滤条件被误当 scope、恶意邮件、发送未知 | 协议＋产品系统；真实 OAuth／scopes／适用验证条件需 Live，待补 |
-| [F-060 Jellyfin](../features/integrations.md#f-060) | 读取选定库和媒体／播放状态，指出真实阻塞环节 | 服务器离线、库不可见、媒体存在但客户端不能播、认证失效／版本差异 | 协议＋受控媒体库系统；实际客户端播放 Live，端点仍需核实，待补 |
-| [F-061 AWS](../features/integrations.md#f-061) | 在指定账户／区域查资源，并解释可取得费用及时间范围 | 未查其他区域、无费用权限、账单延迟、余额／credits 混淆、凭据过期 | 协议＋系统；受控只读账户 Live，不创建付费资源，待补 |
-| [F-062 Google Calendar](../features/integrations.md#f-062) | 来源确认后读忙闲／日程，经授权创建明确事件 | 跨时区、重复日程例外、同步游标过期、并发冲突、邀请误发／重复创建 | 先确认来源；协议＋系统、真实日历 Live，全部待补 |
-| [F-063 Apple EventKit](../features/integrations.md#f-063) | 来源确认后只访问选定日历／清单，正确展示日程或提醒 | OS 拒绝／撤权、只写与完整权限不同、重复提醒、本机组件离线 | 先确认来源／分工；组件＋系统及真实 OS 权限 Live，全部待补 |
-| [F-064 Google Drive](../features/integrations.md#f-064) | 来源确认后选择文件→读取／导出／保存，范围与操作明确 | `drive.file` 被误当全盘搜索、原生类型不支持、下载禁止、协作冲突 | 先确认来源；协议＋系统、真实 Picker／权限 Live，全部待补 |
-| [F-065 X](../features/integrations.md#f-065) | 对网页覆盖不足的确切帖子取得可用上下文，再独立核验 | 删除／受限、引用缺失、媒体不可读、费用／额度不足、转载冒充完整来源 | 先核实直连接入增量；协议＋系统，真实账户覆盖 Live，待补 |
-| [F-066 YouTube](../features/integrations.md#f-066) | 确认任务后区分元数据和已取得转录，以时间戳引用实际内容 | 无字幕、无编辑权限、语言不符、只凭标题生成完整视频摘要 | 先确认任务；协议＋系统、真实字幕权限／内容质量 Live，全部待补 |
 | [F-067 Exa MCP](../features/integrations.md#f-067) | 免密钥查询得到实际来源；正文有无明确，实际服务／工具可追溯 | 429、工具／schema 变化、缺正文、无效响应；严格过滤不能静默变成提示，取消后不换源 | 目标传输协议 peer＋产品系统，F-069 中已有协议 peer 和 opt-in 在线测试；长期限流／中文质量仍待验证 |
 | [F-068 SearXNG](../features/integrations.md#f-068) | 查询选定实例，展示来源及已知上游失败／部分结果 | JSON 未启用、缺结果字段、403／429、跨 origin 丢认证、域名筛选／时间保证变化 | HTTP peer＋产品系统；实际实例与上游质量需 Live，未部署，全部待补 |
 | [F-069 Web Access Plugin](../features/integrations.md#f-069) | 按冻结的已验证账户能力搜索，读公开网页并续读 Artifact；原生及允许后备的真实来源可追溯 | 主模型／账户不切换，零命中不换源，取消／撤权终止；预算、过滤、来源／live 模式不能静默退化 | 已有模型／HTTP peer、SQLite 工具与 Artifact 集成；Steward 自有账户和内容质量仍需 Live |
@@ -60,20 +47,6 @@ F-046–F-070 的[分类与范围](../features/integrations.md#术语与登记�
 | Live | 显式免费 Exa／公开网页探测；经本人授权的临时 Steward 账户跑 Main→Code Mode→native→Artifact，并核对来源／用量／终态 | 不读取其他助手凭据；凭据、账户身份和授权 URL 不进入 PR 或测试日志。其他服务、中文质量和长期额度独立验收 |
 
 F-069 保持部分完成：已接通的核心链路不证明未接入供应商、视频／登录网页或所有账户可用。真实执行证据留在 PR／CI／忽略的 evidence/，不写入长期运行日志；macOS 临时路径或浏览器系统差异与 Ubuntu 必需门禁分别报告。
-
-### 非 Connector 能力候选的验收方向
-
-以下七项保留原 ID 供追溯，不是 connector 专项验收，也不表示已确认独立开发任务。只有在相应能力范围另行确认后，才纳入对应功能的实施／测试计划。
-
-| 能力候选 | 可观察方向 | 关键边界 | 未确认的验证范围 |
-| --- | --- | --- | --- |
-| [F-048 macOS](../features/integrations.md#f-048) | 选定目录／服务后解释占用／状态，维护前展示具体目标 | 链接逃逸、越界目录、文件并发变化、OS 权限拒绝、错误清理目标 | 可丢弃本机夹具＋系统；真实 macOS helper／权限需 Live，待补 |
-| [F-049 SSH](../features/integrations.md#f-049) | 对具名主机核对身份、读服务和日志；授权维护后验证状态 | host key 变化、错主机、密钥拒绝、断连、动作已执行但回执丢失、回滚失败 | 受控 SSH peer＋系统；真实目标机 Live，现有 Guest SSH 不能替代，待补 |
-| [F-050 Chrome](../features/integrations.md#f-050) | 读用户选定页面，明确同页导航／表单步骤，核实最终页面状态 | 陈旧标签页、重定向／登录失效、页面关闭、用户抢占、提交未知、越界标签页 | 浏览器受控站点＋系统；宿主浏览器和 helper Live，待补 |
-| [F-051 ChatGPT](../features/integrations.md#f-051) | 导入选定对话，沿来源找回旧资料及实际存在的附件 | 多分支／编辑、重复导入、残缺导出、缺附件、格式未知、历史提示注入 | 脱敏导出夹具＋产品导入／召回系统链路，格式兼容待验证，全部待补 |
-| [F-052 Codex](../features/integrations.md#f-052) | 从选定工程会话给出原要求、未决事项和确切产物引用 | 来源格式升级、已删除产物、旧“通过”报告与当前失败、重复／撤销 | 合成会话＋系统；不复制用户状态库，真实版本兼容待验证，全部待补 |
-| [F-053 Pi](../features/integrations.md#f-053) | 从选定分支导入主题，按来源接续设备或工程讨论 | 分支混合、截断 JSONL／其他格式、未知版本、旧命令诱导执行、来源移除 | 合成会话＋系统；格式和分支兼容待验证，全部待补 |
-| [F-054 图片服务](../features/integrations.md#f-054) | 文生图／参考图编辑返回可保存重开的图片；实际动画需播放验证 | 原图缺失／错引用、服务拒绝、费用上限、取消、超时未知、静态文件冒充动画 | 协议＋Artifact 系统；生成／编辑质量及实际动画为独立 Live/评测，待补 |
 
 ### 共同验收与完成标准
 
@@ -423,7 +396,7 @@ Apps 公共编辑私有实验：`TestAppsEditorialActualOwnerHTTPVersionsSnapsho
 账户清单：`TestAppsDirectoryActualInventoryOriginalReferencesVersionAndCold` 从原迁移前十四组 fixture 经实际 App／持久状态／隔离候选与认证 HTTP 验证原引用、首页侧栏和已连接页的不同同名顺序；65,539 行默认选首行，独立版本选末行，同时旧请求保持首行。实际可见名称、冷启动、真实回退及重启、潜伏越界和隔离均需验证。原行 fixture 不冒充账户创建，账户动作继续由现有真实流程回归覆盖。`TestEditorialCardStatesUseOnlyScopedFactsAndOriginalPublicValue` 同时检查原源位置投影与所有状态重复读取不再执行候选；部分组失败不得返回局部引用或状态。该 App 根通过 `Apps` 前缀进入必需 connected-apps race，并由 CI 清单回归保证可达。账户工作流／资源和完整分发仍单独验收。
 
 
-私有排序：`TestAppsDirectoryActualPrivateOrderLargeOriginalColdAndFences` 使用实际 App／持久原状态／隔离候选比较迁移前两个原生 hash，覆盖 13 MiB 完整名称、单个 3 MiB 名称及 Unicode／不稳定同名排序；另验证 16,387 行完整排列的两窗输出、原名称投影 hash、实际认证页面顺序、仅改变私有比较器且其余政策不变的独立反序版本、冻结请求／冷重启／真实回退。普通纯读对同一大输入仍拒绝；原 Host Fence、流读取途中撤权、移走载体后的启动前状态冲突、第一真实窗口后变更状态、潜伏重复／越界／短页／跨窗重放及隔离均不得释放私有／局部结果。停用后冷启动不得恢复受管元数据；仍原生的独立账户控制单独列为余项，不冒充迁移或账户创建证明。
+私有排序：`TestAppsDirectoryActualPrivateOrderLargeOriginalColdAndFences` 使用实际 App／持久原状态／隔离候选比较迁移前两个原生 hash，覆盖 13 MiB 完整名称、单个 3 MiB 名称及 Unicode／不稳定同名排序；另验证 16,390 行完整排列的两窗输出、原名称投影 hash、实际认证页面顺序、仅改变私有比较器且其余政策不变的独立反序版本、冻结请求／冷重启／真实回退。普通纯读对同一大输入仍拒绝；原 Host Fence、流读取途中撤权、移走载体后的启动前状态冲突、第一真实窗口后变更状态、潜伏重复／越界／短页／跨窗重放及隔离均不得释放私有／局部结果。停用后冷启动不得恢复受管元数据；仍原生的独立账户控制单独列为余项，不冒充迁移或账户创建证明。
 
 `TestEditorialInventoryOrderCompletePrivateWindowsAndOriginalRevision` 保护同一原数据／修订／页面语义在两窗不变；`TestEditorialInventoryOrderInvalidPermutationNeverReleasesPartialOrNative` 保护原索引覆盖、后窗失败、缺方法与空选择；`TestInventoryOrderFactsExactOriginalBytesAndRejectMalformedInput` 独立固定 framing 验证 NUL／无效 UTF-8／反斜线、长度、数量和尾随数据。SDK 的 `TestInputStreamPreservesLargeIdentityAndDoesNotWidenOrdinaryRead` 验证大输入完整 digest、短写／取消／未授权身份拒绝和常规上限不变。这些根及 SDK 包进入必需 connected-apps race，CI 清单回归保护可达；完整软件检查继续覆盖既有 DOCX／OCR／资源／隐私路径。
 

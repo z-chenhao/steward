@@ -27,12 +27,12 @@ SYSTEM = {
     'startup-ui': ('startup', 'intelligent-ui', 'ui-interactions', 'capability-form-plugins'),
 }
 MEMORY_GATES = ('memory-maintenance', 'recall')
-CAPABILITIES = ('task-code-environments', 'task-code-recovery', 'tool-loading', 'main-business')
-RACE = "go test -race -p 1 ./internal/agent ./internal/config/setup ./internal/interaction/web ./internal/interaction/feishu ./internal/llm/bridge ./internal/app ./internal/llm/secret ./internal/tui -run '" + CAPABILITIES_SQLITE_PATTERN + "' -count=1"
+CAPABILITIES = ('task-code-environments', 'task-code-recovery', 'task-code-exact-report', 'tool-loading', 'main-business')
+RACE = "go test -race -p 1 ./internal/agent ./internal/coding ./internal/computer/projectcontainer ./internal/config/setup ./internal/interaction/web ./internal/interaction/feishu ./internal/llm/bridge ./internal/app ./internal/llm/secret ./internal/tui -run '" + CAPABILITIES_SQLITE_PATTERN + "' -count=1"
 
 
 def plan(kind):
-    names = SOFTWARE if kind == 'software' else (*SYSTEM, *('channels-' + group for group in CHANNEL_GROUPS), 'capabilities-race', 'memory-context', 'computer-plugins', 'web-plugins', 'mcp-plugins', 'connected-apps-plugins', 'tool-discovery-plugins', 'github-plugins', 'artifact-plugins')
+    names = SOFTWARE if kind == 'software' else (*SYSTEM, *('channels-' + group for group in CHANNEL_GROUPS), 'capabilities-race', 'memory-context', 'computer-plugins', 'web-plugins', 'mcp-plugins', 'connected-apps-plugins', 'tool-discovery-plugins', 'github-plugins', 'artifact-plugins', 'coding-development')
     return dict(include=[dict(lane=name,
         frontend=str(name in ('frontend', 'browser-infra', 'lint')).lower(),
         browser=str(name in ('browser-infra', 'lint', 'tools-provider', 'startup-ui') or name.startswith('channels-')).lower())
@@ -63,6 +63,9 @@ def command(lane):
         return 'make test-github-plugins\npython3 tests/system/runner.py --gate github-plugins --binary bin/steward --evidence evidence/e2e-github-plugins'
     if lane == 'artifact-plugins':
         return 'make test-artifact-plugins\npython3 tests/system/runner.py --gate artifact-plugins --binary bin/steward --evidence evidence/e2e-artifact-plugins'
+    if lane == 'coding-development':
+        return ('make test-coding-environment CODING_ENV_EVIDENCE=evidence/coding-environment\n'
+                'make test-coding-development CODING_DEVELOPMENT_EVIDENCE=evidence/coding-development')
     if lane == 'memory-context':
         gates = ' '.join('--gate ' + gate for gate in MEMORY_GATES)
         return f'make test-memory build\npython3 tests/system/runner.py {gates} --binary bin/steward --evidence evidence/e2e-{lane}'

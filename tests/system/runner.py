@@ -12,19 +12,62 @@ import subprocess
 import sys
 import threading
 import time
-from dataclasses import dataclass
 
 ROOT = Path(__file__).resolve().parents[2]
 
-@dataclass(frozen=True)
-class Gate:
-    name: str
-    script: str
-    attempts: int = 1
-
 CORE = ('startup', 'main', 'tasks', 'children', 'tools', 'artifacts', 'code-recovery',
         'local-provider', 'account', 'model-menu-plugins', 'feishu-plugins', 'capability-form-plugins', 'channels', 'intelligent-ui', 'ui-interactions')
-REGISTRY = {'capability-form-plugins': 'verify_capability_form_plugins.py', 'feishu-plugins': 'verify_feishu_plugins.py', 'model-menu-plugins': 'verify_model_menu_plugins.py', 'ui-interactions': 'verify_ui_interactions.py', 'intelligent-ui': 'verify_intelligent_ui.py', 'foundation': 'verify.py', 'account': 'verify_account.py', 'artifacts': 'verify_artifacts.py', 'automation': 'verify_automation.py', 'capabilities': 'verify_capabilities.py', 'capacity': 'verify_capacity.py', 'channels': 'verify_channels.py', 'children': 'verify_children.py', 'code-recovery': 'verify_code_recovery.py', 'codemode': 'verify_codemode.py', 'computer': 'verify_computer.py', 'computer-use': 'verify_computer_use.py', 'computer-plugins': 'verify_computer_plugins.py', 'web-plugins': 'verify_web_plugins.py', 'mcp-plugins': 'verify_mcp_plugins.py', 'connected-apps-plugins': 'verify_connected_apps_plugins.py', 'tool-discovery-plugins': 'verify_tool_discovery_plugins.py', 'github-plugins': 'verify_github_plugins.py', 'artifact-plugins': 'verify_artifact_plugins.py', 'delivery': 'verify_delivery.py', 'local-provider': 'verify_local_provider.py', 'main': 'verify_main.py', 'memory-maintenance': 'verify_memory_maintenance.py', 'operations': 'verify_operations.py', 'recall': 'verify_recall.py', 'scheduling': 'verify_scheduling.py', 'spend': 'verify_spend.py', 'startup': 'verify_startup.py', 'task-control': 'verify_task_control.py', 'tasks': 'verify_tasks.py', 'terminal-input': 'verify_terminal_input.py', 'tools': 'verify_tools.py', 'tui': 'verify_tui.py'}
+GATE_NAMES = (
+    'capability-form-plugins',
+    'feishu-plugins',
+    'model-menu-plugins',
+    'ui-interactions',
+    'intelligent-ui',
+    'foundation',
+    'account',
+    'artifacts',
+    'automation',
+    'capabilities',
+    'capacity',
+    'channels',
+    'children',
+    'code-recovery',
+    'codemode',
+    'computer',
+    'computer-use',
+    'computer-plugins',
+    'web-plugins',
+    'mcp-plugins',
+    'connected-apps-plugins',
+    'tool-discovery-plugins',
+    'github-plugins',
+    'artifact-plugins',
+    'delivery',
+    'local-provider',
+    'main',
+    'memory-maintenance',
+    'operations',
+    'recall',
+    'scheduling',
+    'spend',
+    'startup',
+    'task-control',
+    'tasks',
+    'terminal-input',
+    'tools',
+    'tui',
+)
+REGISTRY = {name: 'verify_' + name.replace('-', '_') + '.py' for name in GATE_NAMES}
+REGISTRY['foundation'] = 'verify.py'
+
+JOURNEYS = {
+    'first-reply': ('startup',),
+    'delegated-work': ('main', 'tasks', 'children', 'artifacts'),
+    'approved-effects': ('tools', 'codemode', 'code-recovery'),
+    'coding-handoff': ('capabilities',),
+    'model-recovery': ('model-menu-plugins',),
+    'forget': ('memory-maintenance', 'recall'),
+}
 
 
 def source_state():
@@ -133,13 +176,18 @@ def run_command(args, env, output, stopped, metrics=None):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--suite', choices=('core', 'full'), default='core')
-    parser.add_argument('--gate', action='append')
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument('--gate', action='append')
+    selection.add_argument('--journey', choices=JOURNEYS, help='run the gates for a documented user journey')
     parser.add_argument('--repeat', type=int, choices=range(1, 6), default=1)
     parser.add_argument('--list', action='store_true')
     parser.add_argument('--binary', type=Path, default=Path('bin/steward'))
     parser.add_argument('--evidence', type=Path, default=Path('evidence/e2e'))
     args = parser.parse_args(argv)
-    names = args.gate if args.gate is not None else list(CORE if args.suite == 'core' else REGISTRY)
+    if args.journey:
+        names = JOURNEYS[args.journey]
+    else:
+        names = args.gate or (CORE if args.suite == 'core' else tuple(REGISTRY))
     if not names or len(names) != len(set(names)) or set(names) - REGISTRY.keys():
         parser.error('select distinct registered gates')
     if args.list:

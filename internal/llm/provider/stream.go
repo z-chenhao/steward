@@ -21,6 +21,18 @@ type Client struct {
 	sockets    map[string]*websocketSession
 }
 
+func (c *Client) directHTTPClient(client *http.Client) *http.Client {
+	if client == nil {
+		client = c.HTTPClient
+	}
+	if client == nil {
+		client = &http.Client{}
+	}
+	direct := *client
+	direct.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	return &direct
+}
+
 func (c *Client) Stream(ctx context.Context, m Model, in Context, o Options, emit func(Event)) (AssistantMessage, error) {
 	o = o.Resolve(m)
 	m = resolveModel(m, o)
@@ -50,16 +62,7 @@ func (c *Client) Stream(ctx context.Context, m Model, in Context, o Options, emi
 	if err != nil {
 		return AssistantMessage{}, ErrIncompatible
 	}
-	httpClient := o.HTTPClient
-	if httpClient == nil {
-		httpClient = c.HTTPClient
-	}
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-	copyClient := *httpClient
-	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-	httpClient = &copyClient
+	httpClient := c.directHTTPClient(o.HTTPClient)
 	state := newStreamState(m, emit)
 	observe := func(phase, attempt string, status int, err error) {
 		if o.Observe != nil {

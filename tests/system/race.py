@@ -29,7 +29,7 @@ APP = 'github.com/z-chenhao/assistant/internal/app'
 APP_PATTERN = '^Test(ConnectedApps|Apps)'
 APPS_SQLITE_PATTERN = r'^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)'
 GITHUB_SQLITE_PATTERN = r'^Test(GitHub.*|StartupReconcilesRemovedOrChangedGitHubScopeBeforeActor|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$'
-CAPABILITIES_SQLITE_PATTERN = 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*|.*ModelMenu.*|Capability.*|Guided.*|FeishuStatus.*|FeedbackProjection.*|FeedbackUnavailableProjection.*|DeliveryProjection.*|FrozenDelivery.*|ManagedCard.*|CardPresentation.*|TerminalInterface.*|ModelPicker.*|ModelConnection.*|ModelSettings.*|SettingsDraft.*)'
+CAPABILITIES_SQLITE_PATTERN = 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*|.*ModelMenu.*|Capability.*|Guided.*|FeishuStatus.*|FeedbackProjection.*|FeedbackUnavailableProjection.*|DeliveryProjection.*|FrozenDelivery.*|ManagedCard.*|CardPresentation.*|TerminalInterface.*|ModelPicker.*|ModelConnection.*|ModelSettings.*|SettingsDraft.*|Coding(Check|Project|Environment|Container|Architecture|Development).*|TaskCode.*|TaskChildInheritsWorkScopeAndOwnerReportIsTaskBound|CodingPluginActualImportAndReportPreserveSourceAndOriginalFacts|CandidateSnapshot.*|ReviewSnapshot.*)'
 SQLITE_PATTERNS = {'apps-sqlite': APPS_SQLITE_PATTERN, 'github-sqlite': GITHUB_SQLITE_PATTERN,
                    'capabilities-sqlite': CAPABILITIES_SQLITE_PATTERN}
 APP_BATCH_SIZE = 12

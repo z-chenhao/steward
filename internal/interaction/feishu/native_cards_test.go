@@ -6,8 +6,9 @@ import (
 	"encoding/json"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/delivery"
-	"github.com/z-chenhao/assistant/internal/plugin/feishuchat"
+
 	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
+	feishuv1 "github.com/z-chenhao/assistant/internal/plugin/feishuchat/legacyv1"
 	"os"
 	"testing"
 )
@@ -49,7 +50,7 @@ func TestNativeCardsMatchCapturedV1(t *testing.T) {
 		client := fixtureClient()
 		client.Config.WorkspaceURL = c.Workspace
 		adapter := Adapter{Client: client, ProjectCard: func(_ context.Context, f contract.CardFacts) (contract.CardProjection, error) {
-			return feishuchat.ProjectCard(f), nil
+			return feishuv1.ProjectCard(f), nil
 		}}
 		p, err := adapter.prepareCard(context.Background(), e, "om_origin", c.Feedback, c.ReviewURL)
 		if err != nil {

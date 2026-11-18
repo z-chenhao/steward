@@ -1,7 +1,7 @@
 import {selectValue,selectParts} from './channels_controls.mjs';
 // Maintained Web UI driver: one real browser, no app-specific mock DOM.
 import {uiInteractions} from './channels_ui_interactions.mjs';
-import {modelConnections,composerModelLoading,modelPluginPolicy} from './channels_models.mjs';
+import {modelConnections,composerModelLoading,modelPluginPolicy,modelRecoverySend} from './channels_models.mjs';
 import {capabilitySetup,capabilityDefaults,settingsAccount,pageTransitions,taskNavigation,settingsConsistency} from './channels_capabilities.mjs';
 import {sendFeedback} from './channels_sending.mjs';
 import {memoryInspection} from './channels_memory.mjs';
@@ -98,6 +98,8 @@ try{
  await assertAvatarSize('after hover');
  if(phase==='model-picker-version'){
   const {modelPickerVersion}=await import('./channels_models.mjs');await modelPickerVersion(page,context,url,evidence);
+ }else if(phase==='model-recovery-send'){
+  await modelRecoverySend(page,evidence);
  }else if(phase==='composer-models'){
   await composerModelLoading(page,context,url,evidence);
  }else if(phase==='preferences'){
