@@ -1,4 +1,14 @@
 {
+  "Browser demonstration": "浏览器示范",
+  "Drag the recorder to your bookmarks, then open a local sample page. Start and stop recording explicitly. The capture contains control labels and actions. Review it before importing.": "将录制书签拖到书签栏，再打开本机的样例页面。手动开始和结束录制。文件包含控件标签及动作，请在导入前审阅。",
+  "Record a local demonstration": "录制本机示范",
+  "Demonstration recording": "示范录制文件",
+  "Private skill name": "私有技能名称",
+  "Editable steps": "可编辑步骤",
+  "Use one action and label per line, for example: activate Preview. Record a separate sample to check the steps without interacting with the website.": "每行填写一个动作和标签，例如 activate 预览。请另录一份独立样例，以便在不操作原网站的情况下复验。",
+  "Independent sample recording": "独立样例文件",
+  "Review steps": "审阅步骤",
+  "Download private skill draft": "下载私有技能草案",
   "Generating interactive answer…": "正在生成交互内容…",
   "Send response": "发送回答",
   "This form is temporarily unavailable. Your conversation is kept.": "此表单暂时不可用，对话仍然保留。",
@@ -1418,5 +1428,6 @@
   "Timeout (ms)": "超时时间（毫秒）",
   "The account action was accepted. App presentation is unavailable. Restore the plugin before continuing.": "账户操作已接受。应用界面暂不可用，请在恢复插件后继续。",
   "App presentation is unavailable. The operation could not be confirmed.": "应用界面暂不可用，无法确认此操作的结果。",
-  "App presentation is unavailable. Reload after the owner restores the plugin.": "应用界面暂不可用，请在所有者恢复插件后重新加载。"
+  "App presentation is unavailable. Reload after the owner restores the plugin.": "应用界面暂不可用，请在所有者恢复插件后重新加载。",
+  "Enable JavaScript to record and review a browser demonstration.": "请启用 JavaScript 以录制和复验浏览器示范。"
 }

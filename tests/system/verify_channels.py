@@ -848,6 +848,7 @@ def web_channels(binary, evidence, report):
 
     capability_settings(binary,evidence,report)
     dependency_recovery(binary,report)
+    browser_demonstration(binary, evidence, report)
     native_components(binary, evidence, report)
     rich_replies(binary, evidence, report)
     account_presentation(binary, evidence.parent/'account-ui', report)
@@ -1558,6 +1559,25 @@ def native_components(binary, evidence, report):
         finally:h.cleanup()
 
 
+def browser_demonstration(binary, evidence, report):
+    with tempfile.TemporaryDirectory(prefix='steward-browser-demonstration-') as temp, Sandbox() as platform:
+        h=ChannelHarness(binary,Path(temp),platform)
+        try:
+            h.enable_default_plugins()
+            h.start()
+            target = evidence.parent / 'browser-demonstration'
+            env = h.env.copy()
+            chrome = Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+            if chrome.exists():
+                env['STEWARD_BROWSER_EXECUTABLE'] = str(chrome)
+            result = subprocess.run(['node', str(ROOT/'guest-browser/demonstration.mjs'), h.url, str(target)],
+                                    env=env, capture_output=True, text=True, timeout=90)
+            require(result.returncode == 0, 'browser demonstration: ' + result.stderr)
+            report['checks'].append('Private browser teaching: two local captures, secret exclusion, edited mismatch, managed sample verification and private download')
+        finally:
+            h.cleanup()
+
+
 def early_composer(binary, evidence, report):
     with tempfile.TemporaryDirectory(prefix='steward-channel-early-composer-') as temp, Sandbox() as platform:
         h=ChannelHarness(binary,Path(temp),platform)
@@ -1971,6 +1991,7 @@ if __name__=='__main__':
             attention_workspace(args.binary.resolve(),args.evidence.resolve(),report)
         elif args.ui_components_only:
             sending_feedback(args.binary.resolve(),args.evidence.resolve(),report)
+            browser_demonstration(args.binary.resolve(),args.evidence.resolve(),report)
             early_composer(args.binary.resolve(),args.evidence.resolve(),report)
             native_components(args.binary.resolve(),args.evidence.resolve(),report)
             rich_replies(args.binary.resolve(),args.evidence.resolve(),report)

@@ -83,3 +83,9 @@ quality of the written method; model-quality review remains a release check.
 方法库发现／资源入口已迁入独立策略包，冻结文件与权限仍归 Host；设计边界见[插件设计](../designs/plugins-evolution.md#已提取的方法库边界)。相关回归为 `TestSkillPlugin*`、`make test-prompts` 与 `capabilities` 实际分发包场景。经验 Reviewer 的原始证据、验证和晋升不因此开放给普通插件。
 
 经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。F-023 的自动触发／编排仍待实现。
+
+### 本机浏览器示范
+
+打开「开发者 → 浏览器示范」，把录制链接拖到浏览器书签。在本地样例页（localhost、127.0.0.1、[::1] 或本机文件）打开书签，点击开始，演示操作，最后点击停止并保存。每次录制仅覆盖当前页面。书签保存带标签的控件动作，不保存网址、网页正文、输入值、密码或会话。
+
+在示范页面导入录制文件、命名草案，逐行编辑动作与标签。单独录制第二个本地样例并导入，复验成功后可下载私有 `SKILL.md`，由操作者自行决定是否放入已配置的私有技能目录。复验模拟第二次录制的状态转移，不联系目标网页。请先检查所保留的标签；它们会发给当前 Steward 实例。浏览器书签需要允许在样例页运行脚本。
