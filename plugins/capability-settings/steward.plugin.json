@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.capability-settings",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "feature_ids": [
     "F-030"
   ],

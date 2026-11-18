@@ -38,7 +38,7 @@ func TestDefaultMemoryHasOneEnabledEntryAndPreferenceLayout(t *testing.T) {
 	}
 	response = capabilityRequest(s, "GET", "/settings/capabilities/memory", nil)
 	body = response.Body.String()
-	if !strings.Contains(body, `class="form-panel settings-group"`) || !strings.Contains(body, `<noscript>`) || !strings.Contains(body, `href="/settings/capabilities/embedding"`) || strings.Contains(body, `data-capability-import`) || strings.Contains(body, "Successful candidate tests expire") {
+	if !strings.Contains(body, `class="form-panel settings-group"`) || !strings.Contains(body, `class="actions capability-submit settings-actions"`) || !strings.Contains(body, `href="/settings/capabilities/embedding"`) || strings.Contains(body, `data-capability-import`) || strings.Contains(body, "Successful candidate tests expire") {
 		t.Fatal(body)
 	}
 	v, _ := m.Detail(context.Background(), "memory")
