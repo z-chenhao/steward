@@ -29,7 +29,7 @@
 | [F-002](features/model-connections.md#f-002) | ChatGPT 登录与跨平台凭据 | ChatGPT 账户凭据统一保存在 Steward 私有文件中，支持登录、按需刷新、重新认证、退出和中断恢复，后台状态检查只读配置与账户元数据。 | 是 · 已完成 |
 | [F-003](features/conversation.md#f-003) | 可恢复的 Main 对话 | 用户能连续对话、追问和纠正要求，慢操作期间仍可交代、查询和纠正工作。Main/Worker 系统提示统一按角色、安全、执行规则和能力指导拼为一条；Main 可通过 Code Mode 调用 MCP 和 Skill，复杂工作委派 Task Worker。 Main 沟通／工作方法由独立版本化 conversation 插件持有，冷恢复保留原方法。 | 是 · 已完成 |
 | [F-004](features/tasks.md#f-004) | Task 生命周期与继续工作 | Root 失败有 Host 持久提醒，Task 保留可续作状态；默认标题按完整纯方案冻结，原创建事务去重并保留历史未知调用；问答／审阅期限与续作指引已独立迁移到版本化插件；支持显式 GitHub PR→已有 Task 关联，经 Main 有界接续并保留停止/隐私裁决；CLI/Web 与个人飞书具名问题、确切成果审阅接通，真实渠道与模型质量待验证。 搜索／默认标题与问题／审阅配方已由 task-control／task-feedback 独立托管；原状态与回执由 Host 保留。 | 否 · 部分完成 |
-| [F-005](features/tasks.md#f-005) | 执行中的有意义进度 | 用户主动查看时能了解当前阶段、摘要与子任务完成情况；Task 详情的轮次、指令、审批和交付来自同一读快照。Root 进度提示／筛选已独立迁移到版本化插件。 提示与原句筛选由独立版本化 task-progress 持有；Root／Child 与旧执行保持隔离。 | 是 · 已完成 |
+| [F-005](features/tasks.md#f-005) | 执行中的有意义进度 | 用户主动查看时能了解当前阶段、摘要与子任务完成情况；Task 详情的轮次、指令、审批和交付来自同一读快照。Root 进度提示／筛选已独立迁移到版本化插件。 提示与原句筛选由独立版本化 task-progress 持有；Root／Child 与旧执行保持隔离。积压任务结果按有限事务恢复。 | 是 · 已完成 |
 | [F-006](features/delegation.md#f-006) | 可递归的 Child Worker | 复杂工作可由 Worker 拆成独立子任务，并由父级汇总；委派方法／更窄树预算已迁入独立版本化插件。 | 是 · 已完成 |
 | [F-007](features/tools-approvals.md#f-007) | 工具、审批与未知副作用处理 | Main 与 Worker 以 Code Mode 组合工具，直接声明少量高频工具，调用权限按角色冻结；MCP 不提供暴露模式，双方共用具体审批与恢复。 | 是 · 已完成 |
 | [F-008](features/codemode.md#f-008) | 可恢复的 JavaScript 编排 | Agent 能用标准 JavaScript 串联工具、处理并发并显式输出结果；资源配方／参数说明已迁入独立版本插件；工具发现 BM25／分词／摘要选择已由独立托管包执行，原 Run／挂起 VM、换版／回退、停用与冷恢复已有验收证据。 | 是 · 已完成 |

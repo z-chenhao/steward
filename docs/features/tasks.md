@@ -87,6 +87,8 @@ steward chat work  # 未运行前台工作服务时，显式处理已接纳的�
 
 ## Task delegation and Root recovery
 
+恢复积压结果时，Reporter 按发生顺序分批提交收件箱与消费记录，每批释放写事务以便接纳新输入。
+
 The M2 slices add Main-only Task discovery, create/append/pause/cancel/complete,
 independent Root execution and durable Main follow-ups. Use a selected, probed
 model through the existing TUI or `chat send` / `chat work` commands. There is

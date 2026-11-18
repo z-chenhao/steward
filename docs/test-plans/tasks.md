@@ -75,6 +75,8 @@ F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../inte
 
 ### Counterexample and implementation evidence
 
+[积压回归](../../internal/agent/sqlite/tasks_test.go)以一万条更新验证首批提交后接纳新输入、取消与重试，并检查全量收件和消费各恰好一次。
+
 `test_one_shot_completion_uses_root_outcome_after_child_drains` and
 `TestTaskControlModelCompletionUsesRootOutcome` pair eight traces: both Root
 outcomes, both Child outcomes, and both ending orders. For example,

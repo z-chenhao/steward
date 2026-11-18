@@ -541,6 +541,8 @@ The database still enforces one active Main per Agent and one Root per Task.
 
 ### Results, Reporter and priority
 
+单批最多接纳 100 条任务更新，收件与去重仍同事务。已提交批次保留，取消后下一次扫描继续处理剩余记录。
+
 The Root's natural-language result is stored privately. Its terminal Run,
 one-shot Task completion, semantic TaskUpdate and Outbox commit atomically.
 Failed Roots leave their Task active; failures are not a Task state. Root
