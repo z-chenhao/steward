@@ -180,7 +180,7 @@ already frozen Run. Changing a configured scope fails old-Run selection closed.
 
 术语按[功能说明](../features/integrations.md#术语与登记边界)统一：内容审查核对能力插件、外部服务连接器、具体连接、技能与工具的区别，以及安装、连接授权和动作审批的独立性。Web Access 仍是内置插件；Exa／SearXNG／Tavily 的适配器证明对应服务协议，Tavily Search 不代表 Extract 已接通，研究配方测试不代表已有可安装 Skill。独立安装、共享连接和多账户选择继续按 F-025／F-070 的实际入口验收。
 
-`make test-web-access` 覆盖 `internal/plugin/webaccess`、三个服务 connector、`internal/webcontent` 与 SQLite Host 的 race 回归，CI 继续由必需的 `Ubuntu checks` 执行。
+`make test-web-access` 覆盖 `internal/plugin/webaccess`、三个服务 connector、`internal/webcontent` 与 SQLite Host 的 race 回归，CI 通过 `web-plugins` 分片执行，纳入必需的 `Ubuntu checks`。
 
 | 场景 | 现有入口与证明范围 |
 | --- | --- |

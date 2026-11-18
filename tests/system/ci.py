@@ -12,7 +12,8 @@ from verify_channels import CHANNEL_GROUPS
 # Keep the public local Make targets intact. CI partitions their existing work
 # across isolated runners rather than rebuilding a shared, mutable worktree.
 SOFTWARE = {
-    'go': 'make test-go',
+    'go': 'make test-go-core',
+    'go-domains': 'make test-go-domains',
     'prompts': 'make test-prompts',
     'tool-discovery': 'make test-tool-discovery',
     'connected-apps': 'make test-connected-apps',
@@ -51,7 +52,7 @@ def command(lane):
     if lane == 'computer-plugins':
         return 'make build\npython3 tests/system/runner.py --gate computer-plugins --binary bin/steward --evidence evidence/e2e-computer-plugins'
     if lane == 'web-plugins':
-        return 'make build\npython3 tests/system/runner.py --gate web-plugins --binary bin/steward --evidence evidence/e2e-web-plugins'
+        return 'make build test-web-access\npython3 tests/system/runner.py --gate web-plugins --binary bin/steward --evidence evidence/e2e-web-plugins'
     if lane == 'mcp-plugins':
         return ("go test -race -p 1 -timeout=15m ./internal/tool/mcp/... ./internal/plugin/mcpbridge/... ./internal/agent/sqlite -run '^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)' -count=1\n"
                 'make build\npython3 tests/system/runner.py --gate mcp-plugins --binary bin/steward --evidence evidence/e2e-mcp-plugins')
@@ -70,7 +71,7 @@ def command(lane):
         gates = ' '.join('--gate ' + gate for gate in MEMORY_GATES)
         return f'make test-memory build\npython3 tests/system/runner.py {gates} --binary bin/steward --evidence evidence/e2e-{lane}'
     if lane == 'capabilities-race':
-        commands = ['make build', 'make test-web-access', RACE,
+        commands = ['make build', RACE,
                     'python3 tests/system/race.py --part capabilities-sqlite',
                     "go test -race ./internal/observability/sqlite ./internal/rsi -run '^TestTrace(ManagedHistoryWithoutCatalog|ColdMissingCatalog|PartialActivationSchema)' -count=1"]
         commands.extend(f'python3 tests/system/verify_capabilities.py --binary bin/steward --scenario {scenario} --evidence evidence/{scenario}.json'

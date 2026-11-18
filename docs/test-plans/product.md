@@ -8,7 +8,7 @@
 
 日常/扩展/发布的检查调度以下方 Testing 和 CI 入口为准。协议验收矩阵描述必须保护的行为，不表示每次文档或局部改动都重新执行完整发布检查。
 
-普通 Go 套件包含真实隔离插件编译、独立版本与历史兼容场景，`make test-go` 将 WebPlugin／MemoryInspector、UI、Schedule／Automation、Apps／ConnectedApp、Memory／Recall／Context 等记忆上下文组、Plugin／ToolDiscovery／Skill／MCP 等插件工具组与其余完整 Go 套件分成七组，所有根用例恰好执行一次；CI 回归核对分区互斥与完整覆盖。每个 package 仍采用原 15 分钟累计 alarm，与既有 race runner 的整组上限一致，不放宽用例、Provider／RPC 或执行租约期限；CI 外层作业总预算见工程门禁说明。package 按单任务调度，避免并行编译／启动突发挤占原生 Driver 原有两秒发现窗口；不改变 Driver 的期限或语义。
+普通 Go 套件包含真实隔离插件编译、独立版本与历史兼容场景，`make test-go` 将 WebPlugin／MemoryInspector、UI、Schedule／Automation、Apps／ConnectedApp、Memory／Recall／Context 等记忆上下文组、Plugin／ToolDiscovery／Skill／MCP 等插件工具组与其余完整 Go 套件分成七组，所有根用例恰好执行一次；CI 将同一套命令分在 `go` 和 `go-domains`，并核对分区互斥与完整覆盖。每个 package 仍采用原 15 分钟累计 alarm，与既有 race runner 的整组上限一致，不放宽用例、Provider／RPC 或执行租约期限；CI 外层作业总预算见工程门禁说明。package 按单任务调度，避免并行编译／启动突发挤占原生 Driver 原有两秒发现窗口；不改变 Driver 的期限或语义。
 
 SQLite race 先串行运行原生与受管 Delegation 的五秒审批／Drain 契约，再将自动发现的其余测试按既有测量分区、每个进程最多 8 个根用例分批执行。SQLite 同时最多三个单核进程，保留编译余量；各批仍使用原有 race/count/累计 alarm，Memory 的十分钟上限也维持原值。验收必须核对全局发现清单，每个根用例恰好完成一次，后续批次缺失或重复同样失败；复用 evidence 目录前清除全部旧 SQLite 批日志。
 

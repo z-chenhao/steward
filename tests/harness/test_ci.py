@@ -63,8 +63,14 @@ class CIChecksTests(unittest.TestCase):
 
     def test_go_partitions_keep_all_roots_and_original_package_alarm(self):
         root = Path(__file__).resolve().parents[2]
-        commands = subprocess.check_output(['make', '--no-print-directory', '-n', 'test-go'], cwd=root, text=True)
-        partitions = [shlex.split(line) for line in commands.splitlines()]
+        def dry_run(*targets):
+            commands = subprocess.check_output(['make', '--no-print-directory', '-n', *targets], cwd=root, text=True)
+            return [shlex.split(line) for line in commands.splitlines() if line.startswith('go test ')]
+        partitions = dry_run('test-go')
+        lanes = {row['lane'] for row in ci.plan('software')['include']}
+        self.assertTrue({'go', 'go-domains'} <= lanes)
+        targets = [shlex.split(ci.command(lane))[1] for lane in ('go', 'go-domains')]
+        self.assertEqual(dry_run(*targets), partitions)
         self.assertEqual(len(partitions), 7)
         for tokens in partitions:
             self.assertIn('-timeout=15m', tokens)
@@ -83,7 +89,7 @@ class CIChecksTests(unittest.TestCase):
     def test_prompt_partitions_keep_inheritance_and_managed_lifecycles_required(self):
         self.assertEqual(ci.command('prompts'), 'make test-prompts')
         software = [ci.command(row['lane']) for row in ci.plan('software')['include']]
-        for target in ('test-go', 'test-prompts', 'test-tool-discovery'):
+        for target in ('test-go-core', 'test-go-domains', 'test-prompts', 'test-tool-discovery'):
             self.assertEqual(sum(target in shlex.split(command) for command in software), 1)
         root = Path(__file__).resolve().parents[2]
         commands = subprocess.check_output(['make', '-n', 'test-prompts'],
@@ -433,7 +439,7 @@ class CIChecksTests(unittest.TestCase):
                             f'{test} is missing from required memory race checks')
 
     def test_web_plugin_business_roots_are_in_required_race_recipe(self):
-        self.assertIn('make test-web-access', ci.command('capabilities-race'))
+        self.assertIn('test-web-access', shlex.split(ci.command('web-plugins')))
         dry_run = subprocess.check_output(['make', '-n', 'test-web-access'],
                                           cwd=Path(__file__).resolve().parents[2], text=True)
         commands = [shlex.split(line) for line in dry_run.splitlines()]

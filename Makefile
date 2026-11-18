@@ -1,4 +1,4 @@
-.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-connected-apps test-github-plugins test-artifact-plugins test-go test-node test-browser test-infra test-e2e test-full test-race test-coding-environment test-coding-development lint lint-actions audit
+.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-connected-apps test-github-plugins test-artifact-plugins test-go test-go-core test-go-domains test-node test-browser test-infra test-e2e test-full test-race test-coding-environment test-coding-development lint lint-actions audit
 
 .DEFAULT_GOAL := setup
 
@@ -44,20 +44,18 @@ test-prompts:
 	go test ./internal/agent ./internal/agent/sqlite -run '^Test(CodingPlugin.*|V61CodingMethods.*|ShellPlugin.*|V60ShellMethod.*|FilePlugin.*|V59FileMethod.*|CodeModePlugin.*|V58CodeDescription.*)$$' -count=1
 	go test ./internal/agent ./internal/agent/sqlite -run '^Test(Progress.*|V63TaskLabel.*|DelegationPlugin.*|DelegationMethods.*|FeedbackPlugin.*|TaskPlugin.*|SkillPlugin.*|ScheduleGuidance.*|ScheduleThreshold.*)$$' -count=1
 
-# Real isolated version suites need separate cumulative package alarms. Keep
-# every root exactly once, and avoid parallel package compiler/startup bursts
-# consuming the native driver's unchanged two-second discovery deadline.
-# UI lifecycle tests have their own cumulative package alarm. The all-package
-# UI partition preserves every TestUI root; neither partition runs it twice.
-# Schedule lifecycle tests run separately after reaching the cumulative SQLite
-# alarm; preserve every root exactly once and keep the original 15-minute limit.
-# Memory Inspector isolated-version cases share the managed Web partition;
-# every root stays exactly once under the original per-package alarm.
-test-go:
+# Run each Go root once under its original package limit. Keep local
+# execution sequential while CI runs the two sets in independent jobs.
+test-go: test-go-core
+	$(MAKE) test-go-domains
+
+test-go-core:
 	go test -p 1 -timeout=15m ./... -skip '^Test(WebPlugin|MemoryInspector|UI|Schedule|Automation|OwnerSchedule|OwnerCanDisable|Apps|ConnectedApp|Memory|Recall|Context|Compaction|Forget|Curator|Dream|Experience|Plugin|Shipped|Runtime|Native|ToolDiscovery|ToolSearch|Skill|MCP|Coding|Computer|File|Shell)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(WebPlugin|MemoryInspector)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^TestUI' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Schedule|Automation|OwnerSchedule|OwnerCanDisable)' -count=1
+
+test-go-domains:
 	go test -p 1 -timeout=15m ./... -run '^Test(Apps|ConnectedApp)' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Memory|Recall|Context|Compaction|Forget|Curator|Dream|Experience)' -skip '^TestMemoryInspector' -count=1
 	go test -p 1 -timeout=15m ./... -run '^Test(Plugin|Shipped|Runtime|Native|ToolDiscovery|ToolSearch|Skill|MCP|Coding|Computer|File|Shell)' -count=1
