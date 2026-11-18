@@ -31,6 +31,8 @@ flowchart TD
 
 ### Go 实现职责（F-040）
 
+运维 Trace 的状态与事件列表共享 SQLite 只读事务，锁定同一提交视图。仅记录查询返回空行时投影为未找到。
+
 报表类型由 `internal/operations` 持有，`internal/operations/sqlite` 提供只读查询；App 与 CLI 不依赖 agent/sqlite 中的报表实现类型。
 
 ## 当前流程与目标差异

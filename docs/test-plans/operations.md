@@ -26,6 +26,8 @@
 
 ## 已有检查与缺失覆盖
 
+[运维 Trace 快照回归](../../internal/operations/sqlite/trace_test.go)在读取状态时并发提交终态和事件，连续两次查询分别验证前后快照，并覆盖空记录、取消和关闭的数据库。
+
 | 入口 | 覆盖用途与限制 |
 | --- | --- |
 | [tests/system/verify_operations.py](../../tests/system/verify_operations.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |

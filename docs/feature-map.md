@@ -55,7 +55,7 @@
 | [F-028](features/operations.md#f-028) | 本地诊断与加密恢复 | 健康检查、加密恢复与 macOS 显式后台服务/独立巡检；持久人工停机和有限恢复已接通，平台 Live 与主动渠道告警待补。 | 否 · 部分完成 |
 | [F-029](features/operations.md#f-029) | 用量记账与配置型费用授权 | 独立 reference-pricing 插件提供常见模型的参考费率，原 Run 图与费率随 generation 固定；手动价格优先，显式货币授权继续独立。 | 是 · 已完成 |
 | [F-030](features/capability-setup.md#f-030) | 统一能力设置与诊断体验 | 六类能力以普通表单配置、验证和保存；脚本未就绪时可手动保存；自动模式以 Auto／自动和选中态表达，启用状态不附加默认或推荐标记；界面不暴露 YAML，重启边界与凭据引用不变。 | 是 · 已完成 |
-| [F-031](features/observability.md#f-031) | Developer 导航与执行关系检查 | 开发者从现有 Web 的 Developer → Observability 进入执行列表与因果关系时间线。 Trace 专属策略与视图已托管，缺失 Catalog 的冷读取按持久托管事实拒绝原生回退。 | 是 · 已完成 |
+| [F-031](features/observability.md#f-031) | Developer 导航与执行关系检查 | 开发者从现有 Web 的 Developer → Observability 进入执行列表与因果关系时间线。 Trace 专属策略与视图已托管，缺失 Catalog 的冷读取按持久托管事实拒绝原生回退。运维 Trace 在同一提交快照读取状态及事件，区分不存在和存储故障。 | 是 · 已完成 |
 | [F-034](features/observability.md#f-034) | 逐轮上下文、来源与 Diff | 展开任意模型轮次查看 system/user/assistant/tool、工具定义、响应与上下文来源，并比较相邻轮次；加密记忆明确标注，避免将密封正文误读为空消息。 | 是 · 已完成 |
 | [F-035](features/observability.md#f-035) | 供应商最终请求观测 | 开发者能区分 Host 冻结请求与 Bridge/SDK 转换后实际发送的请求。 | 是 · 已完成 |
 | [F-036](features/observability.md#f-036) | 调用、等待、恢复与用量时间线 | 开发者能检查执行、等待、恢复、用量和模型流时间点，并区分各阶段超时。 | 是 · 已完成 |

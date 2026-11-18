@@ -90,6 +90,8 @@ its recovery point.
 
 ### Run and diagnose
 
+运维命令 `ops trace` 在同一个只读快照内返回 Run 状态和事件，并区分记录缺失、取消与存储不可用。
+
 `steward -config CONFIG web serve`, `tui`, and `automation work` own the
 foreground production lifecycle. Setup remains available without a usable
 profile. The broker and durable consumer initialize before the Tool Registry,
