@@ -106,6 +106,8 @@
 
 ### Verification
 
+[托管搜索](../../internal/agent/sqlite/plugin_artifact_test.go)在一万项授权候选中查找唯一名称，并覆盖独立写事务、撤销和任务生命周期。
+
 For focused receipt recovery, add `--recovery-only` to the command below. It
 launches approved Worker effects, kills after the effect or terminal unknown
 commit, reconciles through the CLI, verifies bytes/hash and caller readback,

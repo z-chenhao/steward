@@ -100,6 +100,8 @@ OCR 能提供截图中的文字证据，不能证明布局、颜色、图表关�
 
 ## Artifact storage and operations
 
+历史与新对象均在同一可见范围内按元数据发现；选中引用交付前再核对版本、内容哈希与当前授权。
+
 Artifacts reopen through opaque `artifact:` references. Only the Store resolves
 references to storage keys. Files live beneath `app.data_root/artifacts`;
 metadata, references, publications and tombstones live in state.db schema v11.

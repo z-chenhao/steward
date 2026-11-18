@@ -19,6 +19,7 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/artifact"
+	artifactsqlite "github.com/z-chenhao/assistant/internal/artifact/sqlite"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/llm"
@@ -507,18 +508,24 @@ func artifactTaskLifetime(t *testing.T, managed bool) {
 			t.Fatal("protected object has finite expiry", d, err)
 		}
 		if err := s.Transaction(ctx, func(tx *sql.Tx) error {
-			var list []artifact.Descriptor
+			var count int
 			var err error
 			if managed {
-				list, err = s.Artifacts().CandidatesTx(ctx, tx, scope)
+				err = s.Artifacts().VisitSearchCandidatesTx(ctx, tx, scope, func(c artifactsqlite.SearchCandidate) {
+					if c.Ref == ref {
+						count++
+					}
+				})
 			} else {
+				var list []artifact.Descriptor
 				list, err = s.Artifacts().SearchLegacyTx(ctx, tx, scope, "", 50)
+				count = len(list)
 			}
 			if err != nil {
 				return err
 			}
-			if len(list) != 1 {
-				return fmt.Errorf("protected object omitted from list: %v", list)
+			if count != 1 {
+				return fmt.Errorf("protected object omitted from list: %d", count)
 			}
 			return nil
 		}); err != nil {

@@ -13,11 +13,17 @@ var ErrMetadata = errors.New("invalid immutable artifact metadata")
 func EncodeSearch(rows []SearchRow) []byte {
 	var raw []byte
 	for _, row := range rows {
-		raw = binary.LittleEndian.AppendUint64(raw, uint64(row.CreatedAt))
-		for _, value := range []string{row.Name, row.MediaType} {
-			raw = binary.LittleEndian.AppendUint64(raw, uint64(len(value)))
-			raw = append(raw, value...)
-		}
+		raw = AppendSearchRow(raw, row)
+	}
+	return raw
+}
+
+// AppendSearchRow uses the frozen wire encoding for one candidate.
+func AppendSearchRow(raw []byte, row SearchRow) []byte {
+	raw = binary.LittleEndian.AppendUint64(raw, uint64(row.CreatedAt))
+	for _, value := range []string{row.Name, row.MediaType} {
+		raw = binary.LittleEndian.AppendUint64(raw, uint64(len(value)))
+		raw = append(raw, value...)
 	}
 	return raw
 }

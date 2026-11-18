@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/z-chenhao/assistant/internal/artifact"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/plugin/artifactworkbench/contract"
@@ -109,5 +110,30 @@ func attachHistoricalArtifactFixture(t *testing.T, store *Store, runID, ref stri
 		return store.Artifacts().PinTx(context.Background(), tx, owner, ref, "run", runID)
 	}); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestArtifactWorkbenchSearchTenThousandAuthorizedRows(t *testing.T) {
+	ctx := context.Background()
+	calls := []llm.ToolCall{{ID: "one", Name: artifacttools.Search, Arguments: `{"query":"needle","limit":1}`}}
+	store, runs, claim, executor, exchange := admitPolicyRun(t, artifacttools.Definitions(), calls, false, func(s *Store, r *Runs) { installArtifactWorkbench(t, s, r) })
+	defer runs.Release(ctx, claim)
+	const count = 10000
+	now := time.Now()
+	_, err := store.db.Exec(`WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<?)
+	INSERT INTO artifact(artifact_id,artifact_ref,owner_user_id,owner_agent_id,run_id,media_type,name,byte_size,content_hash,storage_key,visibility,retention_class,created_at,expires_at)
+	SELECT printf('%064x',i),'artifact:'||printf('%064x',i),?,agent_id,run_id,'text/plain',CASE i WHEN ? THEN 'needle' ELSE 'other' END,1,printf('%064x',i),printf('%064x',i),'run','standard',?,? FROM n CROSS JOIN run WHERE run_id=?`, count, artifact.LocalUser, count, now.UnixMicro(), now.Add(time.Hour).UnixMicro(), claim.RunID())
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := executor.Execute(ctx, exchange, calls)
+	if err != nil || len(result) != 1 || result[0].Error != nil {
+		t.Fatal(result, err)
+	}
+	var selected []struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal([]byte(result[0].Text), &selected); err != nil || len(selected) != 1 || selected[0].Name != "needle" {
+		t.Fatal(result, err)
 	}
 }
