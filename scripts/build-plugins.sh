@@ -11,7 +11,7 @@ plugin_names=$("$plugin_host" -builtin-plugin-names)
 [ -n "$plugin_names" ]
 set -f
 # The mail forwarder is distributed for explicit owner activation.
-for plugin_name in $plugin_names task-mail; do
+for plugin_name in $plugin_names task-mail audio-transcript; do
   plugin_directory=$plugin_output/$plugin_name
   mkdir -p "$plugin_directory"
   (cd "$plugin_source" && go build -trimpath -o "$plugin_directory/plugin" "./cmd/plugins/$plugin_name")

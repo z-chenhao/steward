@@ -50,7 +50,17 @@
 
 **当前实现**：DOCX 解析已接入独立 Go 插件，保留原有工具与文件引用。标准构建／安装分发该包，首次运行按独立用例验证初始组合；已有自定义组合由所有者显式纳入，历史执行继续原解释器。上传普通 DOCX 并随消息提交原文件引用后，Main 可显式调用 `builtin__evidence_read({kind:"artifact",ref,offset,limit})`。正文段落与表格单元格按文件顺序返回。每页保留原 Artifact ref，原文件可继续打开。页面的 `representation: "docx_text"` 表示偏移与总长度按提取后的 UTF-8 文本字节计；用 `next_offset` 继续。本地操作者同时携带返回的 `reader_revision`，可在换版或停用后继续同一已验收解释器的分页；停机／隔离仍会拒绝。Main 的解释器已按 Run 固定，无需选择字段。
 
-**边界与剩余工作**：仅接受标准 DOCX MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。音视频转写、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
+**边界与剩余工作**：仅接受标准 DOCX MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。其他音频／视频编码、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
+
+本地英文录音转写支持最长十分钟的单声道、16 kHz、16-bit PCM WAV。先安装 whisper.cpp 1.9.2 并准备官方 ggml-tiny.en.bin，然后执行下列命令。最后一条命令是对这一个原件的本次转写授权。
+
+```sh
+steward audio enable-plugin /absolute/path/to/plugins/audio-transcript
+steward artifact save meeting.wav audio/wav < meeting.wav
+steward audio transcribe-local artifact:ID /absolute/path/to/ggml-tiny.en.bin
+```
+
+返回 JSON 包含原件名称、可打开的原件引用、内容摘要，以及每段转写的起止毫秒与文本。使用 `steward artifact open artifact:ID` 可核对原音。系统可分别报告格式不支持、模型缺失或不匹配、解码器不可用、识别失败、输出不兼容和静音。普通附件保存与证据读取只显示原有元数据；启用后，本地 owner 读取 WAV 元数据还可看到转写命令。音频与识别文本只在本地处理，转写结果由命令返回，未写入 Agent 或任务历史。
 
 **验收目标**：逐格式验证可获取的内容、原始文件关联、失败反馈和实际任务输出；质量由独立评测衡量。
 

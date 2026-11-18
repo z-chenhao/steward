@@ -57,6 +57,18 @@ func dispatchCommand(ctx context.Context, application *app.App, cfg config.Confi
 			return err
 		}
 		return json.NewEncoder(out).Encode(value)
+	case commandAudio:
+		var value any
+		var err error
+		if flags.Arg(1) == "enable-plugin" {
+			value, err = application.EnableAudioTranscript(ctx, flags.Arg(2))
+		} else {
+			value, err = application.TranscribeLocalAudio(ctx, flags.Arg(2), flags.Arg(3))
+		}
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(out).Encode(value)
 	case commandEvidence:
 		return runEvidence(ctx, application, in, out)
 	case commandTask:

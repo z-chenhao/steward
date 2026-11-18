@@ -89,6 +89,10 @@
 - 既有 `verify_local_provider.py` 从 CLI 上传同一实际 PNG，正常选择纯文本模型，由协议 peer 请求 OCR；读取真实 Tesseract 的 Tool 结果，检查 Pi HTTP 没有图片像素且含识别文字。结果提交后、下一轮模型响应前 SIGKILL，恢复必须保留 invocation/attempt、Artifact 与 generation/hash，不重复识别。沿用已有 gate，不新增脚本或 CI 评测阶段。
 - 软件回归证明支持的格式、处理链路和失败边界。多语种准确率、低分辨率/手写/复杂版面质量、真实 DeepSeek 选择工具与答案效果属于独立 Live/eval；不能由受控 HTTP peer 通过推定。
 
+### F-014 英文 WAV 转写
+
+通过 CLI 保存测试 WAV 后显式启用包和转写，核对每段真实起止毫秒、可重新打开的原件和字节摘要。普通证据读取、未启用、错误模型、过大或格式不支持、无声录音、缺失时间点、失败命令和沙箱撤权分别覆盖。独立原始 CLI JSON 及二进制、模型和音频 SHA-256 记录在 [语音协议夹具](../../tests/fixtures/speech/README.md)。本地准备模型和 JFK 音频后，设置 `STEWARD_TEST_WHISPER_MODEL`、`STEWARD_TEST_WHISPER_WAV` 并运行 `go test ./internal/agent/sqlite -run '^TestAudioTranscriptOfficialLocalCLI$' -v -count=1`。常规回归通过真实验证的插件消费受控协议样本并在发布前执行 Forget；该夹具不评估会议语音准确率。
+
 ### F-014 DOCX 正文回归
 
 - [插件业务集成](../../internal/rsi/docx_test.go) 编译真实独立 DOCX 程序，经 Host 安装／验证／激活后走原 Main 证据工具。覆盖大于 1 MiB 的原文件、分页、历史原生解释器、新 Run 固定图、源摘要冲突、隔离及停用后不可用、独立 v1/v1.1 二进制升级回退、所有者旧分页修订及未激活版本拒绝。SDK 输入回归覆盖坏块、截断、摘要与尺寸上限；构建命令覆盖离线封装不初始化用户状态。
