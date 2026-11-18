@@ -76,6 +76,9 @@ func (s *Server) showMessage(ctx context.Context, m conversation.Message, approv
 	return out, nil
 }
 func (s *Server) loadConversation(ctx context.Context, p *page) error {
+	return s.loadConversationUsing(ctx, p, s.showMessage)
+}
+func (s *Server) loadConversationUsing(ctx context.Context, p *page, show func(context.Context, conversation.Message, map[string]interaction.Approval) (shownMessage, error)) error {
 	approvals, err := s.Core.WebApprovals(ctx)
 	if err != nil {
 		return err
@@ -97,7 +100,7 @@ func (s *Server) loadConversation(ctx context.Context, p *page) error {
 	p.Before = messages.Before
 	shown := map[string]bool{}
 	for _, m := range messages.Messages {
-		item, err := s.showMessage(ctx, m, indexed)
+		item, err := show(ctx, m, indexed)
 		if err != nil {
 			return err
 		}
