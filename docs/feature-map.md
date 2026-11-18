@@ -71,7 +71,7 @@
 | [F-067](features/integrations.md#f-067) | Exa MCP 搜索候选 | 验证免密钥的官方托管搜索、免费限流与来源结果；严格过滤不得静默降级，远端协议及质量待验证。 | 否 · 部分完成 |
 | [F-068](features/integrations.md#f-068) | SearXNG 自托管搜索候选 | 已有自建 JSON API 适配及协议回归；真实实例、部署及维护责任待确认。 | 否 · 部分完成 |
 | [F-069](features/integrations.md#f-069) | Web Access Plugin | 自建 native／Exa／SearXNG／Tavily 搜索、正文／PDF／图片、问答与来源证据；搜索、研究编排／摘要预览、fetch 表达／结果规范化、HTML／图片转换、MIME／模式分派与完整证据阅读已迁入 Web Access；Node／PDF 已迁入独立 Web Extract。原 Run／Child／引用、换版／回退／停用及清理已验收；当前默认分发二十三包；更多服务与真实质量仍待验证。 | 否 · 部分完成 |
-| [F-070](features/plugins-evolution.md#f-070) | 功能原子插件与无损生命周期 | 现有业务已迁入默认40个独立版本包，SDK／CLI、隔离调用、Owner 验证、Run／Child／引用固定、升级回退与停用、隐私／unknown 恢复及替代代码清理已验证。协议仍为0.1实验级；通用贡献挂载、自动资源 GC 与平台配额另行演进。现有业务迁移完成不代表这些未来平台能力完成。 | 否 · 部分完成 |
+| [F-070](features/plugins-evolution.md#f-070) | 功能原子插件与无损生命周期 | 现有业务已迁入默认40个独立版本包，SDK／CLI、隔离调用、Owner 验证、Run／Child／引用固定、升级回退与停用、隐私／unknown 恢复及替代代码清理已验证。协议仍为0.1实验级；通用贡献挂载、自动资源 GC 与平台配额另行演进。现有业务迁移完成不代表这些未来平台能力完成。按冻结图清单定位服务后校验目标包。 | 否 · 部分完成 |
 | [F-071](features/integrations.md#f-071) | Composio 应用目录与账户连接 | Apps 提供目录、Logo、多账户、按需认证、连接／检查／重连／断开与设置；工具沿用 Code Mode／审批／unknown 恢复。目录、账户工作流、页面／样式／文案和浏览器策略已由独立版本插件持有，原动作快照／授权链接、换版／回退、停用冷读及历史组合已验收。真实账户 Live 与供应商质量另行验证。 | 否 · 部分完成 |
 
 | [F-072](features/plugins-evolution.md#f-072) | Host／Guardian 托管的受控自进化 | 插件提案、独立政策验证、环境绑定、原子激活／审计和独立停机已有基础；自动生成、效果监测、预算与自动回退闭环未完成。 | 否 · 部分完成 |
