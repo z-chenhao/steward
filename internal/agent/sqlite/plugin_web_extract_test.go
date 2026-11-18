@@ -15,6 +15,9 @@ import (
 	"testing"
 
 	"github.com/z-chenhao/assistant/internal/agent"
+	"github.com/z-chenhao/assistant/internal/artifact"
+	"github.com/z-chenhao/assistant/internal/conversation"
+	"github.com/z-chenhao/assistant/internal/evidence"
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/plugin/webaccess"
 	"github.com/z-chenhao/assistant/internal/plugin/webextract"
@@ -696,5 +699,88 @@ func TestWebPluginExtractMissingCatalogAndChangedConfigCannotUseRetainedAuthorit
 				t.Fatal(mode, string(raw), fetches, err)
 			}
 		})
+	}
+}
+
+func TestPrivatePDFEvidenceUsesOriginalArtifactAndPinnedParser(t *testing.T) {
+	ctx := context.Background()
+	cfg := extractConfig(t)
+	s, r, actor, model := childFixture(t, append(webaccess.Definitions(cfg), evidence.Definition())...)
+	profile := modelInput()
+	profile.ContextWindow = 262144
+	activateLoop(t, s, profile)
+	r.ConfigureWebAccess(cfg, nil)
+	h := installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
+	status, err := h.Store.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	module, err := os.ReadFile(cfg.ExtractScript)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resource, err := h.CaptureWebParser(ctx, cfg.ExtractCommand, module)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, _, err := selectExtract(t, h, cfg, resource.Digest(), status.Revision, "1.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner := artifactOwner(t, s)
+	ref, err := s.Artifacts().Put(ctx, owner, artifact.Input{Name: "private.pdf", MediaType: "application/pdf"}, bytes.NewReader(extractPDF()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	attached, err := s.Artifacts().Put(ctx, owner, artifact.Input{Name: "attached.pdf", MediaType: "application/pdf"}, bytes.NewReader(extractPDF()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	model.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		if req.Messages[len(req.Messages)-1].Role == "tool" {
+			return llm.GenerationResult{Text: "document read"}, nil
+		}
+		return calls(evidence.ToolName, fmt.Sprintf(`{"kind":"artifact","ref":%q}`, tool.ObjectID(attached))), nil
+	}
+	run, err := r.Submit(ctx, "private-pdf-main", []conversation.ContentPart{{Type: "text", Text: "Read this private PDF locally."}, {Type: "file", ArtifactRef: attached}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := r.ReadEvidence(ctx, evidence.Request{Ref: ref, Limit: 12})
+	if err != nil || page.Ref != ref || page.Representation != "pdf_text" || page.ReaderRevision != first || page.NextOffset == nil {
+		t.Fatal(page, err)
+	}
+	_, _, err = selectExtract(t, h, cfg, resource.Digest(), first, "1.1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mustDrain(t, actor)
+	var receipt string
+	if err = s.db.QueryRow(`SELECT result_json FROM tool_invocation WHERE run_id=? AND tool_name=?`, run.RunID, evidence.ToolName).Scan(&receipt); err != nil {
+		t.Fatal(err)
+	}
+	var result tool.Result
+	var frozen evidence.Page
+	if json.Unmarshal([]byte(receipt), &result) != nil || result.Error != nil || json.Unmarshal([]byte(result.Text), &frozen) != nil || !strings.Contains(frozen.Text, "## Page 1") || !strings.Contains(frozen.Text, "Original PDF body retained.") || frozen.Ref != attached {
+		t.Fatal(receipt)
+	}
+	next := evidence.Request{Ref: ref, Offset: *page.NextOffset, ReaderRevision: page.ReaderRevision}
+	rest, err := r.ReadEvidence(ctx, next)
+	if err != nil || !strings.Contains(page.Text+rest.Text, "## Page 1") || !strings.Contains(page.Text+rest.Text, "Original PDF body retained.") || rest.Ref != ref {
+		t.Fatal(page, rest, err)
+	}
+	latest, err := r.ReadEvidence(ctx, evidence.Request{Ref: ref})
+	if err != nil || !strings.Contains(latest.Text, "## Sheet 1") {
+		t.Fatal(latest, err)
+	}
+	desc, err := s.Artifacts().Describe(ctx, owner, ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = s.Artifacts().Delete(ctx, owner, ref, desc.Version); err != nil {
+		t.Fatal(err)
+	}
+	if stale, err := r.ReadEvidence(ctx, next); !errors.Is(err, artifact.ErrNotFound) || stale.Text != "" {
+		t.Fatal(stale, err)
 	}
 }

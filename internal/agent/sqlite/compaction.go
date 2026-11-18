@@ -27,6 +27,7 @@ func (r *Runs) freezeContext(ctx context.Context, tx *sql.Tx, id string) error {
 	p.SeparateEvidence = true
 	p.UserImages = true
 	p.DOCXText = true
+	p.PDFText = true
 	// Persisted activation, not executable availability, defines the migration
 	// boundary. A missing catalog must not opt new work back into native methods.
 	var err error
