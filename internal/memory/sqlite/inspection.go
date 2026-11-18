@@ -24,18 +24,29 @@ type inspectionRow struct {
 type InspectionSnapshot struct {
 	scope       recall.Scope
 	floor       int64
+	selectedIDs []string
 	fingerprint [32]byte
 }
 
 // A read snapshot is closed before SecretStore calls. The fingerprint rechecks
 // membership, representation, provenance and replacement changes before return.
-func (s *Store) inspectionRows(ctx context.Context, scope recall.Scope, floor int64) ([]inspectionRow, error) {
+func (s *Store) inspectionRows(ctx context.Context, scope recall.Scope, floor int64, ids []string) ([]inspectionRow, error) {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		return nil, memory.ErrInspectionUnavailable
 	}
 	defer tx.Rollback()
-	rows, err := tx.QueryContext(ctx, `SELECT m.memory_id,m.user_id,m.scope_type,m.scope_id,m.tier,m.content,m.source_refs,coalesce(m.supersedes_memory_id,''),m.created_at,coalesce((SELECT layer FROM memory_document x WHERE x.memory_id=m.memory_id),'notes'),coalesce((SELECT metadata FROM memory_document x WHERE x.memory_id=m.memory_id),''),coalesce((SELECT revision FROM memory_document x WHERE x.memory_id=m.memory_id),1),(EXISTS(SELECT 1 FROM memory_document_dependency dep JOIN memory_record source ON source.memory_id=dep.source_id WHERE dep.memory_id=m.memory_id AND (source.deleted_at IS NOT NULL OR EXISTS(SELECT 1 FROM memory_record successor WHERE successor.supersedes_memory_id=source.memory_id) OR EXISTS(SELECT 1 FROM memory_retirement retired WHERE retired.memory_id=source.memory_id))) OR EXISTS(SELECT 1 FROM memory_retirement x WHERE x.memory_id=m.memory_id) OR EXISTS(SELECT 1 FROM memory_semantic_record x WHERE x.memory_id=m.memory_id AND x.expires_at>0 AND x.expires_at<=unixepoch('subsec')*1000000)),coalesce((SELECT n.memory_id FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL),'') FROM memory_record m LEFT JOIN recall_document d ON d.ref='memory:'||m.memory_id WHERE m.user_id=? AND ((m.scope_type='user' AND m.scope_id=?) OR (m.scope_type='agent' AND m.scope_id=?)) AND m.deleted_at IS NULL AND m.created_at>? AND (d.active=1 OR substr(lower(m.content),1,7)='sealed:' OR EXISTS(SELECT 1 FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL)) ORDER BY m.created_at DESC,m.memory_id DESC`, scope.UserID, scope.UserID, scope.AgentID, floor)
+	query := `SELECT m.memory_id,m.user_id,m.scope_type,m.scope_id,m.tier,m.content,m.source_refs,coalesce(m.supersedes_memory_id,''),m.created_at,coalesce((SELECT layer FROM memory_document x WHERE x.memory_id=m.memory_id),'notes'),coalesce((SELECT metadata FROM memory_document x WHERE x.memory_id=m.memory_id),''),coalesce((SELECT revision FROM memory_document x WHERE x.memory_id=m.memory_id),1),(EXISTS(SELECT 1 FROM memory_document_dependency dep JOIN memory_record source ON source.memory_id=dep.source_id WHERE dep.memory_id=m.memory_id AND (source.deleted_at IS NOT NULL OR EXISTS(SELECT 1 FROM memory_record successor WHERE successor.supersedes_memory_id=source.memory_id) OR EXISTS(SELECT 1 FROM memory_retirement retired WHERE retired.memory_id=source.memory_id))) OR EXISTS(SELECT 1 FROM memory_retirement x WHERE x.memory_id=m.memory_id) OR EXISTS(SELECT 1 FROM memory_semantic_record x WHERE x.memory_id=m.memory_id AND x.expires_at>0 AND x.expires_at<=unixepoch('subsec')*1000000)),coalesce((SELECT n.memory_id FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL),'') FROM memory_record m LEFT JOIN recall_document d ON d.ref='memory:'||m.memory_id WHERE m.user_id=? AND ((m.scope_type='user' AND m.scope_id=?) OR (m.scope_type='agent' AND m.scope_id=?)) AND m.deleted_at IS NULL AND m.created_at>? AND (d.active=1 OR substr(lower(m.content),1,7)='sealed:' OR EXISTS(SELECT 1 FROM memory_record n WHERE n.supersedes_memory_id=m.memory_id AND n.deleted_at IS NULL))`
+	args := []any{scope.UserID, scope.UserID, scope.AgentID, floor}
+	if len(ids) > 0 {
+		selected, err := json.Marshal(ids)
+		if err != nil {
+			return nil, memory.ErrInspectionUnavailable
+		}
+		query += ` AND m.memory_id IN(SELECT value FROM json_each(?))`
+		args = append(args, string(selected))
+	}
+	rows, err := tx.QueryContext(ctx, query+` ORDER BY m.created_at DESC,m.memory_id DESC`, args...)
 	if err != nil {
 		return nil, memory.ErrInspectionUnavailable
 	}
@@ -70,7 +81,7 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 	if err != nil {
 		return out, snapshot, err
 	}
-	rows, err := s.inspectionRows(ctx, scope, floor)
+	rows, err := s.inspectionRows(ctx, scope, floor, nil)
 	if err != nil {
 		return out, snapshot, err
 	}
@@ -191,8 +202,50 @@ func (s *Store) Inspect(ctx context.Context, scope recall.Scope, floor int64, q 
 	}
 	return out, snapshot, nil
 }
+
+// InspectDreamChanges uses the same visibility predicate as a direct document
+// detail. The immutable successor row identifies replacements even in old receipts.
+func (s *Store) InspectDreamChanges(ctx context.Context, scope recall.Scope, floor int64, effects []memory.MaintenanceChange) ([]memory.MaintenanceChange, *InspectionSnapshot, error) {
+	if len(effects) == 0 {
+		return nil, nil, nil
+	}
+	ids := make([]string, 0, len(effects))
+	for _, effect := range effects {
+		ids = append(ids, strings.TrimPrefix(effect.Ref, "memory:"))
+	}
+	rows, err := s.inspectionRows(ctx, scope, floor, ids)
+	if err != nil {
+		return nil, nil, err
+	}
+	writes := make(map[string]string, len(rows))
+	for _, row := range rows {
+		operation := "created"
+		if row.Record.Supersedes != "" {
+			operation = "replaced"
+		}
+		writes["memory:"+row.Record.ID] = operation
+	}
+	visible := make([]memory.MaintenanceChange, 0, len(effects))
+	for _, effect := range effects {
+		write, ok := writes[effect.Ref]
+		if !ok {
+			continue
+		}
+		switch effect.Operation {
+		case "write":
+			effect.Operation = write
+		case "retire":
+			effect.Operation = "retired"
+		default:
+			continue
+		}
+		visible = append(visible, effect)
+	}
+	return visible, &InspectionSnapshot{scope: scope, floor: floor, selectedIDs: ids, fingerprint: inspectionFingerprint(rows)}, nil
+}
+
 func (s *Store) RecheckInspection(ctx context.Context, snapshot InspectionSnapshot) error {
-	rows, err := s.inspectionRows(ctx, snapshot.scope, snapshot.floor)
+	rows, err := s.inspectionRows(ctx, snapshot.scope, snapshot.floor, snapshot.selectedIDs)
 	if err != nil {
 		return err
 	}

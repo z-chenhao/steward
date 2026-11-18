@@ -133,7 +133,19 @@ func TestMemoryViewOwnedSourceMatchesOriginalPrivateDisplayAndSharedControls(t *
 				if e = original.ExecuteTemplate(&want, "memory-page", page{Memory: v}); e != nil {
 					t.Fatal(e)
 				}
-				if string(got) != want.String() {
+				rendered := string(got)
+				if kind == "maintenance-detail" && v.MaintenanceSelected.Operation == "dream" {
+					title, empty := "Changed documents", "No visible document changes."
+					if language == "zh-CN" {
+						title, empty = "变更的记忆文档", "暂无可查看的文档变更。"
+					}
+					addition := `<section class="memory-generation-history"><h3>` + title + `</h3><p class="muted">` + empty + `</p></section>` + "\n"
+					if !strings.Contains(rendered, addition) {
+						t.Fatal("missing newly added change list")
+					}
+					rendered = strings.Replace(rendered, addition, "", 1)
+				}
+				if rendered != want.String() {
 					t.Fatal("owned view changed captured original display")
 				}
 			})
@@ -222,5 +234,40 @@ func TestMemoryViewIndependentCopyPreservesFactsAndRejectsRowAndGraphForgery(t *
 				}
 			}
 		})
+	}
+}
+
+func TestMemoryViewShowsMaintenanceDocumentLinks(t *testing.T) {
+	v := originalMemoryViewFixture(t, "maintenance-detail")
+	v.MaintenanceSelected.Operation = "dream"
+	v.MaintenanceSelected.Changes = []memory.MaintenanceChange{{Ref: "memory:note", Operation: "created"}, {Ref: "memory:new-revision", Operation: "replaced"}, {Ref: "memory:retired-record", Operation: "retired"}}
+	for _, c := range v.MaintenanceSelected.Changes {
+		url := "/developer/memory?inspector_revision=sha256%3Aoriginal&ref=" + url.QueryEscape(c.Ref)
+		v.Presentation.Links = append(v.Presentation.Links, memory.InspectionLink{Key: "ref", Value: c.Ref, URL: url})
+	}
+	raw, err := os.ReadFile("../../plugin/memoryinspector/view/memory.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, lang := range []string{"en", "zh-CN"} {
+		r := languageRequest("GET", "/developer/memory", lang, "")
+		view, err := compileMemoryView(string(raw), memoryViewBindings(v, r), requestLayout(r))
+		if err != nil {
+			t.Fatal(err)
+		}
+		typed, err := renderMemoryView(view, v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		html := string(typed)
+		labels := []string{"Created document", "Replaced document", "Retired document"}
+		if lang == "zh-CN" {
+			labels = []string{"新增", "替代", "撤回"}
+		}
+		for i, c := range v.MaintenanceSelected.Changes {
+			if !strings.Contains(html, labels[i]) || !strings.Contains(html, "ref="+url.QueryEscape(c.Ref)+`">`+c.Ref+`</a>`) {
+				t.Fatal("missing navigable change", lang, c)
+			}
+		}
 	}
 }

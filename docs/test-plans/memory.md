@@ -15,6 +15,8 @@
 
 ## 入口与证据
 
+Dream 变更回执回归通过一次真实 Curator 写入检验新增、替代、撤回及各链接对应的确切文档；在投影结束前执行 Forget 后整页不得交付，重新打开后已撤权引用消失。双语模板测试使用非空变更和真实受限模板编译器。
+
 ```sh
 go test ./internal/agent/sqlite ./internal/interaction/web -run 'MemoryInspection|MemoryRoutes|MemoryFailures|Chinese' -count=1
 python3 tests/system/verify_channels.py --binary bin/steward --memory-only --evidence evidence/CHOOSE_FRESH_MEMORY_RUN/report.json

@@ -72,6 +72,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	traceWorkbench, traceActivity, traceLegacy := false, false, false
 	uiPlan, uiCards, uiTable, uiChart, uiForm := false, false, false, false, false
 	uiVersion := ""
+	var memoryInspectorVersion, memoryInspectorDirectory string
 	appsClient := false
 	appsInventory := false
 	codingChecks := false
@@ -86,6 +87,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "memory-inspector" {
+			memoryInspectorVersion = installed.Manifest.Version
+			memoryInspectorDirectory = h.Catalog.Path(installed.Digest)
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
@@ -381,7 +386,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, cases...)
 	}
 	if d.MemoryInspector != "" {
-		cases, err := memoryInspectorCases()
+		cases, err := MemoryInspectorCases(memoryInspectorVersion, memoryInspectorDirectory)
 		if err != nil {
 			return err
 		}
