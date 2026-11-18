@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -135,5 +136,39 @@ func TestArtifactWorkbenchSearchTenThousandAuthorizedRows(t *testing.T) {
 	}
 	if err := json.Unmarshal([]byte(result[0].Text), &selected); err != nil || len(selected) != 1 || selected[0].Name != "needle" {
 		t.Fatal(result, err)
+	}
+}
+
+func TestArtifactWorkbenchSearchContinuesPastFiftyTiedFiles(t *testing.T) {
+	ctx := context.Background()
+	first := []llm.ToolCall{{ID: "first", Name: artifacttools.Search, Arguments: `{"query":"same","limit":50,"cursor":""}`}}
+	s, r, claim, exec, exchange := admitPolicyRun(t, artifacttools.Definitions(), first, false, func(s *Store, r *Runs) { installArtifactWorkbench(t, s, r) })
+	defer keepRunClaim(r, claim)()
+	now := time.Now()
+	_, err := s.db.Exec(`WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<51)
+ INSERT INTO artifact(artifact_id,artifact_ref,owner_user_id,owner_agent_id,run_id,media_type,name,byte_size,content_hash,storage_key,visibility,retention_class,created_at,expires_at)
+ SELECT printf('%064x',i),'artifact:'||printf('%064x',i),?,agent_id,run_id,'text/plain','same',1,printf('%064x',i),printf('%064x',i),'run','standard',?,? FROM n CROSS JOIN run WHERE run_id=?`, artifact.LocalUser, now.UnixMicro(), now.Add(time.Hour).UnixMicro(), claim.RunID())
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := exec.Execute(ctx, exchange, first)
+	var page artifactSearchPage
+	if err != nil || len(output) != 1 || output[0].Error != nil || json.Unmarshal([]byte(output[0].Text), &page) != nil || len(page.Artifacts) != 50 || page.NextCursor == "" {
+		t.Fatal(output, err)
+	}
+	cursor := page.NextCursor
+	ids := map[string]bool{}
+	for i, d := range page.Artifacts {
+		if d.Ref != fmt.Sprintf("artifact:%064x", i+1) {
+			t.Fatalf("unexpected item %d: %s", i, d.Ref)
+		}
+		ids[d.Ref] = true
+	}
+	cont := []llm.ToolCall{{ID: "final", Name: artifacttools.Search, Arguments: fmt.Sprintf(`{"query":"same","limit":1,"cursor":%q}`, cursor)}, {ID: "changed-query", Name: artifacttools.Search, Arguments: fmt.Sprintf(`{"query":"different","cursor":%q}`, cursor)}}
+	exchange = artifactCompatibilityExchange(t, s, r, claim, cont)
+	out, err := exec.Execute(ctx, exchange, cont)
+	var last artifactSearchPage
+	if err != nil || len(out) != 2 || out[0].Error != nil || json.Unmarshal([]byte(out[0].Text), &last) != nil || len(last.Artifacts) != 1 || last.NextCursor != "" || ids[last.Artifacts[0].Ref] || last.Artifacts[0].Ref != fmt.Sprintf("artifact:%064x", 51) || out[1].Error == nil || out[1].Error.Code != "INVALID_ARGUMENT" {
+		t.Fatal(out, err)
 	}
 }

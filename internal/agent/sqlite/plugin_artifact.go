@@ -24,10 +24,14 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	if err != nil || !managed {
 		return tool.Result{}, false, err
 	}
-	var request contract.SearchRequest
+	var args struct {
+		Query  string  `json:"query"`
+		Limit  int     `json:"limit"`
+		Cursor *string `json:"cursor"`
+	}
 	handled := false
 	err = t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error {
-		_, name, args, err := t.acceptedBuiltin(ctx, tx, invocation)
+		_, name, raw, err := t.acceptedBuiltin(ctx, tx, invocation)
 		if err != nil {
 			return err
 		}
@@ -35,7 +39,7 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 			return nil
 		}
 		handled = true
-		return json.Unmarshal([]byte(args), &request)
+		return json.Unmarshal([]byte(raw), &args)
 	})
 	if errors.Is(err, tool.ErrApprovalDenied) {
 		return tool.Failure("PERMISSION_DENIED"), handled, nil
@@ -56,9 +60,15 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		result, e := artifactPolicyFailure(err)
 		return result, true, e
 	}
+	request := contract.SearchRequest{Query: args.Query, Limit: args.Limit, Paged: args.Cursor != nil}
+	scopeKey := artifactSearchKey(t.claim.RunID(), access.pluginGraph, args.Query)
+	after, err := readArtifactSearchCursor(scopeKey, args.Cursor)
+	if err != nil {
+		return tool.Failure("INVALID_ARGUMENT"), true, nil
+	}
 	type candidateIdentity struct {
-		ref, hash string
-		version   int64
+		ref, hash          string
+		version, createdAt int64
 	}
 	var candidates []candidateIdentity
 	var metadata []byte
@@ -71,7 +81,10 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 			return err
 		}
 		return t.runs.host.Artifacts().VisitSearchCandidatesTx(ctx, tx, scope, func(c artifactsqlite.SearchCandidate) {
-			candidates = append(candidates, candidateIdentity{c.Ref, c.ContentHash, c.Version})
+			if after.Ref != "" && (c.CreatedAt > after.CreatedAt || c.CreatedAt == after.CreatedAt && c.Ref <= after.Ref) {
+				return
+			}
+			candidates = append(candidates, candidateIdentity{c.Ref, c.ContentHash, c.Version, c.CreatedAt})
 			metadata = contract.AppendSearchRow(metadata, contract.SearchRow{CreatedAt: c.CreatedAt, Name: c.Name, MediaType: c.MediaType})
 		})
 	})
@@ -100,12 +113,18 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	}
 	selected := make([]artifact.Descriptor, 0, len(plan.Indices))
 	seen := map[int]bool{}
-	for _, index := range plan.Indices {
+	for position, index := range plan.Indices {
 		if index < 0 || index >= len(candidates) || seen[index] {
 			return tool.Result{}, true, rsi.ErrInvalid
 		}
 		seen[index] = true
-
+		if request.Paged && position > 0 {
+			prev := candidates[plan.Indices[position-1]]
+			curr := candidates[index]
+			if curr.createdAt > prev.createdAt || curr.createdAt == prev.createdAt && curr.ref <= prev.ref {
+				return tool.Result{}, true, rsi.ErrInvalid
+			}
+		}
 	}
 	// Only Host facts are projected. Recheck the original authorization and live
 	// metadata after the untrusted calculation, including empty-result reads.
@@ -142,6 +161,18 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	if err != nil {
 		result, e := artifactPolicyFailure(err)
 		return result, true, e
+	}
+	if request.Paged {
+		page := artifactSearchPage{Artifacts: selected}
+		if plan.More {
+			if len(selected) != plan.Limit {
+				return tool.Result{}, true, rsi.ErrInvalid
+			}
+			last := selected[len(selected)-1]
+			page.NextCursor = artifactSearchCursor{Key: scopeKey, CreatedAt: last.CreatedAt.UnixMicro(), Ref: last.Ref}.encode()
+		}
+		raw, err := encoded(page)
+		return tool.Result{Text: raw}, true, err
 	}
 	raw, err := encoded(selected)
 	return tool.Result{Text: raw}, true, err

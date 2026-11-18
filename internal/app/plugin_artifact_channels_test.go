@@ -57,7 +57,7 @@ func artifactHTTPMediaPackage(t *testing.T) string {
 	directory := t.TempDir()
 	replace := map[string]string{}
 	for file, change := range map[string][2]string{
-		"plugin.go": {`Version: "1.0.0"`, `Version: "1.2.0"`},
+		"plugin.go": {`Version: "1.0.1"`, `Version: "1.2.0"`},
 		"recipe.go": {`[]string{"image", "audio", "video"}`, `[]string{"audio", "video"}`},
 	} {
 		path, err := filepath.Abs(filepath.Join("../plugin/artifactworkbench", file))

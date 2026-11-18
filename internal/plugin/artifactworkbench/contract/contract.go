@@ -24,6 +24,7 @@ type RecipePlan struct {
 	PublishText   string   `json:"publish_text"`
 }
 type SearchRequest struct {
+	Paged bool   `json:"paged,omitempty"`
 	Count int    `json:"count"`
 	Query string `json:"query"`
 	Limit int    `json:"limit"`
@@ -36,6 +37,7 @@ type SearchRow struct {
 	Name, MediaType string
 }
 type Selection struct {
+	More      bool   `json:"more,omitempty"`
 	Indices   []int  `json:"indices"`
 	Limit     int    `json:"limit"`
 	ErrorCode string `json:"error_code,omitempty"`

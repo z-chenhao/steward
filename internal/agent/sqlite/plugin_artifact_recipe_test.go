@@ -28,7 +28,7 @@ func artifactChangedPackage(t *testing.T, version string) string {
 	t.Helper()
 	directory := t.TempDir()
 	replacements := map[string]string{}
-	changesByFile := map[string][][2]string{"plugin.go": {{`Version: "1.0.0"`, `Version: "` + version + `"`}}}
+	changesByFile := map[string][][2]string{"plugin.go": {{`Version: "1.0.1"`, `Version: "` + version + `"`}}}
 	switch version {
 	case "1.1.0":
 		changesByFile["recipe.go"] = [][2]string{{"days = 30", "days = 14"}, {`"tool-output.txt"`, `"evolved-output.log"`}, {`"text/plain"`, `"text/x-log"`}, {`"Saved artifact."`, `"Archived output."`}, {`"Final artifacts selected."`, `"Selected final artifacts."`}}
