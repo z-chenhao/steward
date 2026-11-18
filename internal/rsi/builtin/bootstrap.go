@@ -41,7 +41,7 @@ import (
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
-type Directories struct{ DOCX, OCR, Trace, Context, Recall, Conversation, Curator, Evidence, Skills, Experience, Task, Progress, Feedback, Delegation, CodeMode, Files, Shell, Coding, Computer, Web, Extract, MCP, Apps, Discovery, AppsDirectory, AppsAccounts, AppsLogos, AppsInterface, GitHub, Artifact, UI, Schedule, MemoryInspector, ModelConnections, Feishu, CapabilityForms, Terminal, ReferencePricing, WebWorkbench, ServiceWatchdog string }
+type Directories struct{ DOCX, OCR, Trace, Context, Recall, Conversation, Curator, Evidence, Skills, Experience, Task, Progress, Feedback, Delegation, CodeMode, Files, Shell, Coding, Computer, Web, Extract, MCP, Apps, Discovery, AppsDirectory, AppsAccounts, AppsLogos, AppsInterface, GitHub, Artifact, UI, Schedule, MemoryInspector, ModelConnections, Feishu, CapabilityForms, Terminal, ReferencePricing, WebWorkbench, ServiceWatchdog, MeetingPreparation string }
 
 // EnsureDefault selects the shipped composition only for a never-selected
 // installation. Operator choices, stops and deactivation survive restart; later
@@ -231,6 +231,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	if d.Skills != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.skill-discovery/1", "steward.skill-entry/1")
 		policy.Cases = append(policy.Cases, skillCases()...)
+	}
+	if d.MeetingPreparation != "" {
+		policy.AllowedContracts = append(policy.AllowedContracts, "steward.meeting-preparation/1")
+		policy.Cases = append(policy.Cases, meetingPreparationCases()...)
 	}
 	if d.Experience != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.experience-policy/1")

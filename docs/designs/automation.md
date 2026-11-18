@@ -182,3 +182,11 @@ Host 保持已发布工具名称、Main-only 权限、版本、结构 schema 和
 旧元数据协议只有 description、没有 threshold 服务的历史 Run 保持原工具说明和具名旧判断。首次阈值迁移后，新 Root 若在撤回或旧元数据图下缺少观察配方须拒绝，不能补造 native 指引；本地取消继续可用。Registry 仅从各 Run 原能力快照恢复说明／内容哈希，不改变固定名字、schema、权限、replay 或工具版本。冷元数据准备期间真实 Forget 不得借事务重试复活原意图。
 
 Reporter 只消费已接纳的 observed_value／notify：成功且安静的检查不交付，缺失观察只能报告未建立观察，不能伪造事实。该分支与原身份绑定的失败报告属于 Host 的事实／回执完整性机制，必须独立于生产者可用性保留；它不再比较阈值，不新增报告策略接口。旧判断仅服务不含 threshold 方法的冻结 Run，随历史消费者退役删除。
+
+### 获准日历与邮件的只读研究
+
+操作者在既有 connected-apps CAS 文档中保存两个确切绑定摘要、一次性授权标识和时区。Host 在每次内容读取和交付前复核两份本地授权及供应商账户状态，关闭连接会同时清除研究授权。连接查询和凭证仍由受信适配器持有。Composio 代理只可发起固定的 Google Calendar 事件、Gmail 会话/主题和邮箱身份 GET；邮箱身份用于生成对应账号的来源链接。普通模型和插件没有通用代理入口。
+
+独立 `meeting-preparation` 包拥有标题和主题匹配策略；私有 `steward.meeting-preparation/1` 接收有界数组，返回选择的位置。Host 验证索引、绑定和当前组合，组装可信来源链接。内存缓存按授权、日期和图版本区分，停用、隔离或换源后停止交付。次日边界按所选时区的两个本地午夜计算。每次网页服务启动和跨日检查不依赖推理或发送消息。
+
+适配器依据 [Composio 代理协议](https://docs.composio.dev/reference/api-reference/tools/postToolsExecuteProxy)、[Calendar 事件查询](https://developers.google.com/workspace/calendar/api/v3/reference/events/list) 和 [Gmail 会话查询](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.threads/list) 实现。

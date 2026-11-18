@@ -39,6 +39,7 @@ func bundledPlugins(d *Directories) []bundledPlugin {
 		{"memory-curator", "steward.memory-curator", &d.Curator},
 		{"evidence-reader", "steward.evidence-reader", &d.Evidence},
 		{"skill-library", "steward.skill-library", &d.Skills},
+		{"meeting-preparation", "steward.meeting-preparation", &d.MeetingPreparation},
 		{"experience-learning", "steward.experience-learning", &d.Experience},
 		{"task-control", "steward.task-control", &d.Task},
 		{"task-progress", "steward.task-progress", &d.Progress},

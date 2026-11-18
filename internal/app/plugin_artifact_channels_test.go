@@ -207,7 +207,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	graph, err := host.Store.Graph(ctx, first.Revision)
-	if err != nil || len(graph.Graph.Bindings) != 40 {
+	if err != nil || len(graph.Graph.Bindings) != 41 {
 		t.Fatal("channel used partial composition", err)
 	}
 	var policyID string
@@ -217,7 +217,7 @@ func TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions(t
 		t.Fatal(err)
 	}
 	basePolicy, err := host.Store.Policy(ctx, policyID)
-	if err != nil || len(basePolicy.Cases) != 390 {
+	if err != nil || len(basePolicy.Cases) != len(readDefaultOwnerInventory(t).Cases) {
 		t.Fatal("full owner cases missing", err)
 	}
 	var pixels bytes.Buffer

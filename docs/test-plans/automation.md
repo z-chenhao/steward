@@ -116,3 +116,7 @@ Main 迁移回归通过真实 Actor／模型／工具调用：在模型返回前
 `TestScheduleThresholdGuidanceFreezesRealRootRequestsAcrossLifecycle` 经真实 Actor 的模型→observe→模型续接检查独立 Root／工具说明、原消息字节前缀、固定工具权限及原事实。中途升级、正式精确回退、撤回均不改旧 Root；新 Root 缺方法时拒绝，本地取消不依赖候选。历史 description-only 元数据图生成的旧 Root 在激活新策略后仍用原文案与判断；迁移后的新 Root 不能借旧图恢复 native。`TestScheduleThresholdColdRootGuidanceForgetDoesNotResurrectIntent` 在实际元数据准备后 Forget，断言零 Task／Root／指令／模型释放，并在第一次后续 admission 将原 fire 标为 skipped。
 
 Schedule 的 Main／Root 指引与阈值冻结回归纳入 `make test-prompts` 的现有方法／Task 分组；CI 回归保证新增同族用例仍在必跑入口中，普通全量测试继续逐根覆盖。
+
+### 次日会议与邮件来源
+
+参考 OpenAI Dots 的主动只读研究。操作者选择两个账号并授权，看到明日会议与相关邮件的各自链接；关闭研究或撤回来源后无后续内容读取。Steward 只请求主题元数据，匹配窗口和时区在页面可见。connected-apps-plugins 系统门禁通过 `TestMeetingPreparationProductionWebAndRevocation`、真实完整托管组合、Chromium 设置页面和受控 Composio 协议端核对目标账号、GET 方法、字段、来源链接、停用和两次读取之间撤权；截图覆盖明暗和手机/桌面。`TestMeetingPreparationDSTWindow` 验证 23/25 小时的本地日历日。
