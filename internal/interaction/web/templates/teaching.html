@@ -1,0 +1,16 @@
+{{define "teaching-page"}}
+<section class="workspace-page teaching-page"><div class="page-heading"><h1>{{tr "Browser demonstration"}}</h1></div>
+<p>{{tr "Drag the recorder to your bookmarks, then open a local sample page. Start and stop recording explicitly. The capture contains control labels and actions. Review it before importing."}}</p>
+<noscript><p>{{tr "Enable JavaScript to record and review a browser demonstration."}}</p></noscript>
+<a class="button secondary control-form-action" data-demo-bookmark hidden>{{tr "Record a local demonstration"}}</a>
+<form class="form-panel" data-demo-review><fieldset>
+<label>{{tr "Demonstration recording"}}<input type="file" accept=".json,application/json" data-demo-capture required></label>
+<label>{{tr "Private skill name"}}<input name="name" maxlength="100" required></label>
+<label>{{tr "Editable steps"}}<textarea name="steps" rows="7" required></textarea></label>
+<p class="field-help">{{tr "Use one action and label per line, for example: activate Preview. Record a separate sample to check the steps without interacting with the website."}}</p>
+<label>{{tr "Independent sample recording"}}<input type="file" accept=".json,application/json" data-demo-sample></label>
+<button class="control-form-action" type="submit">{{tr "Review steps"}}</button>
+</fieldset></form>
+<p role="status" data-demo-status></p><ol data-demo-result></ol>
+<button type="button" class="control-form-action" data-demo-export hidden>{{tr "Download private skill draft"}}</button>
+</section><script src="/teaching/review.js" defer></script>{{end}}

@@ -138,3 +138,7 @@ Skill 是方法库，Memory 是用户事实，两者分开。Skill 目录保存�
 方法库发现／资源入口已迁入独立策略包，冻结文件与权限仍归 Host；设计边界见[插件设计](../designs/plugins-evolution.md#已提取的方法库边界)。相关回归为 `TestSkillPlugin*`、`make test-prompts` 与 `capabilities` 实际分发包场景。经验 Reviewer 的原始证据、验证和晋升不因此开放给普通插件。
 
 经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。F-023 的自动触发／编排仍待实现。
+
+### 示范草案的私有边界
+
+浏览器只监听操作者显式开始和停止之间的受信事件，每次限于当前本机页面，最多 32 步。录制文件和最终草案由操作者持有。经身份验证的 Web 入口只接受动作、标签和独立样例的有限状态转移。Host 读取当前有效组合，向 `experience-learning` 独立进程分发私有 `steward.browser-demonstration/1`；停用或隔离后拒绝新的复验。插件生成步骤并从初态沿样例边验证终态，无浏览器、持久化或网络写入能力。此操作独立于带执行证据的经验候选晋升，跨页面录制与网站自动回放超出此试点。

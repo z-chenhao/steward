@@ -166,6 +166,9 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) post(w http.ResponseWriter, r *http.Request) error {
 	switch r.URL.Path {
+	case "/api/skills/demonstration":
+		s.reviewDemonstration(w, r)
+		return nil
 	case "/api/models/project":
 		s.composerModelProjection(w, r)
 		return nil

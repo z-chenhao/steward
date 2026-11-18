@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="{{if .Language}}{{.Language}}{{else}}en{{end}}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Steward · {{if .Title}}{{appPageTitle .}}{{else}}{{tr "Workspace"}}{{end}}</title><link rel="icon" href="/brand/ghost-charcoal.png" type="image/png"><link rel="preload" href="{{fontURL "/brand/InterVariable.woff2"}}" as="font" type="font/woff2" crossorigin><link rel="preload" href="{{fontURL "/brand/Michroma-Regular.ttf"}}" as="font" type="font/ttf" crossorigin><script src="/appearance.js"></script>{{if workbenchLegacyStyles .}}<link rel="stylesheet" href="/style.css">{{else}}<link rel="stylesheet" href="/style-base.css">{{end}}{{if .Workbench}}<link rel="stylesheet" href="{{.Workbench.StylesheetURL}}">{{end}}{{if .Apps}}<link rel="stylesheet" href="{{.Apps.StylesheetURL}}">{{end}}{{if .Memory}}<link rel="stylesheet" href="{{.Memory.StylesheetURL}}">{{end}}{{if .Trace}}<link rel="stylesheet" href="{{.Trace.StylesheetURL}}">{{end}}{{workbenchClientConfiguration .}}<script defer src="/app.js"></script></head>
-<body{{if eq .Tab "/"}} class="chat-workspace"{{else if eq .Tab "/settings"}} class="settings-workspace has-section-navigation"{{else if eq .Tab "/tasks"}} class="has-section-navigation{{if or (eq .Path "/tasks") (eq .Path "/progress") (eq .Path "/tasks/configurations")}} control-list-workspace control-density-compact{{end}}"{{else if eq .Tab "/developer/observability"}} class="has-section-navigation trace-workspace control-list-workspace control-density-compact"{{else if eq .Tab "/developer/memory"}} class="has-section-navigation trace-workspace control-list-workspace control-density-compact"{{end}}>
+<body{{if eq .Tab "/"}} class="chat-workspace"{{else if eq .View "teaching"}} class="has-section-navigation"{{else if eq .Tab "/settings"}} class="settings-workspace has-section-navigation"{{else if eq .Tab "/tasks"}} class="has-section-navigation{{if or (eq .Path "/tasks") (eq .Path "/progress") (eq .Path "/tasks/configurations")}} control-list-workspace control-density-compact{{end}}"{{else if eq .Tab "/developer/observability"}} class="has-section-navigation trace-workspace control-list-workspace control-density-compact"{{else if eq .Tab "/developer/memory"}} class="has-section-navigation trace-workspace control-list-workspace control-density-compact"{{end}}>
 <a class="skip-link" href="#workspace-main">{{tr "Skip to content"}}</a>
 {{if .Login}}
 <main class="login">
@@ -19,14 +19,14 @@
    <div class="primary-navigation-top">
     <a href="/" title="{{tr "Chat"}}" {{if eq .Tab "/"}}aria-current="page"{{end}}>{{template "icon-conversation"}}<span>{{tr "Chat"}}</span></a>
     <a href="/tasks" title="{{tr "Tasks"}}" {{if eq .Tab "/tasks"}}aria-current="page"{{end}}>{{template "icon-tasks"}}<span>{{tr "Tasks"}}</span></a>
-    <a href="/developer/observability" title="{{tr "Developer"}}" {{if or (eq .Tab "/developer/observability") (eq .Tab "/developer/memory")}}aria-current="page"{{end}}>{{template "icon-developer"}}<span>{{tr "Developer"}}</span></a>
+    <a href="/developer/observability" title="{{tr "Developer"}}" {{if or (eq .Tab "/developer/observability") (eq .Tab "/developer/memory") (eq .View "teaching")}}aria-current="page"{{end}}>{{template "icon-developer"}}<span>{{tr "Developer"}}</span></a>
    </div>
    <a class="primary-settings" href="/settings/preferences" title="{{tr "Settings"}}" {{if eq .Tab "/settings"}}aria-current="page"{{end}}>{{template "icon-settings"}}<span>{{tr "Settings"}}</span></a>
   </nav>
  </aside>
  {{if eq .Tab "/settings"}}<aside class="section-sidebar" aria-label="{{tr "Settings navigation"}}">{{template "settings-navigation" .}}</aside>
  {{else if eq .Tab "/tasks"}}<aside class="section-sidebar" aria-label="{{tr "Task navigation"}}">{{template "tasks-navigation" .}}</aside>
- {{else if or (eq .Tab "/developer/observability") (eq .Tab "/developer/memory")}}<aside class="section-sidebar" aria-label="{{tr "Developer navigation"}}">{{template "developer-navigation" .}}</aside>{{end}}
+ {{else if or (eq .Tab "/developer/observability") (eq .Tab "/developer/memory") (eq .View "teaching")}}<aside class="section-sidebar" aria-label="{{tr "Developer navigation"}}">{{template "developer-navigation" .}}</aside>{{end}}
 </div>
 <main class="workspace-main" id="workspace-main" data-live-view="{{.Live}}" data-live-before="{{.Cursor}}" data-live-latest="{{.Latest}}">
  {{if eq .Tab "/settings"}}<header class="workspace-topbar settings-topbar"><button type="button" class="sidebar-toggle sidebar-open" data-sidebar-toggle disabled aria-label="{{tr "Open navigation"}}" aria-controls="workspace-navigation" aria-expanded="false">{{template "icon-sidebar"}}</button><span>{{tr "Settings"}}</span><a href="/" class="settings-exit" aria-label="{{tr "Back to chat"}}">×</a></header>{{else if eq .Tab "/"}}<header class="workspace-topbar chat-topbar"><div class="topbar-start"><button type="button" class="sidebar-toggle sidebar-open" data-sidebar-toggle disabled aria-label="{{tr "Open navigation"}}" aria-controls="workspace-navigation" aria-expanded="false">{{template "icon-sidebar"}}</button></div><div class="chat-identity"><span class="agent-name">Ghost</span>{{template "agent-avatar"}}<div id="workspace-status" class="chat-status">{{template "status" .}}</div></div><div class="topbar-actions"><button class="button secondary" type="button" data-panel-open="computer-panel" aria-label="{{tr "Open Computer"}}" aria-controls="computer-panel" aria-expanded="false">{{template "icon-computer"}}<span>Computer</span></button><button class="button secondary worker-trigger" type="button" data-panel-open="worker-panel" aria-label="{{tr "Worker progress"}}" aria-controls="worker-panel" aria-expanded="false">{{template "icon-progress"}}<span data-worker-current>Worker</span></button><div id="conversation-attention" class="conversation-attention">{{template "attention-summary" .}}</div></div></header>{{else}} <header class="workspace-topbar"><div class="topbar-start"><button type="button" class="sidebar-toggle sidebar-open" data-sidebar-toggle disabled aria-label="{{tr "Open navigation"}}" aria-controls="workspace-navigation" aria-expanded="false">{{template "icon-sidebar"}}</button>{{template "workspace-breadcrumb" .}}</div><div class="topbar-actions">{{template "trace-list-time-controls" .}}{{template "list-refresh" .}}<div id="workspace-status">{{template "status" .}}</div></div></header>{{end}}
@@ -38,6 +38,7 @@
  {{else if eq .View "app-service"}}{{template "app-service-page" .}}
  {{else if eq .View "apps"}}{{template "apps-page" .}}
  {{else if eq .View "capabilities"}}{{template "capabilities-page" .}}
+ {{else if eq .View "teaching"}}{{template "teaching-page" .}}
  {{else if eq .View "settings"}}{{template "settings-page" .}}
  {{else if eq .View "schedule"}}{{template "schedule-editor-page" .}}
  {{else if eq .View "attention"}}<section class="workspace-page"><div class="page-heading"><h1>{{tr "Needs your attention"}}</h1></div><div id="tasks-attention">{{template "tasks-attention" .}}</div></section>
@@ -68,7 +69,7 @@
  <a href="/">{{tr "Workspace"}}</a>
  {{if eq .Tab "/settings"}}<span aria-hidden="true">/</span><a href="/settings/models">{{tr "Settings"}}</a>
  {{else if eq .Tab "/tasks"}}<span aria-hidden="true">/</span><a href="/tasks">{{tr "Tasks"}}</a>
- {{else if or (eq .View "traces") (eq .View "trace") (eq .View "memory")}}<span aria-hidden="true">/</span><span>{{tr "Developer"}}</span>{{end}}
+ {{else if or (eq .View "traces") (eq .View "trace") (eq .View "memory") (eq .View "teaching")}}<span aria-hidden="true">/</span><span>{{tr "Developer"}}</span>{{end}}
 </nav>
 {{end}}
 

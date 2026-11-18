@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/plugin/experiencelearning/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/experiencelearning/demonstration"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: func(ctx context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.2", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Demonstration: demonstration.Call, contract.Contract: func(ctx context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
 		var q contract.Request
 		if err := rsiplugin.Decode(c.Input, &q); err != nil {
 			return rsiplugin.Result{}, err
