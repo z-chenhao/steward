@@ -105,7 +105,7 @@ func TestCapabilityFormsActualUpgradeRollbackStopAndCold(t *testing.T) {
 			text = strings.Replace(text, `v.Title = "Memory"`, `v.Title = "v2 Memory"`, 1)
 			text = strings.Replace(text, "The referenced 32-byte encryption key is available. No memory was read or written.", "v2 The referenced 32-byte encryption key is available. No memory was read or written.", 1)
 		} else {
-			text = strings.Replace(text, `Version: "1.0.0"`, `Version: "1.1.0"`, 1)
+			text = strings.Replace(text, `Version: "1.0.1"`, `Version: "1.1.0"`, 1)
 		}
 		replacement := filepath.Join(t.TempDir(), filepath.Base(name))
 		if e = os.WriteFile(replacement, []byte(text), 0600); e != nil {
