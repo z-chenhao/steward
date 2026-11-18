@@ -1,0 +1,64 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.task-mail",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-042"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 30000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.task-mail-parse/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "maxLength": 998
+          },
+          "from": {
+            "type": "string",
+            "maxLength": 320
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 998
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 262144
+          },
+          "error": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [
+    "input.read"
+  ]
+}
