@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.artifact-workbench",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "feature_ids": [
     "F-012"
   ],
@@ -92,6 +92,9 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 50
+          },
+          "paged": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -122,6 +125,9 @@
             "enum": [
               "INVALID_ARGUMENT"
             ]
+          },
+          "more": {
+            "type": "boolean"
           }
         },
         "required": [

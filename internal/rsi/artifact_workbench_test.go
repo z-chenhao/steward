@@ -24,7 +24,7 @@ func changedArtifactPackage(t *testing.T) string {
 	directory := t.TempDir()
 	replacements := map[string]string{}
 	for file, changes := range map[string][][2]string{
-		"plugin.go": {{`Version: "1.0.0"`, `Version: "1.1.0"`}},
+		"plugin.go": {{`Version: "1.0.1"`, `Version: "1.1.0"`}},
 		"recipe.go": {{"days = 30", "days = 14"}, {"limit = 4096", "limit = 2048"}},
 		"search.go": {{"h := selectionHeap{newest: true}", "h := selectionHeap{}"}, {"h := selectionHeap{}\n\tfor index := 0; index < request.Count; index++ {\n\t\tif err := ctx.Err(); err != nil {\n\t\t\treturn contract.Selection{}, err\n\t\t}\n\t\trow, err := contract.ReadCleanupRow(input)", "h := selectionHeap{newest: true}\n\tfor index := 0; index < request.Count; index++ {\n\t\tif err := ctx.Err(); err != nil {\n\t\t\treturn contract.Selection{}, err\n\t\t}\n\t\trow, err := contract.ReadCleanupRow(input)"}},
 	} {

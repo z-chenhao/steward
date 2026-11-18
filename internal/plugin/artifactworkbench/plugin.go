@@ -11,7 +11,7 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Recipe: recipe, contract.Read: read, contract.Search: search, contract.Cleanup: cleanup}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Recipe: recipe, contract.Read: read, contract.Search: search, contract.Cleanup: cleanup}}
 }
 func recipe(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 	var request contract.RecipeRequest

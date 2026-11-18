@@ -17,6 +17,7 @@ func Select(ctx context.Context, request contract.SearchRequest, input io.Reader
 	}
 	query := strings.ToLower(strings.TrimSpace(request.Query))
 	h := selectionHeap{newest: true}
+	matches := 0
 	for index := 0; index < request.Count; index++ {
 		if err := ctx.Err(); err != nil {
 			return contract.Selection{}, err
@@ -26,13 +27,16 @@ func Select(ctx context.Context, request contract.SearchRequest, input io.Reader
 			return contract.Selection{}, err
 		}
 		if query == "" || strings.Contains(strings.ToLower(row.Name), query) || strings.Contains(strings.ToLower(row.MediaType), query) {
+			matches++
 			h.add(ranked{index: index, stamp: row.CreatedAt}, limit)
 		}
 	}
 	if err := contract.End(input); err != nil {
 		return contract.Selection{}, err
 	}
-	return h.plan(limit), nil
+	plan := h.plan(limit)
+	plan.More = request.Paged && matches > limit
+	return plan, nil
 }
 func SelectCleanup(ctx context.Context, request contract.CleanupRequest, input io.Reader) (contract.Selection, error) {
 	batch, valid := cleanupLimit(request)

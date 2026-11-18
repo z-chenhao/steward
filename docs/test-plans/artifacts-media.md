@@ -170,3 +170,6 @@ Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一�
 
 
 视觉模型 WebP 回归用自制的 8×4 红色无损样例，经真实模型桥转码成有界 JPEG，核对像素和原件引用。动画标志、超出像素预算、伪造 MIME 都在供应商调用前拒绝。OCR 保持原先的格式边界。
+
+
+`TestArtifactWorkbenchSearchContinuesPastFiftyTiedFiles` 通过真实托管搜索查询 51 份同名、同创建时间的成果，检查跨页无遗漏或重复、恰满最后一页没有续页以及查询变更后拒绝旧游标。
