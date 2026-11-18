@@ -163,3 +163,5 @@ CLI 入口 `verify_artifacts.py --ocr-only` 使用独立政策验收分发包，
 
 
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
+
+从审阅任务验证受信工作台引用、文本以纯文字呈现、PNG 实际格式匹配、原件下载及撤权。类型不支持或 MIME 与字节不一致时预览拒绝，下载保留原文件。

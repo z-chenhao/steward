@@ -244,3 +244,5 @@ Artifact 流读取与校验在 SQLite 事务外完成；配额与结果接纳保
 
 
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
+
+审阅预览由原工作台版本选择，链接携带对应工作台引用；每次读取仍校验当前文件授权。Host 将文本强制为纯文字，核对 JPEG/PNG 解码配置、尺寸与预算，并保留独立的原字节下载。

@@ -194,8 +194,12 @@ func (r *Reader) List(ctx context.Context, q task.ListQuery) (task.List, error) 
 }
 
 func (r *Reader) Detail(ctx context.Context, ref, after string) (task.Detail, error) {
+	return r.DetailPage(ctx, ref, after, 0)
+}
+
+func (r *Reader) DetailPage(ctx context.Context, ref, after string, before int64) (task.Detail, error) {
 	var out task.Detail
-	if !task.ValidRef(ref) || len(after) > 1024 {
+	if !task.ValidRef(ref) || len(after) > 1024 || before < 0 {
 		return out, task.ErrInvalid
 	}
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
@@ -225,7 +229,7 @@ func (r *Reader) Detail(ctx context.Context, ref, after string) (task.Detail, er
 	if err = taskHistory(ctx, tx, &out, after); err != nil {
 		return out, err
 	}
-	if err = taskConversation(ctx, tx, &out); err != nil {
+	if err = taskConversation(ctx, tx, &out, before); err != nil {
 		return out, err
 	}
 	return out, tx.Commit()

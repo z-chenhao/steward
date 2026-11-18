@@ -226,7 +226,7 @@ export function startLiveUpdates(){
   const timeout=setTimeout(()=>controller.abort(),timing.read_timeout_ms);
   try{
    const query=new URLSearchParams({view});if(before)query.set('before',String(before));
-   if(view==='/tasks'||view.startsWith('/tasks/')){for(const key of ['q','cursor','history','feedback_before','needs_me']){const value=taskQuery.get(key);if(value)query.set(key,value)}const taskView=taskQuery.get('view');if(taskView)query.set('task_view',taskView)}
+   if(view==='/tasks'||view.startsWith('/tasks/')){for(const key of ['q','cursor','history','delivery_before','schedules_after','feedback_before','needs_me']){const value=taskQuery.get(key);if(value)query.set(key,value)}const taskView=taskQuery.get('view');if(taskView)query.set('task_view',taskView)}
    const response=await fetch('/api/updates?'+query,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:workbenchHeaders(etag)});
    if(current!==generation)return;
    workbenchResponse(response);

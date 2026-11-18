@@ -122,6 +122,7 @@ type Detail struct {
 	Artifacts        []string
 	History          []History
 	HistoryNext      string
+	DeliveriesBefore int64
 	Messages         []conversation.Message
 	ApprovalIDs      []string
 	SourceSequence   int64

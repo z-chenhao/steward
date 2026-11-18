@@ -46,7 +46,7 @@ func TestTaskPlanningReadsPersistedRulesInstructionsAndUndispatchedSchedules(t *
 	if err != nil || len(listed.Items) != 1 || listed.Items[0].Schedule == nil || listed.Items[0].CompletionPolicy != "ongoing" {
 		t.Fatal(listed, err)
 	}
-	schedules, err := reader.Scheduled(ctx, "")
+	schedules, _, err := reader.ScheduledPage(ctx, "", "")
 	if err != nil || len(schedules) != 2 || schedules[0].Ref != "automation:upcoming" || schedules[0].TaskRef != "" || schedules[1].TaskRef != "task:planning" {
 		t.Fatal("undispatched intent missing or foreign scope leaked", schedules, err)
 	}
@@ -73,11 +73,11 @@ func TestTaskPlanningReadsPersistedRulesInstructionsAndUndispatchedSchedules(t *
 	if err != nil || d.Schedule == nil || !d.Schedule.Restricted || d.Schedule.Instruction != "" || d.Schedule.Spec != "" || d.Schedule.NextAt != "" || d.Schedule.Below != nil {
 		t.Fatal("revoked schedule intent leaked", d.Schedule, err)
 	}
-	schedules, err = reader.Scheduled(ctx, "")
+	schedules, _, err = reader.ScheduledPage(ctx, "", "")
 	if err != nil || len(schedules) != 2 || !schedules[0].Restricted || schedules[0].Instruction != "" || schedules[0].Timezone != "" {
 		t.Fatal("revoked upcoming intent leaked", schedules, err)
 	}
-	filtered, err := reader.Scheduled(ctx, "Prepare")
+	filtered, _, err := reader.ScheduledPage(ctx, "Prepare", "")
 	if err != nil || len(filtered) != 0 {
 		t.Fatal("search exposed revoked schedule intent", filtered, err)
 	}
@@ -97,15 +97,26 @@ func TestScheduledWorkIsBoundedAndRetainsNoNextOccurrence(t *testing.T) {
 		t.Fatal(err)
 	}
 	reader := s.TaskReader()
-	rows, err := reader.Scheduled(context.Background(), "")
+	rows, next, err := reader.ScheduledPage(context.Background(), "", "")
 	if err != nil || len(rows) != 50 {
 		t.Fatal("unbounded schedule read", len(rows), err)
 	}
-	rows, err = reader.Scheduled(context.Background(), "Ended")
+	older, end, err := reader.ScheduledPage(context.Background(), "", next)
+	if err != nil || next == "" || len(older) != 3 || end != "" {
+		t.Fatal("schedule continuation lost bounded tail", next, len(older), end, err)
+	}
+	seen := map[string]bool{}
+	for _, row := range append(rows, older...) {
+		if seen[row.Ref] {
+			t.Fatalf("duplicate schedule %s", row.Ref)
+		}
+		seen[row.Ref] = true
+	}
+	rows, _, err = reader.ScheduledPage(context.Background(), "Ended", "")
 	if err != nil || len(rows) != 1 || rows[0].NextAt != "" || rows[0].Type != "at" || !rows[0].Enabled || rows[0].TaskRef != "" {
 		t.Fatal("no-next occurrence became invented future work", rows, err)
 	}
-	if _, err = reader.Scheduled(context.Background(), strings.Repeat("x", 301)); !errors.Is(err, task.ErrInvalid) {
+	if _, _, err = reader.ScheduledPage(context.Background(), strings.Repeat("x", 301), ""); !errors.Is(err, task.ErrInvalid) {
 		t.Fatal("unbounded search accepted", err)
 	}
 }

@@ -48,6 +48,7 @@ type workbenchDetail struct {
 	MoreInstructions bool
 	History          []workbenchHistory
 	HistoryNext      string
+	DeliveriesBefore int64
 }
 type workbenchExecution struct {
 	ID, TaskRef, Title, CompletionPolicy, Status, CreatedAt, UpdatedAt string
@@ -84,6 +85,7 @@ type workbenchTasks struct {
 	Approvals            []workbenchApprovalRef
 	Artifacts            []shownArtifact
 	Scheduled            []workbenchScheduled
+	ScheduledNext        string
 	SchedulesUnavailable bool
 }
 type workbenchFeedback struct {
@@ -100,6 +102,7 @@ type workbenchAttention struct {
 	Next, ApprovalNext, TasksNext string
 }
 type workbenchViewData struct {
+	ReaderRevision                                 string
 	Tasks                                          *workbenchTasks
 	Attention                                      *workbenchAttention
 	Schedule                                       *scheduleEditor
@@ -171,12 +174,15 @@ func workbenchExecutionOf(v task.Execution) workbenchExecution {
 func workbenchData(p page, language string) (workbenchViewData, *workbenchBindings) {
 	b := &workbenchBindings{opaque: map[string]template.HTML{}, approvals: map[string]approvalView{}}
 	data := workbenchViewData{Schedule: p.Schedule, ComposerModels: p.ComposerModels, Status: p.Status, Language: language, Path: p.Path, FeedbackDraft: p.FeedbackDraft, SourceID: p.SourceID, Draft: p.Draft, DraftTask: p.DraftTask, PendingCount: p.PendingCount, FirstPending: p.FirstPending, Before: p.Before}
+	if p.Workbench != nil {
+		data.ReaderRevision = p.Workbench.ReaderRevision
+	}
 	data.Messages = b.messages(p.Messages)
 	for _, a := range p.Approvals {
 		data.Approvals = append(data.Approvals, b.approval(a))
 	}
 	if v := p.Tasks; v != nil {
-		t := &workbenchTasks{Configurations: v.Configurations, Artifacts: v.Artifacts, SchedulesUnavailable: v.SchedulesUnavailable}
+		t := &workbenchTasks{Configurations: v.Configurations, Artifacts: v.Artifacts, ScheduledNext: v.ScheduledNext, SchedulesUnavailable: v.SchedulesUnavailable}
 		t.Query.View, t.Query.Query, t.Query.Cursor, t.Query.NeedsMe = v.Query.View, v.Query.Query, v.Query.Cursor, v.Query.NeedsMe
 		t.List.Next, t.Executions.Next = v.List.Next, v.Executions.Next
 		for _, x := range v.List.Items {
@@ -189,7 +195,7 @@ func workbenchData(p page, language string) (workbenchViewData, *workbenchBindin
 			t.Scheduled = append(t.Scheduled, workbenchScheduled{workbenchSchedule: *workbenchScheduleOf(&x.Schedule, language), TaskRef: x.TaskRef})
 		}
 		if x := v.Detail; x != nil {
-			d := &workbenchDetail{workbenchEntry: workbenchEntryOf(x.Entry, language), SourceSequence: x.SourceSequence, Instructions: workbenchInstructions(x.Instructions), MoreInstructions: x.MoreInstructions, HistoryNext: x.HistoryNext}
+			d := &workbenchDetail{workbenchEntry: workbenchEntryOf(x.Entry, language), DeliveriesBefore: x.DeliveriesBefore, SourceSequence: x.SourceSequence, Instructions: workbenchInstructions(x.Instructions), MoreInstructions: x.MoreInstructions, HistoryNext: x.HistoryNext}
 			for _, h := range x.History {
 				d.History = append(d.History, workbenchHistory{ID: h.ID, Kind: h.Kind, Text: h.Text, At: h.At})
 			}

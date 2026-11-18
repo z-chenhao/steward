@@ -46,38 +46,45 @@ func taskHistory(ctx context.Context, tx *sql.Tx, out *task.Detail, after string
 }
 
 // Only Main's finalized deliveries are public Task and execution results.
-func relatedDeliveries(ctx context.Context, tx *sql.Tx, taskRef, rootRun string) ([]conversation.Message, error) {
+func relatedDeliveries(ctx context.Context, tx *sql.Tx, taskRef, rootRun string, before int64) ([]conversation.Message, int64, error) {
 	query := `SELECT DISTINCT c.sequence,c.message_json FROM task_update u JOIN task t USING(task_id) JOIN main_inbox i USING(event_id) JOIN main_reply m ON m.run_id=i.run_id JOIN conversation_intent c ON json_extract(c.message_json,'$.message_id')=m.message_id WHERE t.task_ref=? AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND json_extract(c.message_json,'$.conversation_id')=t.conversation_id`
 	args := []any{taskRef}
 	if rootRun != "" {
 		query += " AND u.root_run_id=?"
 		args = append(args, rootRun)
 	}
-	rows, err := tx.QueryContext(ctx, query+" ORDER BY c.sequence DESC LIMIT 10", args...)
+	if before > 0 {
+		query += " AND c.sequence<?"
+		args = append(args, before)
+	}
+	rows, err := tx.QueryContext(ctx, query+" ORDER BY c.sequence DESC LIMIT 11", args...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 	var messages []conversation.Message
 	for rows.Next() {
+		if len(messages) == 10 {
+			return messages, messages[len(messages)-1].Sequence, nil
+		}
 		var seq int64
 		var raw string
 		var m conversation.Message
 		if err = rows.Scan(&seq, &raw); err != nil {
-			return messages, err
+			return messages, 0, err
 		}
 		if err = json.Unmarshal([]byte(raw), &m); err != nil {
-			return messages, err
+			return messages, 0, err
 		}
 		m.Sequence = seq
 		messages = append(messages, m)
 	}
-	return messages, rows.Err()
+	return messages, 0, rows.Err()
 }
 
-func taskConversation(ctx context.Context, tx *sql.Tx, out *task.Detail) error {
-	messages, err := relatedDeliveries(ctx, tx, out.TaskRef, "")
-	out.Messages = messages
+func taskConversation(ctx context.Context, tx *sql.Tx, out *task.Detail, before int64) error {
+	messages, next, err := relatedDeliveries(ctx, tx, out.TaskRef, "", before)
+	out.Messages, out.DeliveriesBefore = messages, next
 	if err != nil {
 		return err
 	}

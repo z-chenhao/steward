@@ -144,7 +144,11 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 			AccountID string `json:"account_id,omitempty"`
 			Error     string `json:"error,omitempty"`
 		}{s.auth, s.accountID, s.authError})
-	case "/artifact":
+	case "/artifact", "/artifact/preview":
+		if r.URL.Path == "/artifact/preview" && !s.artifactPreviewAllowed(r) {
+			fail(w, 404)
+			return
+		}
 		ref := r.URL.Query().Get("ref")
 		d, e := s.Core.DescribeArtifact(r.Context(), ref)
 		if e != nil {
@@ -157,6 +161,10 @@ func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer src.Close()
+		if r.URL.Path == "/artifact/preview" {
+			serveArtifactPreview(w, d, src)
+			return
+		}
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": d.Name}))
 		w.Header().Set("Content-Length", strconv.FormatInt(d.ByteSize, 10))

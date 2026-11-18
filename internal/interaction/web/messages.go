@@ -47,7 +47,7 @@ func (s *Server) acceptFormMessage(w http.ResponseWriter, r *http.Request) error
 		if s.Tasks == nil {
 			return errPageNotFound
 		}
-		d, err := s.Tasks.Detail(r.Context(), ref, "")
+		d, err := s.Tasks.DetailPage(r.Context(), ref, "", 0)
 		if err != nil {
 			return err
 		}

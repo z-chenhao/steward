@@ -440,6 +440,21 @@
     "zh_cn": "数值进入以下阈值时通知"
   },
   {
+    "key": "More schedules →",
+    "en": "More schedules →",
+    "zh_cn": "更多计划 →"
+  },
+  {
+    "key": "Older deliveries →",
+    "en": "Older deliveries →",
+    "zh_cn": "更早的交付 →"
+  },
+  {
+    "key": "Preview",
+    "en": "Preview",
+    "zh_cn": "预览"
+  },
+  {
     "key": "Older milestones →",
     "en": "Older milestones →",
     "zh_cn": "更早的里程碑 →"

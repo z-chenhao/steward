@@ -83,7 +83,7 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 		u := *r.URL
 		u.Path = p.Tab
 		q := url.Values{}
-		for _, key := range []string{"q", "cursor", "history", "feedback_before", "needs_me"} {
+		for _, key := range []string{"q", "cursor", "history", "delivery_before", "schedules_after", "feedback_before", "needs_me"} {
 			if value := r.URL.Query().Get(key); value != "" {
 				q.Set(key, value)
 			}

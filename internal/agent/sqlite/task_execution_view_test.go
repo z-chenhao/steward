@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -99,6 +100,19 @@ func TestExecutionRecordsKeepHistoricalRoundsSeparateFromTaskConfiguration(t *te
 	}
 	if scalar(t, s, `SELECT total_changes()`) != before {
 		t.Fatal("browsing mutated task or execution state")
+	}
+	for round := 3; round <= 11; round++ {
+		mustSubmit(t, a, fmt.Sprintf("delivery-round-%d", round), "append")
+		mustDrain(t, a)
+	}
+	ref := configs.Items[0].TaskRef
+	current, err := reader.DetailPage(ctx, ref, "", 0)
+	if err != nil || len(current.Messages) != 10 || current.DeliveriesBefore != current.Messages[9].Sequence {
+		t.Fatal("expected a full delivery page and stable continuation", len(current.Messages), current.DeliveriesBefore, err)
+	}
+	previous, err := reader.DetailPage(ctx, ref, "", current.DeliveriesBefore)
+	if err != nil || len(previous.Messages) != 1 || previous.DeliveriesBefore != 0 || previous.Messages[0].Sequence >= current.DeliveriesBefore {
+		t.Fatal("expected only the original delivery", len(previous.Messages), previous.DeliveriesBefore, err)
 	}
 }
 
