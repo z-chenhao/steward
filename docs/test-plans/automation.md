@@ -116,3 +116,5 @@ Main 迁移回归通过真实 Actor／模型／工具调用：在模型返回前
 `TestScheduleThresholdGuidanceFreezesRealRootRequestsAcrossLifecycle` 经真实 Actor 的模型→observe→模型续接检查独立 Root／工具说明、原消息字节前缀、固定工具权限及原事实。中途升级、正式精确回退、撤回均不改旧 Root；新 Root 缺方法时拒绝，本地取消不依赖候选。历史 description-only 元数据图生成的旧 Root 在激活新策略后仍用原文案与判断；迁移后的新 Root 不能借旧图恢复 native。`TestScheduleThresholdColdRootGuidanceForgetDoesNotResurrectIntent` 在实际元数据准备后 Forget，断言零 Task／Root／指令／模型释放，并在第一次后续 admission 将原 fire 标为 skipped。
 
 Schedule 的 Main／Root 指引与阈值冻结回归纳入 `make test-prompts` 的现有方法／Task 分组；CI 回归保证新增同族用例仍在必跑入口中，普通全量测试继续逐根覆盖。
+
+任务配置应在伦敦浏览器新建时使用 Europe/London，损坏的时区偏好恢复到原配方默认时区；在该浏览器编辑上海计划仍显示 Asia/Shanghai。上海浏览器查看纽约冬令时 08:00 的下次触发时，断言正文含 08:00 和 -05:00。HTTP 路径回归见 TestManagedScheduleFormAndOccurrenceRespectTimezones。

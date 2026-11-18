@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,10 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/automation"
+	"github.com/z-chenhao/assistant/internal/plugin/webworkbench"
+	"github.com/z-chenhao/assistant/internal/plugin/webworkbench/contract"
 	"github.com/z-chenhao/assistant/internal/task"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 func scheduleValues() url.Values {
@@ -194,6 +198,42 @@ func TestScheduleTaskPageUsesAcceptedBilingualPresentationAsText(t *testing.T) {
 		markup := w.Body.String()
 		if w.Code != 200 || !strings.Contains(markup, c.label+" &lt;script&gt;bad()&lt;/script&gt;") || !strings.Contains(markup, c.at) || strings.Contains(markup, "<script>bad()") {
 			t.Fatal("presentation ignored or interpreted as markup", c, w.Code)
+		}
+	}
+}
+
+func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
+	ctx := context.Background()
+	result, err := webworkbench.Plugin().Services[contract.Service](ctx, rsiplugin.Call{Input: json.RawMessage("{}")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var presentation contract.Presentation
+	if err := json.Unmarshal(result.Output, &presentation); err != nil {
+		t.Fatal(err)
+	}
+	revision := "sha256:" + strings.Repeat("b", 64)
+	s := &Server{
+		Core:      &updatesCore{allowed: true, status: "idle"},
+		Schedules: &scheduleServiceFixture{},
+		Tasks:     schedulePresentationReader{value: &task.Schedule{Ref: "automation:render", Type: "cron", Spec: "0 8 * * *", Timezone: "America/New_York", Enabled: true, NextAt: "2026-12-15T13:00:00Z"}},
+		WebWorkbench: func(context.Context, string) (contract.Presentation, string, bool, error) {
+			return presentation, revision, true, nil
+		},
+	}
+	for _, c := range []struct{ path, zone, expected string }{
+		{"/tasks/schedules/new", "Europe/London", `name="timezone" value="Europe/London"`},
+		{"/tasks/schedules/new", "invalid/zone", `name="timezone" value="UTC"`},
+		{"/tasks/schedules/automation:existing", "Europe/London", `name="timezone" value="Asia/Shanghai"`},
+		{"/tasks/task:visible", "Asia/Shanghai", "2026-12-15 08:00:00 -05:00"},
+	} {
+		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+c.path, nil)
+		r.RemoteAddr = "127.0.0.1:4321"
+		r.AddCookie(&http.Cookie{Name: timezoneCookie, Value: url.QueryEscape(c.zone)})
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), c.expected) {
+			t.Fatalf("%s %s: HTTP %d, want %q", c.path, c.zone, w.Code, c.expected)
 		}
 	}
 }

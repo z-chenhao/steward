@@ -15,13 +15,20 @@ const timezoneCookie = "steward-timezone"
 
 // This is a browser presentation preference, never the scheduler's timezone.
 // Before the browser supplies it, native fallback identifies the host zone.
-func requestLocation(r *http.Request) *time.Location {
+func browserLocation(r *http.Request) *time.Location {
 	if cookie, err := r.Cookie(timezoneCookie); err == nil {
-		if zone, err := url.QueryUnescape(cookie.Value); err == nil && len(zone) <= 100 {
+		if zone, err := url.QueryUnescape(cookie.Value); err == nil && zone != "" && zone != "Local" && len(zone) <= 100 {
 			if location, err := time.LoadLocation(zone); err == nil {
 				return location
 			}
 		}
+	}
+	return nil
+}
+
+func requestLocation(r *http.Request) *time.Location {
+	if location := browserLocation(r); location != nil {
+		return location
 	}
 	return time.Local
 }

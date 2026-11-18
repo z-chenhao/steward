@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/plugin/webworkbench/contract"
@@ -187,6 +188,17 @@ func workbenchPageLayout(p page, r *http.Request) (*template.Template, error) {
 			}
 			return kind
 		},
+		"inTimeZone": func(raw, zone string) string {
+			at, err := time.Parse(time.RFC3339Nano, raw)
+			if err != nil {
+				return raw
+			}
+			loc, err := time.LoadLocation(zone)
+			if err != nil || zone == "" || zone == "Local" {
+				return at.UTC().Format(time.RFC3339)
+			}
+			return at.In(loc).Format("2006-01-02 15:04:05 -07:00")
+		},
 		"scheduleTime": func(v *workbenchSchedule) string {
 			if v == nil {
 				return ""
@@ -223,7 +235,7 @@ func workbenchPageLayout(p page, r *http.Request) (*template.Template, error) {
 	for _, name := range workbenchSharedNames {
 		shared[name] = true
 	}
-	view, err := compileInspectionView(presentation.View.Source, functions, host, inspectionTemplateSpec{root: "web-workbench-view", names: names, shared: shared, privateName: func(name string) bool { return strings.HasPrefix(name, "workbench-") }, variables: true, fields: workbenchViewFields, functions: " tr canSend modelPickerView obsJSON taskConfigurationPage taskURL executionURL conversationURL taskTitle taskListURL historyLabel scheduleTime scheduleFrequency identifier help add workbenchHelp workbenchIdentifier workbenchApproval workbenchComputer workbenchWorkers humanTime localTime messageDay eq ne gt and or not len printf ", unavailable: errWorkbenchUnavailable})
+	view, err := compileInspectionView(presentation.View.Source, functions, host, inspectionTemplateSpec{root: "web-workbench-view", names: names, shared: shared, privateName: func(name string) bool { return strings.HasPrefix(name, "workbench-") }, variables: true, fields: workbenchViewFields, functions: " tr canSend modelPickerView obsJSON taskConfigurationPage taskURL executionURL conversationURL taskTitle taskListURL historyLabel inTimeZone scheduleTime scheduleFrequency identifier help add workbenchHelp workbenchIdentifier workbenchApproval workbenchComputer workbenchWorkers humanTime localTime messageDay eq ne gt and or not len printf ", unavailable: errWorkbenchUnavailable})
 	if err != nil {
 		return nil, err
 	}
