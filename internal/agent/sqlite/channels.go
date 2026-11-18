@@ -384,11 +384,20 @@ func (s *Store) ImportChannelArtifact(ctx context.Context, e interaction.Inbound
 	if err != nil {
 		return "", err
 	}
-	ref, err = s.Artifacts().Put(ctx, artifact.Scope{UserID: s.OwnerID(), AgentID: d.AgentID, Owner: true}, input, src)
+	staged, err := s.Artifacts().Stage(ctx, input, src)
 	if err != nil {
 		return "", err
 	}
+	defer staged.Close()
+	scope := artifact.Scope{UserID: s.OwnerID(), AgentID: d.AgentID, Owner: true}
 	err = s.Transaction(ctx, func(tx *sql.Tx) error {
+		var enabled bool
+		if err := tx.QueryRowContext(ctx, `SELECT enabled FROM channel_binding WHERE binding_id=?`, binding).Scan(&enabled); err != nil {
+			return err
+		}
+		if !enabled {
+			return interaction.ErrUnauthorized
+		}
 		var old string
 		err := tx.QueryRowContext(ctx, `SELECT artifact_ref FROM channel_resource WHERE binding_id=? AND source_id=? AND resource_key=?`, binding, e.SourceID, key).Scan(&old)
 		if err == nil {
@@ -396,6 +405,10 @@ func (s *Store) ImportChannelArtifact(ctx context.Context, e interaction.Inbound
 			return nil
 		}
 		if err != sql.ErrNoRows {
+			return err
+		}
+		ref, err = s.Artifacts().CommitTx(ctx, tx, scope, staged, "")
+		if err != nil {
 			return err
 		}
 		_, err = tx.ExecContext(ctx, `INSERT INTO channel_resource VALUES(?,?,?,?)`, binding, e.SourceID, key, ref)
