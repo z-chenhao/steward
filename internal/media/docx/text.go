@@ -36,6 +36,16 @@ var (
 
 // Text never expands or opens external relationships or unrelated ZIP parts.
 func Text(ctx context.Context, src io.Reader) (string, error) {
+	return text(ctx, src, false)
+}
+
+// TextWithContentControls reads the visible content of structured document tags
+// for managed readers. Text retains the historical native interpretation.
+func TextWithContentControls(ctx context.Context, src io.Reader) (string, error) {
+	return text(ctx, src, true)
+}
+
+func text(ctx context.Context, src io.Reader, controls bool) (string, error) {
 	data, err := io.ReadAll(io.LimitReader(src, MaxArchiveBytes+1))
 	if err != nil {
 		return "", err
@@ -84,7 +94,7 @@ func Text(ctx context.Context, src io.Reader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return bodyText(ctx, body)
+	return bodyText(ctx, body, controls)
 }
 
 func readPart(parts map[string]*zip.File, name string, limit uint64) ([]byte, error) {
@@ -226,11 +236,12 @@ func walkXML(ctx context.Context, body []byte, visit func(xml.Token, int) error)
 }
 
 type node struct {
-	role     string
-	children int
+	role          string
+	children      int
+	contentParent int
 }
 
-func bodyText(ctx context.Context, body []byte) (string, error) {
+func bodyText(ctx context.Context, body []byte, controls bool) (string, error) {
 	var out strings.Builder
 	var namespace string
 	hasBody := false
@@ -245,7 +256,26 @@ func bodyText(ctx context.Context, body []byte) (string, error) {
 	err := walkXML(ctx, body, func(token xml.Token, depth int) error {
 		switch e := token.(type) {
 		case xml.StartElement:
-			p := &stack[len(stack)-1]
+			parent := len(stack) - 1
+			if stack[parent].role == "sdtContent" {
+				parent = stack[parent].contentParent
+			}
+			p := &stack[parent]
+			if controls && e.Name.Space == namespace {
+				switch e.Name.Local {
+				case "sdt":
+					switch p.role {
+					case "body", "p", "tc", "tbl", "tr", "hyperlink":
+						stack = append(stack, node{role: "sdt", contentParent: parent})
+						return nil
+					}
+				case "sdtContent":
+					if p.role == "sdt" {
+						stack = append(stack, node{role: "sdtContent", contentParent: p.contentParent})
+						return nil
+					}
+				}
+			}
 			role, separator, inline := "", "", ""
 			if depth == 1 {
 				namespace = e.Name.Space

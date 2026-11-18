@@ -26,13 +26,17 @@ import (
 )
 
 func wordInput(t *testing.T, text string, padding int) []byte {
+	return wordBody(t, "<w:p><w:r><w:t>"+text+"</w:t></w:r></w:p>", padding)
+}
+
+func wordBody(t *testing.T, body string, padding int) []byte {
 	t.Helper()
 	var b bytes.Buffer
 	z := zip.NewWriter(&b)
 	files := [][2]string{
 		{"_rels/.rels", `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="r1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`},
 		{"[Content_Types].xml", `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`},
-		{"word/document.xml", `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>` + text + `</w:t></w:r></w:p></w:body></w:document>`},
+		{"word/document.xml", `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` + body + `</w:body></w:document>`},
 	}
 	for _, file := range files {
 		w, err := z.Create(file[0])
@@ -59,14 +63,14 @@ func wordInput(t *testing.T, text string, padding int) []byte {
 }
 
 func docxPackageSource(t *testing.T) string {
-	return docxPackageVersion(t, "1.0.1")
+	return docxPackageVersion(t, "1.0.2")
 }
 
 func docxPackageVersion(t *testing.T, version string) string {
 	t.Helper()
 	source := t.TempDir()
 	cmd := exec.Command("go", "build", "-o", filepath.Join(source, "plugin"), "../../cmd/plugins/docx-reader")
-	if version != "1.0.1" {
+	if version != "1.0.2" {
 		implementation, err := filepath.Abs("../plugin/docxreader/plugin.go")
 		if err != nil {
 			t.Fatal(err)
@@ -75,7 +79,7 @@ func docxPackageVersion(t *testing.T, version string) string {
 		if err != nil {
 			t.Fatal(err)
 		}
-		updated := strings.Replace(string(code), `Version: "1.0.1"`, `Version: "`+version+`"`, 1)
+		updated := strings.Replace(string(code), `Version: "1.0.2"`, `Version: "`+version+`"`, 1)
 		if updated == string(code) {
 			t.Fatal("plugin version fixture did not change")
 		}
@@ -150,7 +154,7 @@ func TestDocxPluginReadsLargeInputAndExistingEvidenceTool(t *testing.T) {
 	requireSandbox(t)
 	ctx := context.Background()
 	f := newFixture(t, evidence.Definition())
-	doc := wordInput(t, strings.Repeat("合同正文🧭", 500), 2<<20)
+	doc := wordBody(t, "<w:sdt><w:sdtContent><w:p><w:r><w:t>"+strings.Repeat("合同正文🧭", 500)+"</w:t></w:r></w:p></w:sdtContent></w:sdt>", 2<<20)
 	if len(doc) <= rsiplugin.MaxFrameBytes {
 		t.Fatal("fixture did not exercise out-of-frame input")
 	}
