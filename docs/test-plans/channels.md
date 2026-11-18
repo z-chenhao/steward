@@ -298,6 +298,8 @@ Trace 列表回归验证状态前置、Name／Input 合并、无伪排序箭头�
 
 ## 飞书状态插件验收
 
+飞书话题投递验收会在发送前查询真实 CLI，分别验证 HTTPS 配置与仅限本机标记。成果审阅验收检查未认证访问被拒、卡片固定到原任务和成果、转发卡与替换引用无法提交。移动 Chromium 在受控 HTTPS 代理后打开卡上的原地址，校验错误令牌后的重新登录仍返回原审阅锚点和成果。真实飞书手机应用与实际部署另行验收。
+
 修改前实际 Client.ConnectionStatus／Check 和 App.FeishuStatus 的 12 组输出保留在 `tests/fixtures/plugins/feishu-native-v1/status.json` 及 provenance；六种唯一状态进入独立 Owner 政策，当前标准组合为 35 包／370 项。
 
 - `TestFeishuStatusMatches12ExecutedNativeCases` 对照原修复指引；原凭据／认证缓存组件继续验证网络次数、刷新、到期与私密值隔离。

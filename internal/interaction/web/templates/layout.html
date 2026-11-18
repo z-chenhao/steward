@@ -3,6 +3,7 @@
 <body{{if eq .Tab "/"}} class="chat-workspace"{{else if eq .Tab "/settings"}} class="settings-workspace has-section-navigation"{{else if eq .Tab "/tasks"}} class="has-section-navigation{{if or (eq .Path "/tasks") (eq .Path "/progress") (eq .Path "/tasks/configurations")}} control-list-workspace control-density-compact{{end}}"{{else if eq .Tab "/developer/observability"}} class="has-section-navigation trace-workspace control-list-workspace control-density-compact"{{else if eq .Tab "/developer/memory"}} class="has-section-navigation trace-workspace control-list-workspace control-density-compact"{{end}}>
 <a class="skip-link" href="#workspace-main">{{tr "Skip to content"}}</a>
 {{if .Login}}
+<script defer src="/session-return.js"></script>
 <main class="login">
  {{template "brand"}}
  <h1>{{tr "Open your workspace"}}</h1>

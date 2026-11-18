@@ -87,6 +87,25 @@ func mustJSON(t *testing.T, v any) []byte {
 	return raw
 }
 
+func TestWorkspaceLinkScopeUsesConfiguredOriginWithoutDisclosingIt(t *testing.T) {
+	c := fixtureClient()
+	for origin, want := range map[string]string{
+		"": "", "http://127.0.0.1:8787": "same_device_only", "https://[::1]/": "same_device_only",
+		"https://127.14.1.2": "same_device_only", "https://[::ffff:127.0.0.2]": "same_device_only",
+		"https://LOCALHOST.": "same_device_only", "https://steward.localhost": "same_device_only",
+		"https://localhost.team.example": "configured_https", "https://work.example/": "configured_https",
+	} {
+		c.Config.WorkspaceURL = origin
+		facts := c.ConnectionFacts()
+		if facts.WorkspaceLinkScope != want {
+			t.Errorf("%q: got %q, want %q", origin, facts.WorkspaceLinkScope, want)
+		}
+		if origin != "" && strings.Contains(string(mustJSON(t, facts)), origin) {
+			t.Errorf("reported raw origin %q", origin)
+		}
+	}
+}
+
 func TestWorkspaceOriginRejectsCredentialAndNavigationInjection(t *testing.T) {
 	c := fixtureClient().Config
 	c.EncryptKeyRef, c.VerificationTokenRef, c.AccessTokenRef = "env:KEY", "env:VERIFY", "env:ACCESS"

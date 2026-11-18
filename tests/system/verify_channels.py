@@ -328,6 +328,8 @@ def feishu_topic_delivery(binary, report, managed=False):
             h.enable_default_plugins()
         try:
             h.config.write_text(h.config.read_text() + '  workspace_url: https://owner-workspace.example.test\n')
+            require(h.command('channel', 'status').get('workspace_link_scope') == 'configured_https',
+                    'owner cannot identify the configured HTTPS workspace before delivery')
             h.setup(); h.start()
             h.callback('task-origin', 'Delegate: Review the bounded repository result.')
             state = h.wait(lambda s: len(s['deliveries']) == 2 and all(d['status'] == 'sent' for d in s['deliveries']), 'synchronous acceptance and asynchronous original-topic delivery')
@@ -376,6 +378,8 @@ def feishu_topic_delivery(binary, report, managed=False):
         h = ChannelHarness(binary, Path(temp), platform, 'artifacts')
         try:
             h.config.write_text(h.config.read_text() + '  workspace_url: http://127.0.0.1:8787\n')
+            require(h.command('channel', 'check').get('workspace_link_scope') == 'same_device_only',
+                    'channel check did not identify a link limited to the current device')
             h.setup(); h.start()
             content = 'Complete source evidence with citations and the final checklist.\n'
             h.callback('linked-artifact', json.dumps(dict(name='evidence.txt', mediaType='text/plain', text=content)))
@@ -546,7 +550,7 @@ def feishu_task_questions(binary, report, managed=False):
             h.cleanup()
 
 
-def feishu_artifact_reviews(binary, report, managed=False):
+def feishu_artifact_reviews(binary, report, managed=False, mobile=False):
     """Authenticated Workspace link and the exact review revision round trip."""
     from urllib.parse import urlsplit
     with tempfile.TemporaryDirectory(prefix='steward-feishu-reviews-') as temp, Sandbox() as platform:
@@ -619,6 +623,10 @@ def feishu_artifact_reviews(binary, report, managed=False):
             require('Review this result' in section and 'revision-a.txt' in section and 'other.txt' not in section and
                     h.http(file_url) == content, 'authenticated review did not resolve its exact artifact')
 
+            if mobile:
+                h.env['STEWARD_MOBILE_REVIEW_URL'] = href
+                h.env['STEWARD_MOBILE_REVIEW_FILE'] = 'revision-a.txt'
+                h.browser(h.root / 'mobile-review', 'feishu-review')
             answer = 'Revise the introduction.'
             require(h.card_feedback(local['feedback_ref'], card_id, answer, 'cross-ref')['toast']['type'] == 'error',
                     'card authorized a substituted feedback reference')
@@ -733,7 +741,7 @@ def transport_channels(binary, evidence, report):
     feishu_auth_lifecycle(binary,report)
     feishu_topic_delivery(binary,report)
     feishu_task_questions(binary, report)
-    feishu_artifact_reviews(binary, report)
+    feishu_artifact_reviews(binary, report, mobile=True)
     with tempfile.TemporaryDirectory(prefix='steward-channels-') as temp, Sandbox() as platform:
         h=ChannelHarness(binary,Path(temp),platform)
         try:

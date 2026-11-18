@@ -180,4 +180,4 @@ context:
 #   # access_token_ref: env:STEWARD_FEISHU_ACCESS_TOKEN
 #   # Optional trusted workspace origin: concise notices link to full replies/files.
 #   # Loopback is reachable only from the same computer; no token in this URL.
-#   # workspace_url: http://127.0.0.1:8787
+#   # workspace_url: https://steward.example.org
