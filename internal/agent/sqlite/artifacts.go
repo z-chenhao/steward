@@ -47,6 +47,7 @@ func (t *tools) executeArtifact(ctx context.Context, tx *sql.Tx, name, args stri
 	var v struct {
 		Operation string   `json:"operation"`
 		Query     string   `json:"query"`
+		Content   bool     `json:"content"`
 		Cursor    *string  `json:"cursor"`
 		Name      string   `json:"name"`
 		MediaType string   `json:"mediaType"`
@@ -66,7 +67,7 @@ func (t *tools) executeArtifact(ctx context.Context, tx *sql.Tx, name, args stri
 	store := t.runs.host.Artifacts()
 	operation := v.Operation
 	if name == artifacttools.Search {
-		if v.Cursor != nil {
+		if v.Cursor != nil || v.Content {
 			return tool.Failure("PROVIDER_UNAVAILABLE"), nil
 		}
 		operation = "search"

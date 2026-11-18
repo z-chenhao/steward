@@ -181,3 +181,5 @@ Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一�
 
 
 `TestArtifactWorkbenchSearchContinuesPastFiftyTiedFiles` 通过真实托管搜索查询 51 份同名、同创建时间的成果，检查跨页无遗漏或重复、恰满最后一页没有续页以及查询变更后拒绝旧游标。
+
+`TestArtifactWorkbenchSearchAuthorizedBodyAndWithdrawals` 用跨越 512 KiB 窗口的中文条款查询真实已授权原件，对照无授权和过期的同类成果，并在撤权后再次检索。回执只包含描述符。独立 Owner 通过固定输入核对正文匹配服务。

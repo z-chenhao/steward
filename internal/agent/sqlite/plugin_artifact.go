@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/artifact"
@@ -25,9 +26,10 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		return tool.Result{}, false, err
 	}
 	var args struct {
-		Query  string  `json:"query"`
-		Limit  int     `json:"limit"`
-		Cursor *string `json:"cursor"`
+		Query   string  `json:"query"`
+		Limit   int     `json:"limit"`
+		Content bool    `json:"content"`
+		Cursor  *string `json:"cursor"`
 	}
 	handled := false
 	err = t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error {
@@ -61,7 +63,17 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		return result, true, e
 	}
 	request := contract.SearchRequest{Query: args.Query, Limit: args.Limit, Paged: args.Cursor != nil}
-	scopeKey := artifactSearchKey(t.claim.RunID(), access.pluginGraph, args.Query)
+	scopeKey := artifactSearchKey(t.claim.RunID(), access.pluginGraph, args.Query, args.Content)
+	if args.Content {
+		if strings.TrimSpace(args.Query) == "" {
+			return tool.Failure("INVALID_ARGUMENT"), true, nil
+		}
+		if _, err = host.ServiceInstance(ctx, access.pluginGraph, contract.BodyMatch); err != nil {
+			result, e := artifactPolicyFailure(err)
+			return result, true, e
+		}
+		request.Query = ""
+	}
 	after, err := readArtifactSearchCursor(scopeKey, args.Cursor)
 	if err != nil {
 		return tool.Failure("INVALID_ARGUMENT"), true, nil
@@ -71,6 +83,7 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		version, createdAt int64
 	}
 	var candidates []candidateIdentity
+	var bodies []artifactsqlite.SearchCandidate
 	var metadata []byte
 	err = t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error {
 		if err := t.runs.evidenceFence(ctx, tx, access); err != nil {
@@ -80,8 +93,13 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		if err != nil {
 			return err
 		}
+		access.scope = scope
 		return t.runs.host.Artifacts().VisitSearchCandidatesTx(ctx, tx, scope, func(c artifactsqlite.SearchCandidate) {
 			if after.Ref != "" && (c.CreatedAt > after.CreatedAt || c.CreatedAt == after.CreatedAt && c.Ref <= after.Ref) {
+				return
+			}
+			if args.Content {
+				bodies = append(bodies, c)
 				return
 			}
 			candidates = append(candidates, candidateIdentity{c.Ref, c.ContentHash, c.Version, c.CreatedAt})
@@ -90,6 +108,22 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	})
 	if err != nil {
 		return tool.Result{}, true, err
+	}
+	if args.Content {
+		for _, c := range bodies {
+			match, err := t.artifactBodyMatches(ctx, invocation, host, access, c, args.Query)
+			if errors.Is(err, artifact.ErrNotFound) {
+				continue
+			}
+			if err != nil {
+				result, e := artifactPolicyFailure(err)
+				return result, true, e
+			}
+			if match {
+				candidates = append(candidates, candidateIdentity{c.Ref, c.ContentHash, c.Version, c.CreatedAt})
+				metadata = contract.AppendSearchRow(metadata, contract.SearchRow{CreatedAt: c.CreatedAt, Name: c.Name, MediaType: c.MediaType})
+			}
+		}
 	}
 	request.Count = len(candidates)
 	input, err := json.Marshal(request)

@@ -24,7 +24,7 @@ func changedArtifactPackage(t *testing.T) string {
 	directory := t.TempDir()
 	replacements := map[string]string{}
 	for file, changes := range map[string][][2]string{
-		"plugin.go": {{`Version: "1.0.1"`, `Version: "1.1.0"`}},
+		"plugin.go": {{`Version: "1.0.2"`, `Version: "1.1.0"`}},
 		"recipe.go": {{"days = 30", "days = 14"}, {"limit = 4096", "limit = 2048"}},
 		"search.go": {{"h := selectionHeap{newest: true}", "h := selectionHeap{}"}, {"h := selectionHeap{}\n\tfor index := 0; index < request.Count; index++ {\n\t\tif err := ctx.Err(); err != nil {\n\t\t\treturn contract.Selection{}, err\n\t\t}\n\t\trow, err := contract.ReadCleanupRow(input)", "h := selectionHeap{newest: true}\n\tfor index := 0; index < request.Count; index++ {\n\t\tif err := ctx.Err(); err != nil {\n\t\t\treturn contract.Selection{}, err\n\t\t}\n\t\trow, err := contract.ReadCleanupRow(input)"}},
 	} {
@@ -90,13 +90,14 @@ func artifactOwnerCases() []rsi.Case {
 		{InstanceID: "artifact", Contract: artifact.Read, Input: json.RawMessage(`{"media_type":"text/markdown","byte_size":21,"offset":0,"limit":0}`), Expected: json.RawMessage(`{"kind":"text","limit":4096}`)},
 		{InstanceID: "artifact", Contract: artifact.Search, Input: json.RawMessage(`{"count":3,"query":" α ","limit":1}`), Inputs: []rsi.InputData{{ID: artifact.SearchInput, Data: artifact.EncodeSearch([]artifact.SearchRow{{CreatedAt: 30, Name: "Α report", MediaType: "text/plain"}, {CreatedAt: 50, Name: "other", MediaType: "application/json"}, {CreatedAt: 2, Name: "α older", MediaType: "text/plain"}})}}, Expected: json.RawMessage(`{"indices":[0],"limit":1}`)},
 		{InstanceID: "artifact", Contract: artifact.Cleanup, Input: json.RawMessage(`{"count":3,"batch":2}`), Inputs: []rsi.InputData{{ID: artifact.CleanupInput, Data: artifact.EncodeCleanup([]artifact.CleanupRow{{ExpiresAt: 30}, {ExpiresAt: 2}, {ExpiresAt: 4}})}}, Expected: json.RawMessage(`{"indices":[1,2],"limit":2}`)},
+		{InstanceID: "artifact", Contract: artifact.BodyMatch, Input: json.RawMessage(`{"query":"clause"}`), Inputs: []rsi.InputData{{ID: artifact.BodyInput, Data: []byte("private clause seven")}}, Expected: json.RawMessage(`{"match":true}`)},
 	}
 }
 
 func artifactOwnerDecision(t *testing.T, f *fixture, graph rsi.ResolvedGraph, label string, cases []rsi.Case) (rsi.Activation, error) {
 	t.Helper()
 	ctx := context.Background()
-	policy := rsi.Policy{ID: "artifact-policy-" + label, AllowedContracts: []string{artifact.Recipe, artifact.Read, artifact.Search, artifact.Cleanup}, AllowedRequests: []string{"input.read"}, Cases: cases}
+	policy := rsi.Policy{ID: "artifact-policy-" + label, AllowedContracts: []string{artifact.Recipe, artifact.Read, artifact.Search, artifact.Cleanup, artifact.BodyMatch}, AllowedRequests: []string{"input.read"}, Cases: cases}
 	if err := f.host.Store.PutPolicy(ctx, policy); err != nil {
 		t.Fatal(err)
 	}
