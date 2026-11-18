@@ -2,6 +2,50 @@
 
 [功能与需求](../features/coding.md) · [测试方案](../test-plans/coding.md) · [主索引](../feature-map.md)
 
+## 开发环境升级目标与验收基准
+
+本节定义已请求的 quality / quantity 升级目标，逐项实现状态仍以功能文档、代码和实际回执为准；目标描述不代表能力已经可用。当前消费者是仓库所有者、Main 委派的 Task、Root/Child、独立验证者和交付审阅者，不建立公共工程 SDK。
+
+以成熟产品的可观察工作流为基准：[Cursor 环境准备](https://cursor.com/docs/cloud-agent/setup)及 [Builds](https://cursor.com/docs/cloud-agent/builds) 将可复用安装与每次启动分开，任务从准备好的独立环境工作；[GitHub agent 环境](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment) 支持项目依赖准备和独立检查环境；[pstack 验证方法](https://github.com/cursor/plugins/tree/main/pstack/skills/create-verification-skill) 要求启动、健康检查、真实操作、证据与清理。借鉴行为，由 Steward 自主实现；不引入这些产品的 agent SDK 或插件运行时，也不承诺复刻其全部功能。
+
+| 必须实现的结果 | 可审查的完成证据 |
+| --- | --- |
+| 当前候选和验证绑定 | 原始源码、依赖、环境及方法身份可追溯；测试后修改输入，旧通过结果不再覆盖当前交付；失败/取消/unknown 不被标成通过 |
+| 可复现项目准备 | 显式项目配方区分准备、启动、健康检查、验证及清理；空环境能走通，准备失败与代码失败分别可诊断 |
+| 独立候选与验证环境 | 不同任务/候选不共享可写源码、端口、数据库或浏览器状态；独立验证者运行确切候选；同一工作区仍序列化 |
+| 可用并行而非全局等待 | 不同私有 Task 可同时执行；共享 Guest/工作区及旧在途调用仍保留原冲突与恢复边界 |
+| 可操作功能地图 | 项目有稳定驱动入口、前置条件、动作和结果；真实操作后核对持久后果，维护不能通过修改预期掩盖回归 |
+| 可执行结构约束 | 从真实重复错误选取规则；错误变体被拒绝且诊断指出正确入口；原子业务归插件，历史兼容代码有真实消费者 |
+| 关键状态机验证 | 审批/效果/回执、claim 或撤权至少一个关键模型具有代码映射、假设和界限；破坏变体产生反例且在真实代码回放 |
+| 可审查交付和质量/吞吐事实 | 目标、候选、实际检查、未验证项、成本与耗时可检查；远端交付核对确切内容/修订；不以 PR 数或工具成功冒充质量 |
+
+可信不变量继续属于 Host/Guardian：授权、凭据、事实、事务、冻结版本、撤权、unknown 不重放、证据身份接纳及审计。项目配方、检查选择、验证驱动、解释和风险审阅策略归所属原子功能插件。输入摘要与回执关联是作者、验证者和审阅者共同消费的必要机制；插件不得自行授予权限或改写权威事实。
+
+新接口先保持仓库内私有/实验级，沿原 Task、Run、Artifact 和 ToolInvocation 扩展，不另造顶层任务/调度系统。保留必要的目录、进程、服务与版本隔离，拒绝任意 Host 执行、通用工作流 DSL、通用品质总分和每 helper 一套插件生命周期。原生离线环境不会因环境升级暗中取得网络或宿主凭据；已冻结调用和历史报告不回写。后续交付须分别证明插件独立换版/回退/停用、旧 Run/Child/引用、审批、Forget 和 unknown 语义。
+
+## 审阅事实与确切内容交接
+
+具体消费者只有所有者 CLI、原 Task 审阅者和现有 Artifact 读者。`review` 复用 Task 的不可变 anchor/附件、跨 epoch 指令及现有 Run、provider_usage、spend_reservation 账本，读取同一 SQL 快照。指令窗口最多 32 条、64 KiB，保留 epoch/sequence、附件引用及显式截断；最初 Task 单独保留。统计截止点来自已持久接纳的 Task/Run/指令/用量/工具活动，未变事实保持字节稳定；Task wall time 到终态时间或最近活动为止、包含其间等待，报告保留 Task 状态，不把活跃任务的这段已观测耗时冒充最终总时长。模型请求数是冻结请求，token 仅汇总实际已报告部分，缺失单独计数；实际费用按币种分组，未定价观察不估值。它们覆盖 Task 历史尝试，不归因于某个候选或冒充吞吐/品质总分。报告保存前重检 Task epoch 与全部指令的最新 sequence，拒绝把旧要求配成新审阅包。
+
+业务审阅问题属于原 `coding-workspace` 的可选 `review_guide`，最多 8 条、每条 1024 字节；Host 只校验界限并保存所选 recipe。未激活的历史报告兼容边界没有新增原生指南，旧包可省略字段。指南可独立换版，但不授予权限、不签发人类接受结论。
+
+`report-pr` 保留原关联语义；新增显式 `report-pr-exact` 复用同一保存事务，必须同时取得托管 Coding 配方及 Artifact 创建方法；历史未激活的原生报告/创建兼容分支不能承接这个新入口。仅当可信配置源等于 Task 原 source_path、已持久观察的 repository ID/PR/head 和绑定仍有效时，Host 才读取本地已有 Git 原始对象。固定 `cat-file --batch` 不使用 filters/textconv/checkout，净化环境、关闭 replacement refs、hooks 和自动维护；空 `GIT_ALLOW_PROTOCOL` 按 [Git 官方协议约束](https://git-scm.com/docs/git/2.43.0#Documentation/git.txt-GITALLOWPROTOCOL) 禁止所有远端传输，缺失对象保持不可用。每个原对象的 SHA-1 或 SHA-256 都独立重算，commit→tree→blob 在同样文件数/字节/路径限额内转换为原候选 canonical manifest；原始字节与执行位完全相等才保存。SHA-1 提交沿用 Git/GitHub 的内容寻址信任假设，不对抗专门构造的 SHA-1 碰撞。空目录不在文件身份内；符号链接、gitlink、非法路径和 `.git` 条目被拒绝。原始 Git/LFS 指针与物化文件不相同会失败，不作隐式归一化。
+
+```mermaid
+flowchart LR
+  I[原任务与指令] --> R[审阅包]
+  C[同一候选快照] --> R
+  V[原检查及产物回执] --> R
+  G[可信 PR 观察的确切 SHA] --> O[已有原始 Git 对象]
+  O --> H[独立哈希与完整文件摘要]
+  H --> E[与候选完全相等]
+  E --> F[事务重检全部围栏]
+  R --> F
+  F --> A[原 Task 不可变 Artifact]
+```
+
+必要复杂度是对象解析、内容身份及原观察/隐私/指令围栏，属于 Host 权威事实接纳；当前只有上述一个真实消费者，返回私有 typed GitContent，不暴露通用 Git API 或内部 Task 模型。目录导入从不读 Git 元数据的原承诺保持；只有新显式所有者命令取得这次读取。拒绝新增 Git 插件/SDK、公共 Git 平台、自动 fetch/push 和独立交付账本。保留原命令是已发布关联报告消费者的兼容要求；它不得被改称确切交付。报告同时保留 Git 命令文件哈希、实际版本和私有驱动身份；系统 Git 为 launcher 时该哈希只标识命令入口，实际工具观察另保留在协议 fixture provenance。比较成功不等于远端写入、部署或人类接受。
+
 ## 当前架构
 
 Root 和 Child 默认拥有 `builtin__read`、`builtin__bash`、`builtin__edit`、`builtin__write`。新 Main 不获得文件、命令或 Computer 工具，通过 Task 委派这类工作并核对成果；Main 与 Worker 均经 Code Mode 使用各自的冻结工具，聚焦业务查询与单步变更可在 Main 的脚本内调用已配置 MCP。角色权限与冻结升级边界见[统一工具方案](tools-approvals.md)。
@@ -36,6 +80,84 @@ flowchart TD
 先读项目适用的 AGENTS.md 和目标文件，精确修改，再运行项目自己的测试，检查退出码和输出，读取 diff/交付文件为 Artifact，最后由 Main 交付。AGENTS 从实际执行环境按需读取，是项目证据；不会把 Steward 进程 cwd 的文件偷偷拼进 system prompt，也不能授予权限或审批。新 Worker 在工作区准备后、首次模型请求前冻结一条受保护的 execution_environment 运行时消息：cwd 来自该 Task 的独立副本、配置的本地工作区或 Guest 的实际工作目录；docs 仅列当前本地工作区内可读的普通 AGENTS.md、README.md 文件，省略缺失项，不读入正文，也不重复 Skill/工具说明。Guest 仅提供可确认的 cwd，不为发现文档而启动 VM 或读取 Host 文件。Subagent 单独解析自身环境，不复制 Parent 消息。ContextReady 在这一步提交，恢复不重复追加；历史已准备的 Run 不改写。选择运行时事实而非固定 system 路径，可保持工作区切换和父子上下文隔离；当前只列标准项目入口，不新增文档目录配置或扫描器。
 
 原有 `workspace_search/git/test` 由常规 bash 命令承担；不提供固定 Go 测试专用工具。工具调用成功不代表命令成功，必须检查 `exit_code`、`timed_out`、`truncated`。命令输出上限 48,000 字节；读取默认 200 行、最多 2,000 行和 48,000 字节。超长单行可用 bash 按字节读取。文件/Artifact 读取上限 8 MiB；单次写入与编辑参数各限 64 KiB。
+
+## 候选与独立检查
+
+当前实际消费者为本地代码 Task 的作者 Worker、独立检查命令和报告审阅者。`builtin__coding_status/check` 仅在配置本地仓库时加入新的 Worker 能力；Main 的固定角色缩减仍排除它们，旧冻结能力不追加工具。独立检查沿用原 ToolInvocation、审批、Code Mode、额度及 never/unknown 恢复，不增加检查任务队列或另一份效果状态机。
+
+`coding-workspace` 从 1.0.2 起新增私有实验服务 `steward.coding-check-limits/1`：仅接收超时/输出上限和请求的超时，选择预算，默认 60 秒 / 48,000 字节，最多 120 秒。命令、路径、候选内容和内部对象不跨此纯策略边界。检查必须找到 Run 冻结组合中的服务；没有历史 native 检查消费者，不建立 native fallback。既有 1.0.1 导入/报告消费者仍按原服务工作；默认安装仅在分发包声明新服务时加入对应验收，不为旧包假造能力。
+
+Host 在执行前锁住作者目录，复制完整准入文件树并复核内容身份，要求等于已批准的 `candidate_sha256`，随后释放源锁。固定沙箱只挂载该一次性副本和已配置只读工具链，HOME/cache/temp 也落在副本内；完成、取消和失败均清理副本。这是作者、检查与报告共同消费的文件身份机制；项目准备、检查选择与判据留给所属插件。当前不承诺端口、数据库、浏览器或可变工具链的完整环境隔离和可复现性。
+
+迁移 082 的不可变 `coding_check_plan` 仅冻结调用、候选、环境配置作用域、组合、驱动、请求和预算；原 ToolInvocation 继续保存唯一终态回执，计划不是完成事实。命令只执行于计划提交之后；计划重复进入或原调用结果不确定不重放。Run/Code claim、Forget 与 Guardian 在计划提交前校验，运行中 watcher 取消原传输；完成仍由原执行管线 fence 接纳。
+
+报告按接纳顺序保留检查历史并标明每个确切命令的最近尝试。`candidate_matches` 比较报告快照与计划身份，不推断当前环境、当前插件方法或需求已验收；`environment_verified:false` 明确保留未封存依赖/工具链的限制。检查生成的文件只属于验证副本，不改写输入身份。没有引入综合质量分、通用 evaluator、测试判据自动放宽或以命令成功替代规格审阅。
+
+## 固定镜像与项目验证（私有实验接口）
+
+真实消费者是项目作者、运行检查的 Worker 和报告审阅者。`coding-workspace` 1.0.3 的私有 `steward.coding-project-plan/1` 接收显式读取的项目文档和检查名称，选择需求文字及 prepare、可选前台 start、doctor、verify、cleanup 的确切命令。Host 审批完整计划、候选、文档、所有者选择的镜像摘要及状态读取到的实际环境 SHA-256；任何已批准身份变化即拒绝原批准，包括首个 Task 基准尚未保存时的 Engine/内核变化。每阶段最多 120 秒，四个必需阶段预算合计最多 240 秒。检查选择与业务判据属于插件政策；目录、容器生命周期、原退出事实和撤权属于 Host 机制。
+
+所有者在本地 Docker Engine 中预备包含操作系统、工具链与离线依赖的镜像，并在 `execution.project_container` 配置本地 Unix socket 和完整 `sha256:` 镜像 ID。运行时不拉镜像、不联网安装、不挂载 Docker socket 或宿主凭据，也没有原生项目验证 fallback。固定镜像提供已选输入的内容身份，不证明供应链可信或检查判据正确。历史原生文件/命令调用继续走原执行路径；启用或更换项目镜像不改变它们的资源身份。
+
+```mermaid
+sequenceDiagram
+    participant W as Worker
+    participant H as Host / Guardian
+    participant P as coding-workspace
+    participant C as 一次性容器
+    W->>H: status：项目文件与检查名称
+    H->>P: 冻结版本选择确切计划
+    P-->>W: 候选、文档、镜像、完整计划
+    W->>H: verify：具体审批
+    H->>H: 身份复核、权限围栏、持久计划
+    H->>C: 只挂载独立候选，prepare / start / doctor
+    H->>C: verify / cleanup
+    H->>C: 回收整个进程空间
+    H-->>W: 原 ToolInvocation 接纳真实阶段回执
+```
+
+每次验证得到独立源码副本、PID 与回环网络空间、只读根文件系统及有界临时目录。不同容器可同时使用端口 3000；数据库与浏览器 profile 应放在容器内的 `STEWARD_STATE_DIR` 和 `STEWARD_BROWSER_PROFILE`。同一次验证的阶段共用该容器，前台服务随容器回收。固定执行配置移除 capabilities、禁止提权并限制内存、CPU、进程数和共享内存。拒绝镜像声明的额外 volume，禁用镜像自身 healthcheck，避免在已批准的生命周期之外引入可写存储或命令。Engine 的真实 exec inspect 提供退出码，传输缺失或格式不兼容不能解释为成功。
+
+迁移 083 固定 Task 的首个镜像/Engine/内核基准，保存不可变项目计划，并在创建容器前持久保存原调用的资源身份。项目回执记录阶段输出、退出、超时、截断、镜像、执行用户、固定隔离 profile 与环境摘要；唯一终态仍属于原 ToolInvocation。资源无法确认回收时保留私有副本并报告 unknown。普通恢复只清理原 socket、镜像、调用标签及名称匹配的资源，不再执行任何项目命令，也不把 unknown 改成通过。资源记录分别保存创建已开始、实际观察到创建与确认释放：创建结果未知时，一次不存在不能证明迟到创建不会完成；此时保留追踪与私有副本，后续观察到原容器后才能回收。已确认创建或从未派发的资源可依据不存在完成清理。无法取得足够事实时继续保留 unknown，不宣称已释放。撤权后不再执行业务 cleanup，Host 的资源回收权限仍可使用。
+
+接口仅在显式配置本地仓库和固定镜像时提供给新 Worker，保留 Code Mode、审批、旧冻结图和 Main 角色边界。这里不开放公共容器 API、通用工作流 DSL、自动换镜像或每 helper 一套插件。`coding_status` 为项目历史分别比较当前候选、当前环境、原 Run 冻结方法和当前驱动，不将这些比较合成需求通过。镜像变化明确失配；相同镜像的运行时不可用时，环境比较留空并给出安全错误码。旧回执不回写。真实数据库/浏览器操作与完整 Steward 冷启动仍须分别验收；截图文件的持久捕获机制不能代替这些操作。协议与 shell/TCP 隔离测试不代替这些结果。
+
+## 准备过程与受检项目边界
+
+显式所有者脚本从 [固定输入](../../scripts/coding-image-inputs.json) 核对 Debian 根文件系统摘要，从官方模块代理/校验数据库取得对应 Linux Go 工具链，核对官方 Node 校验清单，并用仓库锁文件安装依赖与浏览器。准备只操作自身临时容器；不挂载 Host 源目录、socket 或凭据。阶段失败保留未完成 checkpoint 与原诊断；成功还须通过真实浏览器 doctor、源码构建和源码清单前后核对。最终镜像保存工具/依赖及版本清单，移除准备时的项目源码与旧二进制，防止检查误用旧候选。镜像内容固定支持重复验证，不宣称可变系统软件仓库能重建出相同镜像 ID。
+
+生产验证不触发准备或补下载。每次验证独立复制需要的可写缓存、数据库与浏览器 profile；只读镜像中的公共安装可复用。整个源码候选而非 Git diff 决定输入身份，不从输入副本中隐瞒未跟踪内容。准备脚本的 Git 工作树清单是其明确选定的构建输入，不替代 Task 完整源目录导入语义。
+
+Steward 的构建、前端约束及政策边界在根 `coding.project.json` 提供具名计划；真实状态应用在 `tests/fixtures/coding-development/` 提供 HTTP/SQLite/浏览器驱动。真实点击触发数据库写入与浏览器状态保存，服务重启后立即核对原选择和持久事实，浏览器重开后再次检查；截图与断言从原调用回执保留。两个服务同时达到同端口屏障后才继续，避免顺序运行冒充并行。
+
+当前固定隔离配置已实际观察到嵌套 bubblewrap namespace 权限拒绝，未确定更细的原因。这里不增加 capabilities、特权或静默 fallback；完整 Steward 插件自托管和 Host 平台系统门禁是另一项实际边界。参考应用、源码构建与协议版本入口的通过均不宣称完整应用启动或一般模型质量已验收。
+
+## 验证产物与原回执
+
+具名检查可用 `evidence` 声明最多四个工作区相对文件，例如 `.evidence/flow.png` 和 `.evidence/assertions.json`。声明由 `coding-workspace` 选择并纳入完整计划与具体审批。插件和 Host 分别运行私有计划契约中的同一条路径规则，拒绝越界、歧义、重复和超量路径。驱动指纹包含该规则与捕获实现。每文件最多 8 MiB，总量最多 16 MiB。
+
+仅在确认整个容器已移除、所有阶段进程已退出后，Host 才从私有候选锚定读取文件，拒绝链接及特殊文件，保存实际字节、SHA-256、大小与探测的媒体类型，再删除候选。文件不会在候选删除后延迟打开；FIFO 在 open 前拒绝，避免没有写者时挂起。捕获前和发布前都复查原 claim/隐私/组合围栏，取消或 Forget 不发布私有证据。
+
+原 `tool.Result.Attachments` 和已在效果前固定的 Artifact 配方负责持久保存；元数据与原 Tool 终态同一事务接纳，没有第二份效果账本。回执中的 `artifact_index` 对应原结果 `artifact_refs` 的位置，PNG/JPEG 同时进入原图片引用。候选、镜像/环境、方法和证据字节身份保留在同一原回执。终态提交失败不留下半份引用，普通恢复不重跑命令来补图；资源清理确认仍单独保留。
+
+所声明文件缺失或超限时保留安全错误码；若各阶段零退出，整体仍为 incomplete，原阶段事实不改写。捕获的文件可能由项目脚本生成或沿用，字节身份不证明新鲜性、断言正确性或需求已验收，仍需结合原需求、方法变化与实际操作审阅。引用不会自动扩大访问范围或发布为最终交付。
+
+## 结构约束与关键回执模型
+
+这两个检查保护反复涉及的插件/Host 归属和旧 claim 回调问题，范围限定为当前代码环境。`TestCodingArchitectureKeepsPolicyAndResourceAuthoritySeparate` 读取 Go 编译器的实际依赖图：项目政策及私有 helper 不得导入 OS/网络权威或其他领域状态；容器 driver 不得依赖 Steward 业务领域。别名或 helper 不能遮蔽路径。违反时诊断指出 owning 插件、纯事实契约或固定 Host driver 的正确入口。测试通过真实 Go overlay 插入网络导入和领域依赖，验证错误变体确实被拒绝，不另建插件或公共扩展框架。
+
+[有界模型](../../tests/system/coding_verification_model.py) 穷举一个项目调用、两个所有权 epoch 下的审批、计划、效果、返回、回收、撤权、接管与结果接纳交错。事务视为原子操作；已接纳效果不能回到排队，资源清理不能产生成功，成功必须有结果及确认清理，晚到回执必须持有当前权威。
+
+| 模型动作 | 真实代码边界 |
+| --- | --- |
+| approve / start | 原 ToolInvocation 具体审批及 `tools.Start` |
+| persist_plan / dispatch | `executeProjectVerification` 不可变计划及派发前围栏 |
+| observe_result / confirm_cleanup | Engine exec inspect 与整个容器回收确认 |
+| takeover / revoke | Run claim token/epoch、Forget 与 Guardian |
+| accept_receipt | `tools.finish` 的原事务内 `fence` |
+| recover_unknown | 原 never 恢复；资源恢复仅回收原资源 |
+
+必需真实容器门禁同时检查正确模型、故意忽略 claim 身份的模型反例，以及实际 SQL 变体。变体仅经 Go overlay 移除原 fence 中 token/epoch 的比较，不修改生产源码。`TestCodingProjectStaleOwnerCannotPublishReceipt` 真正执行原容器、释放并接管 claim，随后提交旧回执；正确代码拒绝，错误变体必须因同一晚到接纳断言失败。普通恢复后立即核对原报告、镜像、方法和单次尝试。这是特定有界安全性质及代码映射的证据，不证明无限任务、真实时钟公平性、OS 内核、任意 shell 或模型生成的测试判据。
 
 ## 隔离、审批与恢复
 

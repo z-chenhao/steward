@@ -111,7 +111,7 @@ func TestFeishuStatusActualUpgradeRollbackStopAndCold(t *testing.T) {
 	if e = os.WriteFile(replacement, []byte(code), 0600); e != nil {
 		t.Fatal(e)
 	}
-	cardSource, e := filepath.Abs("../plugin/feishuchat/card.go")
+	cardSource, e := filepath.Abs("../plugin/feishuchat/legacyv1/card.go")
 	if e != nil {
 		t.Fatal(e)
 	}

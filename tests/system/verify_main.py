@@ -272,10 +272,10 @@ def run(binary):
     with tempfile.TemporaryDirectory(prefix="steward-main-") as temp:
         root = Path(temp)
 
-        def scenario(name, action):
+        def scenario(name, action, fixture="main"):
             folder = root / name
             folder.mkdir()
-            h = MainHarness(binary, folder)
+            h = MainHarness(binary, folder, fixture)
             try:
                 return action(h)
             finally:
@@ -369,8 +369,8 @@ def run(binary):
             observed["after"] = state
             return observed
 
-        report["responsive"] = scenario("responsive", lambda h: responsive(h, False))
-        report["responsive_restart"] = scenario("responsive-restart", lambda h: responsive(h, True))
+        report["responsive"] = scenario("responsive", lambda h: responsive(h, False), "main-responsive")
+        report["responsive_restart"] = scenario("responsive-restart", lambda h: responsive(h, True), "main-responsive")
         report["checks"].append("legacy frozen Main: held Tool -> second CLI input -> reply before release; durable deferred results; SIGKILL and recovery")
 
         for boundary in ("after_compaction_commit", "before_generation_dispatch", "before_generation_commit", "after_generation_commit",

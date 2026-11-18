@@ -212,3 +212,18 @@ export async function modelPickerVersion(page,context,url,evidence){
  if(changes)throw Error('presentation change activated a model');
  await writeFile(evidence+'/picker-owned-version.json',JSON.stringify({label:expected,pending,busy,activation_requests:changes},null,2));
 }
+
+export async function modelRecoverySend(page,evidence){
+ const {STEWARD_MODEL_RECOVERY_LABEL:label,STEWARD_MODEL_RECOVERY_MESSAGE:message}=process.env;
+ if(!label||!message)throw Error('model recovery: missing original selection or message');
+ const chooseRequests=[];
+ page.on('request',request=>{if(new URL(request.url()).pathname==='/model/choose')chooseRequests.push(request.method())});
+ const picker=page.getByRole('combobox').filter({hasText:label});
+ await picker.waitFor();
+ await page.getByLabel('Message Ghost',{exact:true}).fill(message);
+ await page.getByRole('button',{name:'Send message',exact:true}).click();
+ await page.locator('#conversation-messages').getByText('Model recovery acknowledged: '+message,{exact:true}).waitFor();
+ if(chooseRequests.length)throw Error('model recovery sent a choose request');
+ await page.screenshot({path:evidence+'/original-model-send.png'});
+ await writeFile(evidence+'/original-model-send.json',JSON.stringify({label,message,choose_requests:chooseRequests},null,2)+'\n');
+}

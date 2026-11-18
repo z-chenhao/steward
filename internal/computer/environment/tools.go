@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/z-chenhao/assistant/internal/computer"
+	"github.com/z-chenhao/assistant/internal/computer/projectcontainer"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
@@ -21,10 +22,14 @@ type Config struct {
 	Root             string `yaml:"root"`
 	RepositorySource string `yaml:"repository_source,omitempty" json:"RepositorySource,omitempty"`
 	// Optional operator-installed compilers/interpreters, mounted read-only.
-	ToolchainRoots []string `yaml:"toolchain_roots"`
+	ToolchainRoots   []string                 `yaml:"toolchain_roots"`
+	ProjectContainer *projectcontainer.Config `yaml:"project_container,omitempty" json:"ProjectContainer,omitempty"`
 }
 
 func (c Config) Validate() error {
+	if c.ProjectContainer != nil && (c.ProjectContainer.Validate() != nil || c.RepositorySource == "") {
+		return computer.ErrInvalid
+	}
 	if !filepath.IsAbs(c.Root) || filepath.Clean(c.Root) == "/" {
 		return computer.ErrInvalid
 	}
@@ -46,6 +51,19 @@ type GuestDriver interface {
 }
 
 func ResourceHash(configuration any) string {
+	// New prepared execution is an independent resource. Selecting its image
+	// must not rebind historical native file/command Tasks and their approvals.
+	switch c := configuration.(type) {
+	case Config:
+		c.ProjectContainer = nil
+		configuration = c
+	case *Config:
+		if c != nil {
+			copy := *c
+			copy.ProjectContainer = nil
+			configuration = copy
+		}
+	}
 	hash, _ := computer.Fingerprint(configuration)
 	return fmt.Sprintf("%s:%x", hash, sha256.Sum256([]byte(Source)))
 }

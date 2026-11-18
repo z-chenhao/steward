@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	"github.com/z-chenhao/assistant/internal/llm"
-	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	connectionv1 "github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 )
 
 func TestModelConnectionLoginRestoreMatchesNativeAndRetainsHostFences(t *testing.T) {
@@ -48,7 +49,7 @@ func TestModelConnectionLoginRestoreMatchesNativeAndRetainsHostFences(t *testing
 					if !f.AccountBacked || f.Login == nil || !f.Login.RestoreOwnedCurrent || len(f.Login.Models) != 0 || f.Service != "" || f.WireAPI != "" {
 						t.Fatal("restore leaked or lost facts", f)
 					}
-					out := owner.ProjectConnection(f)
+					out := connectionv1.Connection(f)
 					switch mode {
 					case "independent-decline", "historical":
 						decline := false

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"net/http/httptest"
 	"strings"
@@ -14,7 +14,7 @@ import (
 
 func TestCapabilityOwnedViewRetainsOriginalFormSurface(t *testing.T) {
 	in := contract.Request{Operation: "prepare", ID: "memory", Text: "encryption_key_ref: env:BOUND\n", WithView: true, Values: []contract.Field{}}
-	out := capabilityforms.Project(in)
+	out := v1.Project(in)
 	var copy []contract.Translation
 	if err := json.Unmarshal([]byte(out.Copy.Source), &copy); err != nil {
 		t.Fatal(err)
@@ -50,7 +50,7 @@ func TestCapabilityOwnedViewRejectsEffectEscapesAndPrivateFields(t *testing.T) {
 		{"overridden-atom", `{{define "capability-status"}}`, `{{define "help"}}bad{{end}}{{define "capability-status"}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			out := capabilityforms.Project(contract.Request{Operation: "prepare", ID: "memory", Text: "encryption_key_ref: env:BOUND\n", WithView: true, Values: []contract.Field{}})
+			out := v1.Project(contract.Request{Operation: "prepare", ID: "memory", Text: "encryption_key_ref: env:BOUND\n", WithView: true, Values: []contract.Field{}})
 			source := strings.Replace(out.View.Source, tc.from, tc.to, 1)
 			if source == out.View.Source {
 				t.Fatal("fixture marker missing")
@@ -65,7 +65,7 @@ func TestCapabilityOwnedViewRejectsEffectEscapesAndPrivateFields(t *testing.T) {
 	}
 }
 func TestCapabilityOwnedCopyDoesNotUseAnotherVersionLexicon(t *testing.T) {
-	out := capabilityforms.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
+	out := v1.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
 	var entries []contract.Translation
 	if err := json.Unmarshal([]byte(out.Copy.Source), &entries); err != nil {
 		t.Fatal(err)
@@ -101,7 +101,7 @@ func TestCapabilityOwnedCopyDoesNotUseAnotherVersionLexicon(t *testing.T) {
 }
 
 func TestCapabilityOwnedViewBoundsEmptyHelperExpansionAndIntegerLoops(t *testing.T) {
-	out := capabilityforms.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
+	out := v1.Project(contract.Request{Operation: "prepare", ID: "memory", WithView: true, Values: []contract.Field{}})
 	var entries []contract.Translation
 	if err := json.Unmarshal([]byte(out.Copy.Source), &entries); err != nil {
 		t.Fatal(err)
@@ -126,7 +126,7 @@ func TestCapabilityOwnedViewBoundsEmptyHelperExpansionAndIntegerLoops(t *testing
 }
 
 func TestCapabilityOwnedCopyLocalizesFormattedDiagnostic(t *testing.T) {
-	out := capabilityforms.Project(contract.Request{Operation: "prepare", ID: "embedding", WithView: true, Values: []contract.Field{}})
+	out := v1.Project(contract.Request{Operation: "prepare", ID: "embedding", WithView: true, Values: []contract.Field{}})
 	var entries []contract.Translation
 	if err := json.Unmarshal([]byte(out.Copy.Source), &entries); err != nil {
 		t.Fatal(err)

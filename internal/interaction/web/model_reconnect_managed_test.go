@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/llm"
-	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	connectionv1 "github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -63,7 +64,7 @@ func TestModelConnectionManagedReconnectMatchesExecutedNativeActions(t *testing.
 					if f.Reconnect == nil || f.Reconnect.HasCurrent != (current != "") || f.Reconnect.TargetCurrent != (current == "target") {
 						t.Fatal("incorrect authority-free facts", f)
 					}
-					out := owner.ProjectConnection(f)
+					out := connectionv1.Connection(f)
 					switch mode {
 					case "independent-probe":
 						out.ReconnectAction = "probe"

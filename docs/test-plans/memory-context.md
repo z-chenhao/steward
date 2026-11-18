@@ -31,6 +31,8 @@ Recall 系统夹具必须在真实上下文压缩后识别已完成的 Task 更�
 
 ## 已有检查与缺失覆盖
 
+`TestMemoryNavigationKeepsIndexAndQueryWindows` 核对文档开头索引、查询末尾选词及中文二元组的各自上限。实际存储与 `memory-maintenance`、`recall` 门禁继续核对授权、Forget 和重启后结果。
+
 | 入口 | 覆盖用途与限制 |
 | --- | --- |
 | [tests/system/verify_memory_maintenance.py](../../tests/system/verify_memory_maintenance.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |

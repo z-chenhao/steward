@@ -234,7 +234,7 @@ func TestModelMenuActualDefaultUpgradeRollbackDeactivationAndCold(t *testing.T) 
 	if e = os.WriteFile(settingsReplacement, []byte(settingsCode), 0600); e != nil {
 		t.Fatal(e)
 	}
-	connectionSource, e := filepath.Abs("../plugin/modelconnections/connection.go")
+	connectionSource, e := filepath.Abs("../plugin/modelconnections/legacyv1/connection.go")
 	if e != nil {
 		t.Fatal(e)
 	}

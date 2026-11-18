@@ -8,7 +8,7 @@
 
 日常/扩展/发布的检查调度以下方 Testing 和 CI 入口为准。协议验收矩阵描述必须保护的行为，不表示每次文档或局部改动都重新执行完整发布检查。
 
-普通 Go 套件包含真实隔离插件编译、独立版本与历史兼容场景，`make test-go` 将 WebPlugin／MemoryInspector、UI、Schedule／Automation、Apps／ConnectedApp、Memory／Recall／Context 等记忆上下文组、Plugin／ToolDiscovery／Skill／MCP 等插件工具组与其余完整 Go 套件分成七组，所有根用例恰好执行一次；CI 回归核对分区互斥与完整覆盖。每个 package 仍采用原 15 分钟累计 alarm，与既有 race runner 的整组上限一致，不放宽用例、Provider／RPC 或执行租约期限；CI 外层作业总预算见工程门禁说明。package 按单任务调度，避免并行编译／启动突发挤占原生 Driver 原有两秒发现窗口；不改变 Driver 的期限或语义。
+普通 Go 套件包含真实隔离插件编译、独立版本与历史兼容场景，`make test-go` 将 WebPlugin／MemoryInspector、UI、Schedule／Automation、Apps／ConnectedApp、Memory／Recall／Context 等记忆上下文组、Plugin／ToolDiscovery／Skill／MCP 等插件工具组与其余完整 Go 套件分成七组，所有根用例恰好执行一次；CI 将同一套命令分在 `go` 和 `go-domains`，并核对分区互斥与完整覆盖。每个 package 仍采用原 15 分钟累计 alarm，与既有 race runner 的整组上限一致，不放宽用例、Provider／RPC 或执行租约期限；CI 外层作业总预算见工程门禁说明。package 按单任务调度，避免并行编译／启动突发挤占原生 Driver 原有两秒发现窗口；不改变 Driver 的期限或语义。
 
 SQLite race 先串行运行原生与受管 Delegation 的五秒审批／Drain 契约，再将自动发现的其余测试按既有测量分区、每个进程最多 8 个根用例分批执行。SQLite 同时最多三个单核进程，保留编译余量；各批仍使用原有 race/count/累计 alarm，Memory 的十分钟上限也维持原值。验收必须核对全局发现清单，每个根用例恰好完成一次，后续批次缺失或重复同样失败；复用 evidence 目录前清除全部旧 SQLite 批日志。
 
@@ -176,6 +176,28 @@ capacity, operations, Computer, capabilities and additional terminal behavior.
 They protect software mechanics and never assign semantic scores. Full inventory
 and exact commands come from `tests/system/runner.py --list --suite full`.
 
+<a id="critical-user-journeys"></a>
+
+### 关键用户旅程
+
+用同一个已构建的 `bin/steward` 和本次独立证据目录运行受影响的旅程。`--list --journey first-reply` 可查看旅程实际选择的门禁。`summary.json` 记录运行结果、源码和二进制身份，各门禁保留自己的报告与日志。
+
+```sh
+python3 tests/system/runner.py --binary bin/steward --journey first-reply \
+  --evidence evidence/first-reply-my-change
+```
+
+| `--journey` | 从真实入口验证的行为 | 门禁和可核对结果 |
+| --- | --- | --- |
+| `first-reply` | 安装发行包、首次配置和对话、进程崩溃后继续。缺失随包发行的必需插件时，首次 Artifact 写入被拒绝 | `startup` 的真实 CLI、选中的组合、Artifact 和恢复后的最终回复 |
+| `delegated-work` | 通过 Main 启动 Task、委派 Child、交付成果 | `main`、`tasks`、`children`、`artifacts` 的交接、子任务状态和可读产物 |
+| `approved-effects` | 工具获批后执行，未知结果在恢复时保持原身份和尝试次数 | `tools` 的 `unknown_without_evidence_retained`，以及 `codemode`、`code-recovery` 的执行与恢复回执 |
+| `coding-handoff` | 启用工作区、隔离候选、核对审阅报告与已观察的 PR 提交 | `capabilities` 的 `task-code-environments`、`task-code-recovery`、`task-code-exact-report` |
+| `model-recovery` | 换版、回退模型插件后直接在 Chat 发送，原模型收到请求且回复送达 | `model-menu-plugins` 的 `recovery_send`、首个交互截图和请求观察 |
+| `forget` | 冻结请求后执行 Forget，原进程中断，再发送新消息。新请求不含撤销内容，原回执保留 | `memory-maintenance` 的 `forget-fences-frozen-recovery` 和 `recall` 的真实检索结果 |
+
+功能维护时重新走 affected gate，并把发现归为文档过时、验证驱动缺口或产品回归。行为预期的变化需要由所有者确认，修复后的驱动应重新执行。
+
 <a id="testing-agent-evaluation"></a>
 
 ### Agent evaluation
@@ -185,6 +207,11 @@ large run records belong in a separate evaluation repository. Version those
 assets there. Bind a run to the product commit or binary digest, model/version,
 configuration and evaluation-set version. Keep raw traces and results as run
 artifacts. Do not copy them into this product checkout on every code submission.
+
+When comparing workflow or harness variants, give both the same task, model,
+budget and starting state. Score observable results using shared held-out
+criteria and hide variant labels during review. Report completion, interventions,
+time and observed usage independently.
 
 This repository retains only synthetic software-test fixtures needed by actual
 regressions. Tool schemas, CLI/API behavior and ordinary user controls are the

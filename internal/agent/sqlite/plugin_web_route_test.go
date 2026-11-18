@@ -381,7 +381,7 @@ func TestWebPluginRouteRealReleaseRecoveryDoesNotReplayNeverTool(t *testing.T) {
 		}
 		original = status.Revision
 	})
-	stop := keepWebReadClaim(r, claim)
+	stop := keepRunClaim(r, claim)
 	defer stop()
 	fetches := routePageSource(r, cfg)
 	reached := 0

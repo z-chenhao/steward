@@ -192,7 +192,12 @@ func (r *Reader) Detail(ctx context.Context, ref, after string) (task.Detail, er
 	if !task.ValidRef(ref) || len(after) > 1024 {
 		return out, task.ErrInvalid
 	}
-	v, _, err := scan(r.db.QueryRowContext(ctx, progressCTE+`SELECT `+columns+` FROM workspace WHERE task_ref=?`, ref))
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return out, err
+	}
+	defer tx.Rollback()
+	v, _, err := scan(tx.QueryRowContext(ctx, progressCTE+`SELECT `+columns+` FROM workspace WHERE task_ref=?`, ref))
 	if errors.Is(err, sql.ErrNoRows) {
 		return out, task.ErrNotFound
 	}
@@ -201,23 +206,23 @@ func (r *Reader) Detail(ctx context.Context, ref, after string) (task.Detail, er
 	}
 	out.Entry = v
 	var raw string
-	err = r.db.QueryRowContext(ctx, `SELECT anchor_task,anchor_artifact_refs FROM task WHERE task_ref=? AND agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)`, ref).Scan(&out.GoalSummary, &raw)
+	err = tx.QueryRowContext(ctx, `SELECT anchor_task,anchor_artifact_refs FROM task WHERE task_ref=? AND agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)`, ref).Scan(&out.GoalSummary, &raw)
 	if err != nil {
 		return out, err
 	}
 	if json.Unmarshal([]byte(raw), &out.Artifacts) != nil {
 		return out, task.ErrInvalid
 	}
-	if err = r.instructions(ctx, &out); err != nil {
+	if err = taskInstructions(ctx, tx, &out); err != nil {
 		return out, err
 	}
-	if err = r.history(ctx, &out, after); err != nil {
+	if err = taskHistory(ctx, tx, &out, after); err != nil {
 		return out, err
 	}
-	if err = r.messages(ctx, &out); err != nil {
+	if err = taskConversation(ctx, tx, &out); err != nil {
 		return out, err
 	}
-	return out, nil
+	return out, tx.Commit()
 }
 
 // Activity retains the existing terminal/API summary contract while sharing

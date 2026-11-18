@@ -8,8 +8,8 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/interaction/web"
 	"github.com/z-chenhao/assistant/internal/llm"
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 )
 
 type countedPresentationSecrets struct {
@@ -54,7 +54,7 @@ func TestCapabilityPresentationFreezesBeforeProbeAndRetainsAcceptedOutcome(t *te
 	changed := false
 	m.Presentation = func(_ context.Context, f contract.PresentationFacts) (contract.Presentation, error) {
 		calls++
-		out := capabilityforms.ProjectPresentation(f)
+		out := v1.ProjectPresentation(f)
 		if changed {
 			out.Copy.ProbeMemoryReady = "changed result"
 		} else {
@@ -78,7 +78,7 @@ func TestCapabilityPresentationCannotChangeDiagnosticState(t *testing.T) {
 	ctx := context.Background()
 	initial := detail(t, m, "memory")
 	m.Presentation = func(_ context.Context, f contract.PresentationFacts) (contract.Presentation, error) {
-		out := capabilityforms.ProjectPresentation(f)
+		out := v1.ProjectPresentation(f)
 		out.Copy.ProbeMemoryFailed = "presentation says ready"
 		return out, nil
 	}

@@ -70,7 +70,7 @@ func (s *Store) ReadNavigation(ctx context.Context, scope recall.Scope, floor in
 			for _, e := range meta.Evidence {
 				text += "\n" + e.Quote
 			}
-			terms = navigationTerms(text)
+			terms = memory.NavigationIndexTerms(text)
 		}
 		entries[id] = memory.NavigationEntry{Ref: "memory:" + id, Title: meta.Title, Terms: terms}
 	}
@@ -86,27 +86,4 @@ func (s *Store) ReadNavigation(ctx context.Context, scope recall.Scope, floor in
 		}
 	}
 	return out, nil
-}
-
-func navigationTerms(text string) []string {
-	// Index only a bounded vocabulary, not another copy of the document.
-	runes := []rune(text)
-	if len(runes) > 4096 {
-		runes = runes[:4096]
-	}
-	seen := map[string]bool{}
-	bytes := 0
-	out := []string{}
-	for len(runes) > 0 && len(out) < 96 {
-		n := min(200, len(runes))
-		for _, term := range recall.Terms(string(runes[:n])) {
-			if !seen[term] && len(out) < 96 && bytes+len(term) <= 1024 {
-				bytes += len(term)
-				seen[term] = true
-				out = append(out, term)
-			}
-		}
-		runes = runes[n:]
-	}
-	return out
 }

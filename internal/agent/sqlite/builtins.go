@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/z-chenhao/assistant/internal/agent"
+	"github.com/z-chenhao/assistant/internal/coding"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
@@ -33,6 +34,9 @@ func (t *tools) ExecuteBuiltin(ctx context.Context, inv tool.Invocation) (tool.R
 	case tool.CodeBuiltin:
 		return t.executeCode(ctx, inv)
 	case tool.EnvironmentBuiltin:
+		if coding.IsCheckTool(name) {
+			return t.executeCodingCheck(ctx, inv)
+		}
 		return t.executeEnvironment(ctx, inv)
 	case tool.ComputerBuiltin:
 		return t.executeComputer(ctx, inv)

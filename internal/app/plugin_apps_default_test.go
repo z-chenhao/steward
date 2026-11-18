@@ -51,7 +51,7 @@ func testConnectedAppsDefaultLifecycle(t *testing.T, mode string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	directories, err := shippedPluginDirectories(carrier)
+	directories, err := builtin.ShippedDirectories(carrier)
 	if err != nil || directories.Apps == "" {
 		t.Fatal("actual default distribution missing Apps", err)
 	}

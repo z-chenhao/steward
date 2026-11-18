@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real App Cards candidate: streaming, original Artifact, links and cold reads."""
 import argparse
+from owner_inventory import check_default_owner
 import base64
 from contextlib import closing
 from http.server import ThreadingHTTPServer
@@ -101,8 +102,7 @@ def run(binary, evidence):
                 manifest = json.loads(db.execute('SELECT manifest_json FROM rsi_package WHERE digest=?', (digest,)).fetchone()[0])
                 require(manifest['version'] == '1.27.0' and any(service['contract'] == CONTRACT for service in manifest['provides']), 'fresh default did not activate Cards1.19')
                 base_policy_id, policy_raw = db.execute('SELECT policy_id,policy_json FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()
-                owner_cases = len(json.loads(policy_raw)['cases'])
-                require(owner_cases == 387, 'default Cards Owner oracle missing')
+                owner_cases = check_default_owner(frozen, json.loads(policy_raw))
             h.start(); h.wait_runtime_ready('managed Cards App ready')
             published = {}
             def browser(phase, ref='', heading='Card choices'):

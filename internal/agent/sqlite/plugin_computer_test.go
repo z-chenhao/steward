@@ -34,32 +34,11 @@ func computerPluginClaims(t *testing.T, configure ...func(*Store, *Runs)) (*Stor
 	seen := map[string]bool{}
 	for _, b := range bridges {
 		if !seen[b.t.claim.RunID()] {
-			keepComputerPluginOwner(t, b)
+			t.Cleanup(keepRunClaim(b.t.runs, b.t.claim))
 			seen[b.t.claim.RunID()] = true
 		}
 	}
 	return s, r, bridges, invs
-}
-func keepComputerPluginOwner(t *testing.T, b *codeBridge) {
-	t.Helper()
-	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{})
-	t.Cleanup(func() { cancel(); <-done })
-	go func() {
-		defer close(done)
-		ticker := time.NewTicker(leaseDuration / 4)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if err := b.t.runs.Renew(ctx, b.t.claim); err != nil {
-					return
-				}
-			}
-		}
-	}()
 }
 
 func installComputerPlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
@@ -678,7 +657,7 @@ func newComputerPluginExecution(t *testing.T, s *Store, r *Runs) *codeBridge {
 	if err = b.claim(ctx, inv); err != nil {
 		t.Fatal(err)
 	}
-	keepComputerPluginOwner(t, b)
+	t.Cleanup(keepRunClaim(b.t.runs, b.t.claim))
 	return b
 }
 

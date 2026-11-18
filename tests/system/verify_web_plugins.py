@@ -21,9 +21,9 @@ class WebHarness(CapabilityHarness):
 
 
 @contextmanager
-def model_peer():
+def model_peer(mode='web-plugins'):
     server = ThreadingHTTPServer(('127.0.0.1', 0), Endpoint)
-    server.requests, server.mode = [], 'web-plugins'
+    server.requests, server.mode = [], mode
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:

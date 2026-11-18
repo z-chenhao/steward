@@ -6,15 +6,9 @@
 
 [界面设计规范](../design.md) · [产品架构总览](designs/product-overview.md) · [文档维护规则](#文档维护规则) · [功能模板](features/_template.md) · [技术方案模板](designs/_template.md) · [测试方案模板](test-plans/_template.md)
 
-F-013 已接通用户图片到视觉模型的输入，并增强本地 OCR，让纯文本模型可显式读取图片文字；F-005 提供阶段进度；F-019 流式呈现 Main 回复草稿并在提交后切换到正式消息。软件回归与模型语义质量的证明范围分别见对应测试方案。
+## 主线工作
 
-F-031 提供 Developer → Observability 执行检查入口：按角色、状态和当前用户时区的时间查找执行，从已提交回执追溯 Main 与 Task 的因果关联，并检查实际 Root/Child 树。F-034 已接通逐轮冻结上下文、来源与相邻轮次 Diff；F-035/F-036 进一步统一为 Langfuse 式 Session/Trace/Observation 检查，支持真实 HTTP 尝试、恢复复用、输入输出、时间线和已有用量/费用。Trace 列表提供元数据搜索、组合筛选、顶栏时间范围、完整查询计数直方图、TTFT、自动目录费用估算与明确未计价状态、Trace ID 首列与紧凑时间列、最新累计用量／两位小数费用、单行列显隐和点击整行打开的半屏非模态详情预览（可拖拽分栏、彩色层级树、结构化 Input/Output 与原始 JSON），完整页面及原生回退继续可用。
-
-F-018/F-019 将 Conversation、Tasks、Settings 和 Developer 按用户任务拆分；模型来源/配置/验证/选择、通知、任务详情和 Trace 详情拥有各自入口。浏览器请求标识兼容 HTTP 来源并保留加密随机性与重试身份。设置的自动选项统一为 Auto／自动，以选中态表达当前值，不附加默认或推荐标记。Settings 复用版本化字体以避免切页闪跳；ChatGPT 目录模型不再要求连接测试，首个成功连接直接用于对话；聊天模型列表按名称降序排列，不附带账户名称。Chat 消息提供按需时间与当地日期分隔，Tasks、Worker、Traces、Memory 的时间及筛选统一跟随当前浏览器时区，近期日期使用自然标签、旧日期使用 yyyy-MM-dd；点击发送立即出泡并保留后续草稿，Intelligent UI 与最终文字按顺序分泡；支持主题气泡、安全 Markdown、认证附件链接与 Mermaid；折叠导航保留图标，标签页 Ghost 跟随主题。能力配置自动校验保存，使用结构化字段，不暴露底层配置文档。全部长期密钥统一使用本地私有文件，移除系统钥匙串后端及配置入口。完整 Context 并入 Generation，旧地址跳转保留；独立任务只读模块与纯审批投影不增加运行时状态或新控制管线。
-
-F-041：产品品牌统一为 Steward，Agent 名为 Ghost。Web 使用非纯黑纯白的单色界面、Michroma 字标、Inter 操作字体和 Source Serif 4 回复正文；命令、配置、环境变量、存储与内部协议同步统一命名，不维护其他品牌的兼容入口。
-
-F-020：飞书自建应用通过 SecretStore 引用自动获取/刷新 tenant access token，新增 CLI `channel status/check`；收发共用并发缓存，凭据拒绝有安全诊断，未知投递在重启后仍只查询。完成范围与真实平台验证边界见功能文档。
+用户从 Web 或终端接续对话，委派可恢复的 Task，在明确授权下执行工具，最后收到结果或 Artifact。模型连接、原动作审批、运行恢复、隐私撤销和历史引用都在这条链路上验收。可直接运行的场景见[关键用户旅程](test-plans/product.md#critical-user-journeys)。
 
 ## 状态定义
 
@@ -27,15 +21,7 @@ F-020：飞书自建应用通过 SecretStore 引用自动获取/刷新 tenant ac
 
 完成状态只属于本行需求，不自动扩展为整个模块、全部平台或所有业务场景完成。配置依赖、刻意限制、待实现内容和未验证项应分别说明。
 
-当前共 70 项需求，31 项已完成、18 项部分完成、8 项未实现、13 项待定义。此汇总随下表一起维护。
-
-Web 检查统一两位小数耗时/费用及小额非零费用展示；F-009 维护记录提供逐次调用与安全校验原因，成功重试清除当前错误。
-
-F-027 自动桌面复用已安装运行时按官方纯版本号校验；准备失败按已知原因展示，重启后的首次使用才重试，Settings 继续只读。
-
 ## 需求索引
-
-F-002 的 Web 重新授权自动恢复同一账户的当前模型与发送；版本化目录激活保留其他账户/API 选择，不产生测试推理或 Probe。
 
 | ID / 详情 | 需求 | 简要描述 | 是否完成 / 状态 |
 | --- | --- | --- | --- |
@@ -43,7 +29,7 @@ F-002 的 Web 重新授权自动恢复同一账户的当前模型与发送；版
 | [F-002](features/model-connections.md#f-002) | ChatGPT 登录与跨平台凭据 | ChatGPT 账户凭据统一保存在 Steward 私有文件中，支持登录、按需刷新、重新认证、退出和中断恢复，后台状态检查只读配置与账户元数据。 | 是 · 已完成 |
 | [F-003](features/conversation.md#f-003) | 可恢复的 Main 对话 | 用户能连续对话、追问和纠正要求，慢操作期间仍可交代、查询和纠正工作。Main/Worker 系统提示统一按角色、安全、执行规则和能力指导拼为一条；Main 可通过 Code Mode 调用 MCP 和 Skill，复杂工作委派 Task Worker。 Main 沟通／工作方法由独立版本化 conversation 插件持有，冷恢复保留原方法。 | 是 · 已完成 |
 | [F-004](features/tasks.md#f-004) | Task 生命周期与继续工作 | Root 失败有 Host 持久提醒，Task 保留可续作状态；默认标题按完整纯方案冻结，原创建事务去重并保留历史未知调用；问答／审阅期限与续作指引已独立迁移到版本化插件；支持显式 GitHub PR→已有 Task 关联，经 Main 有界接续并保留停止/隐私裁决；CLI/Web 与个人飞书具名问题、确切成果审阅接通，真实渠道与模型质量待验证。 搜索／默认标题与问题／审阅配方已由 task-control／task-feedback 独立托管；原状态与回执由 Host 保留。 | 否 · 部分完成 |
-| [F-005](features/tasks.md#f-005) | 执行中的有意义进度 | 用户主动查看时能了解当前阶段、摘要与子任务完成情况；Root 进度提示／筛选已独立迁移到版本化插件。 提示与原句筛选由独立版本化 task-progress 持有；Root／Child 与旧执行保持隔离。 | 是 · 已完成 |
+| [F-005](features/tasks.md#f-005) | 执行中的有意义进度 | 用户主动查看时能了解当前阶段、摘要与子任务完成情况；Task 详情的轮次、指令、审批和交付来自同一读快照。Root 进度提示／筛选已独立迁移到版本化插件。 提示与原句筛选由独立版本化 task-progress 持有；Root／Child 与旧执行保持隔离。 | 是 · 已完成 |
 | [F-006](features/delegation.md#f-006) | 可递归的 Child Worker | 复杂工作可由 Worker 拆成独立子任务，并由父级汇总；委派方法／更窄树预算已迁入独立版本化插件。 | 是 · 已完成 |
 | [F-007](features/tools-approvals.md#f-007) | 工具、审批与未知副作用处理 | Main 与 Worker 以 Code Mode 组合工具，直接声明少量高频工具，调用权限按角色冻结；MCP 不提供暴露模式，双方共用具体审批与恢复。 | 是 · 已完成 |
 | [F-008](features/codemode.md#f-008) | 可恢复的 JavaScript 编排 | Agent 能用标准 JavaScript 串联工具、处理并发并显式输出结果；资源配方／参数说明已迁入独立版本插件；工具发现 BM25／分词／摘要选择已由独立托管包执行，原 Run／挂起 VM、换版／回退、停用与冷恢复已有验收证据。 | 是 · 已完成 |
@@ -64,7 +50,7 @@ F-002 的 Web 重新授权自动恢复同一账户的当前模型与发送；版
 | [F-023](features/skills-experience.md#f-023) | 执行后的自动经验闭环 | 用户纠正、恢复失败或重复成功能进入候选、验证和晋升流程。 | 否 · 部分完成 |
 | [F-024](features/integrations.md#f-024) | 受限本地 MCP 工具接入 | 操作员可接入允许的本地 stdio 工具；固定 Code Mode 调用、按工具或服务用途检索与 500 工具目录已接通，system 不预载 MCP Server 目录。独立方法与目录政策已迁入托管，生命周期与兼容清理已验收；当前标准30包组合待完整验收，保留原 Run／Child。 | 是 · 已完成 |
 | [F-025](features/integrations.md#f-025) | 可认证的真实服务接入 | GitHub 精确 PR 监听可认证读取；F-071 提供 Composio 具名账户与审批动作，原生连接统一管理及真实账户验证仍有缺口。 | 否 · 部分完成 |
-| [F-026](features/coding.md#f-026) | 代码理解、修改与交付 | Linux/macOS 本地显式仓库源、Task 私有工作副本、修改集和历史验证 Artifact 已接通，可手工关联已观察的 PR head，远端发布与修订核对待补。 文件分页／唯一定位已独立迁移；命令资源配方已独立迁移，原字节、审批、提交和执行事实由 Host 托管；Task 导入／报告方法已接入标准分发；完整副本、历史命令与 Artifact 原子接纳归 Host。 | 否 · 部分完成 |
+| [F-026](features/coding.md#f-026) | 代码理解、修改与交付 | Task 私有候选、跨任务并行、独立固定镜像验证、项目准备/检查地图、真实数据库与浏览器恢复及持久产物已接通；环境/方法适用性、结构约束和有界错误变体回放可检查。审阅包保存原任务、指令、检查及实际耗时/费用；显式 PR 关联和本地原对象的确切内容核对分开。quality / quantity 环境升级提供上述可验证边界；通用远端发布及真实模型品质仍有边界。业务方法归托管 coding-workspace，Host 保留事实、资源与原子接纳。 | 否 · 部分完成 |
 | [F-027](features/computer-use.md#f-027) | 配置型 macOS Computer Use | Agent 能在明确配置的隔离 Guest 中观察和操作应用与浏览器，并恢复逻辑 Computer；AX 呈现／等待／说明资源、原生选区及清单排序／对象匹配、审批前固化动作／Playwright 参数及导出／上传展示、固定上传／快照资源随原图固定，十一项业务服务已接入默认组合；保留具名历史兼容和最小固定机制。 | 是 · 已完成 |
 | [F-028](features/operations.md#f-028) | 本地诊断与加密恢复 | 健康检查、加密恢复与 macOS 显式后台服务/独立巡检；持久人工停机和有限恢复已接通，平台 Live 与主动渠道告警待补。 | 否 · 部分完成 |
 | [F-029](features/operations.md#f-029) | 用量记账与配置型费用授权 | 独立 reference-pricing 插件提供常见模型的参考费率，原 Run 图与费率随 generation 固定；手动价格优先，显式货币授权继续独立。 | 是 · 已完成 |
@@ -73,7 +59,6 @@ F-002 的 Web 重新授权自动恢复同一账户的当前模型与发送；版
 | [F-034](features/observability.md#f-034) | 逐轮上下文、来源与 Diff | 展开任意模型轮次查看 system/user/assistant/tool、工具定义、响应与上下文来源，并比较相邻轮次；加密记忆明确标注，避免将密封正文误读为空消息。 | 是 · 已完成 |
 | [F-035](features/observability.md#f-035) | 供应商最终请求观测 | 开发者能区分 Host 冻结请求与 Bridge/SDK 转换后实际发送的请求。 | 是 · 已完成 |
 | [F-036](features/observability.md#f-036) | 调用、等待、恢复与用量时间线 | 开发者能检查执行、等待、恢复、用量和模型流时间点，并区分各阶段超时。 | 是 · 已完成 |
-| [F-032](features/evals.md#f-032) | Web Evals 入口 | 后续可从 Developer 查看评测结果，并关联对应执行。 | 否 · 待定义 |
 | [F-033](features/memory.md#f-033) | Web Memory 记忆浏览 | Developer 按四层展示原始记录与记忆文档，复用 Traces 列表与详情侧栏，支持来源、关系、修订、筛选和分页；逐 Run 冻结注入在 Trace 核对，尚无版本差异或逐事件文档改动明细。 | 是 · 已完成 |
 | [F-037](features/installation.md#f-037) | 安装、首次启动与显式部署 | 安装、检查、前台启动及自定义部署，并保持持久数据。 | 是 · 已完成 |
 | [F-038](features/engineering.md#f-038) | 标准开发与显式发布流程 | 固定依赖、构建、风险分层验证、隔离并行 CI 与可审查交付。 | 是 · 已完成 |
@@ -83,26 +68,6 @@ F-002 的 Web 重新授权自动恢复同一账户的当前模型与发送；版
 | [F-042](features/integrations.md#f-042) | 可靠的环境事件监听 | 精确 PR 评审/CI 持久接收，可显式关联原 Task 经 Main 接续；私有插件已有真实扫描／续接配方路径，已接入默认完整插件组合并通过组合分发验收；完整功能迁移验收仍待完成；其他来源、平台历史与原话题交付边界保留。 | 否 · 部分完成 |
 | [F-045](features/automation.md#f-045) | 主动规则的观察与启用 | 确切 GitHub PR 可按事件类型或 CI 失败观察，再显式启用 Main 接续原 Task。其他来源与语义规则待验证。 | 否 · 部分完成 |
 | [F-046](features/integrations.md#f-046) | Tavily 搜索与网页正文 | 已有自建 Search API 适配；独立 Extract 及真实服务 Live 待验，不将摘要当全文。 | 否 · 部分完成 |
-| [F-047](features/integrations.md#f-047) | GitHub Connector | 在明确仓库读取 issue/PR/diff/CI 并完成授权协作动作；与既有精确 PR 监听和代码交付分别验收。 | 否 · 未实现 |
-| [F-048](features/integrations.md#f-048) | 能力候选：macOS 本机文件与运行状态 | 在选定目录和具名服务内读取资料、检查环境和准备可审查的维护动作。 | 否 · 待定义 |
-| [F-049](features/integrations.md#f-049) | 能力候选：SSH 远端设备与服务 | 逐台绑定账户、host key 和允许范围，读取远端状态并在明确授权下维护，不扩大 Guest SSH 权限。 | 否 · 待定义 |
-| [F-050](features/integrations.md#f-050) | 能力候选：用户选择的 Chrome 页面与会话 | 接续选定的宿主浏览器页面和网页工作，保留登录态边界与陈旧页面／提交结果核实。 | 否 · 待定义 |
-| [F-051](features/integrations.md#f-051) | 能力候选：ChatGPT 选定历史与附件导入 | 从用户提供的选定对话／导出找回旧资料，保留角色、来源和附件缺失；不将模型登录当成历史授权。 | 否 · 待定义 |
-| [F-052](features/integrations.md#f-052) | 能力候选：Codex 选定工程会话导入 | 只读接入选定工程会话与产物引用，区分旧执行报告和当前事实，不修改 Codex 状态库。 | 否 · 待定义 |
-| [F-053](features/integrations.md#f-053) | 能力候选：Pi 选定会话导入 | 导入选定会话及分支，接续既有主题，不迁移历史审批、认证或自动执行旧命令。 | 否 · 待定义 |
-| [F-054](features/integrations.md#f-054) | 能力候选：图片生成与编辑服务 | 用明确图片服务完成生成／参考图编辑并保存版本关联；静态图与实际动画分别验收。 | 否 · 待定义 |
-| [F-055](features/integrations.md#f-055) | Google Maps Connector | 解析用户给定地点及海外步行／公交路线，核实地点、入口与时区，不冒充完成预约或购票。 | 否 · 未实现 |
-| [F-056](features/integrations.md#f-056) | 高德地图 Connector | 提供国内 POI、路线、天气及唤端链接，明确坐标和时效；唤起 App 不等于完成交易。 | 否 · 未实现 |
-| [F-057](features/integrations.md#f-057) | Apple Health／HealthKit Connector 候选 | 确认数据来源后评估经授权的原生设备端集成；XML 文件导入不算 connector 接通。 | 否 · 待定义 |
-| [F-058](features/integrations.md#f-058) | 飞书云文档与知识库 | 在明确资源范围内找资料、读取正文和形成／授权更新草稿；用户文档权限独立于机器人消息。 | 否 · 未实现 |
-| [F-059](features/integrations.md#f-059) | Gmail Connector | 按用户条件查邮件／附件并先形成本地回复草稿；远端草稿、发送和受限授权分别处理。 | 否 · 未实现 |
-| [F-060](features/integrations.md#f-060) | Jellyfin 家庭媒体库 | 查询指定服务器的可见媒体和播放相关状态，区分库中存在与客户端实际可播。 | 否 · 未实现 |
-| [F-061](features/integrations.md#f-061) | AWS 资源与费用只读接入 | 在指定账户／区域读取资源和可用费用数据，不包含创建实例、升级计划或付费承诺。 | 否 · 未实现 |
-| [F-062](features/integrations.md#f-062) | Google Calendar 候选 | 确认用户日历后定义忙闲、日程及授权创建，区分外部事件与 Steward 自动化。 | 否 · 待定义 |
-| [F-063](features/integrations.md#f-063) | Apple Calendar／Reminders 候选 | 确认实际使用后定义 EventKit 本机组件及日历／清单权限，不复制内部 Task 权威状态。 | 否 · 待定义 |
-| [F-064](features/integrations.md#f-064) | Google Drive 选定资料候选 | 先确认资料是否在 Drive，再定义选定文件读取／导出／保存，不承诺全盘搜索及全部原生编辑。 | 否 · 待定义 |
-| [F-065](features/integrations.md#f-065) | X 帖子与讨论只读接入 | 在搜索／网页不足时读取确切帖子及可取得讨论，独立核验主张，不接私信、发帖或交易。 | 否 · 未实现 |
-| [F-066](features/integrations.md#f-066) | YouTube 视频资料候选 | 确认视频委托需求后定义元数据及可授权取得的字幕，不能把元数据读取称为已看完视频。 | 否 · 待定义 |
 | [F-067](features/integrations.md#f-067) | Exa MCP 搜索候选 | 验证免密钥的官方托管搜索、免费限流与来源结果；严格过滤不得静默降级，远端协议及质量待验证。 | 否 · 部分完成 |
 | [F-068](features/integrations.md#f-068) | SearXNG 自托管搜索候选 | 已有自建 JSON API 适配及协议回归；真实实例、部署及维护责任待确认。 | 否 · 部分完成 |
 | [F-069](features/integrations.md#f-069) | Web Access Plugin | 自建 native／Exa／SearXNG／Tavily 搜索、正文／PDF／图片、问答与来源证据；搜索、研究编排／摘要预览、fetch 表达／结果规范化、HTML／图片转换、MIME／模式分派与完整证据阅读已迁入 Web Access；Node／PDF 已迁入独立 Web Extract。原 Run／Child／引用、换版／回退／停用及清理已验收；当前默认分发二十三包；更多服务与真实质量仍待验证。 | 否 · 部分完成 |
@@ -115,13 +80,7 @@ F-002 的 Web 重新授权自动恢复同一账户的当前模型与发送；版
 
 完整范围与逐项状态以[现有功能插件迁移清单](features/plugin-migration-status.md)单列；产品完成状态和插件注册数量均不作为迁移完成百分比。
 
-基础 Web 工作台与实时更新当前由同一 `web-workbench` 包持有模板、专属 CSS、中英文文案及客户端政策；页面、样式、侧栏和实时区域固定同一图。默认40包／387项 Owner 已接线（新增服务重启配方），原普通实现已清理，只保留具名旧协议／公开资源消费者；现有业务迁移的整批验收已完成。
-
-Trace Inspector 的既有业务已迁入同包模板、CSS、展示与浏览器政策；原事实、授权、游标和共享控件由 Host 持有。实际迁移与保留兼容范围见逐项清单，产品质量状态另行记录。
-
-Memory Inspector 与 Intelligent UI 的既有业务已完成原子功能迁移，包含导航／展示政策、布局、Plan、Cards、Table、图表、表单、会议与动作反馈。原 Run／Child／引用、版本切换与回退、停用冷读、Forget／隐私围栏和 unknown 不重放按所属清单验收；唯一保留的原生解释器只服务具名历史消费者，退出条件见所属设计。当前插件失败或停用不会恢复原生业务默认实现。产品质量与自动 RSI 闭环的完成状态分别记录，不从旧阶段进展或插件数量推算。
-
-Linux 的可信进程边界由原生 pre-exec launcher 施加既定硬限额，Owner 拒绝仅返回用例身份与安全阶段诊断；错误输入／输出／stderr 不进入公开错误，unknown 不重放。
+默认组合的安装与 Owner 验收共用[受信分发目录](../internal/rsi/builtin/distribution.go)并由独立清单验证。候选包、版本兼容、撤权、Forget、停机及 unknown 不重放的实际证据见上面的迁移清单和所属测试。
 
 两项统一采用实验级 [steward-rsi-plugins 协议](designs/steward-rsi-plugins.md)：借鉴 Pi 的完整功能包和 DeepSeek Harness 的服务组合／作用域生命周期，自主实现包、组合、运行、状态和演化五个契约面。RSI 为递归自我改进，改进工具本身可以迭代，独立裁定权不交给候选。
 
@@ -136,8 +95,6 @@ flowchart LR
     G --> D
 ```
 
-首轮候选为 OCR、DOCX、执行轨迹检查，再验证上下文压缩和 Web Access；完整的 [7 个能力域／33 个候选功能包](designs/plugins-evolution.md#候选功能包清单)是拆分提案，不新增 33 个需求或强制 33 个进程。边界须由真实独立验收证明，破坏下游契约的更新不能称为无损。
-
 [F-023](features/skills-experience.md#f-023) 继续维护方法经验学习；F-070 负责功能包托管，F-072 负责演化验证与部署闭环。旧执行、数据与引用保留不等于权限永久有效；撤权、Forget、取消和独立人工停机优先。自动插件激活受显式授权策略限制，不替代底座变更审批或程序发布授权。详见 [功能说明](features/plugins-evolution.md)、[技术方案](designs/plugins-evolution.md) 与 [测试方案](test-plans/plugins-evolution.md)。
 
 ## 实施优先级与依赖
@@ -151,42 +108,13 @@ flowchart LR
 
 <a id="personal-connector-priorities"></a>
 
-### 个人 Connector 优先级
+### 当前外部接入
 
-按[统一术语](features/integrations.md#术语与登记边界)，Plugin 是能力扩展包，Connector 是外部服务集成能力，Connection 绑定具体账户／实例，Skill 提供工作方法，Tool 执行具体操作。本规划按外部系统登记 connector，按工具、模型能力或一次性导入登记的 F-048–F-054 不参与以下排序。当前共有 **16 个新增外部系统／服务 connector 条目**，另有 **7 个非 connector 能力候选**；**F-069 Web Access Plugin** 组合搜索与网页访问，不重复计为新的外部系统；F-070 独立登记插件生命周期，F-025 维护平台连接。既有飞书消息集成 F-020 不重复计数。
+网页资料归 F-069，Exa、SearXNG 与 Tavily 使用已实现的显式配置和独立验收。Connected Apps 由 F-071 持有目录、按需连接和工具授权。飞书消息及精确 PR 后续分别归 F-020、F-042。未接通的外围候选只在[集成说明](features/integrations.md#暂缓的外围能力)保留稳定 ID。
 
-以下顺序以 **ChatGPT 日常问题** 为主要依据，Codex 工程任务单独评估。优先已明确且重复委托、能补足实时／个人事实并减少截图与复制的接入，同时考虑已有工具覆盖和开发／授权成本。依据见[委托模式与证据边界](features/integrations.md#选择依据与证据边界)。这是定性建议，不是全量频次统计；旅途中连续提问不能直接视为全年频次，书签也不能证明资料来源。
+<a id="f-032"></a>
 
-顺序表示在前提成立时的建议开发顺序，不是服务授权或交付日期。标为待定义、或尚未确认实际数据来源的项先做需求／接入条件验证；不能仅因排位靠前就直接开发。公共检索服务与个人业务系统分别注明，具体供应商也需验证。
-
-| 顺序 | 阶段 | 接入能力／外部系统 | 对应 ChatGPT 日常问题与接入收益 |
-| --- | --- | --- | --- |
-| 1 | P0 | [F-069 · Web Access Plugin](features/integrations.md#f-069) | 统一入口先验证当前 Steward ChatGPT／Codex 账户原生搜索，再接一个允许的后备；保持主模型与冻结权限 |
-| 2 | P0 后备候选 | [F-067 · Exa MCP](features/integrations.md#f-067) | 随 F-069 验证免密钥独立搜索，只有显式允许才参与后备；免费限流与过滤保证需核实 |
-| 3 | P0 | [F-056 · 高德](features/integrations.md#f-056) | 国内天气／穿衣／散步及地点路线；考虑平时国内生活先接，地域排序属于产品判断，不能当作已证明的使用频次 |
-| 4 | P0 | [F-055 · Google Maps](features/integrations.md#f-055) | 海外餐厅链接、车站入口、酒店／车站间路线有直接委托证据；补旅行时的地点事实 |
-| 5 | P1 | [F-059 · Gmail](features/integrations.md#f-059) | 订单解释、账户事项和个人资料找回可能减少截图／复制；这是对来源的推断，先验证资料确实在 Gmail，首版只读 |
-| 6 | P1 | [F-057 · Apple Health／HealthKit 候选](features/integrations.md#f-057) | 睡眠／活动等回顾需求重复，数据价值高；先确认实际来源，确为 HealthKit 且设备端方案可行后再进入开发 |
-| 7 | P1 | [F-058 · 飞书云文档](features/integrations.md#f-058) | 技术资料、面试材料和方案整理可减少重复粘贴；先确认资料存于飞书及资源授权，不能只凭已有消息渠道推断 |
-| 8 | P1 可选扩展 | [F-068 · SearXNG](features/integrations.md#f-068) | 有明确实例时验证自托管路径，评估维护和上游覆盖；不自动选公共实例或部署服务 |
-| 9 | P1 可选扩展 | [F-046 · Tavily](features/integrations.md#f-046) | 保留为正式 API／免费额度候选，不能仅凭功能声明优于已在 Pi 使用的方案；与前两项比较后选择 |
-| 10 | P2 | [F-060 · Jellyfin](features/integrations.md#f-060) | 家庭媒体服务／播放问题有明确场景，但专用媒体库查询的覆盖面较窄 |
-| 11 | P2 | [F-062 · Google Calendar 候选](features/integrations.md#f-062) | 有计划与提醒场景，尚未确认由该日历承载；不能把聊天提醒需求直接变成日历开发任务 |
-| 12 | P2 | [F-063 · Apple Calendar／Reminders 候选](features/integrations.md#f-063) | 与上项是待确认的来源选择，先验证实际使用及与 Steward 自动化的分工 |
-| 13 | P2 | [F-064 · Google Drive 候选](features/integrations.md#f-064) | 有附件／资料需求，但尚无充分证据指向 Drive；先确定文件实际存放位置 |
-| 14 | P2 | [F-065 · X](features/integrations.md#f-065) | 帖子核验需求明确，先由搜索／网页覆盖；直连只有在结构化上下文或覆盖产生增量时再开发 |
-| 15 | P2 | [F-047 · GitHub](features/integrations.md#f-047) | 在 ChatGPT 日常问题榜靠后；工程协作需求主要来自 Codex，仍保留独立工程路线的高优先级 |
-| 16 | P2 | [F-061 · AWS](features/integrations.md#f-061) | 云账户／费用任务主要见于 Codex，不能据此占据日常个人助手首批开发资源 |
-| 17 | P2 | [F-066 · YouTube 候选](features/integrations.md#f-066) | 只有消费入口信号，尚未证明经常委托视频分析及可取得字幕范围 |
-
-首批交付是 **F-069 Web Access Plugin＋高德＋Google Maps connectors**。Web Access 按当前冻结账户／端点的已验证搜索能力选路，使用已验证的 Steward ChatGPT 托管搜索链路，再用 F-067 Exa 提供一个显式允许的后备。F-068 SearXNG 与 F-046 Tavily 已有独立适配，真实实例／凭据及各自 Live 分别验收。既有主模型不会因搜索失败自动切换，原生能力也不凭模型名猜测。具体边界见[Web Access 方案](designs/integrations.md#f-069--web-access-的最小组合方案)和 [自主实现边界](designs/integrations.md#参考行为与自主实现边界)。第二批在确认真实资料来源后选择 Gmail、健康数据或飞书文档；GitHub 的工程优先级仍独立维护。
-
-
-F-071 已确认通过 Composio 广泛预备日常应用目录，用户按需授权，不受上述原生 Connector 实施排序限制；目录可见不代表账户已连接或领域目标已全部验收。F-020 继续维护既有飞书消息连接，机器人身份不代表已具备个人云文档或日历权限。F-025 持有认证集成共性缺口，F-042/F-045 持有事件和主动接续；新增 connector 独立验收，不把全部目录变成某个既有编号完成的附加门槛。
-
-本机、SSH、浏览器是执行能力；ChatGPT/Codex/Pi 选定历史属于导入；图片生成属于模型能力。F-048–F-054 仅保留为非 connector 的待定义候选，需结合原能力归属另行确认，不按本榜推动实现，也不把定性习惯分析直接扩成新开发任务。
-
-读取、写入、事件订阅及结果核实按所连系统分别定义；不是每个 connector 都需要监听或写操作。架构边界见[集成技术方案](designs/integrations.md#个人-connector-待实现方案)，验收见[集成测试方案](test-plans/integrations.md#个人-connector-验收计划)。上述需求尚未实施，登记不启用或授权任何 connector。
+F-032（Web Evals 页面）暂缓。真实模型评测沿用[独立评测](test-plans/product.md#testing-agent-evaluation)。
 
 ## 文档组织
 

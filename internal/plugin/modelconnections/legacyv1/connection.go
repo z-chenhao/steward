@@ -1,10 +1,9 @@
-// Package legacyv1 interprets never-activated model connection installations and
-// embeddings. Delete after those explicit consumers retire; managed calls cannot
-// reach this path, including deactivation and missing current services.
 package legacyv1
 
 import "github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
 
+// Connection is compiled into the first managed package version and retained by
+// Host readers for never-activated installations and explicit embeddings.
 func Connection(f contract.ConnectionFacts) contract.ConnectionDefaults {
 	out := contract.ConnectionDefaults{WireAPI: "openai_completions", ContextWindow: 128000, MaxOutputTokens: 16384, ImageInput: true}
 	if f.Preset == contract.TerminalSetup {

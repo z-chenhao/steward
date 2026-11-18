@@ -55,6 +55,8 @@ Task 列表默认 Open（active/paused），还可查看 Needs me、Finished（c
 
 点击任务进入独立详情，查看完整目标、当前阶段、Child 聚合、待处理审批、最近 10 条关联 Main 交付和可访问附件；指令/里程碑按游标读取更早历史。Open original request 返回最初的对话消息；Continue in conversation 带可见任务上下文进入 Main，用户可移除。页面没有绕过 Main 的暂停/取消/重试按钮，也不把 Worker 原始结果当交付。
 
+并发接续时，详情的当前轮次、指令、审批和交付取自同一读快照。刷新后可读到已提交的新轮次。
+
 ### 回答已保存的问题与审阅成果
 
 Main 可通过 `task_manage` 的 `request_input` 记录具体问题，通过 `request_review` 记录至多 16 个确切 ArtifactRef 的成果审阅。它们是独立信息记录，不改变 Task 状态，不自动暂停执行，也不代表所有任务必须等待验收。Worker 仍只向 Main 汇报；用户可在对话中要求 Ghost 记录需要确认的问题。

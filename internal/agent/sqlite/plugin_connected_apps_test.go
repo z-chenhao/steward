@@ -582,7 +582,7 @@ func TestConnectedAppsPluginRealReleaseRecoveryKeepsOriginalNeverCallAndGraph(t 
 		host = rsi.Host{Catalog: catalog, Store: s.Plugins()}
 		original, _ = selectAppsVersion(t, host, "", "1.0.1")
 	})
-	stop := keepWebReadClaim(runs, owner)
+	stop := keepRunClaim(runs, owner)
 	defer stop()
 	if _, err := executor.Execute(ctx, exchange, calls); !errors.Is(err, tool.ErrSuspended) || peer.executions.Load() != 0 {
 		t.Fatal("original exact approval was not requested", err, peer.executions.Load())

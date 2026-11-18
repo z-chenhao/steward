@@ -89,10 +89,11 @@ live service availability, cloud credential discovery or unimplemented provider
 login flows. Product tests continue to cover the two current connection paths.
 
 `provider-bridge/test/native-account.test.mjs` drives the real Go subprocess against
-the owned OAuth peer, including PKCE, JWT rejection, refresh rotation, revocation
-and identity binding. The Go Host final-acceptance tests use that native model
-bridge protocol; account configuration fixtures explicitly select a loopback
-transport and do not change production endpoints.
+the owned OAuth peer. It verifies PKCE, one-use state, the loopback Host check,
+JWT rejection, refresh rotation, revocation, identity binding, callback client
+binding, redirect rejection, catalog errors and the fixed tool namespace on
+continuation. The Go Host final-acceptance tests use the same bridge protocol.
+Fixtures replace the transport with a loopback peer.
 
 ## 原生协议回放边界
 
@@ -120,7 +121,11 @@ Local-provider 的真实 Node 边界检查保留 Worker 模型仅走 CodeMode �
 
 ## 模型连接插件迁移
 
-本包现有 28 项 Owner（菜单 8、Settings 6、连接策略 14），当前默认组合共 35 包／369 项。修改前输出须由原实现实际执行捕获，保留 fixture／provenance；不能调用候选代码生成期望。通过某一投影不等于整个 F-001／F-002 完成。
+默认组合的预期插件实例与 Owner 请求身份由 [共享清单](../../tests/fixtures/plugins/default-owner-inventory.json) 维护。Go 与 Python 验证实际启用的完整分发包，指出缺失、额外和重复的身份。修改前输出须由已确认的原实现实际执行捕获，保留 fixture 与来源；变更预期由所有者审阅。
+
+模型回退的验收基准采用 [pstack 的独立用户流程](https://github.com/cursor/plugins/blob/e1cc03121a0e71129a4fb730d7c5528a0a3e43c8/pstack/skills/poteto-mode/playbooks/shipping.md)。Steward 的具体判据是换版和回退后保留同一个所选模型及配置版本，随即通过真实浏览器发送消息，核对原 Provider 收到请求、回复送达且未发起重选。报告保留首次操作截图与请求身份。
+
+独立验收从所有者已审阅的验证 checkout 运行 `tests/system/verify_model_menu_plugins.py --binary /path/to/candidate/bin/steward --candidate-source /path/to/candidate --evidence /path/to/report.json`。普通 required CI 沿用 `model-menu-plugins` 入口。独立 checkout 提供浏览器、协议 peer、预期清单和判据，候选 checkout 提供要受检的分发包与用于换版的模型插件源。
 
 | 范围 | 行为对照与边界 | 真实链路 |
 | --- | --- | --- |

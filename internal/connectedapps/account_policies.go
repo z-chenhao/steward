@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/appsaccounts/v1"
 )
 
 // AccountPolicyReader captures an owner-side graph before a logical operation.
@@ -37,7 +38,7 @@ func ManagedConnectIntent(read func(context.Context, int64, contract.ConnectRequ
 }
 func (s AccountPolicies) readConnectIntent(ctx context.Context, revision int64, request contract.ConnectRequest, rows []contract.ConnectRow) (contract.ConnectPlan, error) {
 	if s.intentMode == accountPolicyNative {
-		return connectIntentLegacyV1(rows, request.Alias), nil
+		return v1.Connect(rows, request.Alias), nil
 	}
 	if s.intentMode != accountPolicyManaged || s.intentRead == nil {
 		return contract.ConnectPlan{}, ErrUnavailable

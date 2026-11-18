@@ -144,6 +144,8 @@ to survive the command or test harness.
 
 `internal/agent/sqlite/workspace_test.go` 用真实 Main/Root/Child 与 SQLite 证明详情、原始用户消息定位和非空 Main 交付，读取前后领域计数不变；65 项任务在同 created_at 下完整分页，游标不得跨搜索/视图使用，其他 Agent 的 Task 不可读。`internal/task/sqlite/reader_test.go` 验证只读池不新建或改写数据库。既有 Activity 测试继续保护终端/API 摘要契约。
 
+`TestTaskWorkspaceDetailKeepsOneSnapshotDuringConcurrentUpdate` 在 Task 详情首条查询期间通过另一 SQLite 连接原子提交新轮次和指令。首次详情仍返回一代且无新指令，紧接的刷新返回二代及其原指令。
+
 既有 channels 浏览器测试打开任务详情，核对目标、审批冻结 hash、带任务上下文回 Main、移动端，以及生产 Pi peer 场景完成后的 Main 交付；不以原始 Worker result 代替用户回复。列表筛选不是新的 Task 状态；所有控制仍经 Main 和既有生命周期回归。
 
 计划视图由 `task_planning_view_test.go` 验证真实保存配置、首次触发前安排、已结束／无后续触发、最多50项、指令最多20条、搜索／视图分离、所有者与撤销上下文、不派发／不写库。Web 验证安排读取失败不隐藏普通任务、字段转义与原审批卡片；手动编辑的协议与浏览器验证归属 [Automation 测试](automation.md)。

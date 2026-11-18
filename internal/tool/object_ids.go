@@ -2,8 +2,9 @@ package tool
 
 import (
 	"encoding/json"
-	"io"
 	"strings"
+
+	"github.com/z-chenhao/assistant/internal/jsonwire"
 )
 
 // ObjectID is the model-facing spelling of a Host-owned object identity. The
@@ -48,12 +49,12 @@ func ModelObjectIDs(raw string) string {
 	d.UseNumber()
 	// Preserve ambiguous JSON verbatim instead of collapsing duplicate evidence
 	// keys or recursing through an unbounded payload during presentation.
-	if !uniqueJSON(d, 0) {
+	if jsonwire.Check(d) != nil {
 		return raw
 	}
 	d = json.NewDecoder(strings.NewReader(raw))
 	d.UseNumber()
-	if d.Decode(&value) != nil || d.Decode(new(any)) != io.EOF {
+	if d.Decode(&value) != nil {
 		return raw
 	}
 	changed := false

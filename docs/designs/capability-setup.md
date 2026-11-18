@@ -55,7 +55,7 @@ Computer `Provider.Probe` 与实际执行的 lock 路径共用 checkHost，校�
 
 - [config/setup](../../internal/config/setup/manager.go)：状态/证明/保存编排；[document.go](../../internal/config/setup/document.go)：文档编辑与原子写入；[resources.go](../../internal/config/setup/resources.go)：六类资源投影；[probe.go](../../internal/config/setup/probe.go)：适配器诊断。
 - [Config.Load/Decode](../../internal/config/config.go)：默认发现、严格共享校验。
-- [Web control plane](../../internal/interaction/web/capabilities.go) 与 [owning 视图](../../internal/plugin/capabilityforms/view/capabilities.html)。
+- [Web control plane](../../internal/interaction/web/capabilities.go) 与 [v1 owning 视图](../../internal/plugin/capabilityforms/v1/view/capabilities.html)。随包发布的 1.0.0 和显式 v1 兼容入口使用同一份 Go 投影和视图资源。已托管调用仍按图执行独立包，Host 继续校验资源身份与候选配置。
 - [Computer shared probe](../../internal/computer/macosvm/probe.go)。
 
 无新依赖、模型工具、DB schema、CI gate 或评测体系。自动 Computer 使用由宿主进程管理的私有 Lume 服务。设置层前端复用现有样式、原生输入与按钮；共用提交增强保留 clicked action，避免禁用按钮丢失表单字段，并保留初始 disabled 状态供 bfcache 返回恢复。

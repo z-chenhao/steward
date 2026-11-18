@@ -1,0 +1,18 @@
+{
+  "debian": {
+    "amd64": {
+      "commit": "2dcd3d429aa99a1302a4bb9b8cacb4f318c71d4a",
+      "url": "https://raw.githubusercontent.com/debuerreotype/docker-debian-artifacts/2dcd3d429aa99a1302a4bb9b8cacb4f318c71d4a/bookworm/oci/blobs/rootfs.tar.gz",
+      "sha256": "5f43528a7dad51d6544c29149dabae1de8234542a526837a124a449c825b48ee",
+      "bytes": 48526463
+    },
+    "arm64": {
+      "commit": "5994ab615f09f401eef80676e152b497e2a7b3ba",
+      "url": "https://raw.githubusercontent.com/debuerreotype/docker-debian-artifacts/5994ab615f09f401eef80676e152b497e2a7b3ba/bookworm/oci/blobs/rootfs.tar.gz",
+      "sha256": "10e673e09b9e35a7f8edcd9bcce1c39e4bb37ad1bd39a5b9c9223e1aaeadad2e",
+      "bytes": 48412321
+    }
+  },
+  "source_reference": "https://github.com/debuerreotype/docker-debian-artifacts",
+  "scope": "Local disposable Linux coding environment; not a release image."
+}

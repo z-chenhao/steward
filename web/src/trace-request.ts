@@ -1,8 +1,7 @@
-import {parseExactJson} from './components/ui/read-only-json';
+import {enhanceReadOnlyJson,parseExactJson,setReadOnlyJsonMode} from './components/ui/read-only-json';
 import {traceProgram} from './trace-program';
 import {acceptTraceRequestRecipe,type TraceRequestRecipe} from './trace-request-recipe';
-import {enhanceLegacyTraceRequests} from './legacy/trace-request-v1';
-import {enhanceReadOnlyJson,setReadOnlyJsonMode} from './components/ui/read-only-json';
+import {legacyTraceRequestRecipe} from './legacy/trace-request-v1';
 
 // A readable projection may decode JSON string escapes; the original capture
 // remains untouched. Duplicate keys and lossy numbers still require raw view.
@@ -68,7 +67,7 @@ function renderTraceRequests(scope:ParentNode,recipe:TraceRequestRecipe){
 
 
 export function enhanceTraceRequests(root:HTMLElement):()=>void {
- if(!root.dataset.traceProgramRevision){enhanceLegacyTraceRequests(root);return ()=>{}}
+ if(!root.dataset.traceProgramRevision){renderTraceRequests(root,legacyTraceRequestRecipe());return ()=>{}}
  const entry=traceProgram(root);let active=true;
  if(!root.querySelector('[data-wire-reader]'))return ()=>{};
  void entry.browser.then(browser=>browser.call({type:'request_reader',input:{language:document.documentElement.lang==='zh-CN'?'zh-CN':'en'}})).then(value=>{
