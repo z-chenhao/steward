@@ -118,6 +118,7 @@ const GuidanceOutputSchema = `{"type":"object","properties":{"description":{"typ
 const Defaults = "steward.schedule-defaults/1"
 
 type DefaultsResult struct {
+	MinBelow  int64  `json:"min_below,omitempty"`
 	Frequency string `json:"frequency"`
 	Date      string `json:"date"`
 	Clock     string `json:"clock"`
@@ -129,4 +130,4 @@ type DefaultsResult struct {
 }
 
 const DefaultsInputSchema = GuidanceInputSchema
-const DefaultsOutputSchema = `{"type":"object","properties":{"frequency":{"type":"string","enum":["once","daily","weekdays","weekly","monthly","custom"]},"date":{"type":"string","maxLength":10},"clock":{"type":"string","minLength":1,"maxLength":5},"timezone":{"type":"string","minLength":1,"maxLength":128},"cron":{"type":"string","maxLength":256},"weekday":{"type":"string","maxLength":2},"day":{"type":"string","maxLength":2},"enabled":{"type":"boolean"}},"required":["frequency","date","clock","timezone","cron","weekday","day","enabled"],"additionalProperties":false}`
+const DefaultsOutputSchema = `{"type":"object","properties":{"min_below":{"type":"integer","minimum":0,"maximum":1000000000000},"frequency":{"type":"string","enum":["once","daily","weekdays","weekly","monthly","custom"]},"date":{"type":"string","maxLength":10},"clock":{"type":"string","minLength":1,"maxLength":5},"timezone":{"type":"string","minLength":1,"maxLength":128},"cron":{"type":"string","maxLength":256},"weekday":{"type":"string","maxLength":2},"day":{"type":"string","maxLength":2},"enabled":{"type":"boolean"}},"required":["frequency","date","clock","timezone","cron","weekday","day","enabled"],"additionalProperties":false}`

@@ -500,9 +500,14 @@
     "zh_cn": "在新标签页打开"
   },
   {
-    "key": "Optional integer threshold. Leave blank for ordinary scheduling; zero is a valid threshold. Editing a schedule stops observations from older schedule versions from notifying.",
-    "en": "Optional integer threshold. Leave blank for ordinary scheduling; zero is a valid threshold. Editing a schedule stops observations from older schedule versions from notifying.",
-    "zh_cn": "可选的整数阈值；普通计划请留空，0 也是有效值。编辑计划后，旧版本计划的观测不再触发通知。"
+    "key": "Notify when the observed integer drops below this threshold. Enter 1 to detect zero. Leave blank for ordinary scheduling.",
+    "en": "Notify when the observed integer drops below this threshold. Enter 1 to detect zero. Leave blank for ordinary scheduling.",
+    "zh_cn": "观测到的整数降到阈值以下时通知。要在数值降到零时提醒，请填 1。普通计划请留空。"
+  },
+  {
+    "key": "Minimum threshold",
+    "en": "Minimum threshold",
+    "zh_cn": "阈值下限"
   },
   {
     "key": "Outcome unconfirmed",

@@ -109,10 +109,13 @@ type scheduleServiceFixture struct {
 	calls      int
 	err        error
 	restricted bool
+	minBelow   int64
 }
 
 func (f *scheduleServiceFixture) ScheduleDefaults(context.Context) (automation.EditorDefaults, error) {
-	return automation.LegacyEditorDefaults(), nil
+	v := automation.LegacyEditorDefaults()
+	v.MinBelow = f.minBelow
+	return v, nil
 }
 
 func (f *scheduleServiceFixture) Schedule(_ context.Context, ref string) (task.ScheduledWork, error) {
@@ -123,6 +126,33 @@ func (f *scheduleServiceFixture) ConfigureSchedule(_ context.Context, key string
 	f.q = q
 	f.key = key
 	return automation.OwnerReceipt{Ref: "automation:saved", Version: 8}, f.err
+}
+
+func TestScheduleThresholdShowsReachableMinimumAndKeepsRejectedDraft(t *testing.T) {
+	f := &scheduleServiceFixture{minBelow: 1, err: automation.ThresholdMinimumError{Minimum: 1}}
+	server := &Server{Core: &updatesCore{allowed: true, status: "idle"}, Tasks: workspaceReader{}, Schedules: f, WebWorkbench: currentWorkbenchReader(t)}
+	visit := func(method, path string, body url.Values) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(method, "http://127.0.0.1:8080"+path, strings.NewReader(body.Encode()))
+		req.RemoteAddr = "127.0.0.1:8000"
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		return w
+	}
+	newForm := visit("GET", "/tasks/schedules/new", nil)
+	if newForm.Code != 200 || !strings.Contains(newForm.Body.String(), `name="threshold" min="1"`) || !strings.Contains(newForm.Body.String(), "Enter 1 to detect zero") {
+		t.Fatal("new threshold guidance missing", newForm.Code)
+	}
+	q := scheduleValues()
+	w := visit("POST", "/schedule/configure", q)
+	for _, want := range []string{`class="technical-details" open`, `aria-invalid="true" aria-describedby="threshold-error"`, `id="threshold-error"`, q.Get("source_id"), q.Get("instruction")} {
+		if !strings.Contains(w.Body.String(), want) {
+			t.Fatalf("missing %q after rejected threshold (HTTP %d)", want, w.Code)
+		}
+	}
+	if w.Code != 422 || f.calls != 1 {
+		t.Fatal("wrong threshold rejection", w.Code, f.calls)
+	}
 }
 
 func TestScheduleFormsUseOwnerWriterAndPreserveConflictingDraft(t *testing.T) {

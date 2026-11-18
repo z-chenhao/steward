@@ -1,6 +1,7 @@
 package automation
 
 import (
+	"fmt"
 	"strings"
 	"unicode/utf8"
 )
@@ -37,6 +38,14 @@ type OwnerReceipt struct {
 	Ref     string
 	Version int64
 }
+
+// ThresholdMinimumError reports the creating method's smallest reachable threshold.
+type ThresholdMinimumError struct{ Minimum int64 }
+
+func (e ThresholdMinimumError) Error() string {
+	return fmt.Sprintf("below must be at least %d", e.Minimum)
+}
+func (e ThresholdMinimumError) Unwrap() error { return ErrInvalid }
 
 // ValidateShape preserves owner command bounds without interpreting calendar policy.
 func (q OwnerConfiguration) ValidateShape() error {
@@ -75,6 +84,7 @@ type SchedulePresentation struct {
 
 // EditorDefaults contains only existing draft fields, never identities or authority.
 type EditorDefaults struct {
+	MinBelow  int64  `json:"min_below,omitempty"`
 	Frequency string `json:"frequency"`
 	Date      string `json:"date"`
 	Clock     string `json:"clock"`
@@ -91,7 +101,7 @@ func (v EditorDefaults) Validate() error {
 	default:
 		return ErrInvalid
 	}
-	if len(v.Date) > 10 || v.Clock == "" || len(v.Clock) > 5 || v.Timezone == "" || len(v.Timezone) > 128 || len(v.Cron) > 256 || len(v.Weekday) > 2 || len(v.Day) > 2 {
+	if v.MinBelow < 0 || v.MinBelow > 1000000000000 || len(v.Date) > 10 || v.Clock == "" || len(v.Clock) > 5 || v.Timezone == "" || len(v.Timezone) > 128 || len(v.Cron) > 256 || len(v.Weekday) > 2 || len(v.Day) > 2 {
 		return ErrInvalid
 	}
 	return nil

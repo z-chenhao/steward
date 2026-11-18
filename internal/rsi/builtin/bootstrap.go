@@ -72,6 +72,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	traceWorkbench, traceActivity, traceLegacy := false, false, false
 	uiPlan, uiCards, uiTable, uiChart, uiForm := false, false, false, false, false
 	uiVersion := ""
+	scheduleVersion := ""
 	appsClient := false
 	appsInventory := false
 	codingChecks := false
@@ -86,6 +87,9 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "schedule" {
+			scheduleVersion = installed.Manifest.Version
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
@@ -390,7 +394,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	}
 	if d.Schedule != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, schedule.Next, schedule.LocalTime, schedule.Frequency, schedule.Projection, schedule.Display, schedule.InstructionLabel, schedule.Guidance, schedule.Defaults, schedule.Threshold)
-		policy.Cases = append(policy.Cases, scheduleCases()...)
+		policy.Cases = append(policy.Cases, scheduleCases(scheduleVersion)...)
 	}
 	if d.UI != "" {
 		cases, err := uiCases(d.UI, uiVersion, uiPlan, uiCards, uiTable, uiChart, uiForm)
