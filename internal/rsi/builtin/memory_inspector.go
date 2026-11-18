@@ -38,7 +38,7 @@ func MemoryInspectorCases(version, directory string) ([]rsi.Case, error) {
 		}
 		return string(raw), nil
 	}
-	const viewDigest = "sha256:a8251f555003ad373350beb9c5ff963a694554c6193e2b416b67dea1aecd4d53"
+	const viewDigest = "sha256:6c58a942eb2f771ee8741b2ca83aa394f3b0f8c676cdfc6684cb96b2ee98a507"
 	const copyDigest = "sha256:da5b35fb6a31d5d4baea529a631c9a1d692f8b5a91191c3e45786ac3160797a4"
 	view, err := read(contract.ViewFile, viewDigest)
 	if err != nil {

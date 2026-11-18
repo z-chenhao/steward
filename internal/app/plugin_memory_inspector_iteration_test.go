@@ -62,7 +62,7 @@ func memoryInspectorIteration(t *testing.T, original contract.Result) (string, c
 		if err != nil {
 			t.Fatal(err)
 		}
-		source, err := os.ReadFile(path)
+		source, err := os.ReadFile(filepath.Join("../../tests/fixtures/plugins/memory-inspector-original-v1", file+".txt"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +74,7 @@ func memoryInspectorIteration(t *testing.T, original contract.Result) (string, c
 			}
 			code = strings.Replace(code, needle, `Version: "1.1.0"`, 1)
 		} else {
-			for _, part := range []struct{ directive, name, value string }{{"view/memory.css", "memoryStylesheetSource", next.Stylesheet.Source}, {"view/copy.json", "memoryLocalizationSource", next.Localization.Source}, {"view/memory-worker.js", "memoryWorkerSource", next.Program.Source}} {
+			for _, part := range []struct{ directive, name, value string }{{"view/memory.html", "memoryViewSource", next.View.Source}, {"view/memory.css", "memoryStylesheetSource", next.Stylesheet.Source}, {"view/copy.json", "memoryLocalizationSource", next.Localization.Source}, {"view/memory-worker.js", "memoryWorkerSource", next.Program.Source}} {
 				needle := "//go:embed " + part.directive + "\nvar " + part.name + " string"
 				if strings.Count(code, needle) != 1 {
 					t.Fatal("original embedded source missing", part.name)
