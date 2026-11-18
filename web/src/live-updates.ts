@@ -58,7 +58,7 @@ function regionPatcher(ids:readonly string[],scope:ParentNode=document){
       child=old;
       const button=native.querySelector<HTMLButtonElement>('button[type=submit]');
       const next=incoming.querySelector<HTMLButtonElement>('button[type=submit]');
-      if(button&&next&&!native.dataset.submitting)button.disabled=next.disabled;
+      if(button&&next&&!native.dataset.submitting)button.disabled=next.disabled||native.dataset.feedbackAccepted==='true';
       const hint=native.querySelector<HTMLElement>('[data-feedback-model-needed]'),nextHint=incoming.querySelector<HTMLElement>('[data-feedback-model-needed]');
       if(hint&&nextHint)hint.hidden=nextHint.hidden;
      }
@@ -317,7 +317,7 @@ export function startLiveUpdates(){
   if(!form.reportValidity())return;
   const data=new URLSearchParams();
   for(const [key,value] of new FormData(form)){if(typeof value==='string')data.append(key,value)}
-  form.dataset.submitting='true';button.disabled=true;
+  form.dataset.submitting='true';button.disabled=true;answer.readOnly=true;
   if(status)status.textContent=t('Sending your response…');
   void(async()=>{
    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000);
@@ -336,7 +336,7 @@ export function startLiveUpdates(){
    }catch{
     delete form.dataset.feedbackDraftKept;keepFeedbackDraft(form,message);
    }finally{
-    clearTimeout(timeout);delete form.dataset.submitting;button.disabled=false;void refresh();
+    clearTimeout(timeout);delete form.dataset.submitting;const accepted=form.dataset.feedbackAccepted==='true';answer.readOnly=accepted;button.disabled=accepted;void refresh();
    }
   })();
  });

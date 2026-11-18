@@ -914,6 +914,7 @@
   "Diagram": "图表",
   "Diagram source": "图表源码",
   "Sent": "已发送",
+  "Could not save interactive answers. Your message is ready to retry.": "交互答案尚未保存，消息已保留，可重试发送。",
   "Retry sending": "重试发送",
   "Send not confirmed.": "发送尚未确认。",
   "This message is too large or invalid. Edit it before sending again.": "消息过大或格式无效，请修改后重新发送。",

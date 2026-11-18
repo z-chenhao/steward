@@ -45,7 +45,9 @@ export function enhanceComposer(messageAccepted?: (target:URL)=>void){
    pending=true;form.dataset.submitting='true';if(submit)submit.disabled=true;outgoingState(entry,'sending');
    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
    try{
-    await flushUIStates().catch(()=>{});
+    try{await flushUIStates(controller.signal)}catch{
+     outgoingState(entry,'state-failed',()=>void send());return;
+    }
     const response=await fetch('/message',{method:'POST',body:data,credentials:'same-origin',signal:controller.signal,headers:{Accept:'application/json'}});
     if([400,413,422].includes(response.status)){
      outgoingState(entry,'rejected',()=>{

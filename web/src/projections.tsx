@@ -103,6 +103,7 @@ for(const node of scope.querySelectorAll<HTMLElement>('[data-ui-spec]')){
     const fallback=node.dataset.uiFallback;
     const legacy=spec.components.some(c=>c.type==='table'||c.type==='progress'||c.type==='form');
     if(fallback===undefined)continue;
+    if(legacy&&node.querySelector('form[action="/ui/form"]'))continue;
     const actions:ToolAction[]=spec.components.flatMap(c=>{if(c.type!=='openintelligentui'||c.name!=='steward.action'||!c.widget_ref)return [];const p=c.props as {id:string;label:string;tool:string;arguments:Record<string,unknown>};return [{reference:c.widget_ref,...p}]});
     const groupRef=spec.components.flatMap(c=>(c.type==='widget'||c.type==='openintelligentui')&&c.widget_ref?[c.widget_ref]:[])[0]??'';
     const root=roots.get(node)??createRoot(node);roots.set(node,root);renderedSpecs.set(node,node.dataset.uiSpec??'');

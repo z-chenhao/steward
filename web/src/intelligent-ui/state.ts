@@ -9,7 +9,7 @@ const entries=new Map<string,Entry>();
 function entry(ref:string):Entry{let e=entries.get(ref);if(!e){e={snapshot:{state:{},model_context:{},version:0,ready:!ref,error:''},listeners:new Set(),loaded:!ref,pending:{},context:{},dirty:false};entries.set(ref,e)}return e}
 const emit=(e:Entry)=>{for(const listener of e.listeners)listener()};
 async function load(ref:string,e:Entry){
- if(e.loaded)return;e.loading??=(async()=>{try{const data=await readSavedView(ref);e.context={...data.model_context,...e.context};e.snapshot={...data,state:{...data.state,...e.pending},model_context:e.context,ready:true,error:''};e.loaded=true;emit(e);if(e.dirty)schedule(ref,e)}catch{e.snapshot={...e.snapshot,ready:true,error:'Saved view unavailable. Reload to retry.'};emit(e)}})();await e.loading;
+ if(e.loaded)return;e.loading??=(async()=>{try{const data=await readSavedView(ref);e.context={...data.model_context,...e.context};e.snapshot={...data,state:{...data.state,...e.pending},model_context:e.context,ready:true,error:''};e.loaded=true;emit(e);if(e.dirty)schedule(ref,e)}catch{e.snapshot={...e.snapshot,ready:true,error:'Saved view unavailable. Reload to retry.'};emit(e)}})();const loading=e.loading;try{await loading}finally{if(e.loading===loading)e.loading=undefined}
 }
 function schedule(ref:string,e:Entry){if(!ref)return;clearTimeout(e.timer);e.timer=window.setTimeout(()=>void flush(ref,e).catch(()=>{}),150)}
 async function flush(ref:string,e:Entry):Promise<void>{
@@ -22,7 +22,16 @@ export function setUIState(ref:string,patch:Data,context:Data={}){
  const e=entry(ref);const next={...e.snapshot.state,...patch},nextContext={...e.snapshot.model_context,...context};if(JSON.stringify(next)===JSON.stringify(e.snapshot.state)&&JSON.stringify(nextContext)===JSON.stringify(e.snapshot.model_context))return;e.pending={...e.pending,...patch};e.context={...e.snapshot.model_context,...context};e.dirty=true;e.snapshot={...e.snapshot,state:{...e.snapshot.state,...patch},model_context:e.context,error:''};emit(e);schedule(ref,e);
 }
 export async function getUIState(ref:string){const e=entry(ref);await load(ref,e);return e.snapshot}
-export async function flushUIStates(){const detail:{pending:Promise<void>[]}={pending:[]};window.dispatchEvent(new CustomEvent('ui-state-flush',{detail}));await Promise.allSettled(detail.pending);await Promise.all([...entries].filter(([ref,e])=>ref&&e.dirty).map(([ref,e])=>flush(ref,e)))}
+async function persistUIStates(){const detail:{pending:Promise<void>[]}={pending:[]};window.dispatchEvent(new CustomEvent('ui-state-flush',{detail}));await Promise.all(detail.pending);await Promise.all([...entries].filter(([ref,e])=>ref&&(e.dirty||e.saving)).map(([ref,e])=>flush(ref,e)))}
+// The caller may stop waiting for shared saves. Their own transport deadlines
+// still allow an accepted version to settle before any subsequent retry.
+export async function flushUIStates(signal?:AbortSignal){
+ if(!signal)return persistUIStates();
+ signal.throwIfAborted();
+ let stop:()=>void;
+ const cancelled=new Promise<never>((_,reject)=>{stop=()=>reject(signal.reason);signal.addEventListener('abort',stop,{once:true})});
+ try{await Promise.race([persistUIStates(),cancelled])}finally{signal.removeEventListener('abort',stop!)}
+}
 export function useUIState<T extends Data>(ref:string,defaults:T,describe?:(state:T)=>Data){
  const e=entry(ref),describeRef=useRef(describe);describeRef.current=describe;
  const subscribe=useCallback((listener:()=>void)=>{e.listeners.add(listener);void load(ref,e);return()=>{e.listeners.delete(listener)}},[e,ref]);

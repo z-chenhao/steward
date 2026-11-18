@@ -6,7 +6,7 @@ import type {SavedView} from './state';
 import type {ActionReceipt} from './actions';
 
 export async function readSavedView(ref:string):Promise<SavedView>{
- const result=await fetch('/api/ui/state?ref='+encodeURIComponent(ref));
+ const result=await fetch('/api/ui/state?ref='+encodeURIComponent(ref),{signal:AbortSignal.timeout(10000)});
  if(!result.ok)throw Error('Saved view unavailable.');
  return result.json();
 }
@@ -35,7 +35,7 @@ export async function readCardsContexts(ref:string,signal:AbortSignal):Promise<C
  });
 }
 export async function saveSavedView(ref:string,view:SavedView):Promise<SavedView>{
- const result=await fetch('/api/ui/state',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({ref,version:view.version,state:view.state,model_context:view.model_context}),keepalive:true});
+ const result=await fetch('/api/ui/state',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({ref,version:view.version,state:view.state,model_context:view.model_context}),keepalive:true,signal:AbortSignal.timeout(10000)});
  if(!result.ok)throw Error(result.status===409?'Updated in another window. Reload to continue.':'Changes could not be saved. Retry.');
  return result.json();
 }
