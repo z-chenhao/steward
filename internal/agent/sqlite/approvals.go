@@ -60,30 +60,53 @@ func (r *Runs) Approvals(ctx context.Context) ([]interaction.Approval, error) {
 // ApprovalView is the pure Web projection. Expiry is shown without recovering
 // Runs, enqueueing events, or changing a decision from a browsing request.
 func (r *Runs) ApprovalView(ctx context.Context) ([]interaction.Approval, error) {
-	return r.approvalView(ctx, false)
+	return r.approvalView(ctx, "", false, 0)
 }
 
 // PendingApprovals is bounded for the attention surface; history inspection
 // retains the existing ApprovalView contract.
 func (r *Runs) PendingApprovals(ctx context.Context) ([]interaction.Approval, error) {
-	return r.approvalView(ctx, true)
+	return r.approvalView(ctx, "[]", true, 51)
 }
 
-func (r *Runs) approvalView(ctx context.Context, pendingOnly bool) ([]interaction.Approval, error) {
+// PageApprovals projects only authorized, page-linked decisions and optionally
+// all remaining pending actions required by Chat.
+func (r *Runs) PageApprovals(ctx context.Context, ids []string, includePending bool) ([]interaction.Approval, error) {
+	raw, err := json.Marshal(ids)
+	if err != nil {
+		return nil, err
+	}
+	return r.approvalView(ctx, string(raw), includePending, 0)
+}
+func (r *Runs) approvalView(ctx context.Context, ids string, includePending bool, limit int) ([]interaction.Approval, error) {
+	var predicate string
+	args := []any{sql.Named("now", r.approvalTime().UnixMicro())}
+	if ids != "" {
+		predicate = "a.approval_id IN (SELECT value FROM json_each(:ids) WHERE type='text')"
+		if includePending {
+			predicate = "(" + predicate + " OR a.status='pending')"
+		}
+		args = append(args, sql.Named("ids", ids))
+	}
+	scoped := ""
+	if predicate != "" {
+		scoped = " AND " + predicate
+	}
 	query := `SELECT approval_id,tool_name,arguments_json,frozen_arguments_hash,status,expires_at,action_parameters FROM (
  SELECT a.approval_id,i.tool_name,i.arguments_json,a.frozen_arguments_hash,
- CASE WHEN a.status IN ('pending','approved') AND a.expires_at<=? AND i.status IN ('queued','waiting') AND i.attempt_count=0 THEN 'expired' ELSE a.status END status,
- a.expires_at,a.created_at,coalesce(p.plan_json,'') action_parameters FROM approval a JOIN tool_invocation i USING(invocation_id) LEFT JOIN computer_action_plan p ON p.invocation_id=i.invocation_id AND p.request_hash=i.request_hash WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)
- UNION ALL SELECT approval_id,'account_spend',arguments_json,frozen_hash,status,0,created_at,'' FROM spend_approval WHERE scope=(SELECT agent_id FROM agent_config WHERE singleton=1)
- )`
-	if pendingOnly {
-		query += " WHERE status='pending'"
+ CASE WHEN a.status IN ('pending','approved') AND a.expires_at<=:now AND i.status IN ('queued','waiting') AND i.attempt_count=0 THEN 'expired' ELSE a.status END status,
+ a.expires_at,a.created_at,coalesce(p.plan_json,'') action_parameters FROM approval a JOIN tool_invocation i USING(invocation_id) LEFT JOIN computer_action_plan p ON p.invocation_id=i.invocation_id AND p.request_hash=i.request_hash WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)` + scoped + `
+ UNION ALL SELECT approval_id,'account_spend',arguments_json,frozen_hash,status,0,created_at,'' FROM spend_approval a WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)` + scoped + `
+ ) a`
+	if includePending {
+		query += " WHERE " + predicate
 	}
 	query += " ORDER BY created_at,approval_id"
-	if pendingOnly {
-		query += " LIMIT 51"
+	if limit > 0 {
+		query += " LIMIT :limit"
+		args = append(args, sql.Named("limit", limit))
 	}
-	rows, err := r.host.db.QueryContext(ctx, query, r.approvalTime().UnixMicro())
+	rows, err := r.host.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, agent.ErrStorage
 	}

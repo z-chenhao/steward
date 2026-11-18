@@ -27,12 +27,8 @@ func (s *Server) showMessage(ctx context.Context, m conversation.Message, approv
 	}
 	// Match Host-authored notification identity, never strip arbitrary user text
 	// by regex or rewrite the durable Conversation/frozen delivery projection.
-	if m.Source == "security" {
-		id, ok := strings.CutPrefix(m.MessageID, "approval:")
-		if !ok {
-			id, ok = strings.CutPrefix(m.MessageID, "spend:")
-		}
-		if a, found := approvals[id]; ok && found {
+	if id, ok := messageApprovalID(m); ok {
+		if a, found := approvals[id]; found {
 			v := approvalFor(a)
 			out.Approval = &v
 			return out, nil
@@ -75,8 +71,36 @@ func (s *Server) showMessage(ctx context.Context, m conversation.Message, approv
 	out.Projection = shownProjection{HTML: ui.HTMLWithFormDisplays(clientRaw, fallback, grouped.FormDisplays), Spec: string(clientRaw), Fallback: fallback}
 	return out, nil
 }
+func messageApprovalID(m conversation.Message) (string, bool) {
+	if m.Source != "security" {
+		return "", false
+	}
+	if id, ok := strings.CutPrefix(m.MessageID, "approval:"); ok {
+		return id, true
+	}
+	return strings.CutPrefix(m.MessageID, "spend:")
+}
+func (s *Server) pageApprovals(ctx context.Context, ids []string, includePending bool) ([]interaction.Approval, error) {
+	if reader, ok := s.Core.(interface {
+		PageApprovals(context.Context, []string, bool) ([]interaction.Approval, error)
+	}); ok {
+		return reader.PageApprovals(ctx, ids, includePending)
+	}
+	return s.Core.WebApprovals(ctx)
+}
+
 func (s *Server) loadConversation(ctx context.Context, p *page) error {
-	approvals, err := s.Core.WebApprovals(ctx)
+	messages, err := s.Core.Conversation(ctx, p.Cursor)
+	if err != nil {
+		return err
+	}
+	var ids []string
+	for _, m := range messages.Messages {
+		if id, ok := messageApprovalID(m); ok {
+			ids = append(ids, id)
+		}
+	}
+	approvals, err := s.pageApprovals(ctx, ids, true)
 	if err != nil {
 		return err
 	}
@@ -89,10 +113,6 @@ func (s *Server) loadConversation(ctx context.Context, p *page) error {
 				p.FirstPending = a.ID
 			}
 		}
-	}
-	messages, err := s.Core.Conversation(ctx, p.Cursor)
-	if err != nil {
-		return err
 	}
 	p.Before = messages.Before
 	shown := map[string]bool{}

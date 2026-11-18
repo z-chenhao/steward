@@ -230,3 +230,7 @@ func (a *App) Conversation(ctx context.Context, before int64) (conversation.Page
 func (a *App) WebApprovals(ctx context.Context) ([]interaction.Approval, error) {
 	return a.runtimeRuns().ApprovalView(ctx)
 }
+
+func (a *App) PageApprovals(ctx context.Context, ids []string, includePending bool) ([]interaction.Approval, error) {
+	return a.runtimeRuns().PageApprovals(ctx, ids, includePending)
+}

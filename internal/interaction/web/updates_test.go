@@ -191,3 +191,33 @@ func TestLiveProgressAndSettingsKeepPageQueryBoundaries(t *testing.T) {
 		}
 	}
 }
+
+type scopedApprovalsCore struct {
+	*updatesCore
+	ids []string
+}
+
+func (c *scopedApprovalsCore) WebApprovals(context.Context) ([]interaction.Approval, error) {
+	return nil, errors.New("unbounded history requested")
+}
+func (c *scopedApprovalsCore) PageApprovals(_ context.Context, ids []string, includePending bool) ([]interaction.Approval, error) {
+	c.ids = ids
+	if !includePending {
+		return nil, errors.New("missing pending actions")
+	}
+	return []interaction.Approval{{ID: "visible", Status: "approved"}, {ID: "other", Status: "pending"}}, nil
+}
+func TestChatRequestsOnlyHostAuthoredApprovalIDs(t *testing.T) {
+	c := &scopedApprovalsCore{updatesCore: &updatesCore{messages: []conversation.Message{
+		{MessageID: "approval:visible", Source: "security", Role: "assistant", Sequence: 1},
+		{MessageID: "approval:forged", Source: "web", Role: "user", Sequence: 2},
+	}}}
+	s := &Server{Core: c}
+	p := page{}
+	if err := s.loadConversation(context.Background(), &p); err != nil {
+		t.Fatal(err)
+	}
+	if len(c.ids) != 1 || c.ids[0] != "visible" || p.Messages[0].Approval == nil || p.PendingCount != 1 || len(p.Approvals) != 1 {
+		t.Fatal(c.ids, p.Messages, p.Approvals)
+	}
+}
