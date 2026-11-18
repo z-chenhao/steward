@@ -18,7 +18,7 @@ from runner import source_state
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from prepare_coding_image import prepare, stop, snapshot_source
+from prepare_coding_image import check_output_path, prepare, stop, snapshot_source
 
 
 def verify_preparation_cancellation(evidence, cache, socket, docker):
@@ -81,6 +81,8 @@ def main():
     parser.add_argument('--cache', type=Path, default=ROOT / 'evidence/coding-image-inputs')
     args = parser.parse_args()
     args.evidence = args.evidence.resolve()
+    check_output_path(args.evidence)
+    check_output_path(args.cache)
     args.evidence.mkdir(parents=True, exist_ok=False)
     source = source_state()
     report = dict(outcome='failed', source=source)
