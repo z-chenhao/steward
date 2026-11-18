@@ -18,6 +18,7 @@ import threading
 from provider_endpoint import Endpoint
 from verify_capabilities import CapabilityHarness
 from verify_main import require
+import merchant_trial
 
 
 class MCPHarness(CapabilityHarness):
@@ -140,6 +141,7 @@ def run(binary):
             'llm': dict(provider_bridge_command=node, provider_bridge_script=str(repo / 'provider-bridge/bridge.mjs'),
                         provider_bridge_version='pi-ai-1.3.0-v1'),
             'javascript': dict(command=node, script=str(repo / 'runtime/javascript/src/sidecar.mjs'))}
+        config['mcp'].append(merchant_trial.configure(root, repo))
         metadata = dict(name='MCP workload', provider_kind='openai_compatible', endpoint=endpoint,
                         wire_api='openai_completions', model_id='fixture-model', context_window=65536,
                         max_output_tokens=4096, compatibility=dict(tool_result_format='openai'),
@@ -158,6 +160,8 @@ def run(binary):
                      'steward.apps-logos', 'steward.apps-interface', 'steward.github-pr-followup','steward.artifact-workbench'}.issubset(packages),
                     'complete default MCP composition was not verified/selected')
             report['default_packages'] = sorted(packages)
+            merchant_trial.verify(h, state, root)
+            report['checks'].append(dict(merchant_ceiling_and_query_only_recovery=True))
             report['checks'].append(dict(first_run=read(h, 'mcp-default-first', 'ORIGINAL_PEER_FIRST')))
             # The first dependent action after a new process must use the old
             # graph, with no select/update/reload fixture repair.
