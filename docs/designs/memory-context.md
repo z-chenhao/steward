@@ -6,6 +6,10 @@
 
 ## 默认本地搜索
 
+SQLite 候选搜索、后台记忆匹配和召回插件的摘录排序复用内部词法实现。分词、中文二元组和混合语言锚定来自同一处，召回插件仍持有排序配方，Host 仍绑定候选来源和授权。 [词法实现](../../internal/recall/lexical/relevance.go)
+
+文档导航索引和查询共用分块、去重与有序收集。索引取正文开头 4096 字符，最多写入 96 项、1024 字节。查询按输入末尾 4096 字节选词，最多 256 项。 [导航词收集](../../internal/memory/navigation.go)
+
 安装版由能力设置服务准备 SecretStore 密钥，默认以 `SearchLocal` 查询 Memory 与 Conversation 的 SQLite 文本索引，不依赖外部 embedding。该路径不写向量配置，后续可添加自定义 embedding。加密记忆通过现有 scoped 内存工作索引检索；凭据不可用时不向 Main 自动装配无法解密的记忆，Conversation-only 资源身份与完整本地搜索分开冻结。显式部署仍可保持旧的未配置行为。默认资源的持久引用、开关与迁移边界见 [能力设置方案](capability-setup.md#自动默认资源)。
 
 

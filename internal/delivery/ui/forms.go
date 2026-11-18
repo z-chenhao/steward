@@ -3,14 +3,12 @@ package ui
 import (
 	"encoding/json"
 	"html/template"
-	"regexp"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/conversation"
+	"github.com/z-chenhao/assistant/internal/delivery/uidocv1"
 )
-
-var fieldName = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_]{0,63}$`)
 
 func validFields(fields []Field) bool {
 	if len(fields) == 0 || len(fields) > 16 {
@@ -18,7 +16,7 @@ func validFields(fields []Field) bool {
 	}
 	seen := map[string]bool{}
 	for _, f := range fields {
-		if !fieldName.MatchString(f.Name) || seen[f.Name] || strings.TrimSpace(f.Label) == "" || len(f.Label) > 256 || len(f.Value) > 4096 {
+		if !uidocv1.ValidFieldName(f.Name) || seen[f.Name] || strings.TrimSpace(f.Label) == "" || len(f.Label) > 256 || len(f.Value) > 4096 {
 			return false
 		}
 		seen[f.Name] = true

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type codePRHandoff struct {
+	source   string
 	cfg      github.Config
 	expected string
 	binding  codePRBinding
@@ -27,6 +29,19 @@ type codePRBinding struct {
 // SaveCodePRReport reads the persisted observer state, then uses the existing
 // report and Artifact commit path. The configuration is trusted owner input.
 func (s *Store) SaveCodePRReport(ctx context.Context, ref string, cfg github.Config, expected string) (artifact.Descriptor, error) {
+	return s.saveCodePRReport(ctx, ref, cfg, expected, "")
+}
+
+// SaveCodePRExactReport requires the observed commit's Git objects to exist in
+// the task's configured source repository.
+func (s *Store) SaveCodePRExactReport(ctx context.Context, ref string, cfg github.Config, expected, source string) (artifact.Descriptor, error) {
+	if source == "" {
+		return artifact.Descriptor{}, coding.ErrInvalid
+	}
+	return s.saveCodePRReport(ctx, ref, cfg, expected, source)
+}
+
+func (s *Store) saveCodePRReport(ctx context.Context, ref string, cfg github.Config, expected, source string) (artifact.Descriptor, error) {
 	if cfg.Validate() != nil || !github.ValidHeadSHA(expected) {
 		return artifact.Descriptor{}, coding.ErrInvalid
 	}
@@ -35,7 +50,19 @@ func (s *Store) SaveCodePRReport(ctx context.Context, ref string, cfg github.Con
 	if err != nil {
 		return artifact.Descriptor{}, err
 	}
-	return s.saveCodeReport(ctx, ref, &codePRHandoff{cfg: cfg, expected: expected, binding: binding})
+	if source != "" {
+		var originalSource string
+		if err = s.db.QueryRowContext(ctx, `SELECT source_path FROM task_code_environment WHERE task_id=?`, binding.taskID).Scan(&originalSource); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return artifact.Descriptor{}, agent.ErrNotFound
+			}
+			return artifact.Descriptor{}, agent.ErrStorage
+		}
+		if source != originalSource {
+			return artifact.Descriptor{}, agent.ErrConflict
+		}
+	}
+	return s.saveCodeReport(ctx, ref, &codePRHandoff{cfg: cfg, expected: expected, binding: binding, source: source})
 }
 
 func readCodePRBinding(ctx context.Context, query func(context.Context, string, ...any) *sql.Row, ref string, cfg github.Config, expected string) (codePRBinding, error) {

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "name": "真实数据库与浏览器验证项目",
+  "prepare": {"command": "mkdir -p .tmp .state/browser .evidence; cp -R /opt/steward/deps/guest-browser/node_modules ./node_modules", "timeout_seconds": 30},
+  "start": {"command": "while true; do node server.mjs; done", "timeout_seconds": 90},
+  "doctor": {"command": "node -e 'const end=Date.now()+5000;for(;;){try{const r=await fetch(\"http://127.0.0.1:\"+process.env.PORT+\"/healthz\");if(r.ok)break}catch{}if(Date.now()>end)process.exit(1);await new Promise(r=>setTimeout(r,20))}'", "timeout_seconds": 10},
+  "checks": [{"name": "state", "requirement": "通过真实点击保存的记录在原服务重启后立即保留，并在持久浏览器重新打开后保留；其他候选的数据与浏览器状态不可见。", "command": "node verify.mjs candidate-alpha", "timeout_seconds": 45, "evidence": [".evidence/flow.png", ".evidence/assertions.json"]}],
+  "cleanup": {"command": "true", "timeout_seconds": 5}
+}

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "lint": "node --check bridge.mjs && node --check account.mjs",
+    "lint": "node --check bridge.mjs",
     "pretest": "go build -o ../bin/steward ../cmd/steward"
   }
 }

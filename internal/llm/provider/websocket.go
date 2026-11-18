@@ -28,32 +28,18 @@ type websocketSession struct {
 }
 
 func (c *Client) CloseSession(id string) {
-	c.mu.Lock()
-	entries := []*websocketSession{}
-	for key, entry := range c.sockets {
-		if strings.HasPrefix(key, id+"\x00") {
-			delete(c.sockets, key)
-			entry.closed = true
-			if entry.cancel != nil {
-				entry.cancel()
-			}
-			entries = append(entries, entry)
-		}
-	}
-	c.mu.Unlock()
-	for _, entry := range entries {
-		<-entry.token
-		if entry.conn != nil {
-			entry.conn.Close()
-			entry.conn = nil
-		}
-		entry.token <- struct{}{}
-	}
+	c.closeSessions(id + "\x00")
 }
 func (c *Client) Close() {
+	c.closeSessions("")
+}
+func (c *Client) closeSessions(prefix string) {
 	c.mu.Lock()
 	entries := []*websocketSession{}
 	for key, entry := range c.sockets {
+		if !strings.HasPrefix(key, prefix) {
+			continue
+		}
 		delete(c.sockets, key)
 		entry.closed = true
 		if entry.cancel != nil {
@@ -75,11 +61,6 @@ func (c *Client) websocket(ctx context.Context, m Model, wire Request, o Options
 	state := newStreamState(m, emit)
 	if m.API != CodexResponses && m.API != OpenAIResponses && m.API != AzureResponses {
 		return state.message, false, ErrIncompatible
-	}
-	if o.Timeout > 0 {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, o.Timeout)
-		defer cancel()
 	}
 	cache := (o.Transport == "websocket-cached" || o.Transport == "auto") && o.SessionID != ""
 	headers := wire.Headers.Clone()
@@ -130,15 +111,7 @@ func (c *Client) websocket(ctx context.Context, m Model, wire Request, o Options
 		}
 	}()
 	if entry.conn == nil {
-		client := o.HTTPClient
-		if client == nil {
-			client = c.HTTPClient
-		}
-		if client == nil {
-			client = &http.Client{}
-		}
-		copyClient := *client
-		copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+		client := c.directHTTPClient(o.HTTPClient)
 		handshakeCtx, handshakeCancel := context.WithCancel(work)
 		defer handshakeCancel()
 		timeout := o.HeaderTimeout
@@ -162,7 +135,7 @@ func (c *Client) websocket(ctx context.Context, m Model, wire Request, o Options
 		req.Header.Set("Upgrade", "websocket")
 		req.Header.Set("Sec-WebSocket-Version", "13")
 		req.Header.Set("Sec-WebSocket-Key", wsKey)
-		response, err := copyClient.Do(req)
+		response, err := client.Do(req)
 		timer.Stop()
 		if err != nil {
 			if ctx.Err() != nil {

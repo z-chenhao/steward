@@ -1,3 +1,4 @@
+import {connectBrowserProgram} from './browser-program';
 import type {AppInterfacePresentation} from './app-interface';
 
 // Apps-private transport. Only display facts cross the opaque frame boundary.
@@ -7,61 +8,20 @@ export interface AppsBrowser {
   call(value: Record<string, unknown>): Promise<Record<string, unknown>>;
   close(): void;
 }
-export function connectAppsBrowser(revision: string, presentation: AppInterfacePresentation): Promise<AppsBrowser> {
-  return new Promise((resolve, reject) => {
-    const frame = document.createElement('iframe');
-    frame.hidden = true;
-    frame.setAttribute('sandbox', 'allow-scripts');
-    frame.title = 'Apps isolated presentation';
-    let port: MessagePort | undefined, sequence = 0, stopped = false, initialized = false;
-    const pending = new Map<number, {resolve: (v: Record<string, unknown>) => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout>}>();
-    const unavailable = () => new Error('Apps presentation program unavailable');
-    const close = () => {
-      if (stopped) return;
-      stopped = true;
-      clearTimeout(startup);
-      window.removeEventListener('message', loaded);
-      window.removeEventListener('pagehide', close);
-      port?.close();frame.remove();
-      for (const entry of pending.values()) {clearTimeout(entry.timer);entry.reject(unavailable())}
-      pending.clear();
-      if (!initialized) reject(unavailable());
-    };
-    const call = (value: Record<string, unknown>): Promise<Record<string, unknown>> => new Promise((done, failed) => {
-      if (stopped || !port || pending.size >= 32) {failed(unavailable());close();return}
-      const seq = ++sequence;
-      const timer = setTimeout(close, value.type === 'init' ? 10000 : 2000);
-      pending.set(seq, {resolve: done, reject: failed, timer});
-      try {port.postMessage({...value, seq})} catch {close()}
-    });
-    const loaded = (event: MessageEvent) => {
-      if (stopped || port || event.source !== frame.contentWindow || event.origin !== 'null' || event.data?.channel !== 'steward-apps-browser' || event.data.type !== 'loaded') return;
-      const channel = new MessageChannel();port = channel.port1;
-      port.onmessageerror = close;
-      port.onmessage = event => {
-        const value = event.data;
-        if (!value || typeof value !== 'object' || Array.isArray(value)) {close();return}
-        if (value.type === 'connected' && !initialized && sequence === 0) {
-          void call({type: 'init', presentation}).then(reply => {
-            if (reply.type !== 'ready' || typeof reply.category_auto_submit !== 'boolean' || stopped) {close();return}
-            initialized = true;clearTimeout(startup);resolve({call, close, categoryAutoSubmit: reply.category_auto_submit});
-          }).catch(close);
-          return;
-        }
-        const entry = pending.get(value.seq);
-        if (!entry) {close();return}
-        clearTimeout(entry.timer);pending.delete(value.seq);entry.resolve(value);
-      };
-      port.start();
-      frame.contentWindow!.postMessage({channel: 'steward-apps-browser', type: 'connect'}, '*', [channel.port2]);
-      window.removeEventListener('message', loaded);
-    };
-    const startup = setTimeout(close, 15000);
-    window.addEventListener('message', loaded);
-    window.addEventListener('pagehide', close);
-    frame.src = '/api/apps/browser?interface_revision=' + encodeURIComponent(revision);
-    document.body.append(frame);
+export async function connectAppsBrowser(revision: string, presentation: AppInterfacePresentation): Promise<AppsBrowser> {
+  const errorMessage = 'Apps presentation program unavailable';
+  const {call, close, initial: categoryAutoSubmit} = await connectBrowserProgram<Record<string, unknown>, boolean>({
+    src: '/api/apps/browser?interface_revision=' + encodeURIComponent(revision),
+    title: 'Apps isolated presentation',
+    channel: 'steward-apps-browser',
+    errorMessage,
+    async initialize(call) {
+      const reply = await call({type: 'init', presentation});
+      if (reply.type !== 'ready' || typeof reply.category_auto_submit !== 'boolean') throw new Error(errorMessage);
+      return reply.category_auto_submit;
+    },
   });
+  return {call, close, categoryAutoSubmit};
 }
 
 export interface AppsDisplayFacts {

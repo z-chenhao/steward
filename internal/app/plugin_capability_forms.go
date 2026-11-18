@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/contract"
-	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/legacyv1"
+	"github.com/z-chenhao/assistant/internal/plugin/capabilityforms/v1"
 	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"unicode/utf8"
@@ -17,7 +17,7 @@ func (a *App) readCapabilityForm(ctx context.Context, in contract.Request) (cont
 		}
 	}
 	if a.store == nil {
-		return legacyv1.Project(in), nil
+		return v1.Project(in), nil
 	}
 	return a.readCapabilityFormWithHost(ctx, a.Plugins(), in)
 }
@@ -27,7 +27,7 @@ func (a *App) readCapabilityFormWithHost(ctx context.Context, host rsi.Host, in 
 		return contract.Result{}, err
 	}
 	if !managed {
-		return legacyv1.Project(in), nil
+		return v1.Project(in), nil
 	}
 	if revision == "" {
 		return contract.Result{}, rsi.ErrNotFound
@@ -90,7 +90,7 @@ func (a *App) readCapabilityPresentation(ctx context.Context, facts contract.Pre
 		}
 	}
 	if a.store == nil {
-		return legacyv1.ProjectPresentation(facts), nil
+		return v1.ProjectPresentation(facts), nil
 	}
 	return a.readCapabilityPresentationWithHost(ctx, a.Plugins(), facts)
 }
@@ -100,7 +100,7 @@ func (a *App) readCapabilityPresentationWithHost(ctx context.Context, host rsi.H
 		return contract.Presentation{}, err
 	}
 	if !managed {
-		return legacyv1.ProjectPresentation(facts), nil
+		return v1.ProjectPresentation(facts), nil
 	}
 	if revision == "" {
 		return contract.Presentation{}, rsi.ErrNotFound

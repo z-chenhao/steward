@@ -1,7 +1,11 @@
 package sqlite
 
 // Newer fixture layers must be removed by every older reconstructed schema.
-const removeReferenceRatesFixtureSchema = `DROP TABLE IF EXISTS generation_reference_rates; DROP TRIGGER IF EXISTS model_generation_reference_rates_marker_immutable; ALTER TABLE model_generation DROP COLUMN reference_rates_managed; `
+const removeCodingProjectFixtureSchema = `DROP TABLE IF EXISTS coding_project_resource; DROP TABLE IF EXISTS coding_project_plan; DROP TABLE IF EXISTS coding_task_environment; `
+
+const removeCodingCheckFixtureSchema = removeCodingProjectFixtureSchema + `DROP TABLE IF EXISTS coding_check_plan; `
+
+const removeReferenceRatesFixtureSchema = removeCodingCheckFixtureSchema + `DROP TABLE IF EXISTS generation_reference_rates; DROP TRIGGER IF EXISTS model_generation_reference_rates_marker_immutable; ALTER TABLE model_generation DROP COLUMN reference_rates_managed; `
 
 const removeArtifactRecipeFixtureSchema = removeReferenceRatesFixtureSchema + `DROP TRIGGER IF EXISTS automation_task_label_immutable; ALTER TABLE automation_fire DROP COLUMN task_title; ALTER TABLE automation_fire DROP COLUMN task_label_graph; ALTER TABLE automation_fire DROP COLUMN task_label_managed; DROP TRIGGER IF EXISTS automation_presentation_version; ALTER TABLE automation DROP COLUMN presentation_json; DROP TRIGGER IF EXISTS automation_owner_local_version; ALTER TABLE automation DROP COLUMN owner_local_json; DROP TRIGGER IF EXISTS automation_owner_frequency_version; ALTER TABLE automation DROP COLUMN owner_frequency_json; DROP TRIGGER IF EXISTS automation_fire_method_immutable; ALTER TABLE automation_fire DROP COLUMN method_graph; DROP TRIGGER IF EXISTS automation_method_graph_version; ALTER TABLE automation DROP COLUMN method_graph; DROP TABLE IF EXISTS ui_form_view_snapshot; DROP TABLE IF EXISTS ui_chart_view_snapshot; DROP TABLE IF EXISTS ui_table_view_snapshot; DROP TABLE IF EXISTS ui_cards_view_snapshot; DROP TABLE IF EXISTS ui_plan_view_snapshot; DROP TABLE IF EXISTS ui_form_answer; DROP TRIGGER IF EXISTS artifact_semantic_immutable; ALTER TABLE artifact DROP COLUMN semantic_kind; ALTER TABLE artifact DROP COLUMN method_graph; DROP TABLE IF EXISTS legacy_artifact_owner; DROP TABLE IF EXISTS run_artifact_recipe; DROP TABLE IF EXISTS run_artifact_request; `
 

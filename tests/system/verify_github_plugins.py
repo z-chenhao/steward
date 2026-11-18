@@ -6,6 +6,7 @@ test certificate. TLS verification stays enabled. No product endpoint override,
 real PAT, external source, model quality score or recovery-side fixture repair.
 """
 import argparse
+from owner_inventory import check_default_owner
 from contextlib import closing, contextmanager
 import hashlib
 import io
@@ -166,8 +167,7 @@ def fresh_poll(binary, root, proxy, cert, source):
         with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT'])/'state.db')) as db, db:
             db.execute('BEGIN')
             graph, policy = owner_state(h, selected)
-            require(len(graph['bindings']) == 40 and len(policy['cases']) == 387,
-                    'source first poll did not use complete40 and independent387 cases')
+            owner_cases = check_default_owner(graph, policy)
             row = db.execute('SELECT content_json,source_method_json FROM github_observation').fetchone()
             require(row and json.loads(row[1])['graph_revision'] == selected['graph_revision'],
                     'actual stock poll bypassed selected source method')
@@ -192,7 +192,7 @@ def fresh_poll(binary, root, proxy, cert, source):
         failed = h.command('github', 'poll', ok=False)
         require(failed.returncode != 0 and len(source['calls']) == before,
                 'explicit watch resume restored deactivated policy')
-        return dict(complete_default40=True, independent_owner_cases=387, no_model_or_runtime_setup=True,
+        return dict(complete_default40=True, independent_owner_cases=owner_cases, no_model_or_runtime_setup=True,
             readonly_control_no_selection=True, cold_original_source_and_recipe=True,
             disabled_no_native_http=True, cleanup=True), graph, policy
     finally:
@@ -213,8 +213,8 @@ def portable_startup(binary, root):
                 'source-only startup required unrelated runtime or concealed credential failure')
         selected = h.command('plugin', 'status')
         graph, policy = owner_state(h, selected)
-        require(selected['epoch'] == 1 and len(graph['bindings']) == 40 and len(policy['cases']) == 387,
-                'stock source bootstrap skipped complete40 or independent387 cases')
+        require(selected['epoch'] == 1, 'stock source bootstrap did not select default graph')
+        owner_cases = check_default_owner(graph, policy)
         require(h.command('status')['readiness'] == 'setup_required', 'source bootstrap activated a model')
         h.command('plugin', 'deactivate', text=json.dumps(dict(operation_id='source-startup-disable',
             expected_graph_revision=selected['graph_revision'])))
@@ -222,7 +222,7 @@ def portable_startup(binary, root):
         require(failed.returncode != 0 and 'METHOD_UNAVAILABLE' in failed.stderr,
                 'deactivated source reached native credential path')
         h.command('github', 'stop'); h.command('github', 'resume')
-        return dict(stock_control_bootstrap30_without_model=True, independent_owner_cases=387,
+        return dict(stock_control_bootstrap30_without_model=True, independent_owner_cases=owner_cases,
                     missing_credential_preserved=True, disabled_before_credential=True, cleanup=True)
     finally:
         h.cleanup()

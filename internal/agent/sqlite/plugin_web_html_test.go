@@ -100,7 +100,7 @@ func TestWebPluginHTMLCompleteEightMiBSourceAndDerivedText(t *testing.T) {
 		installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
 	defer r.Release(ctx, claim)
-	stop := keepWebReadClaim(r, claim)
+	stop := keepRunClaim(r, claim)
 	defer stop()
 	// The original 8 MiB raw input is attached directly, without base64/JSON inflation.
 	prefix, suffix := `<title>large source</title><article>`, `</article>`

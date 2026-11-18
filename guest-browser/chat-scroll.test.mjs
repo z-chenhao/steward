@@ -6,7 +6,7 @@ import {build} from '../web/node_modules/esbuild/lib/main.js';
 
 test('Chat follows layout clamps while real reading input cancels following',{timeout:45000},async()=>{
   const bundle=await build({entryPoints:[fileURLToPath(new URL('../web/src/chat-scroll.ts',import.meta.url))],bundle:true,write:false,format:'iife',globalName:'chatScroll'});
-  const browser=await chromium.launch({headless:true,...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});
+  const browser=await chromium.launch({headless:true,args:['--disable-smooth-scrolling'],...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});
   try{
     const page=await browser.newPage({viewport:{width:1400,height:980}});
     await page.setContent('<style>html{overflow-anchor:none}body{margin:0}#content{display:flow-root}section{height:700px}footer{height:150px}</style><div id="content"><section>First answer</section><section>Interactive answer</section><section>Latest answer</section></div><footer>Composer</footer>');
@@ -36,7 +36,13 @@ test('Chat follows layout clamps while real reading input cancels following',{ti
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     assert.equal(await page.evaluate(()=>scrollY),reading,'growth must retain upward reading intent');
     await page.keyboard.press('End');await bottom();
-    await page.keyboard.press('PageUp');await page.keyboard.press('PageUp');await page.keyboard.press('PageUp');await page.waitForFunction(()=>scrollY===0&&!reader.isFollowing());
+    for(let step=0;step<3;step++){
+      const before=await page.evaluate(()=>scrollY);
+      if(before===0)break;
+      await page.keyboard.press('PageUp');
+      await page.waitForFunction(top=>scrollY<top&&!reader.isFollowing(),before);
+    }
+    await page.waitForFunction(()=>scrollY===0&&!reader.isFollowing());
     await page.evaluate(()=>document.querySelector('section').style.height='1200px');
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     assert.equal(await page.evaluate(()=>scrollY),0,'PageUp reading intent must survive later growth');

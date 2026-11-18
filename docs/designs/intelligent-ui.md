@@ -12,7 +12,7 @@
 
 ## 插件迁移（私有实验）
 
-当前新增的 [文档实现](../../internal/plugin/intelligentui/document.go) 与 [隔离服务](../../internal/plugin/intelligentui/plugin.go) 实际持有组件目录校验、空脚本规范化及文字替代组合，不回调原生 UI 解析器。[私有契约](../../internal/plugin/intelligentui/contract/contract.go) 通过既有 `input.read` 读取本次调用的不可变文档，返回规范化的既有展示协议；不开放新的公共 SDK，也不放宽工具的 64 KiB 参数上限。
+历史 Host 读者和随包发布的 [隔离服务](../../internal/plugin/intelligentui/plugin.go) 各自编译同一份 [v1 文档协议](../../internal/delivery/uidocv1/document.go)。它只包含既有组件字节结构、目录规则、模型声明和空脚本规范化，复用 `encoding/json` 与工具校验器。插件仍按冻结图执行自己的文字组合、投影和表单策略，Host 仍独立绑定身份、接纳回执和执行授权。未来插件可选用新协议实现，已封存的旧执行体和历史 Host 读者继续使用原版本。现有 [私有契约](../../internal/plugin/intelligentui/contract/contract.go) 仍通过 `input.read` 读取不可变文档，保留工具的 64 KiB 参数上限。
 
 候选 1.1 的私有定义服务提供原展示 Schema、简明模型声明、工具说明及两份声明资源的摘要。沙箱脚本与样式在封存包内；Web 读取适配从原组件的冻结图定位同一包，把服务声明的名称／摘要与该包清单及实际字节核对，不能直接信任候选自报摘要，也不能从当前活动版本替换旧组件资源。定义服务不授予 Main 权限、原件读取或动作能力；真实托管页面的换版／回退及主循环规范化调用仍需完整集成验证。
 
@@ -137,6 +137,8 @@ Chat 的跟随状态由用户滚动意图持有，不能在内容增高后被“
 正式沙箱保持既有完整校验／持久交付边界。正式内容安装与恢复期间保留最后安全预览，正式实例 ready 或进入失败替代后一次切换，避免先撤预览后留下空白。预览 iframe 更新与正式交互实例分离；没有跨调用局部编辑、场景状态机或历史补丁 API。逐步几何、动效和讲解节奏仍由生成内容表达；不强制所有问题分步或动画。
 
 ## 流式预览与正式交付
+
+历史入口和随包发布的预览服务共享 v1 JSON 前缀解析。解析只产出有界显示草稿。两个入口各自校验组件，托管服务仍按冻结图运行，只有 Host 能接纳交付或动作授权。[前缀解析](../../internal/delivery/uipreview/prefix.go)
 
 新展示输入只将 `generateSandboxedUi.props.jsExpressions` 的精确空字符串规范化为 `[]`，随后仍经过完整 catalog 校验。该兼容仅用于无表达式的静态内容，不转换非空代码字符串、null、对象或其他字段。ToolInvocation 的原始参数与请求哈希不变；独立 UI 产物及 staging 预览使用同一规范文档，正式投影、沙箱与重启恢复均读取该文档。其他校验失败继续返回经统一工具层清理的 INVALID_ARGUMENT，不回传输入值；Skill 明确各空字段类型。历史冻结请求、交付投影和失败调用不重写，不新增 schema 或公共组件协议。
 

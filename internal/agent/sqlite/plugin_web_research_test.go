@@ -103,7 +103,7 @@ func TestWebPluginResearchPageAnswersUseOriginalFrozenModelAndReceipt(t *testing
 		installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
 	defer r.Release(ctx, claim)
-	defer keepWebReadClaim(r, claim)()
+	defer keepRunClaim(r, claim)()
 	run, err := r.Load(ctx, claim)
 	if err != nil {
 		t.Fatal(err)
@@ -283,7 +283,7 @@ func TestWebPluginResearchAcceptedBadPackagesCannotFetchForgeOrSpend(t *testing.
 				selectWebVersion(t, h, initial.Revision, version, 5, 0)
 			})
 			defer r.Release(ctx, claim)
-			defer keepWebReadClaim(r, claim)()
+			defer keepRunClaim(r, claim)()
 			sources, fetches, models := 0, 0, 0
 			r.webSourceRead = func(context.Context, string, webaccess.SearchQuery, webaccess.QuerySearch) (webaccess.SourceObservation, error) {
 				sources++
@@ -479,7 +479,7 @@ func TestWebPluginResearchLargeCompleteEvidenceDoesNotUsePureResultLimit(t *test
 		installRuntimeFeature(t, s, r, "web-access", webOwnerPolicy(5, 0))
 	})
 	defer r.Release(ctx, claim)
-	defer keepWebReadClaim(r, claim)()
+	defer keepRunClaim(r, claim)()
 	full := strings.Repeat("a", 5<<19) + " ORIGINAL_END"
 	fetches := 0
 	r.webContentFetch = func(_ context.Context, _ webcontent.Config, url, _ string) (webaccess.Page, error) {

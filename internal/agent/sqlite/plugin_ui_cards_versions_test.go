@@ -237,6 +237,8 @@ func TestUICardsChildAdmissionAfterUpgradeKeepsParentGraphAndService(t *testing.
 	}
 	target, _ := installCardsVersion116(t, h, original.PackageDigest)
 	c, run, gen, toolCalls := childAdmission(t, s, r, a, p, `{"task":"child explicit input"}`)
+	stopRenewal := keepRunClaim(r, c)
+	defer stopRenewal()
 	released := false
 	defer func() {
 		if !released {
@@ -257,6 +259,7 @@ func TestUICardsChildAdmissionAfterUpgradeKeepsParentGraphAndService(t *testing.
 	if _, err = r.ToolStore(c).Accept(ctx, gen.Request.GenerationID, toolCalls, run.Tools); err != nil {
 		t.Fatal(err)
 	}
+	stopRenewal()
 	if err = r.Release(ctx, c); err != nil {
 		t.Fatal(err)
 	}

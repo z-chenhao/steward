@@ -124,10 +124,11 @@ func codeImportPolicyFence(ctx context.Context, tx *sql.Tx, taskID string) error
 }
 
 type codeReportMethod struct {
-	Managed               bool
-	Revision, TaskID, Ref string
-	Epoch                 int64
-	Recipe                contract.ReportRecipe
+	Managed                        bool
+	Revision, TaskID, Ref          string
+	Epoch                          int64
+	TaskEpoch, InstructionSequence int64
+	Recipe                         contract.ReportRecipe
 }
 
 // legacyCodeReportRecipe is only for the never-activated report boundary.
@@ -136,10 +137,18 @@ func legacyCodeReportRecipe() contract.ReportRecipe {
 	return contract.ReportRecipe{Commands: 256, CommandBytes: 4 << 20, PatchBytes: 8 << 20, Order: "oldest"}
 }
 func validCodeReportRecipe(p contract.ReportRecipe) bool {
+	if len(p.ReviewGuide) > 8 {
+		return false
+	}
+	for _, item := range p.ReviewGuide {
+		if len(item) == 0 || len(item) > 1024 {
+			return false
+		}
+	}
 	return p.Commands >= 1 && p.Commands <= 256 && p.CommandBytes >= 1 && p.CommandBytes <= 4<<20 && p.PatchBytes >= 1 && p.PatchBytes <= 8<<20 && (p.Order == "oldest" || p.Order == "recent")
 }
 
-const codeReportScopeSQL = `SELECT t.task_id,coalesce(p.epoch,0) FROM task t LEFT JOIN memory_privacy p USING(agent_id) WHERE t.task_ref=? AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.created_at>coalesce(p.updated_at,0)`
+const codeReportScopeSQL = `SELECT t.task_id,coalesce(p.epoch,0),t.task_epoch,coalesce((SELECT max(sequence) FROM task_instruction i WHERE i.task_id=t.task_id),0) FROM task t LEFT JOIN memory_privacy p USING(agent_id) WHERE t.task_ref=? AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.created_at>coalesce(p.updated_at,0)`
 
 func (s *Store) prepareCodeReportMethod(ctx context.Context, ref, taskID string) (codeReportMethod, error) {
 	method := codeReportMethod{Ref: ref, TaskID: taskID}
@@ -147,7 +156,7 @@ func (s *Store) prepareCodeReportMethod(ctx context.Context, ref, taskID string)
 	if err != nil {
 		return method, err
 	}
-	err = tx.QueryRowContext(ctx, codeReportScopeSQL, ref).Scan(&method.TaskID, &method.Epoch)
+	err = tx.QueryRowContext(ctx, codeReportScopeSQL, ref).Scan(&method.TaskID, &method.Epoch, &method.TaskEpoch, &method.InstructionSequence)
 	if err == nil && method.TaskID != taskID {
 		err = agent.ErrNotFound
 	}
@@ -190,8 +199,8 @@ func (s *Store) prepareCodeReportMethod(ctx context.Context, ref, taskID string)
 }
 func codeReportMethodFence(ctx context.Context, tx *sql.Tx, method codeReportMethod) error {
 	var taskID string
-	var epoch int64
-	if err := tx.QueryRowContext(ctx, codeReportScopeSQL, method.Ref).Scan(&taskID, &epoch); err != nil {
+	var epoch, taskEpoch, instructionSequence int64
+	if err := tx.QueryRowContext(ctx, codeReportScopeSQL, method.Ref).Scan(&taskID, &epoch, &taskEpoch, &instructionSequence); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return agent.ErrNotFound
 		}
@@ -199,6 +208,9 @@ func codeReportMethodFence(ctx context.Context, tx *sql.Tx, method codeReportMet
 	}
 	if taskID != method.TaskID || epoch != method.Epoch {
 		return agent.ErrNotFound
+	}
+	if taskEpoch != method.TaskEpoch || instructionSequence != method.InstructionSequence {
+		return agent.ErrConflict
 	}
 	if !method.Managed {
 		return nil

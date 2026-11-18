@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/llm"
-	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	connectionv1 "github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 	"os"
 	"testing"
 )
@@ -106,7 +107,7 @@ func TestModelConnectionLoginMatches5ExecutedNativeChoices(t *testing.T) {
 		t.Fatal(len(cases))
 	}
 	for i, c := range cases {
-		out := owner.ProjectConnection(contract.ConnectionFacts{AccountBacked: true, Login: &contract.LoginFacts{Models: c.Models}})
+		out := connectionv1.Connection(contract.ConnectionFacts{AccountBacked: true, Login: &contract.LoginFacts{Models: c.Models}})
 		if out.LoginModel != c.Selected {
 			t.Errorf("case %d got %q want %q", i, out.LoginModel, c.Selected)
 		}

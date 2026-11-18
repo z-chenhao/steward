@@ -1,6 +1,7 @@
 package recall
 
 import (
+	"github.com/z-chenhao/assistant/internal/recall/lexical"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -17,7 +18,7 @@ func Excerpt(hit Hit, query string, limit int) Hit {
 	if len(text) <= limit {
 		return hit
 	}
-	terms := Terms(query)
+	terms := lexical.Terms(query)
 	best, start := -1.0, 0
 	lower := strings.ToLower(text)
 	for _, term := range terms {
@@ -30,7 +31,7 @@ func Excerpt(hit Hit, query string, limit int) Hit {
 			offset = at + len(term)
 			left := max(0, min(len(text)-limit, at-limit/3))
 			right := min(len(text), left+limit)
-			score := Relevance(terms, text[left:right])
+			score := lexical.Relevance(terms, text[left:right])
 			if score > best {
 				best, start = score, left
 			}
@@ -68,8 +69,10 @@ func QuotedMatch(query, text string) bool {
 // concern a different section. Stable ties preserve the original attribution.
 func RelevantEvidence(in []Evidence, query string, limit int) []Evidence {
 	out := append([]Evidence(nil), in...)
-	terms := Terms(query)
-	sort.SliceStable(out, func(i, j int) bool { return Relevance(terms, out[i].Quote) > Relevance(terms, out[j].Quote) })
+	terms := lexical.Terms(query)
+	sort.SliceStable(out, func(i, j int) bool {
+		return lexical.Relevance(terms, out[i].Quote) > lexical.Relevance(terms, out[j].Quote)
+	})
 	if len(out) > limit {
 		out = out[:limit]
 	}

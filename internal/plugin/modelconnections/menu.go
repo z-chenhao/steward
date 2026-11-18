@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
@@ -23,7 +24,7 @@ func Plugin() rsiplugin.Handlers {
 			if err := rsiplugin.Decode(call.Input, &facts); err != nil {
 				return rsiplugin.Result{}, err
 			}
-			return rsiplugin.JSONResult(ctx, ProjectConnection(facts))
+			return rsiplugin.JSONResult(ctx, legacyv1.Connection(facts))
 		},
 		contract.Settings: func(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 			var facts contract.SettingsFacts

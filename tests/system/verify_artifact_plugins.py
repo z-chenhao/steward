@@ -6,6 +6,7 @@ committed-Child SIGKILL, inherited Grandchild versions and original file
 read/publication. The existing scripted model provides protocol evidence only.
 """
 import argparse
+from owner_inventory import check_default_owner
 import base64
 from contextlib import closing
 from datetime import datetime, timezone
@@ -70,8 +71,7 @@ def owner_default(binary, explicit=False):
         graph = cli.rows('SELECT active_graph FROM rsi_control WHERE singleton=1')[0][0]
         bindings = json.loads(cli.rows('SELECT graph_json FROM rsi_graph WHERE revision=?', (graph,))[0][0])['bindings']
         policy = json.loads(cli.rows('SELECT p.policy_json FROM rsi_policy p JOIN rsi_candidate c USING(policy_id) WHERE c.target=?', (graph,))[0][0])
-        require(len(bindings) == 40 and len(policy['cases']) == 387,
-                'stock owner bootstrap skipped full40/independent387 owner cases')
+        owner_cases = check_default_owner({'bindings': bindings}, policy)
         require(cli.rows('SELECT count(*) FROM model_profile')[0][0] == 0 and
                 cli.rows('SELECT count(*) FROM run')[0][0] == 0,
                 'owner operation initialized model/runtime work')
@@ -98,7 +98,7 @@ def owner_default(binary, explicit=False):
         cli.command('artifact', 'delete', ref, str(file['version']))
         require(cli.rows('SELECT count(*) FROM artifact WHERE name=?', ('blocked.txt',))[0][0] == 0,
                 'rejected owner call created partial metadata')
-        return dict(stock_owner_no_model=True, full40=True, independent_cases=387,
+        return dict(stock_owner_no_model=True, full40=True, independent_cases=owner_cases,
                     explicit_retention=explicit, immutable_bytes=True,
                     disabled_no_native=True, independent_read_delete=True), template
 

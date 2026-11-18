@@ -250,11 +250,28 @@ func (s *Store) codeReport(ctx context.Context, ref string, withDiff bool) (codi
 		if out.Status != "ready" {
 			return coding.Report{}, method, coding.ErrInvalid
 		}
-		diff, err := coding.ReviewWithPatchLimit(ctx, out.Workspace, method.Recipe.PatchBytes)
+		candidate, err := coding.CaptureCandidate(ctx, out.Workspace)
+		if err != nil {
+			return coding.Report{}, method, err
+		}
+		defer candidate.Close()
+		frozen := out.Workspace
+		frozen.Directory = candidate.Directory
+		diff, err := coding.ReviewWithPatchLimit(ctx, frozen, method.Recipe.PatchBytes)
 		if err != nil {
 			return coding.Report{}, method, err
 		}
 		out.Diff = &diff
+		out.CandidateSHA256 = candidate.SHA256
+	}
+	out.Review, err = s.readCodeReviewFacts(ctx, method)
+	if err != nil {
+		return coding.Report{}, method, err
+	}
+	out.Review.Guide = append([]string(nil), method.Recipe.ReviewGuide...)
+	out.Checks, out.ChecksTruncated, err = s.readCodingChecks(ctx, taskID, out.CandidateSHA256, method.Recipe.Commands, method.Recipe.CommandBytes)
+	if err != nil {
+		return coding.Report{}, method, err
 	}
 	s.boundary("before_code_report_return")
 	read, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
@@ -280,9 +297,25 @@ func (s *Store) saveCodeReport(ctx context.Context, ref string, handoff *codePRH
 	if err != nil {
 		return artifact.Descriptor{}, err
 	}
+	exact := handoff != nil && handoff.source != ""
+	if exact && !method.Managed {
+		return artifact.Descriptor{}, llm.ProviderUnavailable
+	}
 	report.Directory = ""
 	if handoff != nil {
-		report.PR = &handoff.binding.observation
+		observation := handoff.binding.observation
+		report.PR = &observation
+		if handoff.source != "" {
+			content, err := coding.ReadGitContent(ctx, handoff.source, handoff.expected)
+			if err != nil {
+				return artifact.Descriptor{}, err
+			}
+			if content.TreeSHA256 != report.CandidateSHA256 {
+				return artifact.Descriptor{}, agent.ErrConflict
+			}
+			report.PR.Kind = "owner_verified_exact_content"
+			report.PR.Content = &content
+		}
 	}
 	raw, err := json.Marshal(report)
 	if err != nil {
@@ -295,6 +328,9 @@ func (s *Store) saveCodeReport(ctx context.Context, ref string, handoff *codePRH
 	input, err := s.PrepareArtifactInput(ctx, artifact.Input{Name: "code-review.json", MediaType: "application/json"})
 	if err != nil {
 		return artifact.Descriptor{}, err
+	}
+	if exact && input.Creation == nil {
+		return artifact.Descriptor{}, artifact.ErrUnavailable
 	}
 	staged, err := artifacts.Stage(ctx, input, bytes.NewReader(raw))
 	if err != nil {

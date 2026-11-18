@@ -1,11 +1,13 @@
-// Historical card policy for graphs that never activated the card service.
 package legacyv1
 
 import (
-	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
 	"strings"
+
+	"github.com/z-chenhao/assistant/internal/plugin/feishuchat/contract"
 )
 
+// ProjectCard is the policy of the first managed card service and the explicit
+// native v1 reader.
 func ProjectCard(f contract.CardFacts) contract.CardProjection {
 	out := contract.CardProjection{Mode: "plain", Text: f.Fallback}
 	if f.Feedback {

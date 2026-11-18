@@ -2,11 +2,17 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/z-chenhao/assistant/internal/task"
+	modernsqlite "modernc.org/sqlite"
 )
 
 func TestTaskWorkspaceUsesOwnerScopeStablePaginationAndMainDeliveries(t *testing.T) {
@@ -84,5 +90,61 @@ func TestTaskWorkspaceUsesOwnerScopeStablePaginationAndMainDeliveries(t *testing
 	}
 	if len(seen) != 65 {
 		t.Fatal("task history is still capped or leaks another owner", len(seen))
+	}
+}
+
+func TestTaskWorkspaceDetailKeepsOneSnapshotDuringConcurrentUpdate(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	const ref = "task:workspace-snapshot"
+	var db *sql.DB
+	var commitErr error
+	var once sync.Once
+	updateDuringRead := "test_workspace_update_" + strings.ReplaceAll(newID(), "-", "")
+	err := modernsqlite.RegisterScalarFunction(updateDuringRead, 1, func(_ *modernsqlite.FunctionContext, args []driver.Value) (driver.Value, error) {
+		once.Do(func() {
+			commitErr = func() error {
+				tx, err := db.BeginTx(ctx, nil)
+				if err != nil {
+					return err
+				}
+				defer tx.Rollback()
+				if _, err = tx.ExecContext(ctx, `UPDATE task_data SET task_epoch=2,version=version+1 WHERE task_ref=?`, ref); err != nil {
+					return err
+				}
+				if _, err = tx.ExecContext(ctx, `INSERT INTO task_instruction(instruction_id,task_id,task_epoch,instruction,artifact_refs,created_at)
+SELECT 'concurrent-instruction',task_id,task_epoch,'New instruction','[]',200 FROM task_data WHERE task_ref=?`, ref); err != nil {
+					return err
+				}
+				return tx.Commit()
+			}()
+		})
+		return args[0], commitErr
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, _, _, _ := childFixture(t)
+	db = s.db
+	if _, err = db.ExecContext(ctx, `INSERT INTO task(task_id,task_ref,agent_id,conversation_id,title,anchor_task,anchor_artifact_refs,status,task_epoch,created_at,updated_at,version)
+SELECT 'workspace-snapshot',?,agent_id,agent_id,'Old title','Old goal','[]','active',1,100,100,1 FROM agent_config WHERE singleton=1`, ref); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.ExecContext(ctx, `ALTER TABLE task RENAME TO task_data;
+CREATE VIEW task AS SELECT `+updateDuringRead+`(title) AS title, task_data.* FROM task_data`); err != nil {
+		t.Fatal(err)
+	}
+	read := func(epoch int64, instructions int) task.Detail {
+		t.Helper()
+		detail, err := s.TaskReader().Detail(ctx, ref, "")
+		if err != nil || detail.Epoch != epoch || len(detail.Instructions) != instructions {
+			t.Fatalf("mixed workspace snapshot: got epoch %d, instructions %#v, error %v", detail.Epoch, detail.Instructions, err)
+		}
+		return detail
+	}
+	read(1, 0)
+	detail := read(2, 1)
+	if detail.Instructions[0].Epoch != 2 || detail.Instructions[0].Text != "New instruction" {
+		t.Fatal(detail.Instructions[0])
 	}
 }

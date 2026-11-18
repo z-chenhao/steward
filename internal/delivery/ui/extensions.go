@@ -6,161 +6,19 @@ import (
 	"html/template"
 	"math"
 	"net/mail"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	"github.com/z-chenhao/assistant/internal/conversation"
+	"github.com/z-chenhao/assistant/internal/delivery/uidocv1"
 )
 
-// Steward extensions keep the upstream name/props envelope; upstream names and
-// props remain intact. These are private Host adapters, not upstream components.
-type FormOption struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-}
-type FormField struct {
-	Name     string       `json:"name"`
-	Label    string       `json:"label"`
-	Type     string       `json:"type"`
-	Required bool         `json:"required,omitempty"`
-	Options  []FormOption `json:"options,omitempty"`
-	Min      *float64     `json:"min,omitempty"`
-	Max      *float64     `json:"max,omitempty"`
-}
-type FormProps struct {
-	Title       string      `json:"title"`
-	Fields      []FormField `json:"fields"`
-	SubmitLabel string      `json:"submitLabel,omitempty"`
-}
-type ActionBinding struct {
-	Argument  string `json:"argument"`
-	Component int    `json:"component"`
-	Path      string `json:"path"`
-}
-type ActionProps struct {
-	ID        string          `json:"id"`
-	Label     string          `json:"label"`
-	Tool      string          `json:"tool"`
-	Arguments json.RawMessage `json:"arguments"`
-	Bindings  []ActionBinding `json:"bindings,omitempty"`
-}
-
-func validExtension(c Component) bool {
-	switch c.Name {
-	case "steward.lineChart":
-		var p LineProps
-		if json.Unmarshal(c.Props, &p) != nil {
-			return false
-		}
-		seen := map[string]bool{}
-		if p.XValues != nil {
-			if len(p.XValues) != len(p.Labels) {
-				return false
-			}
-			for i, x := range p.XValues {
-				if i > 0 && x <= p.XValues[i-1] {
-					return false
-				}
-			}
-		}
-		for _, series := range p.Series {
-			if strings.TrimSpace(series.Name) == "" || seen[series.Name] || len(series.Values) != len(p.Labels) {
-				return false
-			}
-			seen[series.Name] = true
-		}
-		return true
-	case "steward.scatterChart":
-		return true // Full bounded schema was already validated.
-	case "steward.action":
-		var p ActionProps
-		if json.Unmarshal(c.Props, &p) != nil {
-			return false
-		}
-		seen := map[string]bool{}
-		for _, binding := range p.Bindings {
-			if !fieldName.MatchString(binding.Argument) || seen[binding.Argument] || !strings.HasPrefix(binding.Path, "/") {
-				return false
-			}
-			seen[binding.Argument] = true
-			for _, segment := range strings.Split(strings.TrimPrefix(binding.Path, "/"), "/") {
-				for i := 0; i < len(segment); i++ {
-					if segment[i] == '~' {
-						if i+1 >= len(segment) || segment[i+1] != '0' && segment[i+1] != '1' {
-							return false
-						}
-						i++
-					}
-				}
-			}
-		}
-		return fieldName.MatchString(p.ID) && strings.TrimSpace(p.Label) != "" && len(p.Arguments) <= 8192
-	case "steward.cards":
-		var p struct {
-			Items []struct {
-				Title, Text string
-				ImageRef    string `json:"image_ref"`
-				URL         string `json:"url"`
-			} `json:"items"`
-		}
-		if json.Unmarshal(c.Props, &p) != nil {
-			return false
-		}
-		for _, item := range p.Items {
-			if strings.TrimSpace(item.Title) == "" {
-				return false
-			}
-			if item.ImageRef != "" && (strings.Contains(item.ImageRef, ":") && !strings.HasPrefix(item.ImageRef, "artifact:") || strings.ContainsAny(item.ImageRef, "/\\ \r\n\x00")) {
-				return false
-			}
-			if item.URL != "" {
-				u, err := url.Parse(item.URL)
-				if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil {
-					return false
-				}
-			}
-		}
-		return true
-	case "steward.form":
-		var p FormProps
-		if json.Unmarshal(c.Props, &p) != nil || strings.TrimSpace(p.Title) == "" {
-			return false
-		}
-		seen := map[string]bool{}
-		for _, f := range p.Fields {
-			if !fieldName.MatchString(f.Name) || seen[f.Name] || strings.TrimSpace(f.Label) == "" || f.Min != nil && f.Max != nil && *f.Min > *f.Max {
-				return false
-			}
-			seen[f.Name] = true
-			selection := f.Type == "select" || f.Type == "multiselect"
-			if selection && len(f.Options) == 0 || !selection && len(f.Options) > 0 || f.Type != "number" && (f.Min != nil || f.Max != nil) {
-				return false
-			}
-			values := map[string]bool{}
-			for _, o := range f.Options {
-				if o.Value == "" || o.Label == "" || values[o.Value] {
-					return false
-				}
-				values[o.Value] = true
-			}
-		}
-		return true
-	}
-	return false
-}
-
-type LineProps struct {
-	Labels  []string  `json:"labels"`
-	XValues []float64 `json:"xValues"`
-	Unit    string    `json:"unit"`
-	Series  []struct {
-		Name   string    `json:"name"`
-		Values []float64 `json:"values"`
-	} `json:"series"`
-}
+type FormOption = uidocv1.FormOption
+type FormField = uidocv1.FormField
+type FormProps = uidocv1.FormProps
+type ActionProps = uidocv1.ActionProps
 
 func extensionSummary(c Component) string {
 	var p struct {
@@ -177,7 +35,7 @@ func extensionSummary(c Component) string {
 	}
 	lines := []string{p.Title, p.Description, p.Label}
 	if c.Name == "steward.lineChart" {
-		var chart LineProps
+		var chart uidocv1.LineProps
 		_ = json.Unmarshal(c.Props, &chart)
 		for _, series := range chart.Series {
 			for i, value := range series.Values {
@@ -373,7 +231,7 @@ func extensionFormHTML(c Component) string {
 			fmt.Fprintf(&b, `<select id="%s" name="%s"%s%s>`, esc(id), esc(name), multi, required)
 			options := f.Options
 			if f.Type == "boolean" {
-				options = []FormOption{{"false", "No"}, {"true", "Yes"}}
+				options = []FormOption{{Value: "false", Label: "No"}, {Value: "true", Label: "Yes"}}
 			}
 			if f.Type == "select" {
 				b.WriteString(`<option value=""></option>`)

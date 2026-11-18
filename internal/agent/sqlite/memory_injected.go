@@ -15,6 +15,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/recall"
+	"github.com/z-chenhao/assistant/internal/recall/lexical"
 )
 
 func (r *Runs) injectMemory(ctx context.Context, c agent.RunClaim, run agent.Run, messages []llm.Message, navigation, metadata, separate bool) ([]llm.Message, error) {
@@ -127,7 +128,7 @@ func (r *Runs) memoryNavigation(ctx context.Context, store memory.Documents, sco
 			break
 		}
 	}
-	terms := navigationTerms(query)
+	terms := memory.NavigationQueryTerms(query)
 	type entry struct {
 		doc   memory.Document
 		score float64
@@ -144,7 +145,7 @@ func (r *Runs) memoryNavigation(ctx context.Context, store memory.Documents, sco
 		}
 		entries = append(entries, entry{doc: doc})
 		for _, term := range terms {
-			if recall.Relevance([]string{term}, doc.Title+"\n"+doc.Content) > 0 {
+			if lexical.Relevance([]string{term}, doc.Title+"\n"+doc.Content) > 0 {
 				frequency[term]++
 			}
 		}
@@ -152,7 +153,7 @@ func (r *Runs) memoryNavigation(ctx context.Context, store memory.Documents, sco
 	for i := range entries {
 		for _, term := range terms {
 			n := frequency[term]
-			if n > 0 && (n < len(entries) || len(entries) == 1) && recall.Relevance([]string{term}, entries[i].doc.Title+"\n"+entries[i].doc.Content) > 0 {
+			if n > 0 && (n < len(entries) || len(entries) == 1) && lexical.Relevance([]string{term}, entries[i].doc.Title+"\n"+entries[i].doc.Content) > 0 {
 				entries[i].score += 1 / float64(n)
 			}
 		}
@@ -192,7 +193,7 @@ func (r *Runs) memoryMetadataNavigation(ctx context.Context, store memory.Docume
 			break
 		}
 	}
-	terms := navigationTerms(query)
+	terms := memory.NavigationQueryTerms(query)
 	type entry struct {
 		doc   memory.NavigationEntry
 		score float64
@@ -210,7 +211,7 @@ func (r *Runs) memoryMetadataNavigation(ctx context.Context, store memory.Docume
 	for _, doc := range docs {
 		entries = append(entries, entry{doc: doc})
 		for _, term := range terms {
-			if recall.Relevance([]string{term}, doc.Title+"\n"+strings.Join(doc.Terms, " ")) > 0 {
+			if lexical.Relevance([]string{term}, doc.Title+"\n"+strings.Join(doc.Terms, " ")) > 0 {
 				frequency[term]++
 			}
 		}
@@ -218,7 +219,7 @@ func (r *Runs) memoryMetadataNavigation(ctx context.Context, store memory.Docume
 	for i := range entries {
 		for _, term := range terms {
 			n := frequency[term]
-			if n > 0 && (n < len(entries) || len(entries) == 1) && recall.Relevance([]string{term}, entries[i].doc.Title+"\n"+strings.Join(entries[i].doc.Terms, " ")) > 0 {
+			if n > 0 && (n < len(entries) || len(entries) == 1) && lexical.Relevance([]string{term}, entries[i].doc.Title+"\n"+strings.Join(entries[i].doc.Terms, " ")) > 0 {
 				entries[i].score += 1 / float64(n)
 			}
 		}
@@ -248,26 +249,4 @@ func (r *Runs) memoryMetadataNavigation(ctx context.Context, store memory.Docume
 		body = body[:n] + suffix
 	}
 	return nav + "\n" + body, nil
-}
-func navigationTerms(text string) []string {
-	if len(text) > 4096 {
-		text = text[len(text)-4096:]
-		for len(text) > 0 && !utf8.RuneStart(text[0]) {
-			text = text[1:]
-		}
-	}
-	runes := []rune(text)
-	out := []string{}
-	seen := map[string]bool{}
-	for len(runes) > 0 {
-		n := min(200, len(runes))
-		for _, term := range recall.Terms(string(runes[:n])) {
-			if !seen[term] && len(out) < 256 {
-				seen[term] = true
-				out = append(out, term)
-			}
-		}
-		runes = runes[n:]
-	}
-	return out
 }

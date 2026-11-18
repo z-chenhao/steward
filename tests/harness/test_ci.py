@@ -13,10 +13,64 @@ from runner import CORE
 
 
 class CIChecksTests(unittest.TestCase):
+    def test_exact_remote_content_cli_is_required(self):
+        self.assertIn('task-code-exact-report', ci.CAPABILITIES)
+        self.assertIn('--scenario task-code-exact-report', ci.command('capabilities-race'))
+        root = Path(__file__).resolve().parents[2]
+        help_text = subprocess.check_output(['python3', 'tests/system/verify_capabilities.py', '--help'], cwd=root, text=True)
+        self.assertIn('task-code-exact-report', help_text)
+
+    def test_real_coding_development_is_a_required_cold_environment_lane(self):
+        root = Path(__file__).resolve().parents[2]
+        lanes = {row['lane'] for row in ci.plan('system')['include']}
+        self.assertIn('coding-development', lanes)
+        self.assertIn('make test-coding-development', ci.command('coding-development'))
+        dry = subprocess.check_output(['make', '-n', 'test-coding-development'], cwd=root, text=True)
+        self.assertIn('tests/system/verify_coding_development.py', dry)
+        inventory = subprocess.check_output(['go', 'test', './internal/agent/sqlite', '-list', '^TestCodingDevelopment'], cwd=root, text=True)
+        names = re.findall(r'^(TestCodingDevelopment\w+)$', inventory, re.MULTILINE)
+        self.assertGreaterEqual(len(names), 2)
+        pattern = shlex.split(ci.RACE)[shlex.split(ci.RACE).index('-run') + 1]
+        for name in names:
+            self.assertRegex(name, pattern)
+
+    def test_coding_container_gate_is_real_required_and_digest_pinned(self):
+        root = Path(__file__).resolve().parents[2]
+        self.assertIn('make test-coding-environment', ci.command('coding-development'))
+        dry = subprocess.check_output(['make', '-n', 'test-coding-environment'], cwd=root, text=True)
+        self.assertIn('tests/system/verify_coding_container.py', dry)
+        script = (root / 'tests/system/verify_coding_container.py').read_text()
+        self.assertIn("STEWARD_TEST_PROJECT_CONTAINER_IMAGE=image", script)
+        self.assertIn('actual != artifact', script)
+        self.assertNotIn('skipTest', script)
+        self.assertIn('./internal/computer/projectcontainer', shlex.split(ci.RACE))
+    def test_coding_candidates_and_parallel_workspaces_remain_required_races(self):
+        root = Path(__file__).resolve().parents[2]
+        command = ci.command('capabilities-race')
+        args = shlex.split(ci.RACE)
+        self.assertIn('./internal/coding', args)
+        self.assertIn('python3 tests/system/race.py --part capabilities-sqlite', command)
+        self.assertIn('-race', args)
+        pattern = args[args.index('-run') + 1]
+        self.assertEqual(pattern, race.CAPABILITIES_SQLITE_PATTERN)
+        output = subprocess.check_output(['go', 'test', './internal/coding',
+            './internal/agent/sqlite', './internal/app', '-list',
+            '^Test(Coding(Check|Project|Environment|Container|Architecture|Development)|TaskCode|CandidateSnapshot|ReviewSnapshot)'], cwd=root, text=True)
+        names = re.findall(r'^(Test\w+)$', output, re.MULTILINE)
+        self.assertGreaterEqual(len(names), 4, 'the actual Go regression inventory must be nonempty')
+        for name in names:
+            self.assertRegex(name, pattern, name + ' is missing from required coding races')
+
     def test_go_partitions_keep_all_roots_and_original_package_alarm(self):
         root = Path(__file__).resolve().parents[2]
-        commands = subprocess.check_output(['make', '--no-print-directory', '-n', 'test-go'], cwd=root, text=True)
-        partitions = [shlex.split(line) for line in commands.splitlines()]
+        def dry_run(*targets):
+            commands = subprocess.check_output(['make', '--no-print-directory', '-n', *targets], cwd=root, text=True)
+            return [shlex.split(line) for line in commands.splitlines() if line.startswith('go test ')]
+        partitions = dry_run('test-go')
+        lanes = {row['lane'] for row in ci.plan('software')['include']}
+        self.assertTrue({'go', 'go-domains'} <= lanes)
+        targets = [shlex.split(ci.command(lane))[1] for lane in ('go', 'go-domains')]
+        self.assertEqual(dry_run(*targets), partitions)
         self.assertEqual(len(partitions), 7)
         for tokens in partitions:
             self.assertIn('-timeout=15m', tokens)
@@ -35,7 +89,7 @@ class CIChecksTests(unittest.TestCase):
     def test_prompt_partitions_keep_inheritance_and_managed_lifecycles_required(self):
         self.assertEqual(ci.command('prompts'), 'make test-prompts')
         software = [ci.command(row['lane']) for row in ci.plan('software')['include']]
-        for target in ('test-go', 'test-prompts', 'test-tool-discovery'):
+        for target in ('test-go-core', 'test-go-domains', 'test-prompts', 'test-tool-discovery'):
             self.assertEqual(sum(target in shlex.split(command) for command in software), 1)
         root = Path(__file__).resolve().parents[2]
         commands = subprocess.check_output(['make', '-n', 'test-prompts'],
@@ -385,7 +439,7 @@ class CIChecksTests(unittest.TestCase):
                             f'{test} is missing from required memory race checks')
 
     def test_web_plugin_business_roots_are_in_required_race_recipe(self):
-        self.assertIn('make test-web-access', ci.command('capabilities-race'))
+        self.assertIn('test-web-access', shlex.split(ci.command('web-plugins')))
         dry_run = subprocess.check_output(['make', '-n', 'test-web-access'],
                                           cwd=Path(__file__).resolve().parents[2], text=True)
         commands = [shlex.split(line) for line in dry_run.splitlines()]

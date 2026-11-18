@@ -20,6 +20,7 @@ import threading
 
 from terminal_driver import Terminal
 from fixture_pool import run as owned_run, run_cases
+from owner_inventory import expected_inventory
 from provider_endpoint import Endpoint
 from verify_main import MainHarness, assert_final, require
 from verify_tui import local_setup
@@ -108,6 +109,27 @@ def verify_install():
         report['archive_sha256'] = hashlib.sha256(archive.read_bytes()).hexdigest()
         report['checks'].append('source install -> native archive -> release install -> read-only doctor; launch from unrelated cwd with spaces in install path')
 
+        incomplete_root = root / 'incomplete-workspace'
+        incomplete_root.mkdir()
+        incomplete = StartupHarness(binary, incomplete_root)
+        incomplete.env.update(TMPDIR=env['TMPDIR'], NODE_COMPILE_CACHE=env['NODE_COMPILE_CACHE'])
+        manifest = installed / 'bin/plugins/artifact-workbench/steward.plugin.json'
+        missing = manifest.with_suffix('.missing')
+        manifest.rename(missing)
+        try:
+            reject = incomplete.command('artifact', 'save', 'owned.txt', 'text/plain', text='test', ok=False)
+            require(reject.returncode != 0 and 'incomplete feature distribution (artifact-workbench)' in reject.stderr,
+                    'incomplete distribution accepted a real Artifact write')
+            state = Path(incomplete.env['STEWARD_DATA_ROOT']) / 'state.db'
+            with closing(sqlite3.connect(state.as_uri() + '?mode=ro', uri=True)) as db, db:
+                db.execute('BEGIN')
+                require(db.execute('SELECT active_graph FROM rsi_control').fetchone()[0] is None and
+                        db.execute('SELECT count(*) FROM artifact').fetchone()[0] == 0,
+                        'incomplete distribution left an active graph or Artifact')
+        finally:
+            missing.rename(manifest)
+        report['checks'].append('missing shipped manifest rejects first owner Artifact write; no active graph or Artifact')
+
         # Refuse an unrelated executable before changing any installation.
         protected = root / 'protected'
         (protected / 'bin').mkdir(parents=True)
@@ -143,7 +165,7 @@ def verify_install():
                         'distributed feature bundle was not independently verified and selected')
                 with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT']) / 'state.db')) as db:
                     packages = {row[0] for row in db.execute("SELECT p.plugin_id FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?", (plugin_selection['graph_revision'],))}
-                require(packages == {'steward.docx-reader', 'steward.image-ocr', 'steward.trace-inspector', 'steward.context-compact', 'steward.recall', 'steward.conversation', 'steward.memory-curator', 'steward.evidence-reader', 'steward.skill-library', 'steward.experience-learning', 'steward.task-control', 'steward.task-progress', 'steward.task-feedback', 'steward.delegation', 'steward.codemode', 'steward.file-tools', 'steward.shell-tools', 'steward.coding-workspace', 'steward.computer-use', 'steward.web-access', 'steward.web-extract', 'steward.mcp-bridge', 'steward.connected-apps', 'steward.tool-discovery', 'steward.apps-directory', 'steward.apps-accounts', 'steward.apps-logos', 'steward.apps-interface', 'steward.github-pr-followup', 'steward.artifact-workbench', 'steward.intelligent-ui', 'steward.schedule', 'steward.memory-inspector', 'steward.model-connections', 'steward.feishu-chat', 'steward.capability-settings', 'steward.terminal-interface', 'steward.reference-pricing', 'steward.web-workbench', 'steward.service-watchdog'},
+                require(packages == {'steward.' + instance for instance in expected_inventory()['instances']},
                         'native installation did not activate the distributed feature composition')
                 require(len(before['tools']) == 2 and {t['tool_name'] for t in before['tools']} == {'builtin__codemode_execute','builtin__artifact_manage'} and all(t['attempt_count'] == 1 for t in before['tools']), 'startup bypassed Code Mode or the nested Tool executor')
                 require(terminal.stop(signal.SIGKILL) == -signal.SIGKILL, 'missing crash evidence')

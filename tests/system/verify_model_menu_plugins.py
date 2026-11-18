@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Actual default bundle and HTTP model menu; independent executable lifecycle."""
 import argparse
+from owner_inventory import check_default_owner
 from contextlib import closing
 import hashlib
 import json
@@ -52,9 +53,9 @@ def activate(h, name, baseline, target, policy):
         decision_ref=decision['decision_ref'])), timeout=60)
 
 
-def run(binary, evidence):
+def run(binary, evidence, candidate_source=ROOT):
     evidence.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='steward-model-menu-') as tmp, Sandbox() as platform, Broker(Path(tmp)) as broker, model_peer() as (endpoint, model_requests):
+    with tempfile.TemporaryDirectory(prefix='steward-model-menu-') as tmp, Sandbox() as platform, Broker(Path(tmp)) as broker, model_peer('model-menu') as (endpoint, model_requests):
         h = ChannelHarness(binary, Path(tmp), platform, fixture='')
         try:
             h.config.write_text(h.config.read_text() + 'llm:\n  provider_bridge_command: ' + json.dumps(str(binary)) + '\n  provider_bridge_script: -model-bridge\n  provider_bridge_version: steward-go-v1\nnats:\n  url: ' + json.dumps(broker.url) + '\n')
@@ -89,7 +90,7 @@ def run(binary, evidence):
                 baseline = db.execute('SELECT active_graph FROM rsi_control WHERE singleton=1').fetchone()[0]
                 graph = json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?', (baseline,)).fetchone()[0])
                 policy = json.loads(db.execute('SELECT policy_json FROM rsi_policy ORDER BY rowid DESC LIMIT 1').fetchone()[0])
-            require(len(graph['bindings']) == 40 and len(policy['cases']) == 387, 'fresh default package/Owner composition wrong')
+            check_default_owner(graph, policy)
             original_policy = policy['id']
             require(sum(c['contract'] == CONTRACT for c in policy['cases']) == 8, 'model-menu Owner cases missing')
             def submit_connection(name):
@@ -125,18 +126,38 @@ def run(binary, evidence):
                 require('value="fixture-model"' in source and 'value="Model menu peer"' in source, 'reconnect lost original source prefill')
             check_draft('openai')
             require(original['current'].startswith('profile:' + profile + ':') and any(c['label'] == 'Model menu peer' for c in original['choices']), 'actual HTTP did not bind original profile menu')
+            def send_after_recovery(phase, expected_label):
+                status = h.http('/api/status')
+                menu = h.http('/api/models')
+                require(status['active_model_profile_id'] == profile and
+                        status['config_version'] == before['config_version'] and
+                        menu['current'] == original['current'] and
+                        menu['config_version'] == original['config_version'],
+                        f'{phase}: original selected model or version was lost before sending')
+                marker = 'Immediately send with the original model after ' + phase
+                start = len(model_requests)
+                h.env.update(STEWARD_MODEL_RECOVERY_LABEL=expected_label, STEWARD_MODEL_RECOVERY_MESSAGE=marker)
+                h.browser(evidence.parent / phase, 'model-recovery-send')
+                requests = [r['body']['model'] for r in model_requests[start:] if r['method'] == 'POST'
+                            and any(m['role'] == 'user' and marker in str(m.get('content'))
+                                    for m in r['body']['messages'])]
+                require(requests == ['fixture-model'], f'{phase}: original model did not receive the browser message exactly once')
+                h.wait(lambda state: len([r for r in state['deliveries'] if r['status'] == 'sent']) ==
+                       (1 if phase == 'upgrade' else 2), f'{phase}: browser response not durably delivered')
+                return dict(current=menu['current'], config_version=menu['config_version'],
+                            provider_model=requests[0], delivery='sent')
             h.stop(kill=True); h.start(); h.wait_runtime_ready('model menu cold ready')
             require(h.http('/api/models') == original, 'first cold read changed original menu')
             check_settings('connected')
             h.stop()
             package = Path(tmp) / 'model-menu-v2'
             shutil.copytree(binary.parent / 'plugins/model-connections', package)
-            source = ROOT / 'internal/plugin/modelconnections/menu.go'
+            source = candidate_source / 'internal/plugin/modelconnections/menu.go'
             code = source.read_text().replace('Version: "1.1.0"', 'Version: "1.2.0"', 1)
             code = code.replace('Label: label', 'Label: "v2 "+label').replace('Label: m.Name', 'Label: "v2 "+m.Name')
             require(code != source.read_text(), 'independent executable not changed')
             replacement = Path(tmp) / 'menu.go'; replacement.write_text(code)
-            settings_source = ROOT / 'internal/plugin/modelconnections/settings.go'
+            settings_source = candidate_source / 'internal/plugin/modelconnections/settings.go'
             settings_replacement = Path(tmp) / 'settings.go'
             view_file = package / 'views/models.html'
             variant_view = view_file.read_text().replace('<h1>{{modelTr "Models"}}</h1>', '<h1>{{modelTr "Independent models"}}</h1>', 1).replace('{{define "signin"}}', '{{define "signin"}}<span hidden data-model-owner-version="v2"></span>', 1)
@@ -153,21 +174,21 @@ def run(binary, evidence):
             settings_code = settings_code.replace('//go:embed view/models.html\nvar modelViewSource string', 'var modelViewSource = ' + json.dumps(variant_view))
             settings_code = settings_code.replace('//go:embed view/copy.json\nvar modelCopySource string', 'var modelCopySource = ' + json.dumps(variant_copy))
             settings_replacement.write_text(settings_code)
-            connection_source = ROOT / 'internal/plugin/modelconnections/connection.go'
+            connection_source = candidate_source / 'internal/plugin/modelconnections/legacyv1/connection.go'
             connection_replacement = Path(tmp) / 'connection.go'
             connection_replacement.write_text(connection_source.read_text().replace('out.ContextWindow = 8192', 'out.ContextWindow = 6144', 1).replace('out.EndpointDefault = \"http://127.0.0.1:8000/v1\"','out.EndpointDefault = \"http://127.0.0.1:9000/v1\"',1).replace('\treturn out\n', '\tif f.Added != nil { out.AddedAction = \"save\" }\n\treturn out\n', 1))
-            browser_source = ROOT / 'internal/plugin/modelconnections/browser.go'
+            browser_source = candidate_source / 'internal/plugin/modelconnections/browser.go'
             browser_replacement = Path(tmp) / 'browser.go'
             marker = 'func projectBrowserMenu(f contract.BrowserFacts) []contract.ChoiceRef {'
             require(browser_source.read_text().count(marker) == 1, 'browser policy marker missing')
             browser_replacement.write_text(browser_source.read_text().replace(marker, marker + '\n if f.Reason == "ack" { refs:=[]contract.ChoiceRef{};for i:=range f.Received {refs=append(refs,contract.ChoiceRef{Source:"received",Index:i})};return refs }',1))
-            picker_source = ROOT / 'internal/plugin/modelconnections/picker.go'
+            picker_source = candidate_source / 'internal/plugin/modelconnections/picker.go'
             picker_replacement = Path(tmp) / 'picker.go'
             picker_code = picker_source.read_text().replace('t("Model")', '"v2 " + t("Model")', 1).replace('saving || loading', 'saving || (loading && ready)', 1)
             picker_code = picker_code.replace('row.PendingText = t("Loading models…")', 'row.PendingText = t("Loading models…") + " v2"', 1)
             picker_replacement.write_text(picker_code)
             overlay = Path(tmp) / 'overlay.json'; overlay.write_text(json.dumps(dict(Replace={str(source): str(replacement), str(settings_source): str(settings_replacement), str(connection_source):str(connection_replacement),str(browser_source):str(browser_replacement),str(picker_source):str(picker_replacement)})))
-            run_process(['go', 'build', '-trimpath', '-overlay', str(overlay), '-o', str(package / 'plugin'), './cmd/plugins/model-connections'], cwd=ROOT, check=True, capture_output=True, text=True, timeout=90)
+            run_process(['go', 'build', '-trimpath', '-overlay', str(overlay), '-o', str(package / 'plugin'), './cmd/plugins/model-connections'], cwd=candidate_source, check=True, capture_output=True, text=True, timeout=90)
             manifest = json.loads((package / 'steward.plugin.json').read_text()); manifest['version'] = '1.2.0'
             (package / 'steward.plugin.json').write_text(json.dumps(manifest))
             h.command('plugin', 'seal', str(package)); installed = h.command('plugin', 'install', str(package))
@@ -209,6 +230,7 @@ def run(binary, evidence):
             h.command('plugin', 'policy', text=json.dumps(policy))
             activate(h, 'model-menu-upgrade', baseline, target, policy['id'])
             h.start(); h.wait_runtime_ready('model menu v2 ready')
+            recovered = {'upgrade': send_after_recovery('upgrade', 'v2 Model menu peer')}
             upgraded = h.http('/api/models')
             require(upgraded['current'] == original['current'] and upgraded['config_version'] == original['config_version'] and [c['key'] for c in upgraded['choices']] == [c['key'] for c in original['choices']] and [c['label'] for c in upgraded['choices']] == ['v2 ' + c['label'] for c in original['choices']], 'HTTP did not use independent labels or changed activation facts')
             run_process(['node', str(ROOT / 'tests/system/channels_browser.mjs'), h.url, str(evidence.parent/'picker-independent'), 'model-picker-version'],cwd=ROOT,env={**h.env,'STEWARD_MODEL_PICKER_LABEL':'v2 Model','STEWARD_MODEL_PICKER_PENDING':'Loading models… v2','STEWARD_MODEL_PICKER_BUSY':'false'},check=True,capture_output=True,text=True,timeout=60)
@@ -223,6 +245,7 @@ def run(binary, evidence):
             require(len(saved) == 1 and len(model_requests) == requests_before_save, 'independent owner save still ran native post-add probe')
             h.stop(); activate(h, 'model-menu-rollback', target, baseline, original_policy)
             h.start(); h.wait_runtime_ready('model menu rollback ready')
+            recovered['rollback'] = send_after_recovery('rollback', 'Model menu peer')
             require(h.http('/api/models') == original, 'rollback did not restore exact original menu')
             check_settings('connected')
             check_draft('openai')
@@ -252,7 +275,8 @@ def run(binary, evidence):
             require(explicit['context_window']==32768 and explicit['max_output_tokens']==2048 and explicit['wire_api']=='openai_responses' and explicit['capabilities']['image_input'], 'operator metadata was rewritten or coupled to plugin availability')
             after = h.command('status')
             require(after['config_version'] == before['config_version'] and after['active_model_profile_id'] == before['active_model_profile_id'], 'display lifecycle changed authoritative model activation')
-            report = dict(checks=['actual fresh default40 and387 Owner cases', 'actual HTTP original/cold menu and Settings rows', 'independent1.2 executable labels and Settings statuses', 'exact key/current/config-version preservation', 'rollback original menu', 'deactivation and first cold read reject native fallback', 'authoritative model activation unchanged', 'HTTP independent post-add save and rollback probe', 'HTTP browser merge independent executable and rollback', 'actual PTY terminal recipe default/independent/rollback with cancellation and original selection preserved', 'actual managed composer browser loading/refresh/ack/unknown readback', 'actual independent picker labels/loading/busy and exact rollback without activation'], baseline=baseline, upgraded_graph=target, original=original, upgraded=upgraded, package_digest=installed['digest'], binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(), scope='F-001 menu and Settings row projection; new connection defaults and source prefill; sealed model templates and live sign-in fragments; owned localization; CLI shorthand owner recipe and explicit operator metadata separation; remaining browser/auth boundaries not yet fully audited')
+            report = dict(checks=['actual fresh default graph and reviewed Owner cases', 'actual HTTP original/cold menu and Settings rows', 'independent1.2 executable labels and Settings statuses', 'exact key/current/config-version preservation', 'rollback original menu', 'deactivation and first cold read reject native fallback', 'authoritative model activation unchanged', 'HTTP independent post-add save and rollback probe', 'HTTP browser merge independent executable and rollback', 'actual PTY terminal recipe default/independent/rollback with cancellation and original selection preserved', 'actual managed composer browser loading/refresh/ack/unknown readback', 'actual independent picker labels/loading/busy and exact rollback without activation'], baseline=baseline, upgraded_graph=target, original=original, upgraded=upgraded, package_digest=installed['digest'], binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(), scope='F-001 menu and Settings row projection; new connection defaults and source prefill; sealed model templates and live sign-in fragments; owned localization; CLI shorthand owner recipe and explicit operator metadata separation; remaining browser/auth boundaries not yet fully audited')
+            report['recovery_send'] = recovered
             evidence.write_text(json.dumps(report, indent=2) + '\n')
             return report
         finally:
@@ -261,5 +285,6 @@ def run(binary, evidence):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(); parser.add_argument('--binary', type=Path, required=True); parser.add_argument('--evidence', type=Path, required=True)
+    parser.add_argument('--candidate-source', type=Path, default=ROOT, help='source for the candidate plugin upgrade when the verifier is in a separate checkout')
     args = parser.parse_args()
-    print(json.dumps(run_cases([0], lambda _: run(args.binary.resolve(), args.evidence.resolve()), 1)[0]))
+    print(json.dumps(run_cases([0], lambda _: run(args.binary.resolve(), args.evidence.resolve(), args.candidate_source.resolve()), 1)[0]))

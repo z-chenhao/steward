@@ -74,39 +74,28 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	uiVersion := ""
 	appsClient := false
 	appsInventory := false
-	for _, p := range []struct{ Name, ID, Directory string }{
-		{"docx-reader", docx.PluginID, d.DOCX}, {"image-ocr", ocr.PluginID, d.OCR}, {"trace-inspector", "steward.trace-inspector", d.Trace},
-		{"context-compact", compact.PluginID, d.Context}, {"recall", "steward.recall", d.Recall}, {"conversation", "steward.conversation", d.Conversation}, {"memory-curator", "steward.memory-curator", d.Curator}, {"evidence-reader", "steward.evidence-reader", d.Evidence}, {"skill-library", "steward.skill-library", d.Skills}, {"experience-learning", "steward.experience-learning", d.Experience}, {"task-control", "steward.task-control", d.Task}, {"task-progress", "steward.task-progress", d.Progress}, {"task-feedback", "steward.task-feedback", d.Feedback}, {"delegation", "steward.delegation", d.Delegation}, {"codemode", "steward.codemode", d.CodeMode}, {"file-tools", "steward.file-tools", d.Files}, {"shell-tools", "steward.shell-tools", d.Shell}, {"coding-workspace", "steward.coding-workspace", d.Coding}, {"computer-use", "steward.computer-use", d.Computer},
-		{"web-access", "steward.web-access", d.Web}, {"web-extract", "steward.web-extract", d.Extract},
-		{"mcp-bridge", "steward.mcp-bridge", d.MCP},
-		{"connected-apps", "steward.connected-apps", d.Apps},
-		{"tool-discovery", discovery.PluginID, d.Discovery},
-		{"apps-directory", "steward.apps-directory", d.AppsDirectory},
-		{"apps-accounts", "steward.apps-accounts", d.AppsAccounts},
-		{"apps-logos", "steward.apps-logos", d.AppsLogos},
-		{"apps-interface", "steward.apps-interface", d.AppsInterface},
-		{"github-pr-followup", github.PluginID, d.GitHub},
-		{"artifact-workbench", artifact.PluginID, d.Artifact},
-		{"intelligent-ui", ui.PluginID, d.UI},
-		{"schedule", schedule.PluginID, d.Schedule},
-		{"memory-inspector", memoryinspector.PluginID, d.MemoryInspector},
-		{"model-connections", modelconnections.PluginID, d.ModelConnections},
-		{"feishu-chat", feishuchat.PluginID, d.Feishu},
-		{"capability-settings", capabilityforms.PluginID, d.CapabilityForms},
-		{"terminal-interface", terminalinterface.PluginID, d.Terminal},
-		{"reference-pricing", referencepricing.PluginID, d.ReferencePricing},
-		{"web-workbench", webworkbench.PluginID, d.WebWorkbench},
-		{"service-watchdog", servicewatchdog.PluginID, d.ServiceWatchdog},
-	} {
-		if p.Directory == "" {
+	codingChecks := false
+	codingProject := false
+	for _, p := range bundledPlugins(&d) {
+		if *p.Directory == "" {
 			continue
 		}
-		installed, err := h.Install(ctx, p.Directory)
+		installed, err := h.Install(ctx, *p.Directory)
 		if err != nil {
 			return err
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "coding-workspace" {
+			for _, service := range installed.Manifest.Provides {
+				if service.Contract == "steward.coding-project-plan/1" {
+					codingProject = true
+				}
+				if service.Contract == "steward.coding-check-limits/1" {
+					codingChecks = true
+				}
+			}
 		}
 		if p.Name == "trace-inspector" {
 			traceLegacy = installed.Manifest.Version == "1.0.1"
@@ -278,6 +267,14 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	if d.Coding != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-import-limits/1", "steward.coding-report-recipe/1")
 		policy.Cases = append(policy.Cases, codingCases()...)
+		if codingProject {
+			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-project-plan/1")
+			policy.Cases = append(policy.Cases, codingProjectCases()...)
+		}
+		if codingChecks {
+			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-check-limits/1")
+			policy.Cases = append(policy.Cases, codingCheckCases()...)
+		}
 	}
 	if d.Computer != "" {
 		computer, err := computerPolicy()

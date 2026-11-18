@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/z-chenhao/assistant/internal/llm"
-	owner "github.com/z-chenhao/assistant/internal/plugin/modelconnections"
+
 	"github.com/z-chenhao/assistant/internal/plugin/modelconnections/contract"
+	connectionv1 "github.com/z-chenhao/assistant/internal/plugin/modelconnections/legacyv1"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -40,7 +41,7 @@ func TestModelConnectionMatches12ExecutedNativeSubmissions(t *testing.T) {
 		calls := 0
 		s.ModelConnectionPolicy = func(_ context.Context, f contract.ConnectionFacts) (contract.ConnectionDefaults, bool, error) {
 			calls++
-			return owner.ProjectConnection(f), true, nil
+			return connectionv1.Connection(f), true, nil
 		}
 		f := url.Values{"service": {c.Service}, "wire_api": {c.WireAPI}, "model": {"fixture-model"}, "endpoint": {"http://localhost:8080/v1"}, "name": {"Original"}}
 		if c.Account {

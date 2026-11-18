@@ -6,9 +6,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"io"
 	"math"
 	"strconv"
+
+	"github.com/z-chenhao/assistant/internal/jsonwire"
 )
 
 // Decode rejects duplicate keys, unknown struct fields, trailing JSON and
@@ -32,56 +33,13 @@ func decodeBounded(raw []byte, target any, maxBytes int) error {
 	}
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.UseNumber()
-	if err := unique(d, 0); err != nil {
+	if err := jsonwire.Check(d); err != nil {
 		return err
-	}
-	if _, err := d.Token(); err != io.EOF {
-		return errors.New("trailing JSON")
 	}
 	d = json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
 	d.UseNumber()
 	return d.Decode(target)
-}
-func unique(d *json.Decoder, depth int) error {
-	if depth > 32 {
-		return errors.New("JSON depth limit")
-	}
-	t, err := d.Token()
-	if err != nil {
-		return err
-	}
-	if delim, ok := t.(json.Delim); ok {
-		switch delim {
-		case '{':
-			seen := map[string]bool{}
-			for d.More() {
-				key, e := d.Token()
-				if e != nil {
-					return e
-				}
-				s, ok := key.(string)
-				if !ok || seen[s] {
-					return errors.New("duplicate JSON key")
-				}
-				seen[s] = true
-				if err := unique(d, depth+1); err != nil {
-					return err
-				}
-			}
-		case '[':
-			for d.More() {
-				if err := unique(d, depth+1); err != nil {
-					return err
-				}
-			}
-		default:
-			return errors.New("invalid JSON delimiter")
-		}
-		_, err = d.Token()
-		return err
-	}
-	return nil
 }
 
 // Canonical uses sorted object keys (encoding/json), preserves array order and

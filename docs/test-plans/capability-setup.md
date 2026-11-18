@@ -52,6 +52,8 @@ Linux 验证了内核沙箱与受控 Lume 协议、tiny sealed base 和真实 No
 
 ## 托管表单回归
 
+用独立保留的 Owner 输入和预期校验共享 v1 的表单及展示输出。实际 `capability-form-plugins` 门禁验证打包资源、独立换版和停用，并通过浏览器与原生入口核对提交与读取行为。
+
 - 原 `capability_forms_test` 已迁至 owning 包，保留六类默认值、字段校验、SecretStore 引用、MCP 行及高级 YAML 保留场景；两项保留原生 codec 的 Owner 样本校验实际输出。
 - `TestCapabilityFormsActualUpgradeRollbackStopAndCold` 构建独立真实进程，修改 Computer 表单端口默认值，验证激活／精确回退／停用／首次冷读取，不依赖 native 代理。
 - `TestCapabilityFormCandidateRetainsEveryUnshownSetting` 覆盖六类隐藏字段；`TestCapabilityFormCandidateRejectsImplicitYAMLAndForeignProvider` 拒绝隐式展开和跨 provider 高级数据；请求回归拒绝转发伪造文档、版本和无关字段。

@@ -56,6 +56,15 @@ Use `gofmt`, tabs, lowercase Go packages, and interfaces defined by consumers. K
 
 Use Go `testing` (`*_test.go`, beside sources), Node `node:test` (`*.test.mjs`), and Python `unittest` (`test_*.py`). Coverage targets observable scenarios, without a fixed percentage. Run focused checks first; cross-module changes require `make test lint` and relevant system gates. Follow the [testing guide](docs/test-plans/product.md); report skipped/unrun checks.
 
+For changes based on a mature product, name the reference and record the
+user action, observable outcome, and Steward constraints in the owning test plan.
+Use the [critical journeys](docs/test-plans/product.md#critical-user-journeys)
+to find runnable checks and evidence. For independent acceptance, use an
+owner-reviewed driver and criteria from a separate revision. Record their
+identity with the candidate, environment and original result. If the candidate
+changes the checks, review the criteria change separately and show that the
+independent check detects a representative broken behavior.
+
 Finish edits and focused regressions before starting final acceptance. Keep the source and binary fixed during a gate; changes invalidate that gate's evidence and require a fresh run of the affected checks.
 
 Recovery regressions must assert the dependent behavior immediately after the real recovery action, including the original selection and version fences. Do not silently repair the fixture with an extra select, update or reload absent from the intended user flow. Check both persisted readiness and the affected user interaction.
@@ -65,6 +74,12 @@ External CLI/protocol fixtures must reflect observed output from the pinned offi
 Status changes must distinguish the latest outcome from retained attempt history. Unknown errors must not invent a specific cause; missing diagnostics remain unavailable, and raw private errors must not enter user-facing messages.
 
 Use disposable `STEWARD_DATA_ROOT` directories. Close Python SQLite connections with `contextlib.closing`; use read transactions for consistent cross-table predicates.
+
+When the same correction recurs, fix it in the owning interface or component
+first, then consider a type, static check or behavioral regression. Verify the
+check against the original failure or a minimal broken variant and point its
+diagnostic to the supported path. Keep judgment and links here, with design
+decisions and verification details in their owning files.
 
 ## Agent Context Changes
 
