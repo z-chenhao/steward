@@ -23,6 +23,8 @@
 
 ### F-018/F-004 Web 待办覆盖
 
+[页内审批回归](../../internal/agent/sqlite/approval_view_test.go)在一万条已决记录中读取一个页内决定及当前待审，并验证浏览不会恢复动作。
+
 `verify_channels.py --attention-only` 使用真实 Main Task 工具保存问题/审阅与失败执行，真实上传文件，再由认证 Web 与 Chromium 完成优先定位、已完成 Task 审阅、具体文件链接、回答/审阅及 Main 接续。`channels_browser.mjs` 的 attention 场景检查当前页数量与行数、长中文拒绝、native 输入/焦点/选区、Chat 草稿与附件、新标签页、中文窄宽、键盘提交、确认丢失后只读草稿、另一端使本地表单失效、断线陈旧页面被拒绝且保留意见。持久化 readback 证明三条反馈只产生三次接续、始终保留 Web 来源/路由、无审批替代，随后 CLI 同答重试仍返回原 receipt。
 
 `task_feedback_web_test.go` 以真实 SQLite/Actor 验证 CLI/Web 首次顺序、callback aliases、不同回答冲突、真实 Main 交付与绑定撤销先于去重；`attention_test.go` 验证转义、确切 Task/消息/文件定位和认证入口；51 个 Main 当前审批的有界投影保留50条并将更多入口指向Chat中第51条真实审批，而非无关Task列表。原冻结审批与对话 live 浏览器场景继续覆盖 approval-only 原定位。确定性模型证明协议和交互，真实模型何时提问及意见理解质量仍需外部评测。

@@ -204,7 +204,7 @@ func (s *Server) loadTasks(ctx context.Context, r *http.Request, p *page) error 
 		}
 	}
 	if len(d.ApprovalIDs) > 0 {
-		approvals, e := s.Core.WebApprovals(ctx)
+		approvals, e := s.pageApprovals(ctx, d.ApprovalIDs, false)
 		if e != nil {
 			return e
 		}

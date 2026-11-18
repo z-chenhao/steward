@@ -31,7 +31,7 @@
 | [F-004](features/tasks.md#f-004) | Task 生命周期与继续工作 | Root 失败有 Host 持久提醒，Task 保留可续作状态；默认标题按完整纯方案冻结，原创建事务去重并保留历史未知调用；问答／审阅期限与续作指引已独立迁移到版本化插件；支持显式 GitHub PR→已有 Task 关联，经 Main 有界接续并保留停止/隐私裁决；CLI/Web 与个人飞书具名问题、确切成果审阅接通，真实渠道与模型质量待验证。 搜索／默认标题与问题／审阅配方已由 task-control／task-feedback 独立托管；原状态与回执由 Host 保留。 | 否 · 部分完成 |
 | [F-005](features/tasks.md#f-005) | 执行中的有意义进度 | 用户主动查看时能了解当前阶段、摘要与子任务完成情况；Task 详情的轮次、指令、审批和交付来自同一读快照，历史交付与计划配置支持独立分页。Root 进度提示／筛选已独立迁移到版本化插件。 提示与原句筛选由独立版本化 task-progress 持有；Root／Child 与旧执行保持隔离。积压任务结果按有限事务恢复。 | 是 · 已完成 |
 | [F-006](features/delegation.md#f-006) | 可递归的 Child Worker | 复杂工作可由 Worker 拆成独立子任务，并由父级汇总；委派方法／更窄树预算已迁入独立版本化插件。 | 是 · 已完成 |
-| [F-007](features/tools-approvals.md#f-007) | 工具、审批与未知副作用处理 | Main 与 Worker 以 Code Mode 组合工具，直接声明少量高频工具，调用权限按角色冻结；MCP 不提供暴露模式，双方共用具体审批与恢复。 | 是 · 已完成 |
+| [F-007](features/tools-approvals.md#f-007) | 工具、审批与未知副作用处理 | Main 与 Worker 以 Code Mode 组合工具，直接声明少量高频工具，调用权限按角色冻结；MCP 不提供暴露模式，双方共用具体审批与恢复。Web 只读取页内决策及当前待审动作。 | 是 · 已完成 |
 | [F-008](features/codemode.md#f-008) | 可恢复的 JavaScript 编排 | Agent 能用标准 JavaScript 串联工具、处理并发并显式输出结果；资源配方／参数说明已迁入独立版本插件；工具发现 BM25／分词／摘要选择已由独立托管包执行，原 Run／挂起 VM、换版／回退、停用与冷恢复已有验收证据。 | 是 · 已完成 |
 | [F-009](features/memory-context.md#f-009) | 自动记忆形成与语义归并 | 四层记忆支持执行期笔记、链接表示、会话注入和后台 Dreaming；复用证据、版本、费用与遗忘屏障，兼容旧事实归并；失败重试使用独立 Bridge 会话，已接纳结果重放不重复推理；语义质量持续评测。 | 是 · 已完成 |
 | [F-010](features/memory-context.md#f-010) | 按作用域召回记忆与对话 | 候选阶段排除当前工作集；Main 以普通对象 ID 沿消息、Task、授权产物续读。本机另可精读当前 Memory、可见来源及 Task 已关联的确切 GitHub 观察。Main/Worker 可经 memory_manage 分页精读密封记忆文档和同一作用域 transcript；显式搜索返回带偏移的短摘录并排除当前工作集，Dream 文档逐条绑定引文。更广外部导航待接通。 | 否 · 部分完成 |

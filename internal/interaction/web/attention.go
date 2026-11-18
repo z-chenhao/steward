@@ -70,7 +70,7 @@ func (s *Server) loadAttention(ctx context.Context, p *page, ref, before string,
 	} else {
 		if reader, ok := s.Feedbacks.(interface {
 			PendingApprovals(context.Context) ([]interaction.Approval, error)
-		}); ok {
+		}); ok && approvals == nil {
 			approvals, err = reader.PendingApprovals(ctx)
 			if err != nil {
 				v.Unavailable = true
