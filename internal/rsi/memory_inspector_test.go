@@ -8,7 +8,7 @@ import (
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"os"
 	"os/exec"
-	"path/filepath"
+
 	"reflect"
 	"testing"
 )
@@ -16,39 +16,8 @@ import (
 func memoryInspectorPackage(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	if out, e := exec.Command("go", "build", "-o", filepath.Join(dir, "plugin"), "../../cmd/plugins/memory-inspector").CombinedOutput(); e != nil {
+	if out, e := exec.Command("python3", "../../tests/fixtures/plugins/memory-inspector-original-v1/build.py", dir).CombinedOutput(); e != nil {
 		t.Fatal(e, string(out))
-	}
-	raw, e := os.ReadFile("../../plugins/memory-inspector/steward.plugin.json")
-	if e != nil {
-		t.Fatal(e)
-	}
-	var m rsiplugin.Manifest
-	if e = rsiplugin.Decode(raw, &m); e != nil {
-		t.Fatal(e)
-	}
-	if err := os.MkdirAll(filepath.Join(dir, "views"), 0700); err != nil {
-		t.Fatal(err)
-	}
-	for _, file := range []string{"memory.html", "memory.css", "copy.json", "memory-worker.js"} {
-		raw, err := os.ReadFile(filepath.Join("../plugin/memoryinspector/view", file))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err = os.WriteFile(filepath.Join(dir, "views", file), raw, 0600); err != nil {
-			t.Fatal(err)
-		}
-	}
-	m, e = rsi.Seal(dir, m)
-	if e != nil {
-		t.Fatal(e)
-	}
-	raw, e = json.Marshal(m)
-	if e != nil {
-		t.Fatal(e)
-	}
-	if e = os.WriteFile(filepath.Join(dir, "steward.plugin.json"), raw, 0600); e != nil {
-		t.Fatal(e)
 	}
 	return dir
 }
