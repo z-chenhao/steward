@@ -860,9 +860,9 @@
     "zh_cn": "更新已暂停，草稿已保留。 "
   },
   {
-    "key": "Use an IANA time zone. One-time times during a clock change must identify one unambiguous instant.",
-    "en": "Use an IANA time zone. One-time times during a clock change must identify one unambiguous instant.",
-    "zh_cn": "请使用 IANA 时区；单次计划在夏令时切换期间必须对应唯一的有效时间。"
+    "key": "Use an IANA time zone. If the same local time occurs twice, choose its UTC offset.",
+    "en": "Use an IANA time zone. If the same local time occurs twice, choose its UTC offset.",
+    "zh_cn": "请输入 IANA 时区。本地时间出现两次时，请选择对应的 UTC 偏移。"
   },
   {
     "key": "Use model",
@@ -1053,5 +1053,15 @@
     "key": "· epoch",
     "en": "· epoch",
     "zh_cn": "· 执行轮次"
+  },
+  {
+    "key": "UTC offset",
+    "en": "UTC offset",
+    "zh_cn": "UTC 偏移"
+  },
+  {
+    "key": "Select a UTC offset",
+    "en": "Select a UTC offset",
+    "zh_cn": "选择 UTC 偏移"
   }
 ]

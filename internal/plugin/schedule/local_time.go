@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/z-chenhao/assistant/internal/plugin/schedule/contract"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
+	"sort"
 	"time"
 	"unicode/utf8"
 )
@@ -17,30 +18,46 @@ func localTime(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, erro
 	if len(call.Inputs) != 0 || len(facts.Date) > 10 || len(facts.Clock) > 5 || utf8.RuneCountInString(facts.Timezone) > 128 || utf8.RuneCountInString(facts.OriginalSpec) > 256 {
 		return rsiplugin.JSONResult(ctx, value)
 	}
+	loc, zoneErr := calendarLocation(facts.Timezone)
+	if zoneErr != nil {
+		value.Field = "timezone"
+		return rsiplugin.JSONResult(ctx, value)
+	}
 	if facts.OriginalSpec != "" {
 		at, err := time.Parse(time.RFC3339Nano, facts.OriginalSpec)
-		loc, zoneErr := calendarLocation(facts.Timezone)
-		if err == nil && zoneErr == nil && at.In(loc).Format("2006-01-02") == facts.Date && at.In(loc).Format("15:04") == facts.Clock {
+		local := at.In(loc)
+		if err == nil && local.Format("2006-01-02") == facts.Date && local.Format("15:04") == facts.Clock && (facts.UTCOffset == "" || facts.UTCOffset == local.Format("-07:00")) {
 			return rsiplugin.JSONResult(ctx, contract.LocalTimeResult{Spec: facts.OriginalSpec})
 		}
 	}
-	if spec, err := exactLocalOnce(facts.Date, facts.Clock, facts.Timezone); err == nil {
-		value = contract.LocalTimeResult{Spec: spec}
+	if _, err := time.Parse("2006-01-02", facts.Date); err != nil {
+		value.Field = "date"
+		return rsiplugin.JSONResult(ctx, value)
+	}
+	wall, err := time.Parse("2006-01-02T15:04", facts.Date+"T"+facts.Clock)
+	if err != nil {
+		value.Field = "time"
+		return rsiplugin.JSONResult(ctx, value)
+	}
+	matches := matchingInstants(wall, loc)
+	for _, instant := range matches {
+		if (len(matches) == 1 && facts.UTCOffset == "") || (facts.UTCOffset != "" && facts.UTCOffset == instant.In(loc).Format("-07:00")) {
+			return rsiplugin.JSONResult(ctx, contract.LocalTimeResult{Spec: instant.UTC().Format(time.RFC3339)})
+		}
+	}
+	value.Field = "time"
+	if len(matches) > 0 {
+		value.Field = "utc_offset"
+		for _, instant := range matches {
+			value.UTCOffsets = append(value.UTCOffsets, instant.In(loc).Format("-07:00"))
+		}
 	}
 	return rsiplugin.JSONResult(ctx, value)
 }
 
-// Extracted unchanged from the existing Web editor, with the owning version's
-// frozen timezone data replacing the Host's mutable system files.
-func exactLocalOnce(date, clock, zone string) (string, error) {
-	loc, err := calendarLocation(zone)
-	if err != nil || zone == "" || zone == "Local" {
-		return "", errInvalid
-	}
-	wall, err := time.Parse("2006-01-02T15:04", date+"T"+clock)
-	if err != nil {
-		return "", errInvalid
-	}
+// Candidate offsets come from the package's frozen timezone archive. Chronological
+// ordering keeps the first and second occurrences stable across processes.
+func matchingInstants(wall time.Time, loc *time.Location) []time.Time {
 	offsets := map[int]bool{}
 	for h := -36; h <= 36; h++ {
 		_, offset := wall.Add(time.Duration(h) * time.Hour).In(loc).Zone()
@@ -49,12 +66,10 @@ func exactLocalOnce(date, clock, zone string) (string, error) {
 	var matches []time.Time
 	for offset := range offsets {
 		candidate := wall.Add(-time.Duration(offset) * time.Second)
-		if candidate.In(loc).Format("2006-01-02T15:04") == date+"T"+clock {
+		if candidate.In(loc).Format("2006-01-02T15:04") == wall.Format("2006-01-02T15:04") {
 			matches = append(matches, candidate)
 		}
 	}
-	if len(matches) != 1 {
-		return "", errInvalid
-	}
-	return matches[0].UTC().Format(time.RFC3339), nil
+	sort.Slice(matches, func(i, j int) bool { return matches[i].Before(matches[j]) })
+	return matches
 }

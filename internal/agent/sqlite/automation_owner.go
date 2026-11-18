@@ -134,8 +134,16 @@ func (r *Runs) ConfigureAutomation(ctx context.Context, key string, q automation
 		}
 		return automationEvent(ctx, tx, result.Ref, "changed")
 	})
-	if err == automation.ErrInvalid && plan.minimumBelow > 0 {
-		return result, automation.ThresholdMinimumError{Minimum: plan.minimumBelow}
+	if err == automation.ErrInvalid {
+		if plan.minimumBelow > 0 {
+			return result, automation.ThresholdMinimumError{Minimum: plan.minimumBelow}
+		}
+		if plan.inputIssue.Issue != "" {
+			return result, plan.inputIssue
+		}
+		if q.Enabled && q.Type == "at" && !plan.next.IsZero() && !plan.next.After(now) {
+			return result, automation.ScheduleInputError{Issue: "future"}
+		}
 	}
 	return result, err
 }
