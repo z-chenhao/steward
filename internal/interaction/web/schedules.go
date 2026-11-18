@@ -23,7 +23,7 @@ type scheduleEditor struct {
 	Version                                                                          int64
 	Weekday, Day                                                                     string
 	Enabled                                                                          bool
-	OriginalSpec, OriginalTimezone                                                   string
+	BrowserTimezone, OriginalSpec, OriginalTimezone                                  string
 }
 
 func scheduleURL(ref string) string { return "/tasks/schedules/" + url.PathEscape(ref) }
@@ -59,6 +59,9 @@ func (s *Server) loadSchedule(ctx context.Context, r *http.Request, p *page) err
 			return err
 		}
 		applyScheduleDefaults(e, defaults)
+		if loc := browserLocation(r); loc != nil {
+			e.BrowserTimezone = loc.String()
+		}
 		return nil
 	}
 	ref := strings.TrimPrefix(r.URL.Path, "/tasks/schedules/")

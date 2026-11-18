@@ -32,7 +32,7 @@ func presentation() (contract.Presentation, error) {
 	return contract.Presentation{View: asset(view), Stylesheet: asset(styles), Copy: asset(copyText), Policy: policy}, nil
 }
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Service: func(_ context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Service: func(_ context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
 		var req struct{}
 		if err := rsiplugin.Decode(c.Input, &req); err != nil {
 			return rsiplugin.Result{}, err
