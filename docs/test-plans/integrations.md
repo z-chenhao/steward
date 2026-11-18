@@ -610,3 +610,9 @@ required Apps 竞态使用[同一动态分批机制](engineering.md#apps-竞态�
 当前标准分发为40包。Connected Apps SQLite race 通过原执行器按同一命名选择集分批，每根恰好一次，CPU 并发、15分钟单批报警和完整性核对保留。实际 App 系统验收的 managed33／managed32／prior30／prior29／prior28／prior24／prior23／prior22 八个独立组合分别运行，各保留20分钟报警；每个原子组合必须恰好一次 pass，不能因累计前序时间跳过后续版本、审批、unknown 或冷恢复。
 
 MCP 插件回归复用现有普通 CLI 的 `-test-mcp-server` 入口，仍运行同一个 Steward-owned fake 协议服务；Host 保留 race 检测，peer 避免 race 测试进程的退出等待干扰16页／4096条目录与原30秒 CodeMode边界。GitHub SQLite 回归复用具完整性核对的8根分批执行器，各根测试仍只运行一次。
+
+### Task 收件身份与原件归属
+
+参考 [Manus 的代理收件身份](https://manus.im/blog/introducing-manus-2-0)，所有者在 Steward 为已有 Task 启用独立收件地址，转发器投递后该 Task 可查看来信证据，关闭地址后拒绝后续来信。Steward 的验收使用本机文件权限、已验证插件和受控转发，不依赖公共邮箱供应商。
+
+[真实 CLI 回归](../../internal/agent/sqlite/task_mail_test.go)使用可执行 Host 和独立构建的解析器，验证原图与原政策保留、指定信封收件人路由、RFC 编码正文、并发重投一次接纳、错误复用 ID、其他 Task 无读取权、关闭与重新分配、Guardian 停机及提交前 Forget。[格式回归](../../internal/plugin/taskmail/plugin_test.go)覆盖编码失败、非纯文本与重复关键头。

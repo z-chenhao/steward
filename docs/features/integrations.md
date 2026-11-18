@@ -333,3 +333,23 @@ Apps 单卡片的实际版本化资源与有限组合已接入私有实验，保
 ### 客户端与样式的候选接管
 
 私有 Apps profile `/3` 在一次同包读取中携带本地化规则、隔离 Worker 与被动 stylesheet；现有主页面的列表、轮询、动作提示、详情打开、别名恢复及分类提交决策均已接通。CSS 通过原图 URI 实际加载，无脚本仍使用同一包的样式和原生表单；原全局 Apps CSS/import 已清理，具名旧样式仅保留历史消费者。独立样式换版／回退、旧引用、冷恢复、停用、原控件及视觉专项已有验证。源码标准默认已为1.21；标准32包及六种保留组合已通过实际分发，全量测试与清理后的完整 lint 已通过，未将此候选接管标记为整个 F-071 已迁移完成。
+
+### 任务的专用邮件转发地址（F-042）
+
+本机所有者可以给进行中的一个 Task 分配随机收件别名。需要已有的收件域名和能按信封收件人调用本机程序的转发器。通过 `make build` 构建的 `bin/plugins/task-mail` 是可选解析包。运行以下命令启用它，然后把返回的地址登记到自己的转发器。
+
+```sh
+steward mailbox enable-plugin /absolute/path/to/bin/plugins/task-mail
+steward mailbox bind "$task_ref" forward.example.org
+```
+
+转发器把未修改的邮件交给标准输入，并传入已接纳的信封收件人和该次投递的稳定 ID。重试须复用 ID 和原始邮件字节。读取、翻页与关闭使用以下入口。
+
+```sh
+steward mailbox receive "$envelope_recipient" "$delivery_id" < message.eml
+steward mailbox messages "$task_ref"
+steward mailbox messages "$task_ref" "$last_sequence"
+steward mailbox close "$envelope_recipient"
+```
+
+解析器接纳最大 256 KiB 的 UTF-8 或 ASCII 纯文本邮件，支持常见传输编码及编码主题。成功结果包含任务和文本 Artifact 引用。可用 `steward artifact open "$artifact_ref"` 查看。转发器应把非零退出按自身的退信／重试策略处理。关闭、任务暂停／终止或 Forget 后，旧地址停止接纳；需要继续时按当前任务状态重新绑定。收件域名、MX 和远端转发器由域名所有者管理。
