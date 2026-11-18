@@ -47,6 +47,8 @@
 
 ### Forward upgrade rehearsal and evidence
 
+[冻结插件恢复](../../internal/agent/sqlite/plugin_backup_recovery_test.go)覆盖原 Run 已接纳后停用自定义日历、冷备份、恢复后缺包拒绝激活及原包回位后的首次执行；[大文件中止](../../internal/maintenance/stream_test.go)在单文件复制中途触发取消。
+
 Restore a backup into an isolated root first. All three schema versions are
 checked before any forward migration; a future/incompatible database rejects
 startup without partially upgrading another database. State migration 026 adds

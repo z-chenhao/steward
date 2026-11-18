@@ -210,6 +210,8 @@ and serving commands validate policy; they never silently alter existing bounds.
 
 ### Cold encrypted backup and isolated restore
 
+备份清单版本 2 同时保留 Host 已安装且未退役的内容寻址插件包，包括已停用但被历史 Run 引用的版本。恢复后仍须显式激活。旧版归档可恢复，若有缺失包，从独立副本把原 digest 的包目录复制到新根的 `rsi/packages/` 后再执行激活。单个大文件复制期间取消会中止发布。
+
 Stop **every** process using the data root, including temporary CLI commands and
 external database writers. Every Steward process holds a shared OS lock. Backup
 requires the exclusive lock and refuses a live instance; process death releases
