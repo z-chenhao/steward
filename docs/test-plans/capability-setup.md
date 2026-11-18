@@ -74,3 +74,5 @@ Linux 验证了内核沙箱与受控 Lume 协议、tiny sealed base 和真实 No
 - `TestCapabilityOwnedViewRejectsEffectEscapesAndPrivateFields` 拒绝脚本、noscript 网络资源、外部表单／链接、私有字段、共享原语重定义、隐藏凭据及错误版本；`TestCapabilityOwnedViewBoundsEmptyHelperExpansionAndIntegerLoops` 覆盖空体指数辅助调用与整数迭代；缺词条回归拒绝借用原生字典。
 - `TestCapabilityInvalidOwnedViewCannotProbeOrSave` 和 `TestCapabilityEncoderCannotSubstituteAuthorizedCredentialReference` 断言非法视图和偷换凭据均在 Test／Save 前拒绝。六类绑定正例包括带点工具名及外部效果权限，负例覆盖权限替换、provider 身份和原高级数据。
 - 必需六类实际浏览器门禁在本批资源更改后重跑，检查无脚本、桌面／移动端及明暗主题，保留原配置证明、旧 Run／Child 和新工具可见性；共享控件所有权扫描包括 owning 视图目录。
+
+浏览器回归在 A → B 保存途中把字段改回 A，检查第二个请求携带新版号、刷新仍显示 A，并在脚本加载失败时使用原生保存按钮。

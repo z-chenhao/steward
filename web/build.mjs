@@ -2,9 +2,9 @@ import {build} from 'esbuild';
 import {THEME_CSS,SVG_CLASSES_CSS,FORM_STYLES_CSS} from './src/components/open-intelligent-ui/design-system.ts';
 import {createHash} from 'node:crypto';
 import {assertSharedControls} from './controls-policy.mjs';
-import {execFileSync} from 'node:child_process';
-import {mkdtempSync,readFileSync,readdirSync,rmSync,writeFileSync} from 'node:fs';
-import {tmpdir} from 'node:os';
+import postcss from 'postcss';
+import tailwind from '@tailwindcss/postcss';
+import {readFileSync,readdirSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('.',import.meta.url));
@@ -18,15 +18,11 @@ const appearance=await build({absWorkingDir:root,entryPoints:['src/appearance.ts
 const diagrams=await build({absWorkingDir:root,entryPoints:['src/diagrams.ts'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
 const previewRuntime=await build({absWorkingDir:root,entryPoints:['src/preview-runtime.js'],bundle:true,minify:true,write:false,format:'iife',target:['es2022']});
 const widgetRuntime=await build({absWorkingDir:root,entryPoints:['../internal/plugin/intelligentui/view/widget-runtime.js'],nodePaths:[root+'node_modules'],bundle:true,minify:true,write:false,metafile:true,format:'iife',target:['es2022'],legalComments:'inline'});
-// Use Tailwind's file output: a synchronous child can otherwise lose buffered stdout.
-const cssTemp=mkdtempSync(join(tmpdir(),'steward-web-css-'));
-let css;
-try{
-  const output=join(cssTemp,'style.css');
-  execFileSync(root+'node_modules/.bin/tailwindcss',['-i','src/style.css','--minify','--output',output],{cwd:root,stdio:['ignore','ignore','inherit']});
-  css=readFileSync(output);
-  if(!css.length)throw new Error('Tailwind produced an empty stylesheet');
-}finally{rmSync(cssTemp,{recursive:true,force:true});}
+const stylesheet=join(root,'src/style.css');
+const compiled=await postcss([tailwind({base:root,optimize:true,transformAssetUrls:false})])
+  .process(readFileSync(stylesheet,'utf8'),{from:stylesheet});
+let css=compiled.css.trimEnd();
+if(!css.length)throw new Error('Tailwind produced an empty stylesheet');
 // Only fonts get persistent caching; HTML, scripts and styles still refresh.
 // The server accepts immutable caching only when this digest matches its bytes.
 css=Buffer.from(css.toString().replace(/url\(['"]?(\/brand\/[^)'"?]+\.(?:woff2|ttf))['"]?\)/g,(_,path)=>{

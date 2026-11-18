@@ -9,7 +9,7 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.PresentationService: func(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.PresentationService: func(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 		var facts contract.PresentationFacts
 		if err := rsiplugin.Decode(call.Input, &facts); err != nil {
 			return rsiplugin.Result{}, err
