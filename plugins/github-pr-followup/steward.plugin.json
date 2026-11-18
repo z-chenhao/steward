@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.github-pr-followup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "feature_ids": [
     "F-042",
     "F-045"
@@ -33,7 +33,7 @@
                 "number": {
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 20
+                  "maximum": 21
                 },
                 "count": {
                   "type": "integer",
@@ -48,7 +48,7 @@
               ],
               "additionalProperties": false
             },
-            "maxItems": 60
+            "maxItems": 63
           },
           "poll_seconds": {
             "type": "integer",
@@ -81,7 +81,7 @@
                   "number": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": 20
+                    "maximum": 21
                   },
                   "count": {
                     "type": "integer",

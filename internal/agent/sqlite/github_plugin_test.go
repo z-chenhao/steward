@@ -40,7 +40,7 @@ func githubVersionPackage(t *testing.T, version string, fault ...string) string 
 		t.Fatal(err)
 	}
 	code := string(raw)
-	for old, next := range map[string]string{`Version: "1.0.0"`: `Version: "` + version + `"`} {
+	for old, next := range map[string]string{`Version: "1.0.1"`: `Version: "` + version + `"`} {
 		if !strings.Contains(code, old) {
 			t.Fatal("missing version source")
 		}
@@ -186,7 +186,7 @@ func TestGitHubPluginActualNativeInflightUpgradeRollbackDisableAndCold(t *testin
 	}
 	defer func() { s.Close() }()
 	r := s.Runs(nil, nil)
-	first, second := githubVersionPackage(t, "1.0.0"), githubVersionPackage(t, "1.1.0")
+	first, second := githubVersionPackage(t, "1.0.1"), githubVersionPackage(t, "1.1.0")
 	type barrier struct{ entered, resume chan struct{} }
 	var mu sync.Mutex
 	var held *barrier
@@ -232,7 +232,7 @@ func TestGitHubPluginActualNativeInflightUpgradeRollbackDisableAndCold(t *testin
 		}
 	}
 	var host rsi.Host
-	holdAndChange(func() { host = installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.0"), first) })
+	holdAndChange(func() { host = installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.1"), first) })
 	if scalar(t, s, `SELECT count(*) FROM github_observation WHERE source_method_json IS NULL`) != 1 {
 		t.Fatal("activation rewrote an actual in-flight native poll")
 	}
@@ -269,7 +269,7 @@ func TestGitHubPluginActualNativeInflightUpgradeRollbackDisableAndCold(t *testin
 		t.Fatal(err)
 	}
 	check(3, upgraded, 341, 512)
-	activateGitHubVersion(t, host, "", "1.0.0", "github-real-rollback", initial.Revision)
+	activateGitHubVersion(t, host, "", "1.0.1", "github-real-rollback", initial.Revision)
 	id.Store(4)
 	if err = service.Poll(ctx); err != nil {
 		t.Fatal(err)
@@ -354,7 +354,7 @@ func TestGitHubPluginAcceptedRecipeMainScopeAndSourceGuardian(t *testing.T) {
 			s, r, a, _, cfg, ref := continuationFixture(t, "once")
 			watchBatch(t, s, cfg, "")
 			bindTask(t, s, cfg, ref)
-			host := installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.0"), githubVersionPackage(t, "1.0.0"))
+			host := installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.1"), githubVersionPackage(t, "1.0.1"))
 			original, err := host.Store.Status(ctx)
 			if err != nil {
 				t.Fatal(err)
@@ -506,7 +506,7 @@ func TestGitHubPluginLateForgetCannotAcceptSourceOrRecipe(t *testing.T) {
 	defer s.Close()
 	r := s.Runs(nil, nil)
 	owner := idAgent(t, s)
-	installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.0"), githubVersionPackage(t, "1.0.0"))
+	installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.1"), githubVersionPackage(t, "1.0.1"))
 	var id atomic.Int64
 	id.Store(1)
 	service := githubServicePeer(t, s, githubConfig(), githubLongSource(t, &id, nil))
@@ -537,8 +537,8 @@ func TestGitHubPluginLateForgetCannotAcceptSourceOrRecipe(t *testing.T) {
 }
 
 func TestGitHubPluginPreservesOriginalRowAndQuotaFailureOrder(t *testing.T) {
-	pkg := githubVersionPackage(t, "1.0.0")
-	for _, mode := range []string{"history-final-invalid-time", "quota-before-later-invalid-identity"} {
+	pkg := githubVersionPackage(t, "1.0.1")
+	for _, mode := range []string{"history-final-invalid-time", "quota-before-later-invalid-identity", "exactly-full", "one-over-limit", "lookahead-failed"} {
 		t.Run(mode, func(t *testing.T) {
 			ctx := context.Background()
 			s, err := Open(ctx, t.TempDir())
@@ -547,7 +547,7 @@ func TestGitHubPluginPreservesOriginalRowAndQuotaFailureOrder(t *testing.T) {
 			}
 			defer s.Close()
 			r := s.Runs(nil, nil)
-			installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.0"), pkg)
+			installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.1"), pkg)
 			var reached int
 			service := githubServicePeer(t, s, githubConfig(), func(w http.ResponseWriter, req *http.Request) {
 				switch req.URL.Path {
@@ -562,7 +562,23 @@ func TestGitHubPluginPreservesOriginalRowAndQuotaFailureOrder(t *testing.T) {
 					}
 					reached = page
 					entries := []map[string]any{}
-					for i := 0; i < 100; i++ {
+					count := 100
+					if page == 21 {
+						switch mode {
+						case "exactly-full":
+							count = 0
+						case "one-over-limit":
+							count = 1
+						case "lookahead-failed":
+							http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
+							return
+						default:
+							t.Error("unexpected probe after failure")
+							http.Error(w, "unexpected", 500)
+							return
+						}
+					}
+					for i := 0; i < count; i++ {
 						body := "feedback"
 						if mode == "quota-before-later-invalid-identity" {
 							body = strings.Repeat("x", 16384)
@@ -577,6 +593,10 @@ func TestGitHubPluginPreservesOriginalRowAndQuotaFailureOrder(t *testing.T) {
 						entries = append(entries, entry)
 					}
 					_ = json.NewEncoder(w).Encode(entries)
+				case "/repos/owner/repo/pulls/7/reviews":
+					fmt.Fprint(w, "[]")
+				case "/repos/owner/repo/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs":
+					fmt.Fprint(w, `{"check_runs":[]}`)
 				default:
 					t.Error("partial failed scan advanced to another source")
 					http.Error(w, "unexpected", 500)
@@ -587,6 +607,21 @@ func TestGitHubPluginPreservesOriginalRowAndQuotaFailureOrder(t *testing.T) {
 				code, last = "HISTORY_LIMIT", 5
 			}
 			err = service.Poll(ctx)
+			if mode == "exactly-full" {
+				if err != nil || reached != 21 || scalar(t, s, `SELECT count(*) FROM github_observation`) != 2000 {
+					t.Fatal("full final page must be admitted", err, reached)
+				}
+				return
+			}
+			if mode == "one-over-limit" {
+				code, last = "HISTORY_LIMIT", 21
+			}
+			if mode == "lookahead-failed" {
+				if err == nil || reached != 21 || scalar(t, s, `SELECT count(*) FROM github_observation`) != 0 {
+					t.Fatal("unconfirmed final page advanced progress", err, reached)
+				}
+				return
+			}
 			var failure *github.Failure
 			if !errors.As(err, &failure) || failure.Code != code || reached != last || scalar(t, s, `SELECT count(*) FROM github_observation`) != 0 {
 				t.Fatal("original sequential failure precedence or whole-scan boundary changed", err, reached)
@@ -734,7 +769,7 @@ func TestGitHubPluginLastStepGuardianAndActualStorageFailureStayDistinct(t *test
 			}
 			defer s.Close()
 			r := s.Runs(nil, nil)
-			host := installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.0"), githubVersionPackage(t, "1.0.0"))
+			host := installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.1"), githubVersionPackage(t, "1.0.1"))
 			var id atomic.Int64
 			id.Store(1)
 			service := githubServicePeer(t, s, githubConfig(), githubLongSource(t, &id, nil))
@@ -787,7 +822,7 @@ func TestGitHubPluginExpandedMethodSpendsOriginalScanBudget(t *testing.T) {
 			}
 			defer s.Close()
 			r := s.Runs(nil, nil)
-			version := "1.0.0"
+			version := "1.0.1"
 			pkg := ""
 			if mode == "large-method" {
 				version = "1.2.0"
@@ -862,7 +897,7 @@ func githubServicePeer(t *testing.T, s *Store, cfg github.Config, handler http.H
 
 func TestGitHubPluginActualWholeScanMatchesOriginal27Oracles(t *testing.T) {
 	ctx := context.Background()
-	pkg := githubVersionPackage(t, "1.0.0")
+	pkg := githubVersionPackage(t, "1.0.1")
 	raw, err := os.ReadFile("../../observer/github/testdata/native-reader-v1.json")
 	if err != nil {
 		t.Fatal(err)
@@ -881,6 +916,13 @@ func TestGitHubPluginActualWholeScanMatchesOriginal27Oracles(t *testing.T) {
 		t.Fatal("original source oracles incomplete", err)
 	}
 	for _, test := range cases {
+		// v1.0.0 stopped at the full twentieth page. The current method
+		// requires one additional source response to prove overflow.
+		if test.Name == "history-limit" {
+			probe := test.HTTP[len(test.HTTP)-1]
+			probe.Path = "/repos/owner/repo/pulls/7/comments?per_page=100&page=21"
+			test.HTTP = append(test.HTTP, probe)
+		}
 		t.Run(test.Name, func(t *testing.T) {
 			s, err := Open(ctx, t.TempDir())
 			if err != nil {
@@ -888,7 +930,7 @@ func TestGitHubPluginActualWholeScanMatchesOriginal27Oracles(t *testing.T) {
 			}
 			defer s.Close()
 			r := s.Runs(nil, nil)
-			installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.0"), pkg)
+			installRuntimePackage(t, s, r, "github-pr-followup", githubOwnerPolicy("1.0.1"), pkg)
 			cursor := 0
 			service := githubServicePeer(t, s, githubConfig(), func(w http.ResponseWriter, r *http.Request) {
 				if r.Method != "GET" || r.Header.Get("Authorization") != "Bearer synthetic-test-token" || r.Header.Get("X-GitHub-Api-Version") != "2026-03-10" {
