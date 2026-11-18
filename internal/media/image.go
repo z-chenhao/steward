@@ -7,6 +7,8 @@ import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
+
+	_ "golang.org/x/image/webp"
 )
 
 const MaxImageBytes = 8 << 20
@@ -15,26 +17,36 @@ const MaxImagePixels = 32 << 20
 var ErrInvalid = errors.New("invalid image")
 var ErrLimit = errors.New("image limit exceeded")
 
-func imageConfig(kind string, data []byte) (image.Config, error) {
-	if len(data) > MaxImageBytes {
-		return image.Config{}, ErrLimit
-	}
-	if kind != "image/png" && kind != "image/jpeg" {
-		return image.Config{}, ErrInvalid
-	}
-	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
-	if err != nil || cfg.Width < 1 || cfg.Height < 1 {
-		return image.Config{}, ErrInvalid
-	}
-	if int64(cfg.Width) > MaxImagePixels/int64(cfg.Height) {
-		return image.Config{}, ErrLimit
-	}
-	return cfg, nil
+// DecodeImage is the original PNG/JPEG decoder used by OCR and tool outputs.
+func DecodeImage(kind string, data []byte) (image.Image, error) {
+	return decodeImage(kind, data, false)
 }
 
-func DecodeImage(kind string, data []byte) (image.Image, error) {
-	if _, err := imageConfig(kind, data); err != nil {
-		return nil, err
+// DecodeModelImage also accepts a static WebP as a selected visual input.
+func DecodeModelImage(kind string, data []byte) (image.Image, error) {
+	return decodeImage(kind, data, true)
+}
+
+func decodeImage(kind string, data []byte, allowWebP bool) (image.Image, error) {
+	if len(data) > MaxImageBytes {
+		return nil, ErrLimit
+	}
+	if kind != "image/png" && kind != "image/jpeg" && !(allowWebP && kind == "image/webp") {
+		return nil, ErrInvalid
+	}
+	cfg, format, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil || cfg.Width < 1 || cfg.Height < 1 {
+		return nil, ErrInvalid
+	}
+	if kind == "image/webp" {
+		if format != "webp" || (len(data) > 20 && string(data[12:16]) == "VP8X" && data[20]&2 != 0) {
+			return nil, ErrInvalid
+		}
+	} else if format != "jpeg" && format != "png" {
+		return nil, ErrInvalid
+	}
+	if int64(cfg.Width) > MaxImagePixels/int64(cfg.Height) {
+		return nil, ErrLimit
 	}
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
