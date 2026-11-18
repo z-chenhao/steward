@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -21,14 +22,18 @@ type dueAutomation struct {
 	at, version                              int64
 	below                                    sql.NullInt64
 	graph                                    sql.NullString
-	eligible, stale                          bool
 	next                                     time.Time
 }
 
-func (r *Runs) readDueAutomations(ctx context.Context, now time.Time) ([]dueAutomation, error) {
-	rows, err := r.host.db.QueryContext(ctx, `SELECT a.automation_id,a.agent_id,a.trigger_type,a.trigger_spec,a.timezone,a.instruction,a.next_fire_at,a.schedule_version,a.below_value,a.method_graph,
- a.intent_privacy_epoch=coalesce(p.epoch,0) AND EXISTS(SELECT 1 FROM agent_config c WHERE c.singleton=1 AND c.agent_id=a.agent_id AND c.setup_status='ready')
- FROM automation a LEFT JOIN memory_privacy p USING(agent_id) WHERE a.enabled=1 AND a.next_fire_at<=? ORDER BY a.next_fire_at,a.automation_id LIMIT 100`, now.UnixMicro())
+const dueScanLimit = 100
+
+func (r *Runs) readDueAutomations(ctx context.Context, now time.Time, afterAt int64, afterID string) ([]dueAutomation, error) {
+	rows, err := r.host.db.QueryContext(ctx, `SELECT a.automation_id,a.agent_id,a.trigger_type,a.trigger_spec,a.timezone,a.instruction,a.next_fire_at,a.schedule_version,a.below_value,a.method_graph
+ FROM automation a LEFT JOIN memory_privacy p USING(agent_id)
+ WHERE a.enabled=1 AND a.next_fire_at<=?
+ AND (a.method_graph IS NULL OR (a.intent_privacy_epoch=coalesce(p.epoch,0) AND EXISTS(SELECT 1 FROM agent_config c WHERE c.singleton=1 AND c.agent_id=a.agent_id AND c.setup_status='ready')))
+ AND (?='' OR (a.next_fire_at,a.automation_id)>(?,?))
+ ORDER BY a.next_fire_at,a.automation_id LIMIT ?`, now.UnixMicro(), afterID, afterAt, afterID, dueScanLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +41,7 @@ func (r *Runs) readDueAutomations(ctx context.Context, now time.Time) ([]dueAuto
 	var result []dueAutomation
 	for rows.Next() {
 		var d dueAutomation
-		if err = rows.Scan(&d.id, &d.owner, &d.kind, &d.spec, &d.zone, &d.instruction, &d.at, &d.version, &d.below, &d.graph, &d.eligible); err != nil {
+		if err = rows.Scan(&d.id, &d.owner, &d.kind, &d.spec, &d.zone, &d.instruction, &d.at, &d.version, &d.below, &d.graph); err != nil {
 			return nil, err
 		}
 		result = append(result, d)
@@ -76,10 +81,6 @@ func (r *Runs) prepareDueAutomation(ctx context.Context, d *dueAutomation, now t
 		}
 		return nil
 	}
-	if !d.eligible {
-		d.stale = true
-		return nil
-	}
 	catalog := rsi.NewCatalog(r.host.DataRoot())
 	if configured := r.host.pluginCatalog.Load(); configured != nil {
 		catalog = *configured
@@ -117,28 +118,43 @@ func (r *Runs) prepareDueAutomation(ctx context.Context, d *dueAutomation, now t
 // accepts the original due fire + next instant + Outbox in one transaction.
 // Missed occurrences still coalesce to one original fire; no Task or Run is made.
 func (r *Runs) ScheduleAutomations(ctx context.Context, now time.Time) error {
-	ds, err := r.readDueAutomations(ctx, now)
-	if err != nil {
-		return agent.ErrStorage
-	}
-	if len(ds) == 0 {
-		return nil
-	}
-	for i := range ds {
-		if err = r.prepareDueAutomation(ctx, &ds[i], now); err != nil {
-			if errors.Is(err, agent.ErrConflict) {
-				ds[i].stale = true
-				continue
-			}
-			return err
+	var prepared []dueAutomation
+	var blocked error
+	var afterAt int64
+	var afterID string
+	for len(prepared) < dueScanLimit {
+		page, err := r.readDueAutomations(ctx, now, afterAt, afterID)
+		if err != nil {
+			return agent.ErrStorage
 		}
+		for _, d := range page {
+			err := r.prepareDueAutomation(ctx, &d, now)
+			switch {
+			case err == nil:
+				prepared = append(prepared, d)
+			case errors.Is(err, agent.ErrConflict):
+				// A concurrent owner changed this exact fire.
+			case errors.Is(err, rsi.ErrNotFound):
+				blocked = errors.Join(blocked, &missingSchedulePackage{d.id})
+			default:
+				return err
+			}
+			if len(prepared) == dueScanLimit {
+				break
+			}
+		}
+		if len(page) < dueScanLimit {
+			break
+		}
+		last := page[len(page)-1]
+		afterAt, afterID = last.at, last.id
+	}
+	if len(prepared) == 0 {
+		return blocked
 	}
 	r.host.boundary("before_automation_fire")
-	err = r.write(ctx, func(tx *sql.Tx) error {
-		for _, d := range ds {
-			if d.stale {
-				continue
-			}
+	err := r.write(ctx, func(tx *sql.Tx) error {
+		for _, d := range prepared {
 			if err := dueAutomationFence(ctx, tx, d); err != nil {
 				if errors.Is(err, agent.ErrConflict) {
 					continue
@@ -175,8 +191,18 @@ func (r *Runs) ScheduleAutomations(ctx context.Context, now time.Time) error {
 		r.host.boundary("before_automation_fire_commit")
 		return nil
 	})
-	if err == nil {
-		r.host.boundary("after_automation_fire_commit")
+	if err != nil {
+		return err
 	}
-	return err
+	r.host.boundary("after_automation_fire_commit")
+	return blocked
 }
+
+// The explicit tick reports exactly which schedules need their frozen package.
+// Actor recovery can still drain unrelated work after all prepared fires commit.
+type missingSchedulePackage struct{ id string }
+
+func (e *missingSchedulePackage) Error() string {
+	return fmt.Sprintf("schedule %s: %s", e.id, rsi.ErrNotFound)
+}
+func (e *missingSchedulePackage) Unwrap() error { return rsi.ErrNotFound }

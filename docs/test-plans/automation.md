@@ -38,6 +38,8 @@
 
 ## 详细测试入口与证明边界
 
+[调度隔离回归](../../internal/agent/sqlite/plugin_schedule_scan_isolation_test.go)验证撤权后新计划恰好触发一次、单个冻结包缺失时其他工作继续，以及恢复原包后的首个扫描仍接纳原 fire。
+
 本功能协议在此维护。既有编号用于追溯协议，不代表所有设计目标均已实现；完成状态以需求主索引为准。
 
 <a id="automation-verification"></a>
