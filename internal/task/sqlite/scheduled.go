@@ -22,7 +22,7 @@ func (r *Reader) Scheduled(ctx context.Context, query string) ([]task.ScheduledW
  a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0)
  FROM automation a LEFT JOIN task t ON t.task_id=a.task_id AND t.agent_id=a.agent_id
  WHERE a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
- AND (?='' OR (a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0) AND instr(lower(a.instruction),lower(?))>0))
+ AND (?='' OR (a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0) AND instr(steward_task_fold(a.instruction),steward_task_fold(?))>0))
  ORDER BY a.enabled DESC,a.next_fire_at IS NULL,a.next_fire_at,a.created_at,a.automation_id LIMIT 50`, query, query)
 	if err != nil {
 		return nil, err

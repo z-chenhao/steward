@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"testing"
@@ -40,5 +41,13 @@ func TestTaskWorkspacePoolCannotCreateOrWriteState(t *testing.T) {
 	var value string
 	if err = reader.db.QueryRow(`SELECT text FROM value`).Scan(&value); err != nil || value != "original" {
 		t.Fatal(value, err)
+	}
+}
+
+func TestCursorAcceptsPreviouslyIssuedScope(t *testing.T) {
+	raw := base64.RawURLEncoding.EncodeToString([]byte(`{"Scope":"list:all:old","At":123,"Ref":"task:x"}`))
+	c, err := decode(raw, "list:all:old")
+	if err != nil || c.At != 123 || c.Ref != "task:x" {
+		t.Fatal(c, err)
 	}
 }

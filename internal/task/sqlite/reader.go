@@ -4,6 +4,7 @@ package sqlite
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -48,13 +49,18 @@ func decode(raw, scope string) (cursor, error) {
 	}
 	b, e := base64.RawURLEncoding.DecodeString(raw)
 	var c cursor
-	if e != nil || json.Unmarshal(b, &c) != nil || c.Scope != scope || c.At <= 0 || len(c.Ref) > 300 || c.Ref == "" {
+	if e != nil || json.Unmarshal(b, &c) != nil || (c.Scope != scope && c.Scope != cursorScope(scope)) || c.At <= 0 || len(c.Ref) > 300 || c.Ref == "" {
 		return c, task.ErrInvalid
 	}
 	return c, nil
 }
+func cursorScope(scope string) string {
+	digest := sha256.Sum256([]byte(scope))
+	return "sha256:" + base64.RawURLEncoding.EncodeToString(digest[:])
+}
+
 func encode(scope string, at int64, ref string) string {
-	b, _ := json.Marshal(cursor{scope, at, ref})
+	b, _ := json.Marshal(cursor{cursorScope(scope), at, ref})
 	return base64.RawURLEncoding.EncodeToString(b)
 }
 func stamp(at int64) string { return time.UnixMicro(at).UTC().Format(time.RFC3339Nano) }
@@ -157,7 +163,7 @@ func (r *Reader) List(ctx context.Context, q task.ListQuery) (task.List, error) 
 		query += ` AND status='active' AND (approval OR input OR unknown OR root_status='failed')`
 	}
 	if q.Query != "" {
-		query += ` AND (instr(lower(title),lower(?))>0 OR instr(lower(anchor_task),lower(?))>0)`
+		query += ` AND (instr(steward_task_fold(title),steward_task_fold(?))>0 OR instr(steward_task_fold(anchor_task),steward_task_fold(?))>0)`
 		args = append(args, q.Query, q.Query)
 	}
 	if q.Cursor != "" {
