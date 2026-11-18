@@ -20,7 +20,7 @@ export function createSideSheet(label:string,onClose:()=>void,options:{modal?:bo
  header.append(title,full,previous,next,expand,close);dialog.append(header,body);document.body.append(dialog);
  let fraction=.5;
  try{const stored=Number(options.storageKey&&localStorage.getItem(options.storageKey));if(stored>=.4&&stored<=.9)fraction=stored}catch{}
- const resize=createResizeHandle(t('Resize details'),{bounds:()=>({min:innerWidth*.4,max:innerWidth*.9,value:dialog.getBoundingClientRect().width||innerWidth*fraction}),at:x=>innerWidth-x,change:(value,commit)=>{fraction=value/innerWidth;dialog.style.setProperty('--sheet-width',fraction*100+'vw');if(commit&&options.storageKey)try{localStorage.setItem(options.storageKey,String(fraction))}catch{}}});
+ const resize=createResizeHandle(t('Resize details'),{growLeft:true,bounds:()=>({min:innerWidth*.4,max:innerWidth*.9,value:dialog.getBoundingClientRect().width||innerWidth*fraction}),at:x=>innerWidth-x,change:(value,commit)=>{fraction=value/innerWidth;dialog.style.setProperty('--sheet-width',fraction*100+'vw');if(commit&&options.storageKey)try{localStorage.setItem(options.storageKey,String(fraction))}catch{}}});
  resize.element.classList.add('control-sheet-resize');dialog.append(resize.element);
  if(fraction!==.5)dialog.style.setProperty('--sheet-width',fraction*100+'vw');
  const fitResize=()=>{resize.element.hidden=innerWidth<=760||dialog.hasAttribute('data-expanded');resize.sync()};

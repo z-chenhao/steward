@@ -35,7 +35,8 @@ export function enhanceComputerView(){
   const timeout=setTimeout(()=>controller.abort(),6000);
   try{
    const response=await fetch('/api/computer/status',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
-   if(response.status===401||response.status===403){screen.querySelector('img')?.remove();placeholder.hidden=false;placeholder.textContent=t('Sign in to view Computer.');say('Sign in to view Computer.');stop();return;}
+   if(current!==generation||!panel.open)return;
+   if(response.status===401||response.status===403){activity.replaceChildren();previousActivity='';caption.textContent=t('Read only');screen.querySelector('img')?.remove();placeholder.hidden=false;placeholder.textContent=t('Sign in to view Computer.');say('Sign in to view Computer.');stop();return;}
    if(!response.ok)throw Error('Computer unavailable');
    const value=await response.json();
    if(typeof value.phase!=='string'||!Array.isArray(value.activity))throw Error('Invalid Computer view');

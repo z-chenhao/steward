@@ -30,7 +30,8 @@ export function enhanceWorkers(){
   try{
    const paths=panel!.open?['/api/workers/current','/api/workers']:['/api/workers/current'];
    const responses=await Promise.all(paths.map(path=>fetch(path,{credentials:'same-origin',cache:'no-store',signal:controller.signal})));
-   if(responses.some(response=>response.status===401||response.status===403)){denied=true;current!.textContent=t('Sign in');list.replaceChildren();say('Sign in to view Worker activity.');return}
+   if(id!==generation)return;
+   if(responses.some(response=>response.status===401||response.status===403)){denied=true;previous='';current!.textContent=t('Sign in');current!.title=t('Sign in to view Worker activity.');list.replaceChildren();say('Sign in to view Worker activity.');return}
    if(responses.some(response=>!response.ok))throw Error('unavailable');
    const values=await Promise.all(responses.map(response=>response.json()));
    for(const value of values)if(!Array.isArray(value.items)||typeof value.more!=='boolean')throw Error('invalid');
@@ -41,6 +42,6 @@ export function enhanceWorkers(){
   }catch{if(id===generation){if(panel!.open)say('Worker activity is temporarily unavailable. Retrying…');else{current!.textContent=t('Worker · unavailable');current!.title=t('Worker activity is temporarily unavailable. Retrying…')}}}
   finally{clearTimeout(timeout);if(id===generation){request=null;if(!document.hidden&&!denied)timer=window.setTimeout(refresh,panel!.open?2000:5000)}}
  }
- connectWorkspacePanel(panel,()=>{stop();say('Loading Worker activity…');void refresh()},()=>{stop();void refresh()});
+ connectWorkspacePanel(panel,()=>{stop();denied=false;say('Loading Worker activity…');void refresh()},()=>{stop();void refresh()});
  document.addEventListener('visibilitychange',()=>{stop();if(!document.hidden)void refresh()});window.addEventListener('pagehide',stop);void refresh();
 }

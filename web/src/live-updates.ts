@@ -141,14 +141,14 @@ export function startLiveUpdates(){
  const jump=document.querySelector<HTMLButtonElement>('#new-messages');
  const draft=document.querySelector<HTMLElement>('#conversation-draft');
  const draftNode=draft?.querySelector<HTMLElement>('[data-draft-text]');
- let draftText='';
+ let draftText='',draftFrame=0;
  let before=Number(main.dataset.liveBefore??0),latest=Number(main.dataset.liveLatest??0);
  let etag='',timer=0,generation=0,delay=timing.poll_ms,stopped=false,follow=false,pendingTarget='';
  let request:AbortController|null=null;
  let replies:EventSource|null=null,draftKey='',committing=false;
  const uiNode=document.getElementById('conversation-ui-preview');
  const uiPreview=uiNode?createUIPreview(uiNode):null;
- const clearDraft=()=>{draftKey='';committing=false;draftText='';if(draftNode)draftNode.replaceChildren();if(draft)draft.hidden=true};
+ const clearDraft=()=>{cancelAnimationFrame(draftFrame);draftFrame=0;draftKey='';committing=false;draftText='';if(draftNode)draftNode.replaceChildren();if(draft)draft.hidden=true};
  const stopReplies=()=>{replies?.close();replies=null;clearDraft();uiPreview?.clear()};
  const hasReply=(key:string)=>!!key&&!!document.querySelector(`[data-reply-key="${key}"]`);
  const startReplies=()=>{
@@ -172,9 +172,14 @@ export function startLiveUpdates(){
     clearDraft();draftKey=key;
    }
    if(text&&draftKey===key&&!hasReply(key)){
-    const bottom=atBottom();
-    draftText+=text;if(draftNode)renderDraftMarkdown(draftNode,draftText);draft.hidden=false;
-    if(bottom)scrollToLatest();else showJump();
+    draftText+=text;
+    if(!draftFrame)draftFrame=requestAnimationFrame(()=>{
+     draftFrame=0;
+     const bottom=atBottom();
+     if(draftNode)renderDraftMarkdown(draftNode,draftText);
+     draft.hidden=false;
+     if(bottom)scrollToLatest();else showJump();
+    });
    }
    if(state==='committed')void refresh();
   });

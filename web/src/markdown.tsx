@@ -15,7 +15,9 @@ let diagrams:Promise<void>|undefined;
 const attempted=new WeakSet<Element>();
 function loadDiagrams(){
  if(!diagrams)diagrams=new Promise<void>((resolve,reject)=>{
-  const script=document.createElement('script');script.src='/diagrams.js';script.onload=()=>window.stewardDiagram?resolve():reject(Error('diagram unavailable'));script.onerror=()=>reject(Error('diagram unavailable'));document.head.append(script);
+  const script=document.createElement('script');script.src='/diagrams.js';
+  const failed=()=>{diagrams=undefined;script.remove();reject(Error('diagram unavailable'))};
+  script.onload=()=>window.stewardDiagram?resolve():failed();script.onerror=failed;document.head.append(script);
  });
  return diagrams;
 }
@@ -29,9 +31,13 @@ export function enhanceDiagrams(scope:ParentNode){
     await loadDiagrams();if(!code.isConnected)return;
     const svg=await window.stewardDiagram!(source,'diagram-'+randomUUID());
     if(!code.isConnected)return;
-    const img=document.createElement('img');img.className='markdown-diagram';img.alt=t('Diagram');
+    const img=document.createElement('img');img.className='markdown-diagram';const diagram=new DOMParser().parseFromString(svg,'image/svg+xml');
+    img.alt=[diagram.querySelector('svg > title')?.textContent,diagram.querySelector('svg > desc')?.textContent].filter(Boolean).join(' · ')||t('Diagram');
     const href=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
-    img.onload=()=>{URL.revokeObjectURL(href);if(code.isConnected){pre.before(img);pre.hidden=true}};
+    img.onload=()=>{URL.revokeObjectURL(href);if(code.isConnected){
+     const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent=t('Diagram source');
+     pre.before(img,details);details.append(summary,pre);
+    }};
     img.onerror=()=>URL.revokeObjectURL(href);img.src=href;
    }catch{pre.setAttribute('aria-label',t('Diagram source'))}
   })();
