@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -36,6 +37,31 @@ class SystemRunnerTests(unittest.TestCase):
              patch.object(runner, 'REGISTRY', registry), \
              patch.object(runner, 'source_state', side_effect=[before, after]):
             return runner.main(argv)
+
+    def test_untracked_source_identity_includes_kind_and_executable_bit(self):
+        subprocess.run(['git', 'init', '-q'], cwd=self.root, check=True)
+        subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                        'commit', '--allow-empty', '-qm', 'fixture'], cwd=self.root, check=True)
+        entry = self.root / 'entry'
+        entry.write_text('fixture.py')
+        with patch.object(runner, 'ROOT', self.root):
+            before = runner.source_state()
+            entry.chmod(0o755)
+            executable = runner.source_state()
+            self.assertNotEqual(before, executable)
+            entry.unlink()
+            entry.symlink_to('fixture.py')
+            self.assertNotEqual(before, runner.source_state())
+
+    def test_project_preparation_stops_on_first_failed_copy(self):
+        command = json.loads((runner.ROOT / 'coding.project.json').read_text())['prepare']['command']
+        shim = self.root / 'cp'
+        shim.write_text('#!/bin/sh\necho missing-cache >&2\nexit 71\n')
+        shim.chmod(0o755)
+        result = subprocess.run(['/bin/sh', '-c', command], cwd=self.root,
+                                env={'PATH': f'{self.root}:/usr/bin:/bin'}, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 71)
+        self.assertEqual(result.stderr.strip(), 'missing-cache')
 
     def write_success(self):
         self.script.write_text('import json,sys\nfrom pathlib import Path\n'

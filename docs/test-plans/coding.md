@@ -106,3 +106,5 @@ capabilities 的 coding／dirty-index／audit／crash／task-code-environments�
 冷准备门禁先启动真实准备脚本，记录并核对原容器 ID/name/label，在运行中发送 SIGTERM；五秒内退出后立即断言原资源已消失、原准备失败且清理确认，然后才运行完整冷准备。失败清理不会把断言改成通过。取消时跳过昂贵诊断快照，优先回收进程和容器；普通准备失败可保留不完整镜像，永不当作 ready。模型错误变体文件使用 Go 忽略的下划线前缀，验证产物不进入后续源码包扫描。
 
 确切内容入口额外验证缺少 Coding 方法、仅有 Coding 而无托管 Artifact 时均拒绝且无产物，保留旧 report/report-pr 的历史兼容。required capabilities 新增 `task-code-exact-report`：通过实际所有者 CLI、真实 Task、原 Git 对象及规范化观察，验证完整托管导入/报告、确切内容和原任务指南、错误 head、候选额外字节、源/index/refs/钩子不变，以及撤销绑定后的原 Artifact 字节。远端没有写入，不使用已知 head 代替逐文件比较。
+
+源码构建门禁直接使用原树中的 `coding.project.json`，逐文件比对导入前后的相对路径、内容和执行位。未跟踪脚本切换执行位会使门禁证据失效。缺少必需缓存或依赖时验证停在 prepare。具名检查按项目路径和检查名分别分组，包括名称含 `#` 的情况。

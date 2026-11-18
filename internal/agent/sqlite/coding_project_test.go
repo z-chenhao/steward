@@ -56,10 +56,10 @@ func queuedCodingProject(t *testing.T, codeMode ...bool) (*Store, *Runs, agent.A
 
 func queuedCodingProjectDocument(t *testing.T, custom *contract.ProjectDocument, codeMode ...bool) (*Store, *Runs, agent.Actor, environment.Config) {
 	t.Helper()
-	return queuedCodingProjectSource(t, custom, "", codeMode...)
+	return queuedCodingProjectSource(t, custom, "", "", codeMode...)
 }
 
-func queuedCodingProjectSource(t *testing.T, custom *contract.ProjectDocument, source string, codeMode ...bool) (*Store, *Runs, agent.Actor, environment.Config) {
+func queuedCodingProjectSource(t *testing.T, custom *contract.ProjectDocument, source, exactRecipe string, codeMode ...bool) (*Store, *Runs, agent.Actor, environment.Config) {
 	t.Helper()
 	image := os.Getenv("STEWARD_TEST_PROJECT_CONTAINER_IMAGE")
 	socket := os.Getenv("STEWARD_TEST_PROJECT_CONTAINER_SOCKET")
@@ -67,6 +67,13 @@ func queuedCodingProjectSource(t *testing.T, custom *contract.ProjectDocument, s
 		t.Skip("requires explicit prepared local project container")
 	}
 	s, r, a, p, cfg := codingCheckFixture(t)
+	if exactRecipe != "" {
+		// The shared shell fixture seeded this private directory with a sample file.
+		// An exact build imports only the independently captured source and the required Git marker.
+		if err := os.Remove(filepath.Join(cfg.RepositorySource, "file.txt")); err != nil {
+			t.Fatal(err)
+		}
+	}
 	if source != "" {
 		err := filepath.WalkDir(source, func(name string, entry os.DirEntry, err error) error {
 			if err != nil {
@@ -134,11 +141,18 @@ func queuedCodingProjectSource(t *testing.T, custom *contract.ProjectDocument, s
 	if custom != nil {
 		document = *custom
 	}
-	raw, _ := json.Marshal(document)
-	if err := os.WriteFile(filepath.Join(cfg.RepositorySource, "project.json"), raw, 0600); err != nil {
-		t.Fatal(err)
+	recipe := exactRecipe
+	if recipe == "" {
+		recipe = "project.json"
+		raw, err := json.Marshal(document)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(cfg.RepositorySource, recipe), raw, 0600); err != nil {
+			t.Fatal(err)
+		}
 	}
-	statusArgs, _ := json.Marshal(map[string]string{"project_file": "project.json", "check": document.Checks[0].Name})
+	statusArgs, _ := json.Marshal(map[string]string{"project_file": recipe, "check": document.Checks[0].Name})
 	p.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		last := req.Messages[len(req.Messages)-1]
 		if !isRoot(req) {

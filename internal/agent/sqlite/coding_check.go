@@ -234,7 +234,8 @@ func (s *Store) readCodingChecks(ctx context.Context, taskID, candidate string, 
 	}
 	defer rows.Close()
 	total := 0
-	seen := map[string]bool{}
+	type attemptKey struct{ command, file, check string }
+	seen := map[attemptKey]bool{}
 	for rows.Next() {
 		var c coding.CheckAttempt
 		var arguments, result, failure, project string
@@ -251,10 +252,10 @@ func (s *Store) readCodingChecks(ctx context.Context, taskID, candidate string, 
 			c.CandidateMatches = &matches
 		}
 		c.Result, c.Error = json.RawMessage(result), json.RawMessage(failure)
-		key := c.Command
+		key := attemptKey{command: c.Command}
 		var requested coding.ProjectRequest
 		if json.Unmarshal([]byte(arguments), &requested) == nil && requested.ProjectFile != "" && requested.Plan.Check != "" {
-			key = "project:" + requested.ProjectFile + "#" + requested.Plan.Check
+			key = attemptKey{file: requested.ProjectFile, check: requested.Plan.Check}
 			c.ProjectFile = requested.ProjectFile
 		}
 		if project != "" {

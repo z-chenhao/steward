@@ -2,7 +2,10 @@ package sqlite
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +31,7 @@ func TestCodingDevelopmentExactFreshStewardBuild(t *testing.T) {
 	if err := json.Unmarshal(raw, &document); err != nil {
 		t.Fatal(err)
 	}
-	s, r, a, _ := queuedCodingProjectSource(t, &document, source)
+	s, r, a, _ := queuedCodingProjectSource(t, &document, source, "coding.project.json")
 	approveCodingCheck(t, s, r)
 	mustDrain(t, a)
 	result, receipt := projectEvidenceReceipt(t, s)
@@ -37,6 +40,13 @@ func TestCodingDevelopmentExactFreshStewardBuild(t *testing.T) {
 	}
 	if receipt.DocumentChanged || receipt.Image != image || receipt.EnvironmentSHA256 == "" || receipt.CandidateSHA256 == "" {
 		t.Fatal("build provenance unavailable or rebound", receipt)
+	}
+	var authorDir string
+	if err := s.db.QueryRow(`SELECT directory FROM task_code_environment`).Scan(&authorDir); err != nil {
+		t.Fatal(err)
+	}
+	if !maps.Equal(codingTestInventory(t, source), codingTestInventory(t, authorDir)) {
+		t.Fatal("imported candidate differs from the original source inventory")
 	}
 	if folder := os.Getenv("STEWARD_CODING_DEVELOPMENT_EVIDENCE"); folder != "" {
 		folder = filepath.Join(folder, "steward-build")
@@ -51,6 +61,40 @@ func TestCodingDevelopmentExactFreshStewardBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+// Compare relative names, original bytes and executable bits independently of the import scanner.
+type codingTestFile struct {
+	hash       [32]byte
+	executable bool
+}
+
+func codingTestInventory(t *testing.T, directory string) map[string]codingTestFile {
+	t.Helper()
+	files := make(map[string]codingTestFile)
+	root := os.DirFS(directory)
+	err := fs.WalkDir(root, ".", func(name string, item fs.DirEntry, err error) error {
+		if err != nil || item.IsDir() {
+			return err
+		}
+		info, err := item.Info()
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			t.Fatalf("unexpected candidate entry %s", name)
+		}
+		data, err := fs.ReadFile(root, name)
+		if err != nil {
+			return err
+		}
+		files[name] = codingTestFile{sha256.Sum256(data), info.Mode().Perm()&0111 != 0}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return files
 }
 
 func TestCodingDevelopmentParallelPortDatabaseAndBrowserProfiles(t *testing.T) {
@@ -79,7 +123,7 @@ func TestCodingDevelopmentParallelPortDatabaseAndBrowserProfiles(t *testing.T) {
 			t.Fatal(err)
 		}
 		document.Checks[0].Command = "touch .state/verifying; while ! test -f .state/release; do sleep 0.01; done; " + strings.Replace(document.Checks[0].Command, "candidate-alpha", marker, 1)
-		s, r, a, _ := queuedCodingProjectSource(t, &document, source)
+		s, r, a, _ := queuedCodingProjectSource(t, &document, source, "")
 		approveCodingCheck(t, s, r)
 		jobs = append(jobs, work{store: s, actor: a, marker: marker})
 	}
@@ -155,7 +199,7 @@ func TestCodingDevelopmentActualSQLiteBrowserRecoveryAndRetainedArtifacts(t *tes
 	if err := json.Unmarshal(raw, &document); err != nil {
 		t.Fatal(err)
 	}
-	s, r, a, _ := queuedCodingProjectSource(t, &document, source)
+	s, r, a, _ := queuedCodingProjectSource(t, &document, source, "")
 	approveCodingCheck(t, s, r)
 	mustDrain(t, a)
 	assertCodingDevelopmentResult(t, s, "candidate-alpha")

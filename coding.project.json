@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Steward 源码检查入口",
   "prepare": {
-    "command": "mkdir -p .tmp .state .evidence .cache/go-build; cp -R /opt/steward/go-build/. .cache/go-build/; for component in provider-bridge runtime/javascript guest-browser web; do if test -d /opt/steward/deps/\"$component\"/node_modules; then cp -R /opt/steward/deps/\"$component\"/node_modules \"$component\"/; fi; done",
+    "command": "set -e; mkdir -p .tmp .state .evidence .cache/go-build; cp -R /opt/steward/go-build/. .cache/go-build/; for component in runtime/javascript guest-browser web; do cp -R /opt/steward/deps/\"$component\"/node_modules \"$component\"/; done",
     "timeout_seconds": 120
   },
   "doctor": {
