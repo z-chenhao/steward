@@ -70,6 +70,8 @@ Web 审批查询使用只读 `Runs.ApprovalView`，已过期授权按当前时�
 
 ### Web 实时投影与界面生命周期（F-019）
 
+服务端只保留最近 32 个输入摘要与成功响应 ETag；每次重读权限、原消息、审批／待办、不可变交付身份、阅读器、语言、时区和本地日期，动态消息始终走现有投影。
+
 `GET /api/updates?view=/|/tasks|/tasks/{taskRef}|/settings/...&before=...` 返回当前视图的具名 HTML 区域与 `latest` sequence；`before` 仅用于 Conversation 的排他历史游标。状态与内容由现有 Core 查询取得，复用 SSR 的 UISpec 验证、转义、语义 fallback 和审批投影。完整页面与后台读取共用 `loadConversation` 和具名模板；没有新 Agent Loop、模型请求、领域写入口、事件表或迁移。
 
 每次条件读取先执行已有认证与渠道绑定检查，再判断 `If-None-Match`；未变化返回 304。响应不含 composer、原始 Run/Tool trace 或模型凭据。历史页保留原游标，并用最新 sequence 提示新消息。各区域读取各自已提交投影，下次读取收敛；审批提交始终重新校验冻结哈希与权限。

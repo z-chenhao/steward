@@ -66,7 +66,12 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var chat conditionalChat
 	var err error
+	w.Header().Set("Vary", "Cookie, Authorization, X-Steward-Workbench-Reader")
+	if p.Workbench != nil {
+		w.Header().Set("X-Steward-Workbench-Reader", p.Workbench.ReaderRevision)
+	}
 	if p.Cursor, err = conversationCursor(r); err != nil || p.Cursor != 0 && p.Tab != "/" {
 		fail(w, 400)
 		return
@@ -77,7 +82,13 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 	}
 	switch {
 	case p.Tab == "/":
-		err = s.loadConversation(r.Context(), &p)
+		var unchanged bool
+		unchanged, err = s.loadConditionalChat(r, &p, &chat)
+		if unchanged {
+			w.Header().Set("ETag", r.Header.Get("If-None-Match"))
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
 	case p.Tab == "/tasks" || strings.HasPrefix(p.Tab, "/tasks/"):
 		copy := r.Clone(r.Context())
 		u := *r.URL
@@ -114,7 +125,6 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 			fail(w, 503)
 			return
 		}
-		w.Header().Set("X-Steward-Workbench-Reader", p.Workbench.ReaderRevision)
 		kind := p.View
 		if p.Tab == "/tasks/configurations" {
 			kind = "configurations"
@@ -168,7 +178,7 @@ func (s *Server) updates(w http.ResponseWriter, r *http.Request) {
 	}
 	etag := fmt.Sprintf(`"%x"`, sha256.Sum256(body))
 	w.Header().Set("ETag", etag)
-	w.Header().Set("Vary", "Cookie, Authorization, X-Steward-Workbench-Reader")
+	s.rememberChat(r.Context(), chat, etag)
 	if r.Header.Get("If-None-Match") == etag {
 		w.WriteHeader(http.StatusNotModified)
 		return

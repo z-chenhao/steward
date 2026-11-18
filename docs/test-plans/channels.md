@@ -187,6 +187,8 @@ F-018/F-039：`foundation_test.go` 实际 HTTP listener 在 Main provider failur
 
 ## F-019 实时更新验收
 
+[条件聊天回归](../../internal/interaction/web/updates_test.go)验证五次连续 304 仅执行一次消息投影，以及审批过期、语言、投影版本、交互组件和撤权的重新检查。
+
 - `internal/interaction/web/reply_stream_test.go`：真实 HTTP 流检查未认证拒绝、Worker 和过期事件隔离、增量仅发送后缀、绑定撤销关闭已有连接。`internal/agent/sqlite/foundation_test.go` 验证工具开始前撤下预览、取消时在供应商清理完成前撤下预览，并验证正式通知晚于消息持久化。
 - `tests/system/verify_channels.py` 的 streaming 场景：真实 Node/Pi HTTP 流等待 Chromium 观察首段和第二段后才继续；后打开的页面接收当前文本，同一页面断开重连后逐字核对草稿。延迟正式投影时，尾段仍进入纯文本草稿；完成后展示一个富结果，供应商断流只留下 Host 失败通知。检查无整页跳转，输入、焦点、选区与附件保留。
 - `internal/interaction/web/updates_test.go`：条件 ETag、消息/审批/状态变化、历史游标、HTML 转义、无输入/内部字段、失败无部分响应；条件请求也必须重新认证和检查绑定；Settings/Tasks 不查询 Conversation。
