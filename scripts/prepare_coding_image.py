@@ -218,7 +218,7 @@ chmod -R a+rX /opt/steward/deps /opt/steward/go-mod /opt/steward/go-build /opt/s
                         checkpoint('incomplete')
                 finally:
                     try:
-                        run('cleanup-preparation', docker + ['rm', '--force', cid], timeout=3)
+                        run('cleanup-preparation', docker + ['rm', '--force', cid], timeout=3 if interrupted else 30)
                         report['owned_cleanup'] = 'confirmed'
                     except BaseException:
                         report.update(outcome='failed', owned_cleanup='unconfirmed')
