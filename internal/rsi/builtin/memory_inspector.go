@@ -28,7 +28,7 @@ func MemoryInspectorCases(version, directory string) ([]rsi.Case, error) {
 	if version == "1.0.0" {
 		return cases, nil
 	}
-	if version != "1.1.0" {
+	if version != "1.1.0" && version != "1.1.1" {
 		return nil, rsi.ErrInvalid
 	}
 	read := func(path, digest string) (string, error) {
@@ -38,8 +38,12 @@ func MemoryInspectorCases(version, directory string) ([]rsi.Case, error) {
 		}
 		return string(raw), nil
 	}
-	const viewDigest = "sha256:6c58a942eb2f771ee8741b2ca83aa394f3b0f8c676cdfc6684cb96b2ee98a507"
-	const copyDigest = "sha256:da5b35fb6a31d5d4baea529a631c9a1d692f8b5a91191c3e45786ac3160797a4"
+	viewDigest := "sha256:6c58a942eb2f771ee8741b2ca83aa394f3b0f8c676cdfc6684cb96b2ee98a507"
+	copyDigest := "sha256:da5b35fb6a31d5d4baea529a631c9a1d692f8b5a91191c3e45786ac3160797a4"
+	if version == "1.1.1" {
+		viewDigest = "sha256:5469dc1526f9d8bb80cad2e9cc961f48a7c710c14066b750c3b06b9f198804da"
+		copyDigest = "sha256:fca717dc0a5731eb48be34df444365216c1a7a9fbc425ee0d0ee5a696f579eba"
+	}
 	view, err := read(contract.ViewFile, viewDigest)
 	if err != nil {
 		return nil, err
@@ -53,6 +57,7 @@ func MemoryInspectorCases(version, directory string) ([]rsi.Case, error) {
 		if err := json.Unmarshal(cases[i].Expected, &expected); err != nil {
 			return nil, err
 		}
+		expected.CorrectionDraft = version == "1.1.1"
 		expected.View.Source, expected.View.Digest = view, viewDigest
 		expected.Localization.Source, expected.Localization.Digest = copy, copyDigest
 		if i == 1 {

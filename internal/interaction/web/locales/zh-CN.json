@@ -1,4 +1,6 @@
 {
+  "Please correct memory %s (revision %d). My correction: ": "请纠正记忆 %s（修订 %d）。我想改为：",
+  "Please correct memory %s. My correction: ": "请纠正记忆 %s。我想改为：",
   "Generating interactive answer…": "正在生成交互内容…",
   "Send response": "发送回答",
   "This form is temporarily unavailable. Your conversation is kept.": "此表单暂时不可用，对话仍然保留。",

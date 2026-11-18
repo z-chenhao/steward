@@ -152,7 +152,7 @@ Tasks 的执行记录、任务配置采用共享二级侧栏；详情选中态�
 F-010 的新 Run 复用完整可见证据并用有界密封元数据导航；F-009 的维护记录区分 token／参考费用、知识修改与后续曝光。Host 所有者绑定和外部 SecretStore 接入边界见[记忆技术方案](designs/memory-context.md#云端接入前的身份与密钥边界)。
 
 
-Memory 当前实现还覆盖：混合工具结果压缩保留、跨表示事实纠正、全语料相关候选与固定 L4、原始 Worker 回执核验及精确续页、历史支持裁剪、Dream 维护列表／详情及有界 Transcripts 检视。边界和必需 CI 回归归 [Memory 方案](designs/memory-context.md#原始执行证据纠错身份与有界检视) 与 [测试方案](test-plans/memory.md)。
+Memory 当前实现还覆盖：混合工具结果压缩保留、跨表示事实纠正、全语料相关候选与固定 L4、原始 Worker 回执核验及精确续页、历史支持裁剪、Dream 维护列表／详情、从活跃记忆详情打开绑定引用的纠正草稿及有界 Transcripts 检视。边界和必需 CI 回归归 [Memory 方案](designs/memory-context.md#原始执行证据纠错身份与有界检视) 与 [测试方案](test-plans/memory.md)。
 
 任务执行详情按本轮进展／Main 交付优先，说明默认折叠，提供同任务最近运行与 Root Trace；首轮工具调用也计入 TTFT。新生产 Run 的 Web Access 面仅保留 web_search／web_fetch，旧冻结入口维持恢复兼容。
 

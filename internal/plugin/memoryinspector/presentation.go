@@ -24,7 +24,7 @@ var memoryLocalizationSource string
 var memoryWorkerSource string
 
 func project(req contract.Request) contract.Result {
-	r := contract.Result{URLs: make([]string, len(req.Navigation)), Labels: contract.Labels{
+	r := contract.Result{CorrectionDraft: true, URLs: make([]string, len(req.Navigation)), Labels: contract.Labels{
 		Source: contract.SourceLabels{Conversation: "Source message", Task: "Source task", Tool: "memory_manage", Control: "Local control", Other: "Source"},
 		Origin: contract.OriginLabels{Written: "Written note", Dream: "Dreaming", Original: "Original record", Automatic: "Automatically extracted", Explicit: "Explicitly remembered", Other: "Unknown origin"},
 		Layer:  contract.LayerLabels{Transcripts: "Transcripts", Representations: "Memory representations", Injected: "Injected context", Notes: "Memory notes"}, DefaultStatus: "active"}}

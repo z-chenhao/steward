@@ -83,7 +83,7 @@ func memoryInspectorDelayedProcessPackage(t *testing.T) string {
 
 func TestMemoryInspectorActualProcessLateForgetReplacementPrivacyAndGuardian(t *testing.T) {
 	source := memoryInspectorDelayedProcessPackage(t)
-	cases, err := builtin.MemoryInspectorCases("1.1.0", source)
+	cases, err := builtin.MemoryInspectorCases("1.1.1", source)
 	if err != nil || len(cases) < 1 {
 		t.Fatal("independent Owner oracle missing", err)
 	}

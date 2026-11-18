@@ -77,3 +77,5 @@ Worker 来源分页回归通过真实接纳的 63／64／65 条回执，验证�
 必须执行 `make test-memory`、`memory-maintenance`／`recall` 系统门禁和跨模块 `make test lint`。Memory 实际进程围栏测试必须留在必需 Memory race 清单；真实浏览器入口必须留在 test-browser recipe，CI 检查可达性。测试存在或被发现，不代替终态通过证据。 `test-go` 的四个分区保留原15分钟包级时限和 `-p 1`；Memory Inspector 与 Web 托管版本用例同组，每个测试根必须恰好归属一个分区。
 
 视觉复核使用非空原正文，检查桌面／移动端×浅色／深色四个详情场景、中文和无脚本页面；验证实际字体、字号、间距、来源布局、控件、身份及无横向溢出。保存原版对照、真实计算值和截图。生命周期事件测试不作为真实 BFCache 接纳证明。完整执行记录、失败尝试和固定源码哈希保留在 PR／CI 或验收证据，不在设计文档累积阶段日志。
+
+记忆详情纠正入口由 `TestMemoryInspectorCorrectionOpensEditableDraftForExactVisibleRecord` 和 `TestMemoryInspectorCorrectionRevalidatesBeforeOpeningDraft` 覆盖。操作是在已选详情打开中／英文纠正草稿；验收检查实际可编辑输入框的引用与修订，旧检视器、错项、转录、忘记、退役、换版、未登录及多余参数均不能读取该条作为草稿，正文和来源不会进入地址或草稿。
