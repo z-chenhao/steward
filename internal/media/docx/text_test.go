@@ -73,3 +73,23 @@ func TestTextRejectsAmbiguityMalformedAndBudgetOverruns(t *testing.T) {
 		})
 	}
 }
+
+func TestContentControlsPreserveVisibleOrderAndNativeHistory(t *testing.T) {
+	run := func(s string) string { return "<w:r><w:t>" + s + "</w:t></w:r>" }
+	par := func(s string) string { return "<w:p>" + s + "</w:p>" }
+	wrap := func(s string) string {
+		return "<w:sdt><w:sdtPr>" + par(run("private tag")) + "</w:sdtPr><w:sdtContent>" + s + "</w:sdtContent></w:sdt>"
+	}
+	body := start + par(run("A")) + wrap(wrap(par(run("B")+wrap(run("C"))))) +
+		"<w:tbl>" + wrap("<w:tr><w:tc>"+par(run("D"))+"</w:tc>"+wrap("<w:tc>"+par(run("E"))+"</w:tc>")+"</w:tr>") + "</w:tbl>" +
+		par("<w:del>"+wrap(run("deleted"))+"</w:del>"+run("F")) + end
+	data := fixture(t, rels, types, body)
+	got, err := TextWithContentControls(context.Background(), bytes.NewReader(data))
+	if err != nil || got != "A\nBC\nD\tE\nF" {
+		t.Fatal(got, err)
+	}
+	got, err = Text(context.Background(), bytes.NewReader(data))
+	if err != nil || got != "A\n\nF" {
+		t.Fatal("historical reader", got, err)
+	}
+}
