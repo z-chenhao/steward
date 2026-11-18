@@ -151,12 +151,17 @@ func (r *Runs) finishTask(ctx context.Context, tx *sql.Tx, runID, status, reason
 	if n != 1 {
 		return agent.ErrClaimLost
 	}
+	// An explicit trial always produces its own owner-visible result, including a quiet observation.
+	var trial bool
+	if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM automation WHERE task_id=? AND automation_id LIKE 'trial:%')`, taskID.String).Scan(&trial); err != nil {
+		return err
+	}
 	if status == "completed" {
 		var monitored, suppressed, missing bool
 		if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM automation_fire WHERE root_run_id=? AND below_value IS NOT NULL),EXISTS(SELECT 1 FROM automation_fire WHERE root_run_id=? AND below_value IS NOT NULL AND observed_value IS NOT NULL AND notify=0),EXISTS(SELECT 1 FROM automation_fire WHERE root_run_id=? AND below_value IS NOT NULL AND observed_value IS NULL)`, runID, runID, runID).Scan(&monitored, &suppressed, &missing); err != nil {
 			return err
 		}
-		if monitored && suppressed {
+		if monitored && suppressed && !trial {
 			return nil
 		}
 		if missing {

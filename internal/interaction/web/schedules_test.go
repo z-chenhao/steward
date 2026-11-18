@@ -237,6 +237,9 @@ func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
 		r.AddCookie(&http.Cookie{Name: timezoneCookie, Value: url.QueryEscape(c.zone)})
 		w := httptest.NewRecorder()
 		s.ServeHTTP(w, r)
+		if strings.HasPrefix(c.path, "/tasks/schedules/") && strings.Contains(w.Body.String(), `action="/schedule/trial"`) != strings.HasSuffix(c.path, "automation:existing") {
+			t.Fatal("incorrect trial entry", c.path)
+		}
 		if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), c.expected) {
 			t.Fatalf("%s %s: HTTP %d, want %q", c.path, c.zone, w.Code, c.expected)
 		}

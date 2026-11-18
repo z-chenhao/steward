@@ -77,6 +77,11 @@ func safeWorkbenchDOM(source string, p page) bool {
 			if !found {
 				return false
 			}
+		case "/schedule/trial":
+			if p.Schedule == nil || p.Schedule.Ref == "" {
+				return false
+			}
+			expected = map[string]string{"ref": p.Schedule.Ref, "version": strconv.FormatInt(p.Schedule.Version, 10), "source_id": p.Schedule.Key}
 		case "/schedule/configure":
 			if p.Schedule == nil {
 				return false

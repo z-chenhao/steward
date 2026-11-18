@@ -22,7 +22,7 @@ func (r *Reader) ScheduledPage(ctx context.Context, query, after string) ([]task
  EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-defaults/1'),
  a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0)
  FROM automation a LEFT JOIN task t ON t.task_id=a.task_id AND t.agent_id=a.agent_id
- WHERE a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
+ WHERE a.automation_id NOT LIKE 'trial:%' AND a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
  AND (?='' OR (a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0) AND instr(lower(a.instruction),lower(?))>0))
  AND (?='' OR (-a.enabled,a.next_fire_at IS NULL,coalesce(a.next_fire_at,0),a.created_at,a.automation_id) >
  (SELECT -b.enabled,b.next_fire_at IS NULL,coalesce(b.next_fire_at,0),b.created_at,b.automation_id FROM automation b WHERE b.agent_id=a.agent_id AND b.automation_id=?))
@@ -107,7 +107,7 @@ func (r *Reader) ScheduledDetail(ctx context.Context, ref string) (task.Schedule
  EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-defaults/1'),
  a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=a.agent_id),0)
  FROM automation a LEFT JOIN task t ON t.task_id=a.task_id AND t.agent_id=a.agent_id
- WHERE a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND a.automation_id=?`, ref))
+ WHERE a.automation_id NOT LIKE 'trial:%' AND a.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND a.automation_id=?`, ref))
 	if err == sql.ErrNoRows {
 		return v, task.ErrNotFound
 	}
