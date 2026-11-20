@@ -71,7 +71,7 @@ test('pending task feedback is read-only until rejection and the draft is editab
 test('frozen form retains native submission and its unsent answers survive a live window change',async t=>{
  const spec=JSON.stringify({schema_version:1,fallback:'History',components:[{type:'form',form_id:'original'}]});
  const form='<form method="post" action="/ui/form" data-form-id="original"><input name="form_id" value="original" type="hidden"><fieldset><label>Answer<textarea name="field.note"></textarea></label><button>Submit</button></fieldset><p role="status"></p></form>';
- const body=`<main data-live-view="/"><div id="conversation-messages"><article data-live-key="old"><div data-ui-spec='${spec}' data-ui-fallback="History">${form}</div></article></div><div id="unsent-form-drafts"></div><div id="live-update-status"></div></main>`;
+ const body=`<main data-live-view="/"><div id="conversation-messages"><article data-live-key="old"><div data-ui-spec='${spec}' data-ui-fallback="History">${form}</div></article></div><div id="unsent-form-drafts" hidden></div><div id="live-update-status"></div></main>`;
  const start=deferred(),finish=deferred();
  let attempt;
  const page=await open(t,body,async(route,url)=>{
@@ -82,7 +82,7 @@ test('frozen form retains native submission and its unsent answers survive a liv
  });
  await page.evaluate(()=>{const live=ui.startLiveUpdates();ui.enhanceProjections();ui.enhanceRichForms();live.start()});
  await start.promise;await page.getByLabel('Answer').fill('draft note');await page.getByRole('button',{name:'Submit'}).click();await page.getByText(/not confirmed/).waitFor();assert.equal(new URLSearchParams(attempt).get('form_id'),'original');
- finish.resolve();await page.getByText('New message').waitFor();assert.equal(await page.locator('#unsent-form-drafts textarea').inputValue(),'draft note');
+ assert.equal(await page.locator('#unsent-form-drafts').isHidden(),true);finish.resolve();await page.getByText('New message').waitFor();await page.locator('#unsent-form-drafts textarea').waitFor({state:'visible'});assert.equal(await page.locator('#unsent-form-drafts textarea').inputValue(),'draft note');
 });
 test('empty required multiselect and excess UTF-8 bytes focus the field; an empty widget editor remains available',async t=>{
  const page=await open(t,'<div id="forms"></div><div id="widget"></div>',async(route,url)=>{
