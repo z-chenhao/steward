@@ -500,7 +500,18 @@ export async function settingsConsistency(page,context,url,evidence){
  // No script retains the native save path.
  const plain=await context.browser().newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
  try{
-  await plain.addCookies(await context.cookies());const native=await plain.newPage();await native.goto(url+'/settings/notifications');await native.locator('#notification-target').selectOption('tui:');await native.getByRole('button',{name:'Save notification channel',exact:true}).click();await native.reload();if(await native.locator('#notification-target').inputValue()!=='tui:')throw Error('native preference save lost');
+  await plain.addCookies(await context.cookies());
+  const native=await plain.newPage();
+  await native.goto(url+'/settings/notifications');
+  await native.locator('#notification-target').selectOption('tui:');
+  const [saved]=await Promise.all([
+   native.waitForResponse(response=>response.url()===url+'/notification'&&response.request().method()==='POST'),
+   native.getByRole('button',{name:'Save notification channel',exact:true}).click(),
+  ]);
+  assert.equal(saved.status(),303,'native notification save should redirect after committing');
+  await native.waitForURL(url+'/settings/notifications?notice=saved',{waitUntil:'load'});
+  await native.reload();
+  assert.equal(await native.locator('#notification-target').inputValue(),'tui:','native preference save lost');
   await native.goto(url+'/tasks');await native.locator('[data-task-filter-fallback]>summary').click();await native.locator('select[name=view]').selectOption('closed');await native.locator('[name=needs_me]').check();await native.getByRole('button',{name:'Apply filters',exact:true}).click();if(new URL(native.url()).searchParams.get('needs_me')!=='1')throw Error('native filter lost attention');
  }finally{await plain.close()}
  await page.goto(url+'/tasks');
