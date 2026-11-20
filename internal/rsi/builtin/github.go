@@ -13,8 +13,18 @@ import (
 //go:embed github-cases.json
 var githubAcceptance []byte
 
-func githubCases() ([]rsi.Case, error) {
+//go:embed github-issue-comment-cases.json
+var githubIssueCommentsAcceptance []byte
+
+func githubCases(includeIssueComments bool) ([]rsi.Case, error) {
 	var cases []rsi.Case
 	err := json.Unmarshal(githubAcceptance, &cases)
-	return cases, err
+	if err != nil || !includeIssueComments {
+		return cases, err
+	}
+	var comments []rsi.Case
+	if err := json.Unmarshal(githubIssueCommentsAcceptance, &comments); err != nil {
+		return nil, err
+	}
+	return append(cases, comments...), nil
 }

@@ -10,14 +10,14 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: step}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.2", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: step}}
 }
 func step(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 	var req contract.Request
 	if err := rsiplugin.Decode(call.Input, &req); err != nil {
 		return rsiplugin.Result{}, err
 	}
-	if len(req.History) > 63 || len(call.Inputs) != 1 || call.Inputs[0].ID != contract.InputID {
+	if len(req.History) > 84 || len(call.Inputs) != 1 || call.Inputs[0].ID != contract.InputID {
 		return rsiplugin.Result{}, errors.New("invalid source step")
 	}
 	var facts bytes.Buffer
@@ -43,7 +43,11 @@ func step(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 			plan.Rows = append(plan.Rows, i)
 		}
 	}
-	for _, kind := range []string{"review_comment", "review", "check_run"} {
+	kinds := []string{"review_comment", "review", "check_run"}
+	if req.IncludeIssueComments {
+		kinds = append(kinds, "issue_comment")
+	}
+	for _, kind := range kinds {
 		var last *contract.Page
 		for i := range req.History {
 			if req.History[i].Kind == kind {

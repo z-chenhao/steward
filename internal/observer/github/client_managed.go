@@ -14,12 +14,12 @@ func (c Client) readManaged(ctx context.Context, cfg Config, ticket Ticket, step
 	}
 	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
-	req := contract.Request{History: []contract.Page{}, PollSeconds: cfg.PollSeconds}
+	req := contract.Request{History: []contract.Page{}, PollSeconds: cfg.PollSeconds, IncludeIssueComments: ticket.IncludeIssueComments}
 	plan, err := step(ctx, cfg, ticket, req, []byte{})
 	if err != nil {
 		return Batch{}, 0, err
 	}
-	if !validPlan(plan, cfg) || len(plan.Rows) != 0 || plan.ErrorCode != "" || plan.Next == nil || !validNext(req.History, *plan.Next) {
+	if !validPlan(plan, cfg) || len(plan.Rows) != 0 || plan.ErrorCode != "" || plan.Next == nil || !validNext(req, *plan.Next) {
 		return Batch{}, 0, &Failure{"INVALID_METHOD"}
 	}
 	interval := time.Duration(plan.IntervalSeconds) * time.Second
@@ -33,13 +33,13 @@ func (c Client) readManaged(ctx context.Context, cfg Config, ticket Ticket, step
 	}
 	for {
 		if plan.Next == nil {
-			if !completeScan(req.History) {
+			if !completeScan(req) {
 				return Batch{}, interval, &Failure{"INVALID_METHOD"}
 			}
 			return batch, interval, nil
 		}
 		next := *plan.Next
-		if !validNext(req.History, next) {
+		if !validNext(req, next) {
 			return Batch{}, interval, &Failure{"INVALID_METHOD"}
 		}
 		rows, err := r.page(ctx, cfg, batch.HeadSHA, self, next.Kind, next.Number)
@@ -111,14 +111,14 @@ func (c Client) readManaged(ctx context.Context, cfg Config, ticket Ticket, step
 func validPlan(p contract.Plan, cfg Config) bool {
 	return p.DisplayBytes > 0 && p.DisplayBytes <= 4<<20 && len(p.DisplaySuffix) <= 512 && utf8.ValidString(p.DisplaySuffix) && ValidRecipe(p.Followup) && p.IntervalSeconds >= 5 && p.IntervalSeconds <= 3600 && (cfg.PollSeconds == 0 || p.IntervalSeconds == cfg.PollSeconds)
 }
-func validNext(history []contract.Page, next contract.Page) bool {
-	if next.Kind != "review_comment" && next.Kind != "review" && next.Kind != "check_run" || next.Number < 1 || next.Number > maxPages+1 || next.Count != 0 {
+func validNext(req contract.Request, next contract.Page) bool {
+	if next.Kind != "review_comment" && next.Kind != "review" && next.Kind != "check_run" && !(req.IncludeIssueComments && next.Kind == "issue_comment") || next.Number < 1 || next.Number > maxPages+1 || next.Count != 0 {
 		return false
 	}
 	var previous *contract.Page
-	for i := range history {
-		if history[i].Kind == next.Kind {
-			previous = &history[i]
+	for i := range req.History {
+		if req.History[i].Kind == next.Kind {
+			previous = &req.History[i]
 		}
 	}
 	if previous == nil {
@@ -126,10 +126,14 @@ func validNext(history []contract.Page, next contract.Page) bool {
 	}
 	return previous.Count >= pageSize && next.Number == previous.Number+1
 }
-func completeScan(history []contract.Page) bool {
-	for _, kind := range []string{"review_comment", "review", "check_run"} {
+func completeScan(req contract.Request) bool {
+	kinds := []string{"review_comment", "review", "check_run"}
+	if req.IncludeIssueComments {
+		kinds = append(kinds, "issue_comment")
+	}
+	for _, kind := range kinds {
 		found := false
-		for _, page := range history {
+		for _, page := range req.History {
 			if page.Kind == kind && page.Count < pageSize {
 				found = true
 			}

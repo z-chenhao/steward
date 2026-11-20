@@ -101,11 +101,12 @@ func (b *Batch) add(e Observation) error {
 }
 
 type Ticket struct {
-	Version           int64
-	Epoch             int64
-	BindingGeneration int64
-	Managed           bool
-	GraphRevision     string
+	Version              int64
+	Epoch                int64
+	BindingGeneration    int64
+	IncludeIssueComments bool
+	Managed              bool
+	GraphRevision        string
 }
 
 type Status struct {
