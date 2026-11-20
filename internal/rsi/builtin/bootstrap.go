@@ -75,6 +75,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	appsClient := false
 	appsInventory := false
 	codingChecks := false
+	watchdogAlerts := false
 	codingProject := false
 	for _, p := range bundledPlugins(&d) {
 		if *p.Directory == "" {
@@ -86,6 +87,9 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "service-watchdog" {
+			watchdogAlerts = installed.Manifest.Version == "1.1.0"
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
@@ -325,7 +329,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, artifactCases()...)
 	}
 	if d.ServiceWatchdog != "" {
-		cases, err := serviceWatchdogCases()
+		cases, err := serviceWatchdogCases(watchdogAlerts)
 		if err != nil {
 			return err
 		}

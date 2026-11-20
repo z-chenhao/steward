@@ -34,8 +34,8 @@ func (a *App) serviceRestartRecipeWithHost(ctx context.Context, h rsi.Host) (*se
 		return nil, err
 	}
 	var recipe contract.Recipe
-	if err = rsiplugin.DecodeResult(raw, &recipe); err != nil || recipe.RetryDelayMS == 0 {
+	if err = rsiplugin.DecodeResult(raw, &recipe); err != nil || recipe.RetryDelayMS == 0 || recipe.AlertAfterSeconds > 3600 {
 		return nil, rsi.ErrInvalid
 	}
-	return &service.RestartReceipt{GraphRevision: revision, Recipe: service.RestartRecipe{Attempts: recipe.Attempts, RetryDelayMS: recipe.RetryDelayMS}}, nil
+	return &service.RestartReceipt{GraphRevision: revision, Recipe: service.RestartRecipe{AlertAfterSeconds: recipe.AlertAfterSeconds, Attempts: recipe.Attempts, RetryDelayMS: recipe.RetryDelayMS}}, nil
 }
