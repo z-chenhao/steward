@@ -115,7 +115,7 @@ func TestGitHubBootstrapIndependentOracleAndOriginalSelection(t *testing.T) {
 				t.Fatal(err)
 			}
 			policy, err := f.host.Store.Policy(ctx, policyID)
-			if err != nil || len(policy.Cases) != 10 || len(policy.AllowedContracts) != 2 {
+			if err != nil || len(policy.Cases) != 12 || len(policy.AllowedContracts) != 2 {
 				t.Fatal("independent GitHub cases missing", len(policy.Cases), err)
 			}
 			if err := builtin.EnsureDefault(ctx, f.host, builtin.Directories{DOCX: "/missing"}); err != nil {
