@@ -28,7 +28,7 @@ type evidenceAccess struct {
 	scope            artifact.Scope
 	conversation     string
 	githubScopesJSON string
-	pdfText      bool
+	pdfText          bool
 	docxText         bool
 	docxPlugin       bool
 	pluginGraph      string
