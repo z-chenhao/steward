@@ -110,10 +110,10 @@ func (g GitHub) Inspect(ctx context.Context, t Target) (RemoteState, error) {
 	r.Tree = commit.Tree.SHA
 	var tree struct {
 		SHA       string
-		Truncated bool
+		Truncated *bool
 		Tree      []coding.DraftEntry
 	}
-	if _, e = g.request(ctx, t, "GET", "/git/trees/"+r.Tree+"?recursive=1", nil, &tree); e != nil || tree.SHA != r.Tree || tree.Truncated || len(tree.Tree) > coding.NativeImportLimits().Entries {
+	if _, e = g.request(ctx, t, "GET", "/git/trees/"+r.Tree+"?recursive=1", nil, &tree); e != nil || tree.SHA != r.Tree || tree.Truncated == nil || *tree.Truncated || tree.Tree == nil || len(tree.Tree) > coding.NativeImportLimits().Entries {
 		return r, ErrConflict
 	}
 	seen := map[string]bool{}
@@ -190,7 +190,7 @@ type gitPull struct {
 }
 
 func (p gitPull) match(plan Plan, digest, head string) bool {
-	return p.Number > 0 && p.Head.SHA == head && p.Head.Ref == plan.Target.Branch && p.Base.Ref == plan.Target.Base && p.Head.Repo.ID == plan.RepositoryID && p.Base.Repo.ID == plan.RepositoryID && p.URL == "https://github.com/"+plan.Target.Repository+"/pull/"+strconv.FormatInt(p.Number, 10) && strings.Contains(p.Body, marker(digest))
+	return p.Draft && p.Number > 0 && p.Base.SHA == plan.BaseSHA && p.Head.SHA == head && p.Head.Ref == plan.Target.Branch && p.Base.Ref == plan.Target.Base && p.Head.Repo.ID == plan.RepositoryID && p.Base.Repo.ID == plan.RepositoryID && p.URL == "https://github.com/"+plan.Target.Repository+"/pull/"+strconv.FormatInt(p.Number, 10) && strings.Contains(p.Body, marker(digest))
 }
 func marker(digest string) string { return "<!-- steward-draft:" + digest + " -->" }
 func (p gitPull) receipt() Pull {
@@ -200,7 +200,7 @@ func (g GitHub) CreatePull(ctx context.Context, p Plan, digest, head string) (Pu
 	var out gitPull
 	body := map[string]any{"head": p.Target.Branch, "base": p.Target.Base, "title": p.Target.Title, "body": p.Body + "\n\n" + marker(digest), "draft": true}
 	_, e := g.request(ctx, p.Target, "POST", "/pulls", body, &out)
-	if e != nil || !out.Draft || !out.match(p, digest, head) {
+	if e != nil || !out.match(p, digest, head) {
 		return Pull{}, ErrUnknown
 	}
 	return out.receipt(), nil

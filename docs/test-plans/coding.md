@@ -111,4 +111,4 @@ capabilities 的 coding／dirty-index／audit／crash／task-code-environments�
 
 ## 所有者批准的 GitHub 草稿 PR
 
-`TestCodingDraftOwnerApprovalAndUnknownReconciliation` 用真实 Worker、独立命令审批、受管 coding-workspace 进程和 SQLite，在新 CLI 进程内调用计划、批准、核对与状态。固定 GitHub REST origin 在测试载体中只路由到本地 HTTP peer。peer 独立核验 blob 内容、Git tree、父提交、仓库、基分支和草稿字段。它先保存 PR 再丢掉响应，重启后重复批准不能新增 POST，近似匹配的 PR 不能结案，正确匹配写入原始 URL 和编号。等待中的检查、变化的候选和已有分支不能获得发布。独立的 `TestDraftTreeMatchesGitObjectsAndModes` 使用 Git 写树和哈希命令核验二进制内容、嵌套目录、排序与执行位。
+`TestCodingDraftOwnerApprovalAndUnknownReconciliation` 用真实 Worker、独立命令审批、受管 coding-workspace 进程和 SQLite，在新 CLI 进程内调用计划、批准、核对与状态。固定 GitHub REST origin 在测试载体中只路由到本地 HTTP peer。peer 独立核验 blob 内容、Git tree、父提交、仓库、基分支和草稿字段。它先保存 PR 再丢掉响应，重启后重复批准不能新增 POST，近似匹配的 PR 不能结案，正确匹配写入原始 URL 和编号。等待中的检查、变化的候选和已有分支不能获得发布。换版后旧审批会被拒绝；回滚同一图可恢复原审批。停用后无法新建计划，Forget 后无法读取历史回执。独立的 `TestDraftTreeMatchesGitObjectsAndModes` 使用 Git 写树和哈希命令核验二进制内容、嵌套目录、排序与执行位。
