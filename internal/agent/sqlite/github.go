@@ -26,6 +26,14 @@ func githubStorageError(err error) error {
 	return &agent.OperationError{Operation: "GitHub observation", Category: agent.ErrStorage, Cause: err}
 }
 
+// Reading PR conversation comments requires the exact live rule that opted in.
+const githubIssueCommentRule = `EXISTS(SELECT 1 FROM github_task_binding b JOIN task t USING(task_id)
+ WHERE b.scope=w.scope AND b.generation=? AND b.enabled=1 AND b.rule_event_kind='issue_comment'
+ AND b.privacy_epoch=w.intent_privacy_epoch AND b.task_epoch=t.task_epoch
+ AND t.status IN ('active','completed') AND t.explicit_end_epoch<t.task_epoch
+ AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND t.conversation_id=t.agent_id
+ AND t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0))`
+
 func (s *Store) BeginGitHubPoll(ctx context.Context, cfg github.Config) (ticket github.Ticket, err error) {
 	if err = cfg.Validate(); err != nil {
 		return ticket, err
@@ -48,6 +56,9 @@ func (s *Store) BeginGitHubPoll(ctx context.Context, cfg github.Config) (ticket 
 			return e
 		}
 		if ticket.Managed {
+			if e = tx.QueryRowContext(ctx, `SELECT `+githubIssueCommentRule+` FROM github_watch w WHERE w.scope=?`, ticket.BindingGeneration, cfg.Scope()).Scan(&ticket.IncludeIssueComments); e != nil {
+				return e
+			}
 			if e = tx.QueryRowContext(ctx, `SELECT coalesce(active_graph,'') FROM rsi_control WHERE singleton=1`).Scan(&ticket.GraphRevision); e != nil {
 				return e
 			}
@@ -71,6 +82,15 @@ func (s *Store) FinishGitHubPoll(ctx context.Context, cfg github.Config, ticket 
 		}
 		if !valid {
 			return github.ErrStopped
+		}
+		if ticket.IncludeIssueComments {
+			var allowed bool
+			if e := tx.QueryRowContext(ctx, `SELECT `+githubIssueCommentRule+` FROM github_watch w WHERE w.scope=?`, ticket.BindingGeneration, cfg.Scope()).Scan(&allowed); e != nil {
+				return e
+			}
+			if !allowed {
+				return github.ErrStopped
+			}
 		}
 		var interval any
 		if ticket.Managed && batch.IntervalSeconds != 0 {
@@ -117,6 +137,9 @@ func (s *Store) FinishGitHubPoll(ctx context.Context, cfg github.Config, ticket 
 			return nil
 		}
 		for _, observation := range batch.Events {
+			if observation.Kind == "issue_comment" && !(ticket.Managed && ticket.IncludeIssueComments) {
+				return &github.Failure{Code: "INVALID_METHOD"}
+			}
 			var method any
 			if ticket.Managed {
 				if observation.Method == nil || observation.Method.GraphRevision != ticket.GraphRevision || !github.ValidRecipe(observation.Method.Recipe) {

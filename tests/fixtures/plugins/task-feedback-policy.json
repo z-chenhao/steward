@@ -13,7 +13,8 @@
       },
       "expected": {
         "lifetime_seconds": 604800,
-        "response_guidance": "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"
+        "response_guidance": "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;",
+        "separate_kinds": true
       }
     },
     {
@@ -24,7 +25,8 @@
       },
       "expected": {
         "lifetime_seconds": 604800,
-        "response_guidance": "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;"
+        "response_guidance": "If continuing through task_manage append, copy feedback_ref to feedbackRef, pass artifact_refs as artifactRefs, and use the exact Task reference;",
+        "separate_kinds": true
       }
     }
   ]

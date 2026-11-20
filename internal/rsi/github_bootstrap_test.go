@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -23,11 +24,20 @@ func changedGitHubBootstrapPackage(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, err := os.ReadFile(source)
+	raw, err := os.ReadFile("../../plugins/github-pr-followup/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.0"`, `Version: "1.1.0"`, 1)
+	var m rsiplugin.Manifest
+	if err := rsiplugin.Decode(raw, &m); err != nil {
+		t.Fatal(err)
+	}
+	const candidateVersion = "99.0.0"
+	raw, err = os.ReadFile(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code := strings.Replace(string(raw), "Version: "+strconv.Quote(m.Version), "Version: "+strconv.Quote(candidateVersion), 1)
 	needle := "plan.IntervalSeconds = 60"
 	if !strings.Contains(code, needle) || code == string(raw) {
 		t.Fatal("candidate overlay did not match")
@@ -46,15 +56,7 @@ func changedGitHubBootstrapPackage(t *testing.T) string {
 	if out, err := exec.Command("go", "build", "-overlay", overlay, "-o", filepath.Join(bundle, "plugin"), "../../cmd/plugins/github-pr-followup").CombinedOutput(); err != nil {
 		t.Fatal(string(out), err)
 	}
-	raw, err = os.ReadFile("../../plugins/github-pr-followup/steward.plugin.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var m rsiplugin.Manifest
-	if err := rsiplugin.Decode(raw, &m); err != nil {
-		t.Fatal(err)
-	}
-	m.Version = "1.1.0"
+	m.Version = candidateVersion
 	m, err = rsi.Seal(bundle, m)
 	if err != nil {
 		t.Fatal(err)
@@ -113,7 +115,7 @@ func TestGitHubBootstrapIndependentOracleAndOriginalSelection(t *testing.T) {
 				t.Fatal(err)
 			}
 			policy, err := f.host.Store.Policy(ctx, policyID)
-			if err != nil || len(policy.Cases) != 10 || len(policy.AllowedContracts) != 2 {
+			if err != nil || len(policy.Cases) != 12 || len(policy.AllowedContracts) != 2 {
 				t.Fatal("independent GitHub cases missing", len(policy.Cases), err)
 			}
 			if err := builtin.EnsureDefault(ctx, f.host, builtin.Directories{DOCX: "/missing"}); err != nil {

@@ -622,3 +622,5 @@ MCP 插件回归复用现有普通 CLI 的 `-test-mcp-server` 入口，仍运行
 
 
 双 PR 由 `TestGitHubTwoExplicitPRsRetainSeparateTasksAndRevocation` 通过两组精确 HTTP 来源、托管扫描、实际 Main 续办与证据精读验证，撤销其中一个配置后另一个继续且唯一续办。CLI 的 `TestGitHubCLISelectsOnlyExplicitPRWhenTwoWatchesAreConfigured` 检查列表顺序、非授权或重复来源、误选拒绝及单范围启停。
+
+按 [GitHub List issue comments](https://docs.github.com/en/rest/issues/comments#list-issue-comments) 为已有 Task 开启 Conversation 规则，验收未启用不访问接口、同一 PR 的作者排除与幂等、伪造 issue_url 整批拒绝、切换自动后只继续原 Task、扫描中撤销后不提交。覆盖真实托管进程和 SQLite，回归 `TestGitHubConversationCommentRequiresExactRuleAndContinuesOnlyBoundTask`。

@@ -12,8 +12,9 @@ type Page struct {
 	Count  int    `json:"count"`
 }
 type Request struct {
-	History     []Page `json:"history"`
-	PollSeconds int    `json:"poll_seconds"`
+	IncludeIssueComments bool   `json:"include_issue_comments,omitempty"`
+	History              []Page `json:"history"`
+	PollSeconds          int    `json:"poll_seconds"`
 }
 type Recipe struct {
 	ObservationBytes int    `json:"observation_bytes"`

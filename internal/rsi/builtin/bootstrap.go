@@ -75,6 +75,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	feedbackVersion := ""
 	scheduleVersion := ""
 	var memoryInspectorVersion, memoryInspectorDirectory string
+	githubIssueComments := false
 	appsClient := false
 	appsInventory := false
 	artifactBody := false
@@ -90,6 +91,9 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "github-pr-followup" {
+			githubIssueComments = installed.Manifest.Version == "1.0.2"
 		}
 		if p.Name == "task-feedback" {
 			feedbackVersion = installed.Manifest.Version
@@ -338,7 +342,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, toolDiscoveryCases()...)
 	}
 	if d.GitHub != "" {
-		cases, err := githubCases()
+		cases, err := githubCases(githubIssueComments)
 		if err != nil {
 			return err
 		}
