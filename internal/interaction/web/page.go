@@ -133,7 +133,7 @@ func (s *Server) page(ctx context.Context, r *http.Request) (page, error) {
 			p.DraftTask = &taskContext{Ref: d.TaskRef, Title: d.Title}
 		}
 		if r.URL.Query().Has("correct_memory") {
-			p.Draft, err = s.memoryCorrectionDraft(ctx, r)
+			p.Draft, p.SourceID, err = s.memoryCorrectionDraft(ctx, r, p.SourceID)
 			if err != nil {
 				return p, err
 			}
