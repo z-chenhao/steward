@@ -24,36 +24,36 @@ func correctableMemory(record memory.InspectionRecord) bool {
 
 // Recheck current owner visibility and the exact displayed document before
 // rendering the draft. The existing composer retains its normal submit boundary.
-func (s *Server) memoryCorrectionDraft(ctx context.Context, r *http.Request) (string, error) {
+func (s *Server) memoryCorrectionDraft(ctx context.Context, r *http.Request, nonce string) (string, string, error) {
 	values, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		return "", memory.ErrInspectionInvalid
+		return "", "", memory.ErrInspectionInvalid
 	}
 	q := memory.InspectionQuery{Ref: values.Get("correct_memory")}
 	readerRevision := values.Get("reader_revision")
 	revision, err := strconv.ParseInt(values.Get("memory_revision"), 10, 64)
 	if len(values) != 3 || len(values["correct_memory"]) != 1 || len(values["memory_revision"]) != 1 || len(values["reader_revision"]) != 1 || q.Ref == "" || q.Validate() != nil || revision < 0 || err != nil || readerRevision == "" || !validModelReader(readerRevision) {
-		return "", memory.ErrInspectionInvalid
+		return "", "", memory.ErrInspectionInvalid
 	}
 	reader, ok := s.Memory.(MemoryPresentedReader)
 	if !ok {
-		return "", memory.ErrInspectionNotFound
+		return "", "", memory.ErrInspectionNotFound
 	}
 	page, view, err := reader.InspectMemoryPresented(ctx, q, readerRevision)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if view == nil || !view.CorrectionDraft || view.ReaderRevision != readerRevision || len(page.Items) != 1 {
-		return "", memory.ErrInspectionNotFound
+		return "", "", memory.ErrInspectionNotFound
 	}
 	record := page.Items[0]
 	if record.Ref != q.Ref || record.Revision != revision || !correctableMemory(record) {
-		return "", memory.ErrInspectionNotFound
+		return "", "", memory.ErrInspectionNotFound
 	}
 	prompt := "Please correct memory %s (revision %d). My correction: "
 	if revision == 0 {
 		prompt = "Please correct memory %s. My correction: "
-		return fmt.Sprintf(translate(requestLanguage(r), prompt), record.Ref), nil
+		return fmt.Sprintf(translate(requestLanguage(r), prompt), record.Ref), memory.CorrectionSource(nonce, record.Ref, revision), nil
 	}
-	return fmt.Sprintf(translate(requestLanguage(r), prompt), record.Ref, revision), nil
+	return fmt.Sprintf(translate(requestLanguage(r), prompt), record.Ref, revision), memory.CorrectionSource(nonce, record.Ref, revision), nil
 }

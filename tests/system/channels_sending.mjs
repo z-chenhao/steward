@@ -55,11 +55,13 @@ export async function sendFeedback(page,context,url,evidence){
  await page.waitForFunction(()=>!document.querySelector('.composer[data-submitting]'));
  await page.getByRole('button',{name:'Send message',exact:true}).click();
  const rejected=page.locator('.outgoing[data-send-state=rejected]');await rejected.waitFor();
+ const rejectedSource=await rejected.getAttribute('data-client-source');
  await editor.fill('Keep this newer unsent draft.');
  await rejected.getByRole('button',{name:'Edit message',exact:true}).click();
  if(await editor.inputValue()!=='Keep this newer unsent draft.')throw Error('edit action overwrote a newer draft');
  await editor.fill('');await rejected.getByRole('button',{name:'Edit message',exact:true}).click();
  if(await editor.inputValue()!=='Keep the third draft and its file.'||await picker.evaluate(node=>node.files[0]?.name)!=='third.txt')throw Error('rejected message could not restore its editable text and attachment');
+ if(await page.locator('#composer-root input[name="source_id"]').inputValue()!==rejectedSource)throw Error('editing a rejected message lost its selected input identity');
  if((await page.locator('#agent-processing').innerText()).trim())throw Error('processing indicator retained visible words');
  await page.setViewportSize({width:390,height:844});
  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('outgoing message layout overflowed mobile');

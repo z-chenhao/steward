@@ -580,8 +580,12 @@ func (r *Runs) Flush(ctx context.Context) error {
 	}
 	return r.write(ctx, func(tx *sql.Tx) error {
 		for _, m := range messages {
-			if err := r.observeMemory(ctx, tx, m.ConversationID, "conversation", m.MessageID); err != nil {
-				return err
+			// The selected correction has one explicit mutation path. Do not queue
+			// the same user input as an unscoped automatic Curator proposal.
+			if m.Source != "web" || !memory.IsCorrectionSource(m.SourceEventID) {
+				if err := r.observeMemory(ctx, tx, m.ConversationID, "conversation", m.MessageID); err != nil {
+					return err
+				}
 			}
 			if _, err := tx.ExecContext(ctx, `UPDATE conversation_intent SET flushed=1 WHERE message_id=?`, m.MessageID); err != nil {
 				return err

@@ -50,7 +50,12 @@ func memoryInspectorDelayedProcessPackage(t *testing.T) string {
 	if out, err := exec.Command("go", "build", "-overlay", overlayPath, "-o", filepath.Join(source, "plugin"), "../../../cmd/plugins/memory-inspector").CombinedOutput(); err != nil {
 		t.Fatal(err, string(out))
 	}
-	raw, err = os.ReadFile("../../../plugins/memory-inspector/steward.plugin.json")
+	return sealMemoryInspectorTestPackage(t, source)
+}
+
+func sealMemoryInspectorTestPackage(t *testing.T, source string) string {
+	t.Helper()
+	raw, err := os.ReadFile("../../../plugins/memory-inspector/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)
 	}

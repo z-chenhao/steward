@@ -52,6 +52,7 @@ export function enhanceComposer(messageAccepted?: (target:URL)=>void){
     if([400,413,422].includes(response.status)){
      outgoingState(entry,'rejected',()=>{
       if(pending||text.value||file?.files?.length){if(feedback)feedback.textContent=t('Finish or clear your current draft before editing this message.');return}
+      source.value=root.dataset.sourceId=submittedSource;
       text.value=submittedText;
       if(file&&submittedFile){const transfer=new DataTransfer();transfer.items.add(submittedFile);file.files=transfer.files}
       showFile();discardOutgoing(entry);if(feedback)feedback.textContent='';text.focus();
