@@ -1,7 +1,9 @@
 package sqlite
 
 // Newer fixture layers must be removed by every older reconstructed schema.
-const removeTaskMailFixtureSchema = `DROP TABLE IF EXISTS task_mail_receipt; DROP TABLE IF EXISTS task_mailbox; `
+const removeCodingDraftFixtureSchema = `DROP TABLE IF EXISTS coding_draft_publication; `
+
+const removeTaskMailFixtureSchema = removeCodingDraftFixtureSchema + `DROP TABLE IF EXISTS task_mail_receipt; DROP TABLE IF EXISTS task_mailbox; `
 
 const removeFeedbackScopeFixtureSchema = removeTaskMailFixtureSchema + `DROP TRIGGER task_feedback_scope_immutable;
 DROP TRIGGER task_feedback_no_replace;
