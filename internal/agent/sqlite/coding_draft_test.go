@@ -64,7 +64,7 @@ func (p *draftPeer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer p.mu.Unlock()
 	if r.Header.Get("Authorization") != "Bearer local-owner-fixture" || r.Header.Get("X-GitHub-Api-Version") != "2022-11-28" {
 		p.t.Errorf("missing owner authentication")
-		http.Error(w, "unauthorized", 401)
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	path, ok := strings.CutPrefix(r.URL.Path, "/repos/example/project")
@@ -143,7 +143,7 @@ func (p *draftPeer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		repo := map[string]int{"id": 42}
 		p.stored = map[string]any{"number": 7, "draft": v.Draft, "html_url": "https://github.com/example/project/pull/7", "body": v.Body, "head": map[string]any{"repo": repo, "ref": v.Head, "sha": p.head}, "base": map[string]any{"repo": repo, "ref": v.Base, "sha": draftBase}}
 		if p.loseResponse {
-			http.Error(w, "private upstream diagnostic", 502)
+			http.Error(w, "private upstream diagnostic", http.StatusBadGateway)
 			return
 		}
 		out = p.stored
