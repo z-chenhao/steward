@@ -26,7 +26,8 @@ func independentWatchdogPackage(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.0"`, `Version: "1.1.0"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.1.0"`, `Version: "1.0.0"`, 1)
+	code = strings.Replace(code, ", AlertAfterSeconds: 60", "", 1)
 	code = strings.Replace(code, "Attempts: 3, RetryDelayMS: 60000", "Attempts: 2, RetryDelayMS: 120000", 1)
 
 	override := filepath.Join(t.TempDir(), "plugin.go")
@@ -49,7 +50,7 @@ func independentWatchdogPackage(t *testing.T) string {
 	if err = rsiplugin.Decode(raw, &manifest); err != nil {
 		t.Fatal(err)
 	}
-	manifest.Version = "1.1.0"
+	manifest.Version = "1.0.0"
 	manifest, err = rsi.Seal(source, manifest)
 	if err != nil {
 		t.Fatal(err)
@@ -87,6 +88,7 @@ func TestServiceWatchdogActualProducerUpgradeRollbackDeactivationAndCold(t *test
 	if err = json.Unmarshal(raw, &c); err != nil {
 		t.Fatal(err)
 	}
+	c.Expected = json.RawMessage(`{"attempts":3,"retry_delay_ms":60000,"alert_after_seconds":60}`)
 	owner := rsi.Policy{ID: "watchdog-original", AllowedContracts: []string{contract.Service}, Cases: []rsi.Case{c}}
 	if err = h.Store.PutPolicy(ctx, owner); err != nil {
 		t.Fatal(err)
@@ -116,16 +118,16 @@ func TestServiceWatchdogActualProducerUpgradeRollbackDeactivationAndCold(t *test
 			t.Fatal(err)
 		}
 	}
-	check := func(revision string, attempts uint8, delay uint32) {
+	check := func(revision string, attempts uint8, delay uint32, alertSeconds uint16) {
 		t.Helper()
 		r, err := a.serviceRestartRecipeWithHost(ctx, h)
-		if err != nil || r.GraphRevision != revision || r.Recipe.Attempts != attempts || r.Recipe.RetryDelayMS != delay {
+		if err != nil || r.GraphRevision != revision || r.Recipe.Attempts != attempts || r.Recipe.RetryDelayMS != delay || r.Recipe.AlertAfterSeconds != alertSeconds {
 			t.Fatal("wrong admitted producer", r, err)
 		}
 	}
 	original := prepare(defaultFeaturePackage(t, "service-watchdog", nil))
 	activate("watchdog-first", "", original, owner.ID)
-	check(original, 3, 60000)
+	check(original, 3, 60000, 60)
 	next := prepare(independentWatchdogPackage(t))
 	owner.ID = "watchdog-independent"
 	owner.Cases[0].Expected = json.RawMessage(`{"attempts":2,"retry_delay_ms":120000}`)
@@ -133,9 +135,9 @@ func TestServiceWatchdogActualProducerUpgradeRollbackDeactivationAndCold(t *test
 		t.Fatal(err)
 	}
 	activate("watchdog-upgrade", original, next, owner.ID)
-	check(next, 2, 120000)
+	check(next, 2, 120000, 0)
 	activate("watchdog-rollback", next, original, "watchdog-original")
-	check(original, 3, 60000)
+	check(original, 3, 60000, 60)
 	if _, err = h.Store.Deactivate(ctx, "watchdog-off", original); err != nil {
 		t.Fatal(err)
 	}

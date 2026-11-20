@@ -15,7 +15,7 @@ import (
 )
 
 func TestServiceCommandGrammarAndUnsupportedPlatform(t *testing.T) {
-	for _, args := range [][]string{{"service", "install"}, {"service", "start"}, {"service", "stop", "/private/data"}, {"service", "run", "/private/data"}} {
+	for _, args := range [][]string{{"service", "install"}, {"service", "start"}, {"service", "stop", "/private/data"}, {"service", "run", "/private/data"}, {"service", "alerts-feishu", "/private/data", "oc_chat"}, {"service", "alerts-off", "/private/data"}} {
 		o, err := parseOptions(args, io.Discard)
 		if err != nil {
 			t.Fatal(err)
@@ -153,5 +153,46 @@ func TestBackgroundCLIExposesSetupAndObservesPersistentStop(t *testing.T) {
 	// A queued launch after stop returns without reopening domain state.
 	if err := run(context.Background(), []string{"service", "run", root}, strings.NewReader(""), io.Discard, io.Discard); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestServiceAlertCLIPersistsSelectionAndDisablesWithoutRuntime(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("service CLI is macOS only")
+	}
+	home := t.TempDir()
+	root := filepath.Join(home, "data")
+	t.Setenv("HOME", home)
+	t.Setenv("STEWARD_DATA_ROOT", root)
+	cfg := filepath.Join(home, "service.yaml")
+	raw := []byte("version: 1\nfeishu:\n  app_id: fixture\n  tenant_key: fixture\n  verification_token_ref: 'credential:verify'\n  encrypt_key_ref: 'credential:encrypt'\n  access_token_ref: 'credential:watchdog'\n")
+	if err := os.WriteFile(cfg, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	execute := func(args ...string) string {
+		t.Helper()
+		var out bytes.Buffer
+		if err := run(context.Background(), args, strings.NewReader(""), &out, io.Discard); err != nil {
+			t.Fatal(args, err)
+		}
+		return out.String()
+	}
+	execute("-config", cfg, "service", "install")
+	out := execute("service", "alerts-feishu", root, "oc_selected")
+	if !strings.Contains(out, `"policy":"waiting_for_watchdog_recipe"`) || strings.Contains(out, "oc_selected") {
+		t.Fatal(out)
+	}
+	if err := os.WriteFile(cfg, []byte("invalid: configuration"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if got := execute("service", "status", root); !strings.Contains(got, `"enabled":true`) {
+		t.Fatal(got)
+	}
+	if got := execute("service", "alerts-off", root); strings.Contains(got, `"enabled":true`) {
+		t.Fatal(got)
+	}
+	state, err := os.ReadFile(filepath.Join(root, ".service", "alerts.json"))
+	if err != nil || strings.Contains(string(state), "oc_selected") {
+		t.Fatal(string(state), err)
 	}
 }

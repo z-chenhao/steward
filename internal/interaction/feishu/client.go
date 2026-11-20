@@ -43,6 +43,15 @@ func (c Config) Validate() error {
 		//lint:ignore ST1005 Preserve the existing user-facing diagnostic text.
 		return errors.New("Feishu requires app, tenant and credential references")
 	}
+	return c.ValidateOutgoing()
+}
+
+// ValidateOutgoing checks the narrower configuration retained by a send-only
+// watchdog route, including its account, credential references and API origin.
+func (c Config) ValidateOutgoing() error {
+	if c.AppID == "" || c.TenantKey == "" {
+		return errors.New("missing Feishu account")
+	}
 	if (c.AccessTokenRef == "") == (c.AppSecretRef == "") {
 		//lint:ignore ST1005 Preserve the existing user-facing diagnostic text.
 		return errors.New("Feishu requires exactly one of access_token_ref or app_secret_ref")

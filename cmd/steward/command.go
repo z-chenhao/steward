@@ -71,7 +71,7 @@ var commandGrammars = map[string]commandGrammar{
 	"channel":    {commandChannel, map[string][]int{"manage": {2}, "status": {2}, "check": {2}}},
 	"automation": {commandAutomation, map[string][]int{"manage": {3}, "list": {2}, "tick": {2}, "work": {2}}},
 	"ops":        {commandOps, map[string][]int{"health": {2}, "report": {2}, "broker": {2}, "upgrade-broker": {2}, "trace": {3}, "activate": {3}, "backup": {4}, "restore": {4}, "retry-event": {4}}},
-	"service":    {commandService, map[string][]int{"install": {2}, "start": {2, 3}, "stop": {2, 3}, "status": {2, 3}, "uninstall": {2, 3}, "run": {3}, "inspect": {3}}},
+	"service":    {commandService, map[string][]int{"install": {2}, "start": {2, 3}, "stop": {2, 3}, "status": {2, 3}, "uninstall": {2, 3}, "run": {3}, "inspect": {3}, "alerts-feishu": {4}, "alerts-off": {3}}},
 	"coding":     {commandCoding, map[string][]int{"inspect": {3}, "diff": {3}, "report": {3}, "report-pr": {4}, "report-pr-exact": {4}}},
 }
 
