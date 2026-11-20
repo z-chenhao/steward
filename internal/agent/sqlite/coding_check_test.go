@@ -635,3 +635,35 @@ func TestCodingCheckPlanAndReceiptCommitFailuresStayUnknownWithoutReplay(t *test
 		})
 	}
 }
+
+func TestCodingProjectAttemptGroupsPreserveBothNames(t *testing.T) {
+	s, r, a, p, _ := codingCheckFixture(t)
+	defs := []tool.Definition{coding.VerificationDefinition("test")}
+	for _, spec := range a.Registry.Describe() {
+		def, _ := a.Registry.Resolve(spec.Name)
+		defs = append(defs, def)
+	}
+	registry, err := tool.NewRegistry(defs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.Registry, r.registry = registry, registry
+	p.respond = delegateToolWork(func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		if req.Messages[len(req.Messages)-1].Role == "tool" {
+			return llm.GenerationResult{Text: "inspected"}, nil
+		}
+		// Rejected attempts are also retained in the status report.
+		return calls(coding.VerifyTool, `{"project_file":"a#b","plan":{"check":"c"}}`,
+			`{"project_file":"a","plan":{"check":"b#c"}}`), nil
+	})
+	mustSubmit(t, a, "distinct-checks", "Review both project attempts")
+	mustDrain(t, a)
+	var taskID string
+	if err := s.db.QueryRow("SELECT task_id FROM task").Scan(&taskID); err != nil {
+		t.Fatal(err)
+	}
+	checks, _, err := s.readCodingChecks(context.Background(), taskID, "", 64, 1<<20)
+	if err != nil || len(checks) != 2 || !checks[0].LatestAttempt || !checks[1].LatestAttempt {
+		t.Fatal(checks, err)
+	}
+}

@@ -78,7 +78,11 @@ def source_state():
     for name in sorted(n for n in untracked if n):
         path = ROOT / name
         digest.update(name.encode() + b'\0')
-        digest.update(os.readlink(path).encode() if path.is_symlink() else path.read_bytes())
+        if path.is_symlink():
+            digest.update(b'link\0' + os.fsencode(os.readlink(path)) + b'\0')
+        else:
+            digest.update(b'executable\0' if path.stat().st_mode & 0o111 else b'file\0')
+            digest.update(hashlib.sha256(path.read_bytes()).digest())
     return dict(source_sha=source, source_dirty=bool(diff or any(untracked)), source_diff_sha256=digest.hexdigest())
 
 
