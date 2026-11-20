@@ -1,0 +1,99 @@
+[
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "review",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "check_run",
+          "number": 1,
+          "count": 0
+        }
+      ],
+      "poll_seconds": 0,
+      "include_issue_comments": true
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": ""
+      }
+    ],
+    "expected": {
+      "next": {
+        "kind": "issue_comment",
+        "number": 1,
+        "count": 0
+      },
+      "rows": [],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  },
+  {
+    "instance_id": "github-pr-followup",
+    "contract": "steward.github-pr-followup/1",
+    "input": {
+      "history": [
+        {
+          "kind": "review_comment",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "review",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "check_run",
+          "number": 1,
+          "count": 0
+        },
+        {
+          "kind": "issue_comment",
+          "number": 1,
+          "count": 2
+        }
+      ],
+      "poll_seconds": 0,
+      "include_issue_comments": true
+    },
+    "inputs": [
+      {
+        "id": "source-eligibility",
+        "data": "AAE="
+      }
+    ],
+    "expected": {
+      "next": null,
+      "rows": [
+        1
+      ],
+      "display_bytes": 16384,
+      "display_suffix": "\n[truncated; open the source URL for full text]",
+      "followup": {
+        "observation_bytes": 4096,
+        "goal_bytes": 4096,
+        "notice": "\n[Preview truncated; consult the original Task/source before relying on missing details.]"
+      },
+      "interval_seconds": 60
+    }
+  }
+]

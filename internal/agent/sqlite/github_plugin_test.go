@@ -40,7 +40,7 @@ func githubVersionPackage(t *testing.T, version string, fault ...string) string 
 		t.Fatal(err)
 	}
 	code := string(raw)
-	for old, next := range map[string]string{`Version: "1.0.1"`: `Version: "` + version + `"`} {
+	for old, next := range map[string]string{`Version: "1.0.2"`: `Version: "` + version + `"`} {
 		if !strings.Contains(code, old) {
 			t.Fatal("missing version source")
 		}

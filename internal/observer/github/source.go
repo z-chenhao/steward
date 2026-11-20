@@ -87,9 +87,11 @@ func (row sourceRow) project(limit int, suffix string) (Observation, error) {
 func (r reader) page(ctx context.Context, cfg Config, head string, self int64, kind string, page int) ([]sourceRow, error) {
 	path := "/repos/" + cfg.Repository
 	rows := []sourceRow{}
-	if kind == "review_comment" || kind == "review" {
+	if kind == "review_comment" || kind == "review" || kind == "issue_comment" {
 		endpoint := path + "/pulls/" + fmt.Sprint(cfg.PullNumber) + "/comments"
-		if kind == "review" {
+		if kind == "issue_comment" {
+			endpoint = path + "/issues/" + fmt.Sprint(cfg.PullNumber) + "/comments"
+		} else if kind == "review" {
 			endpoint = path + "/pulls/" + fmt.Sprint(cfg.PullNumber) + "/reviews"
 		}
 		var entries []struct {
@@ -97,6 +99,7 @@ func (r reader) page(ctx context.Context, cfg Config, head string, self int64, k
 			Body      string    `json:"body"`
 			State     string    `json:"state"`
 			URL       string    `json:"html_url"`
+			IssueURL  string    `json:"issue_url"`
 			Updated   time.Time `json:"updated_at"`
 			Submitted time.Time `json:"submitted_at"`
 			User      struct {
@@ -116,8 +119,13 @@ func (r reader) page(ctx context.Context, cfg Config, head string, self int64, k
 			if at.IsZero() {
 				at = entry.Submitted
 			}
+			identityValid := sourceURL(entry.URL, cfg)
+			if kind == "issue_comment" {
+				_, fragment, _ := strings.Cut(entry.URL, "#")
+				identityValid = identityValid && fragment == "issuecomment-"+fmt.Sprint(entry.ID) && strings.EqualFold(entry.IssueURL, "https://api.github.com"+path+"/issues/"+fmt.Sprint(cfg.PullNumber))
+			}
 			eligible := entry.User.ID != self && (kind != "review" || entry.State != "PENDING" && !entry.Submitted.IsZero())
-			rows = append(rows, sourceRow{observation: Observation{Kind: kind, SourceID: entry.ID, URL: entry.URL, Actor: entry.User.Login, State: entry.State, UpdatedAt: at.UTC()}, body: entry.Body, eligible: eligible, timeValid: !at.IsZero(), identityValid: entry.ID > 0 && entry.User.ID > 0 && entry.User.Login != "" && sourceURL(entry.URL, cfg)})
+			rows = append(rows, sourceRow{observation: Observation{Kind: kind, SourceID: entry.ID, URL: entry.URL, Actor: entry.User.Login, State: entry.State, UpdatedAt: at.UTC()}, body: entry.Body, eligible: eligible, timeValid: !at.IsZero(), identityValid: entry.ID > 0 && entry.User.ID > 0 && entry.User.Login != "" && identityValid})
 		}
 		return rows, nil
 	}

@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.github-pr-followup",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "feature_ids": [
     "F-042",
     "F-045"
@@ -27,7 +27,8 @@
                   "enum": [
                     "review_comment",
                     "review",
-                    "check_run"
+                    "check_run",
+                    "issue_comment"
                   ]
                 },
                 "number": {
@@ -48,12 +49,15 @@
               ],
               "additionalProperties": false
             },
-            "maxItems": 63
+            "maxItems": 84
           },
           "poll_seconds": {
             "type": "integer",
             "minimum": 0,
             "maximum": 3600
+          },
+          "include_issue_comments": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -75,7 +79,8 @@
                     "enum": [
                       "review_comment",
                       "review",
-                      "check_run"
+                      "check_run",
+                      "issue_comment"
                     ]
                   },
                   "number": {
