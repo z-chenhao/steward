@@ -136,6 +136,12 @@ func (s *Server) page(ctx context.Context, r *http.Request) (page, error) {
 			}
 			p.DraftTask = &taskContext{Ref: d.TaskRef, Title: d.Title}
 		}
+		if r.URL.Query().Has("correct_memory") {
+			p.Draft, err = s.memoryCorrectionDraft(ctx, r)
+			if err != nil {
+				return p, err
+			}
+		}
 		err = s.loadConversation(ctx, &p)
 		if err == nil {
 			p.ComposerModels, err = s.modelChoices(ctx, false)

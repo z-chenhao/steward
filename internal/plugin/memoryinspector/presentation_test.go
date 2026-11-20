@@ -84,7 +84,8 @@ func TestPresentationOwnsCapturedOriginalViewBytes(t *testing.T) {
 	got := project(contract.Request{Navigation: []contract.Navigation{}}).View
 	start := strings.Index(got.Source, "{{if eq .Operation \"dream\"}}<section")
 	end := strings.Index(got.Source, "<section class=\"memory-generation-history\"><h3>{{tr \"Model attempts\"}}")
-	if start < 0 || end <= start || got.Resource != contract.ViewResource || got.Source[:start]+got.Source[end:] != string(raw) || got.Digest != rsiplugin.FileDigest([]byte(got.Source)) {
+	const correction = `{{if $.Memory.CorrectionURL}}<a class="text-link" href="{{$.Memory.CorrectionURL}}">{{tr "Correct in chat"}}</a>{{end}}`
+	if start < 0 || end <= start || got.Resource != contract.ViewResource || strings.Count(got.Source, correction) != 1 || strings.Replace(got.Source[:start]+got.Source[end:], correction, "", 1) != string(raw) || got.Digest != rsiplugin.FileDigest([]byte(got.Source)) {
 		t.Fatal("owning resource changed independently captured original view")
 	}
 }
@@ -122,7 +123,7 @@ func TestPresentationOwnsCapturedOriginalLocalizationBytes(t *testing.T) {
 			t.Fatalf("historical translation changed: %s", item.English)
 		}
 	}
-	if got.Resource != contract.LocalizationResource || len(current) != len(original)+5 || got.Digest != rsiplugin.FileDigest([]byte(got.Source)) {
+	if got.Resource != contract.LocalizationResource || len(current) != len(original)+6 || translations["Correct in chat"] != "在对话中纠正" || got.Digest != rsiplugin.FileDigest([]byte(got.Source)) {
 		t.Fatal("owning localization changed independent original capture")
 	}
 }

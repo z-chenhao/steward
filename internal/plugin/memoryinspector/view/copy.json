@@ -538,5 +538,9 @@
   {
     "english": "← Memory",
     "chinese": "← 记忆列表"
+  },
+  {
+    "english": "Correct in chat",
+    "chinese": "在对话中纠正"
   }
 ]

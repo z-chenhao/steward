@@ -8,7 +8,7 @@ import (
 )
 
 func Handlers() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.1.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Presentation: present}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.1.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Presentation: present}}
 }
 func present(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 	var req contract.Request
