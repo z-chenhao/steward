@@ -909,8 +909,11 @@ def task_control_components(binary, evidence, report):
     # uncalled example. All schedule writes use a disposable data root.
     with tempfile.TemporaryDirectory(prefix='steward-task-controls-') as temp, Sandbox() as platform:
         h = ChannelHarness(binary, Path(temp), platform)
-        h.now = '2026-10-15T12:00:00+08:00'
         try:
+            # Field diagnostics belong to the schedule plugin selected by the
+            # shipped composition. A test bridge alone exercises historical schedules.
+            h.enable_default_plugins()
+            h.now = '2026-10-15T12:00:00+08:00'
             h.setup()
             h.start()
             output = evidence.parent / 'task-controls-ui'
