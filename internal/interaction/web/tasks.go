@@ -28,6 +28,7 @@ type scheduledTaskReader interface {
 	ScheduledPage(context.Context, string, string) ([]task.ScheduledWork, string, error)
 }
 type taskView struct {
+	GitHubRule           *githubRuleView
 	Configurations       bool
 	Executions           task.ExecutionList
 	Execution            *task.ExecutionDetail
@@ -180,7 +181,7 @@ func (s *Server) loadTasks(ctx context.Context, r *http.Request, p *page) error 
 	}
 	ref := strings.TrimPrefix(r.URL.Path, "/tasks/")
 	for key, values := range r.URL.Query() {
-		if (key != "history" && key != "delivery_before") || len(values) != 1 {
+		if (key != "history" && key != "delivery_before" && key != "github_scope") || len(values) != 1 {
 			return task.ErrInvalid
 		}
 	}
@@ -197,6 +198,9 @@ func (s *Server) loadTasks(ctx context.Context, r *http.Request, p *page) error 
 		return err
 	}
 	v.Detail = &d
+	if err := s.loadGitHubRule(ctx, p, r.URL.Query().Get("github_scope")); err != nil {
+		return err
+	}
 	for _, ref := range d.Artifacts {
 		descriptor, e := s.Core.DescribeArtifact(ctx, ref)
 		if e == nil {

@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.web-workbench",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "feature_ids": [
     "F-018",
     "F-019"

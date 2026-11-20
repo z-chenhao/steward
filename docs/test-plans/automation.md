@@ -33,6 +33,7 @@
 | 入口 | 覆盖用途与限制 |
 | --- | --- |
 | [tests/system/verify_automation.py](../../tests/system/verify_automation.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |
+| [internal/app/github_rule_workbench_test.go](../../internal/app/github_rule_workbench_test.go) | 参照 Grok Bot 先观察再启用的例程。真实工作台表单和受控 PR 轮询覆盖观察、查看命中依据、自动接续、停止和过期表单。 |
 | [internal/agent/sqlite/github_rule_test.go](../../internal/agent/sqlite/github_rule_test.go) | 真实 Store 轮询事务和 Actor 验证同候选三模式、显式自动同 Task、CAS、旧代迟到与去重、重启、历史 Task/作用域/Forget、分页与 schema 37 迁移 |
 | [internal/agent/sqlite/github_failed_check_rule_test.go](../../internal/agent/sqlite/github_failed_check_rule_test.go) | 成功或异常结论不触发失败规则，观察命中无执行，自动失败仅继续原 Task 一次。规则改动保留冻结决策，旧代迟到/重试不复活，schema 40 中已排队的类型匹配可继续 |
 | [internal/agent/sqlite/github_followup_test.go](../../internal/agent/sqlite/github_followup_test.go) | 规则修订及已有授权撤销后拒绝迟到模型和 Tool，保留现有 Task 状态和未知副作用约束 |

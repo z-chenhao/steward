@@ -60,7 +60,7 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 	if err = secrets.Put(ctx, watch.CredentialRef, []byte("synthetic-source-only-token")); err != nil {
 		t.Fatal(err)
 	}
-	var calls atomic.Int64
+	var calls, commentVersion atomic.Int64
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		calls.Add(1)
 		if req.Header.Get("Authorization") != "Bearer synthetic-source-only-token" {
@@ -72,7 +72,7 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 		case "/repos/owner/repo/pulls/7":
 			fmt.Fprint(w, `{"number":7,"head":{"sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"base":{"repo":{"id":99,"full_name":"owner/repo"}}}`)
 		case "/repos/owner/repo/pulls/7/comments":
-			fmt.Fprint(w, `[{"id":1,"body":"original source","updated_at":"2026-11-01T10:00:00Z","html_url":"https://github.com/owner/repo/pull/7#discussion_r1","user":{"id":2,"login":"reviewer"}}]`)
+			fmt.Fprintf(w, `[{"id":1,"body":"PRIVATE review text %d","updated_at":"2026-11-01T10:00:00Z","html_url":"https://github.com/owner/repo/pull/7#discussion_r1","user":{"id":2,"login":"reviewer"}}]`, commentVersion.Load())
 		case "/repos/owner/repo/pulls/7/reviews":
 			fmt.Fprint(w, `[]`)
 		default:
@@ -142,6 +142,7 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 	if json.Unmarshal([]byte(method), &frozen) != nil || frozen.GraphRevision != selected.Revision {
 		t.Fatal("actual App bypassed source method")
 	}
+	t.Run("Task workbench rule lifecycle", func(t *testing.T) { verifyGitHubRuleWorkbench(t, a, carrier, func() { commentVersion.Add(1) }) })
 	if err = a.Close(); err != nil {
 		t.Fatal(err)
 	}

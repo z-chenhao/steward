@@ -66,6 +66,7 @@ type workbenchScheduled struct {
 	TaskRef string
 }
 type workbenchTasks struct {
+	GitHubRule     *githubRuleView
 	Configurations bool
 	Query          struct {
 		View, Query, Cursor string
@@ -182,7 +183,7 @@ func workbenchData(p page, language string) (workbenchViewData, *workbenchBindin
 		data.Approvals = append(data.Approvals, b.approval(a))
 	}
 	if v := p.Tasks; v != nil {
-		t := &workbenchTasks{Configurations: v.Configurations, Artifacts: v.Artifacts, ScheduledNext: v.ScheduledNext, SchedulesUnavailable: v.SchedulesUnavailable}
+		t := &workbenchTasks{GitHubRule: v.GitHubRule, Configurations: v.Configurations, Artifacts: v.Artifacts, ScheduledNext: v.ScheduledNext, SchedulesUnavailable: v.SchedulesUnavailable}
 		t.Query.View, t.Query.Query, t.Query.Cursor, t.Query.NeedsMe = v.Query.View, v.Query.Query, v.Query.Cursor, v.Query.NeedsMe
 		t.List.Next, t.Executions.Next = v.List.Next, v.Executions.Next
 		for _, x := range v.List.Items {

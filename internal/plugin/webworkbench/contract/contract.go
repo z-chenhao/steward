@@ -22,6 +22,7 @@ type HistoryLabel struct {
 	Key  string `json:"key"`
 }
 type Policy struct {
+	GitHubRules     bool           `json:"github_rules,omitempty"`
 	ArtifactPreview bool           `json:"artifact_preview,omitempty"`
 	Live            []RegionSet    `json:"live"`
 	PageLive        []string       `json:"page_live"`

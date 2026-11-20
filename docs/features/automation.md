@@ -63,6 +63,8 @@ JSON
 steward -config /absolute/config.yaml github decisions
 ```
 
+在 Web 打开已有任务的配置，找到「GitHub PR 规则」，选择已配置的 PR 和事件后点「开始观察」。来源需要先成功完成一次检查。用「刷新观察记录」查看本代最近五条事件及匹配依据；观察本身不会接续任务。「启用自动接续」仅对之后的新匹配有效。「停止规则」停止这个任务的接续，已有 PR 来源仍可轮询。每次提交同时校验当前工作台、任务 epoch 和规则版本，过期页面须刷新。
+
 `event_kind` 可选 `review_comment`（行内评论）、`review`（已提交评审）或 `check_run`（当前 PR head 的已完成 CI 检查，含成功或失败）。每页最多 50 条，下一页用 `github decisions BEFORE_SEQUENCE` 传上一页最末的 `observation_sequence`。记录展示匹配依据、原事件标识和当时的 Task，不重复保存评论正文。历史记录仅供查阅，不能拿来接单。
 
 只观察 CI 失败时，将绑定设置为 `"event_kind":"check_run","check_conclusion":"failure"`。省略 `check_conclusion` 仍匹配所有已完成检查。带筛选的决策显示当时的预期和实际结论，以及匹配或不匹配的理由。非规范结论显示为 `unknown`，无法触发失败规则。

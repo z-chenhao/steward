@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"slices"
 	"sort"
 	"strings"
 
@@ -40,6 +41,13 @@ func (s *Server) postFailure(w http.ResponseWriter, r *http.Request, cause error
 	path := "/"
 	query := url.Values{}
 	switch r.URL.Path {
+	case "/task/github-rule":
+		if ref := r.PostForm.Get("task_ref"); task.ValidRef(ref) {
+			path = taskURL(ref)
+			if core, ok := s.Core.(githubRuleControl); ok && slices.Contains(core.GitHubScopes(), r.PostForm.Get("scope")) {
+				query.Set("github_scope", r.PostForm.Get("scope"))
+			}
+		}
 	case "/approval", "/task/feedback":
 		u, _ := url.Parse(safePageReturn(r.FormValue("return_to")))
 		path, query = u.Path, u.Query()
