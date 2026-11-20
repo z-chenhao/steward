@@ -135,7 +135,8 @@ class CIChecksTests(unittest.TestCase):
                      'inspection_relationships', 'capability_settings',
                      'dependency_recovery', 'native_components', 'rich_replies',
                      'account_presentation', 'native_trace_inspection',
-                     'page_transitions', 'model_connections', 'task_control_components')
+                     'page_transitions', 'model_connections', 'task_control_components',
+                     'browser_demonstration')
         lanes = {row['lane']: row for row in ci.plan('system')['include']}
         self.assertEqual(lanes['channels-web']['browser'], 'true')
         self.assertIn('--group web', ci.command('channels-web'))
@@ -146,7 +147,7 @@ class CIChecksTests(unittest.TestCase):
         for name in scenarios:
             checks[name].assert_called_once()
         for name in ('preference_settings', 'page_transitions', 'model_connections',
-                     'task_control_components', 'capability_settings'):
+                     'task_control_components', 'capability_settings', 'browser_demonstration'):
             checks[name].assert_called_once_with(binary, evidence, report)
 
     def test_connected_apps_and_browser_regressions_are_required_software_lanes(self):
