@@ -25,6 +25,7 @@ func parseOptions(args []string, errOut io.Writer) (commandOptions, error) {
 	o := commandOptions{}
 	flags := flag.NewFlagSet("steward", flag.ContinueOnError)
 	flags.SetOutput(errOut)
+	flags.String("github-scope", "", "exact configured owner/repository#PR for GitHub controls")
 	flags.StringVar(&o.configPath, "config", "", "versioned YAML configuration file (optional)")
 	flags.StringVar(&o.testSecrets, "test-secret-store", "", "explicit in-memory CI Unix socket; never a production credential backend")
 	flags.StringVar(&o.testBridge, "test-bridge", "", "explicit deterministic test Bridge fixture; never a real provider")
@@ -46,7 +47,7 @@ func parseOptions(args []string, errOut io.Writer) (commandOptions, error) {
 		fmt.Fprintln(errOut, "GitHub Task association: github binding; github bind reads {task_ref,task_epoch,version}; github unbind reads {version}. Only future observations can continue the explicitly bound Task through Main; stop/manual completion revoke the association.")
 		fmt.Fprintln(errOut, "GitHub rule: add mode observe|automatic and event_kind review_comment|review|check_run to github bind. For check_run, optionally set check_conclusion to failure. Observe records decisions without model calls or work. Review via github decisions [BEFORE_SEQUENCE]; turn off via github unbind.")
 		fmt.Fprintln(errOut, "Evidence: evidence read accepts JSON {ref: current|conversation:REF|task:REF|artifact:REF|memory:REF|github:SEQUENCE, offset?, limit?, links_offset?} on stdin. GitHub evidence uses the configured PR and current Task association. See docs/features/memory-context.md.")
-		fmt.Fprintln(errOut, "GitHub observations: github status|poll|events [BEFORE_SEQUENCE]|stop|resume. Configure one exact repository/PR and a SecretStore credential_ref; reception does not authorize work. See docs/features/integrations.md.")
+		fmt.Fprintln(errOut, "GitHub observations: github status|poll|events [BEFORE_SEQUENCE]|stop|resume. Use github scopes to list configured PRs and -github-scope owner/repo#123 to select one. Each watch uses an exact repository/PR and a SecretStore credential_ref; reception does not authorize work. See docs/features/integrations.md.")
 		fmt.Fprintln(errOut, "Steward: run steward (or steward start) for guided setup and chat. Run doctor to check the installation. Ctrl-C or /quit stops Steward.\nstart manages a private local broker; -config or STEWARD_NATS_URL uses your configured broker instead.")
 		fmt.Fprintln(errOut, "Operations: ops health|report|broker|upgrade-broker; ops trace RUN_ID; ops retry-event EVENT_ID ATTEMPTS; ops backup ARCHIVE KEY_REF; ops restore ARCHIVE KEY_REF [NEW_ROOT]; ops activate source-retired-and-outcomes-reconciled. See docs/features/operations.md.")
 		fmt.Fprintln(errOut, "Task code review: coding inspect TASK_REF; coding diff TASK_REF; coding report TASK_REF. Optional execution.repository_source prepares independent work copies for new Tasks; report saves a review Artifact. coding report-pr TASK_REF EXPECTED_HEAD_SHA associates a report with the configured, previously observed PR head. coding report-pr-exact TASK_REF EXPECTED_HEAD_SHA additionally requires identical candidate content from locally available raw Git objects; it never fetches.")

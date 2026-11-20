@@ -11,6 +11,11 @@ version: 1
 #   pull_number: 123
 #   credential_ref: env:STEWARD_GITHUB_TOKEN
 #   poll_seconds: 60
+# Optional additional exact PRs. Each scope must appear only once.
+# github_watches:
+#   - repository: owner/repository
+#     pull_number: 456
+#     credential_ref: env:STEWARD_GITHUB_TOKEN
 # Optional durable recall. Install/serve the selected model explicitly.
 # No implicit embedding provider or FTS-only fallback. See docs/features/memory-context.md.
 # embedding:

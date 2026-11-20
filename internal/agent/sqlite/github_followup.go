@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"slices"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -15,11 +16,12 @@ import (
 // Main lifecycle. No user message, Task, grant, or external effect is fabricated.
 func (r *Runs) recoverGitHubFollowups(ctx context.Context) error {
 	return r.write(ctx, func(tx *sql.Tx) error {
-		scope := r.host.currentGitHubScope()
+		configured := r.host.currentGitHubScopes()
+		var scope string
 		if err := stopInvalidGitHubMains(ctx, tx); err != nil {
 			return err
 		}
-		if scope == "" {
+		if len(configured.scopes) == 0 {
 			return nil
 		}
 		var active bool
@@ -31,13 +33,13 @@ func (r *Runs) recoverGitHubFollowups(ctx context.Context) error {
 		err := tx.QueryRowContext(ctx, `SELECT b.scope,b.task_id,t.task_ref,t.anchor_task,b.generation,b.task_epoch,b.privacy_epoch,o.sequence,o.content_json,t.agent_id,coalesce(c.active_model_profile_id,''),c.config_version,coalesce(o.source_method_json,'')
  FROM github_task_binding b JOIN github_watch w USING(scope) JOIN task t USING(task_id) JOIN agent_config c ON c.agent_id=t.agent_id
  JOIN github_observation o ON o.scope=b.scope AND o.sequence>b.last_sequence AND o.intent_privacy_epoch=b.privacy_epoch
- WHERE b.scope=? AND b.enabled=1 AND w.enabled=1 AND w.state='healthy' AND w.failure_code='' AND w.intent_privacy_epoch=b.privacy_epoch AND b.privacy_epoch=`+githubEpoch+`
+ WHERE b.scope IN (SELECT value FROM json_each(?)) AND b.enabled=1 AND w.enabled=1 AND w.state='healthy' AND w.failure_code='' AND w.intent_privacy_epoch=b.privacy_epoch AND b.privacy_epoch=`+githubEpoch+`
  AND b.rule_mode='automatic' AND (o.binding_generation=b.generation OR (o.binding_generation IS NULL AND b.rule_event_kind=''))
  AND (b.rule_event_kind='' OR EXISTS(SELECT 1 FROM github_rule_decision d
  WHERE d.observation_sequence=o.sequence AND d.task_id=b.task_id AND d.mode='automatic' AND d.event_kind=b.rule_event_kind AND d.expected_check_conclusion=b.rule_check_conclusion AND d.matched=1))
  AND t.task_epoch=b.task_epoch AND t.status IN('active','completed') AND t.explicit_end_epoch<t.task_epoch AND t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0)
  AND (`+validGitHubSourceMethod+`) AND c.setup_status='ready' AND NOT EXISTS(SELECT 1 FROM github_task_followup f WHERE f.observation_sequence=o.sequence)
- ORDER BY o.sequence LIMIT 1`, scope).Scan(&scope, &taskID, &taskRef, &goal, &generation, &epoch, &privacy, &sequence, &raw, &agentID, &profile, &configuration, &methodRaw)
+ ORDER BY o.sequence LIMIT 1`, configured.encoded).Scan(&scope, &taskID, &taskRef, &goal, &generation, &epoch, &privacy, &sequence, &raw, &agentID, &profile, &configuration, &methodRaw)
 		if err == sql.ErrNoRows {
 			return nil
 		}
@@ -110,7 +112,7 @@ func (r *Runs) checkGitHubAppend(ctx context.Context, tx *sql.Tx, runID string, 
 	if err != nil {
 		return false, err
 	}
-	if scope != r.host.currentGitHubScope() || state != "assigned" || q.Operation != "append" || q.TaskRef != ref {
+	if !slices.Contains(r.host.currentGitHubScopes().scopes, scope) || state != "assigned" || q.Operation != "append" || q.TaskRef != ref {
 		return false, nil
 	}
 	var valid, unknown bool

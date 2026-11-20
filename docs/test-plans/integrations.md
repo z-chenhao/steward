@@ -619,3 +619,6 @@ MCP 插件回归复用现有普通 CLI 的 `-test-mcp-server` 入口，仍运行
 参考 [Manus 的代理收件身份](https://manus.im/blog/introducing-manus-2-0)，所有者在 Steward 为已有 Task 启用独立收件地址，转发器投递后该 Task 可查看来信证据，关闭地址后拒绝后续来信。Steward 的验收使用本机文件权限、已验证插件和受控转发，不依赖公共邮箱供应商。
 
 [真实 CLI 回归](../../internal/agent/sqlite/task_mail_test.go)使用可执行 Host 和独立构建的解析器，验证原图与原政策保留、指定信封收件人路由、RFC 编码正文、并发重投一次接纳、错误复用 ID、其他 Task 无读取权、关闭与重新分配、Guardian 停机及提交前 Forget。[格式回归](../../internal/plugin/taskmail/plugin_test.go)覆盖编码失败、非纯文本与重复关键头。
+
+
+双 PR 由 `TestGitHubTwoExplicitPRsRetainSeparateTasksAndRevocation` 通过两组精确 HTTP 来源、托管扫描、实际 Main 续办与证据精读验证，撤销其中一个配置后另一个继续且唯一续办。CLI 的 `TestGitHubCLISelectsOnlyExplicitPRWhenTwoWatchesAreConfigured` 检查列表顺序、非授权或重复来源、误选拒绝及单范围启停。

@@ -102,7 +102,7 @@ func TestGitHubDefaultProductionControlPollAndColdLifecycle(t *testing.T) {
 			}
 			return builtin.EnsureDefault(ctx, host, directories, web)
 		}
-		a.github.Client.HTTP = &http.Client{Transport: githubDefaultTransport{endpoint, server.Client().Transport}}
+		a.githubWatches[watch.Scope()].Client.HTTP = &http.Client{Transport: githubDefaultTransport{endpoint, server.Client().Transport}}
 		return a
 	}
 	a := openControl()

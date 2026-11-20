@@ -55,6 +55,8 @@ type Config struct {
 	Tools      ToolLimits            `yaml:"tools"`
 	Tasks      Tasks                 `yaml:"tasks"`
 	LLM        LLM                   `yaml:"llm"`
+
+	GitHubWatches []github.Config `yaml:"github_watches,omitempty"`
 }
 
 // Defaults selects product-managed resources. Explicit resource sections win.
@@ -64,6 +66,14 @@ type Defaults struct {
 	Search   bool `yaml:"search"`
 	Skills   bool `yaml:"skills"`
 	Computer bool `yaml:"computer"`
+}
+
+func (c Config) ExactPRWatches() []github.Config {
+	watches := make([]github.Config, 0, len(c.GitHubWatches)+1)
+	if c.GitHub != nil {
+		watches = append(watches, *c.GitHub)
+	}
+	return append(watches, c.GitHubWatches...)
 }
 
 func (c Config) Automatic(id string) bool {
@@ -249,10 +259,8 @@ func Decode(raw []byte, lookupEnv func(string) (string, bool)) (Config, error) {
 			return Config{}, err
 		}
 	}
-	if cfg.GitHub != nil {
-		if err := cfg.GitHub.Validate(); err != nil {
-			return Config{}, err
-		}
+	if _, err := github.ConfiguredScopes(cfg.ExactPRWatches()); err != nil {
+		return Config{}, err
 	}
 	if cfg.Delivery.Validate() != nil {
 		return Config{}, errors.New("invalid delivery lease/retry/attempt policy")

@@ -353,3 +353,8 @@ steward mailbox close "$envelope_recipient"
 ```
 
 解析器接纳最大 256 KiB 的 UTF-8 或 ASCII 纯文本邮件，支持常见传输编码及编码主题。成功结果包含任务和文本 Artifact 引用。可用 `steward artifact open "$artifact_ref"` 查看。转发器应把非零退出按自身的退信／重试策略处理。关闭、任务暂停／终止或 Forget 后，旧地址停止接纳；需要继续时按当前任务状态重新绑定。收件域名、MX 和远端转发器由域名所有者管理。
+
+
+### 并行监听多个精确 PR
+
+保留单个 `github` 配置，也可在 `github_watches` 列表中分别指定 repository、pull_number、credential_ref 和轮询间隔。一个精确 PR 只能出现一次。用 `steward github scopes` 列出范围，多个 PR 时用 `steward -github-scope owner/repo#123 github binding` 等命令明确选择。每个 PR 的 Task 关联、观察决策和停止状态独立。移除配置时，运行时启动会撤销该范围；其他绑定保留原有代次。
