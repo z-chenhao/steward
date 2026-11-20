@@ -166,7 +166,7 @@ in the [model connection test plan](model-connections.md#私有文件账户回�
 | `tools` | Frozen approved actions, invocation persistence and unknown side effects |
 | `code-recovery` | Actual Go/QuickJS interruption, 37 completed/8 waiting calls, no repeated completed work |
 | `intelligent-ui` | Main-only UI tool, frozen Skill, native and sandboxed widgets, explicit follow-up and restart |
-| `ui-interactions` | Shared native controls, validated forms, durable state and tool actions, display modes, exports and restart |
+| `ui-interactions` | Shared native controls, validated forms, durable state and tool actions, display modes, exports and restart. Its full Chromium interaction and export sequence has 90 seconds. The shorter restart check has 45 seconds. |
 | `local-provider` | Discover/probe/select, transport and image projection with an owned HTTP peer |
 | `account` | Deterministic auth/callback/refresh/logout contracts and secret handling |
 | `channels` | Real Web/browser and channel delivery behavior |
