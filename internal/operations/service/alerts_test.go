@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -47,6 +48,22 @@ func TestServiceInspectorDeliversOneConsentedFaultAndRecoveryAfterRestart(t *tes
 				messages = append(messages, msg)
 				n := len(messages)
 				lock.Unlock()
+				if n == 1 {
+					other, err := New(m.root, m.home, m.executable)
+					if err != nil {
+						t.Error(err)
+						return
+					}
+					// A new inspector can read local status while the network send is
+					// outstanding. It sees precommitted uncertainty and cannot resend.
+					pending, err := other.Status()
+					if err != nil || pending.Alerts == nil || pending.Alerts.Fault == nil || pending.Alerts.Fault.Outcome != "unknown" {
+						t.Errorf("durable admission before response: %v %v", pending, err)
+					}
+					if err := other.dispatchAlert(ctx, nil); !errors.Is(err, ErrBusy) {
+						t.Errorf("concurrent inspector admission: %v", err)
+					}
+				}
 				if loseReceipt && n == 1 {
 					c, _, err := w.(http.Hijacker).Hijack()
 					if err != nil {
