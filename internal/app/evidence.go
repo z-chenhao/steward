@@ -8,7 +8,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/config"
 	"github.com/z-chenhao/assistant/internal/evidence"
 	"github.com/z-chenhao/assistant/internal/memory"
-	"github.com/z-chenhao/assistant/internal/observer/github"
+
 	"github.com/z-chenhao/assistant/internal/rsi"
 )
 
@@ -47,11 +47,7 @@ func (a *App) ReadEvidence(ctx context.Context, q evidence.Request) (evidence.Pa
 		return a.runtimeRuns().ReadMemoryEvidence(ctx, q, a.memory, *a.evidenceVault)
 	}
 	if a.evidenceVault != nil && (strings.HasPrefix(q.Ref, "task:") || strings.HasPrefix(q.Ref, "github:")) {
-		var cfg *github.Config
-		if a.github != nil {
-			cfg = &a.github.Config
-		}
-		return a.runtimeRuns().ReadGitHubLinkedEvidence(ctx, q, cfg)
+		return a.runtimeRuns().ReadGitHubEvidenceForWatches(ctx, q, a.configuredGitHubWatches())
 	}
 	return a.runtimeRuns().ReadEvidence(ctx, q)
 }

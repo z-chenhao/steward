@@ -22,16 +22,16 @@ import (
 )
 
 type evidenceAccess struct {
-	scope        artifact.Scope
-	conversation string
-	githubScope  string
-	docxText     bool
-	docxPlugin   bool
-	pluginGraph  string
-	pagePlugin   bool
-	pageGraph    string
-	epoch, floor int64
-	claim        agent.RunClaim
+	scope            artifact.Scope
+	conversation     string
+	githubScopesJSON string
+	docxText         bool
+	docxPlugin       bool
+	pluginGraph      string
+	pagePlugin       bool
+	pageGraph        string
+	epoch, floor     int64
+	claim            agent.RunClaim
 }
 
 // The state pool defaults to immediate transactions for writes. ReadOnly makes
@@ -192,7 +192,7 @@ func (r *Runs) readEvidence(ctx context.Context, q evidence.Request, c agent.Run
 	return r.readScopedEvidence(ctx, q, c, "")
 }
 
-func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c agent.RunClaim, githubScope string) (page evidence.Page, err error) {
+func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c agent.RunClaim, githubScopesJSON string) (page evidence.Page, err error) {
 	var access evidenceAccess
 	err = r.evidenceReadTx(ctx, func(tx *sql.Tx) error {
 		var err error
@@ -201,7 +201,7 @@ func (r *Runs) readScopedEvidence(ctx context.Context, q evidence.Request, c age
 			return err
 		}
 		if c == nil {
-			access.githubScope = githubScope
+			access.githubScopesJSON = githubScopesJSON
 		}
 		if q.Ref == "current" {
 			var id string

@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"errors"
+	"maps"
+	"slices"
 
 	"github.com/z-chenhao/assistant/internal/observer/github"
 )
@@ -10,17 +12,23 @@ import (
 var errGitHubScope = errors.New("select a configured exact GitHub PR")
 
 func (a *App) GitHubScopes() []string {
-	if a.github == nil {
-		return nil
-	}
-	return []string{a.github.Config.Scope()}
+	return slices.Sorted(maps.Keys(a.githubWatches))
 }
 
 func (a *App) githubWatch(scope string) (*github.Service, error) {
-	if a.github == nil || scope == "" || a.github.Config.Scope() != scope {
+	watch := a.githubWatches[scope]
+	if watch == nil {
 		return nil, errGitHubScope
 	}
-	return a.github, nil
+	return watch, nil
+}
+
+func (a *App) configuredGitHubWatches() []github.Config {
+	watches := make([]github.Config, 0, len(a.githubWatches))
+	for _, watch := range a.githubWatches {
+		watches = append(watches, watch.Config)
+	}
+	return watches
 }
 
 func (a *App) defaultGitHubScope() string {
@@ -86,7 +94,7 @@ func (a *App) BindGitHubTaskFor(ctx context.Context, scope string, q github.Bind
 	if err != nil {
 		return github.TaskBinding{}, err
 	}
-	if err = a.store.BindGitHubTask(ctx, w.Config, q, enabled); err != nil {
+	if err = a.store.BindGitHubTaskIn(ctx, w.Config, a.configuredGitHubWatches(), q, enabled); err != nil {
 		return github.TaskBinding{}, err
 	}
 	return a.store.GitHubTaskBinding(ctx, w.Config)

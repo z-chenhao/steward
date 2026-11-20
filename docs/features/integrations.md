@@ -333,3 +333,7 @@ Apps 单卡片的实际版本化资源与有限组合已接入私有实验，保
 ### 客户端与样式的候选接管
 
 私有 Apps profile `/3` 在一次同包读取中携带本地化规则、隔离 Worker 与被动 stylesheet；现有主页面的列表、轮询、动作提示、详情打开、别名恢复及分类提交决策均已接通。CSS 通过原图 URI 实际加载，无脚本仍使用同一包的样式和原生表单；原全局 Apps CSS/import 已清理，具名旧样式仅保留历史消费者。独立样式换版／回退、旧引用、冷恢复、停用、原控件及视觉专项已有验证。源码标准默认已为1.21；标准32包及六种保留组合已通过实际分发，全量测试与清理后的完整 lint 已通过，未将此候选接管标记为整个 F-071 已迁移完成。
+
+### 并行监听多个精确 PR
+
+保留单个 `github` 配置，也可在 `github_watches` 列表中分别指定 repository、pull_number、credential_ref 和轮询间隔。一个精确 PR 只能出现一次。用 `steward github scopes` 列出范围，多个 PR 时用 `steward -github-scope owner/repo#123 github binding` 等命令明确选择。每个 PR 的 Task 关联、观察决策和停止状态独立。移除配置时，运行时启动会撤销该范围；其他绑定保留原有代次。
