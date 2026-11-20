@@ -168,7 +168,7 @@ class ChannelHarness(MainHarness):
         executable=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
         if executable.exists():env['STEWARD_BROWSER_EXECUTABLE']=str(executable)
         run=self.processes.run if self.processes is not None else subprocess.run
-        long_phase=phase in ('capability-setup', 'model-connections') or phase.startswith('intelligent-ui-preview-')
+        long_phase=phase in ('capability-setup', 'model-connections', 'ui-interactions') or phase.startswith('intelligent-ui-preview-')
         timeout=90 if long_phase else 45
         result=run(['node',str(ROOT/'tests/system/channels_browser.mjs'),self.url,str(evidence),phase],env=env,capture_output=True,text=True,timeout=timeout)
         require(result.returncode==0,'browser drive failed: '+result.stderr)
