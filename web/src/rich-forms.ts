@@ -58,6 +58,7 @@ export function captureRichFormDrafts(scope:HTMLElement){
   if(form&&draft.fields.every(saved=>Array.from(form.querySelectorAll<HTMLTextAreaElement>('textarea')).some(field=>field.name===saved.name&&field.value===saved.value)))continue;
   const details=document.createElement('details'),heading=document.createElement('summary');details.open=true;heading.textContent=t('Your unsent answers');details.append(heading);
   for(const saved of draft.fields){const label=document.createElement('label'),field=document.createElement('textarea');label.textContent=saved.label;field.value=saved.value;field.readOnly=true;label.append(field);details.append(label)}
-  (form??document.getElementById('unsent-form-drafts'))?.append(details);
+  const target=form??document.getElementById('unsent-form-drafts');
+  if(target){target.append(details);if(!form)target.hidden=false}
  }};
 }
