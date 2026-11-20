@@ -236,14 +236,33 @@ try{
   await work.evaluate(value=>value===null?localStorage.removeItem('steward-theme'):localStorage.setItem('steward-theme',value),savedTheme);
   await work.setViewportSize({width:1400,height:980});await work.goto(attentionURL);
 
-  await work.locator('.attention-row').filter({hasText:'Which quarter should the report cover?'}).getByRole('link',{name:'Answer question',exact:true}).click();
-  const answer=work.getByLabel('Your answer',{exact:true});await answer.fill('中'.repeat(6000));
+  const answerLink=work.locator('.attention-row').filter({hasText:'Which quarter should the report cover?'}).getByRole('link',{name:'Answer question',exact:true});
+  const answerURL=new URL(await answerLink.getAttribute('href'),work.url()).href;
+  const longAnswer='中'.repeat(6000);
+  const plain=await browser.newContext({javaScriptEnabled:false});
+  try{
+   await plain.addCookies(await context.cookies());
+   const page=await plain.newPage();
+   await page.goto(answerURL);
+   const draft=page.getByLabel('Your answer',{exact:true});
+   await draft.fill(longAnswer);
+   const [response]=await Promise.all([
+    page.waitForResponse(response=>response.url()===url+'/task/feedback'&&response.request().method()==='POST'),
+    page.getByRole('button',{name:'Send answer',exact:true}).click(),
+   ]);
+   if(response.status()!==400)throw Error('native long answer did not receive HTTP 400');
+   await page.getByRole('alert').filter({hasText:'This answer is too long or invalid.'}).waitFor();
+   if(await draft.inputValue()!==longAnswer)throw Error('native rejection lost the editable draft');
+  }finally{await plain.close()}
+  await Promise.all([work.waitForURL(answerURL,{waitUntil:'domcontentloaded'}),answerLink.click()]);
+  let posts=0;work.on('request',request=>{if(new URL(request.url()).pathname==='/task/feedback'&&request.method()==='POST')posts++});
+  const answer=work.getByLabel('Your answer',{exact:true});await answer.fill(longAnswer);
   await work.getByRole('button',{name:'Send answer',exact:true}).click();
-  if(!(await work.locator('#task-feedback-status').innerText()).includes('too long')||await answer.inputValue()!=='中'.repeat(6000))throw Error('long Chinese answer was not clearly rejected and retained');
+  await work.locator('#task-feedback-status').getByText('This answer is too long. Shorten it before sending.',{exact:true}).waitFor();
+  if(posts!==0||await answer.inputValue()!==longAnswer)throw Error('client rejection submitted or lost the long answer');
   await answer.fill('Use Q3.');await answer.focus();await answer.evaluate(node=>node.setSelectionRange(4,6));
   const native=await answer.elementHandle();await work.waitForTimeout(1400);
   if(!await native.evaluate(node=>node.isConnected&&node===document.activeElement&&node.selectionStart===4&&node.selectionEnd===6&&node.value==='Use Q3.'))throw Error('live detail update replaced answer/focus');
-  let posts=0;work.on('request',request=>{if(new URL(request.url()).pathname==='/task/feedback'&&request.method()==='POST')posts++});
   await work.route('**/task/feedback',async route=>{await route.fetch();await route.abort('failed')});
   await work.getByRole('button',{name:'Send answer',exact:true}).click();
   await work.locator('#task-feedback-status textarea[readonly]').waitFor();
