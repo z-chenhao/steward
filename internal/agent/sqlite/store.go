@@ -287,7 +287,7 @@ type Store struct {
 	taskReader          *tasksqlite.Reader
 	dispatches          *inspectionsqlite.Recorder
 	scheduler           atomic.Pointer[agent.SchedulerLimits]
-	githubScope         atomic.Pointer[string]
+	githubScopes        atomic.Pointer[gitHubScopeSet]
 	nextRun             *sql.Stmt
 	activeRun           *sql.Stmt
 	db                  *sql.DB

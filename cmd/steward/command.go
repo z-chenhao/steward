@@ -53,7 +53,7 @@ var commandGrammars = map[string]commandGrammar{
 	"plugin":     {commandPlugin, map[string][]int{"parser-bundle": {5}, "parser-resource": {3}, "deactivate": {2}, "uninstall": {3}, "calls": {3}, "retry-call": {5}, "retry-event": {3}, "work": {2}, "seal": {3}, "install": {3}, "prepare": {2}, "policy": {2}, "propose": {2}, "verify": {3}, "activate": {2}, "status": {2}, "audit": {2}, "stop": {2}, "resume": {2}, "quarantine": {3}}},
 	"evidence":   {commandEvidence, map[string][]int{"read": {2}}},
 	"task":       {commandTask, map[string][]int{"feedbacks": {2, 3, 4}, "respond": {3}}},
-	"github":     {commandGitHub, map[string][]int{"status": {2}, "poll": {2}, "events": {2, 3}, "stop": {2}, "resume": {2}, "bind": {2}, "unbind": {2}, "binding": {2}, "decisions": {2, 3}}},
+	"github":     {commandGitHub, map[string][]int{"scopes": {2}, "status": {2}, "poll": {2}, "events": {2, 3}, "stop": {2}, "resume": {2}, "bind": {2}, "unbind": {2}, "binding": {2}, "decisions": {2, 3}}},
 	"model":      {commandModel, map[string][]int{"add": {2, 4, 5}, "discover": {3, 4}, "list": {2}, "cancel": {2}, "accounts": {2}, "catalog": {2, 3}, "login": {2, 3}, "login-chatgpt": {2, 3}, "test": {3}, "refresh": {3}, "logout": {3}, "account-catalog": {3}, "account-add": {4}, "select": {5}}},
 	"chat":       {commandChat, map[string][]int{"send": {2, 3}, "send-parts": {2, 3}, "work": {2}, "history": {2}}},
 	"artifact":   {commandArtifact, map[string][]int{"save": {4}, "delete": {4}, "open": {3}, "describe": {3}, "cleanup": {2, 3}}},

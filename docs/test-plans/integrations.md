@@ -610,3 +610,5 @@ required Apps 竞态使用[同一动态分批机制](engineering.md#apps-竞态�
 当前标准分发为40包。Connected Apps SQLite race 通过原执行器按同一命名选择集分批，每根恰好一次，CPU 并发、15分钟单批报警和完整性核对保留。实际 App 系统验收的 managed33／managed32／prior30／prior29／prior28／prior24／prior23／prior22 八个独立组合分别运行，各保留20分钟报警；每个原子组合必须恰好一次 pass，不能因累计前序时间跳过后续版本、审批、unknown 或冷恢复。
 
 MCP 插件回归复用现有普通 CLI 的 `-test-mcp-server` 入口，仍运行同一个 Steward-owned fake 协议服务；Host 保留 race 检测，peer 避免 race 测试进程的退出等待干扰16页／4096条目录与原30秒 CodeMode边界。GitHub SQLite 回归复用具完整性核对的8根分批执行器，各根测试仍只运行一次。
+
+双 PR 由 `TestGitHubTwoExplicitPRsRetainSeparateTasksAndRevocation` 通过两组精确 HTTP 来源、托管扫描、实际 Main 续办与证据精读验证，撤销其中一个配置后另一个继续且唯一续办。CLI 的 `TestGitHubCLISelectsOnlyExplicitPRWhenTwoWatchesAreConfigured` 检查列表顺序、非授权或重复来源、误选拒绝及单范围启停。

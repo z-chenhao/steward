@@ -40,7 +40,7 @@ func (a *App) prepareRuntime(ctx context.Context, cfg config.Config, fixture str
 	defer a.connectedAppsRegistryMu.Unlock()
 	// This is execution startup, including absent config. Read-only control
 	// composition must not revoke another running configuration's bindings.
-	if err := a.store.ConfigureGitHub(ctx, cfg.GitHub); err != nil {
+	if err := a.store.ConfigureGitHubWatches(ctx, cfg.ExactPRWatches()); err != nil {
 		return err
 	}
 	imageOCR := ocr.Discover(ctx)

@@ -264,3 +264,47 @@ func TestGitHubCLIControlPersistsWithoutExecutionReadiness(t *testing.T) {
 		t.Fatal("removed source remained accessible")
 	}
 }
+
+func TestGitHubCLISelectsOnlyExplicitPRWhenTwoWatchesAreConfigured(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("STEWARD_DATA_ROOT", filepath.Join(root, "data"))
+	cfg := filepath.Join(root, "config.yaml")
+	configuration := "version: 1\ngithub:\n  repository: Owner/Repo\n  pull_number: 7\n  credential_ref: env:GITHUB_PRIMARY\ngithub_watches:\n  - repository: owner/repo\n    pull_number: 8\n    credential_ref: env:GITHUB_SECONDARY\n"
+	if err := os.WriteFile(cfg, []byte(configuration), 0600); err != nil {
+		t.Fatal(err)
+	}
+	invoke := func(scope, command string) (string, error) {
+		var out, stderr bytes.Buffer
+		args := []string{"-config", cfg}
+		if scope != "" {
+			args = append(args, "-github-scope", scope)
+		}
+		args = append(args, "github", command)
+		err := run(context.Background(), args, strings.NewReader(""), &out, &stderr)
+		return strings.TrimSpace(out.String()), err
+	}
+	if value, err := invoke("", "scopes"); err != nil || value != `["owner/repo#7","owner/repo#8"]` {
+		t.Fatal(value, err)
+	}
+	for _, scope := range []string{"", "owner/repo#9"} {
+		if _, err := invoke(scope, "stop"); err == nil {
+			t.Fatal("ambiguous or unconfigured scope selected", scope)
+		}
+	}
+	if _, err := invoke("owner/repo#7", "stop"); err != nil {
+		t.Fatal(err)
+	}
+	for scope, want := range map[string]string{"owner/repo#7": "stopped", "owner/repo#8": "never_checked"} {
+		value, err := invoke(scope, "status")
+		var status github.Status
+		if err != nil || json.Unmarshal([]byte(value), &status) != nil || status.State != want {
+			t.Fatal(scope, value, err)
+		}
+	}
+	if err := os.WriteFile(cfg, []byte(strings.Replace(configuration, "pull_number: 8", "pull_number: 7", 1)), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := invoke("", "scopes"); err == nil {
+		t.Fatal("duplicate canonical PR accepted")
+	}
+}

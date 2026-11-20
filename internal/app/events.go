@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -79,13 +80,10 @@ func (a *App) WithEvents(ctx context.Context, cfg config.Config, run func(contex
 		}
 	}()
 	defer func() { cancelWork(); <-pluginDone }()
-	watchDone := make(chan struct{})
-	go func() {
-		defer close(watchDone)
-		if a.github != nil {
-			a.github.Run(workCtx)
-		}
-	}()
+	var watches sync.WaitGroup
+	for _, watch := range a.githubWatches {
+		watches.Go(func() { watch.Run(workCtx) })
+	}
 	ctx, cancelInfra := context.WithCancel(context.WithoutCancel(ctx))
 	defer cancelInfra()
 	type connection struct {
@@ -224,7 +222,7 @@ func (a *App) WithEvents(ctx context.Context, cfg config.Config, run func(contex
 	err := run(workCtx)
 	a.telemetry.Logger.Info("shutdown stage", "stage", "ingress_closed")
 	cancelWork()
-	<-watchDone
+	watches.Wait()
 	cancelInfra()
 	infraErr := <-done
 	if errors.Is(err, context.Canceled) {

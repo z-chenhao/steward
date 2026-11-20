@@ -3,7 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/agent"
@@ -23,47 +25,65 @@ const currentGitHubCause = `NOT EXISTS(SELECT 1 FROM github_task_followup f WHER
 
 // Selection, active waiting, and claiming use the same local eligibility.
 // A retired process must not spin on another scope's queued Main.
-const configuredGitHubRun = `(r.kind!='main' OR NOT EXISTS(SELECT 1 FROM github_task_followup f WHERE f.run_id=r.run_id AND f.scope!=:github_scope))`
+const configuredGitHubRun = `(r.kind!='main' OR NOT EXISTS(SELECT 1 FROM github_task_followup f WHERE f.run_id=r.run_id AND f.scope NOT IN (SELECT value FROM json_each(:github_scopes))))`
 
 func (r *Runs) githubScopeArgument() sql.NamedArg {
-	return sql.Named("github_scope", r.host.currentGitHubScope())
+	return sql.Named("github_scopes", r.host.currentGitHubScopes().encoded)
 }
 
-// ConfigureGitHub is trusted startup composition, including absent config. The
-// private scope starts denied; persisted bindings alone never enable recovery.
-// Removing/switching scope durably revokes generations before publishing Actor.
-func (s *Store) ConfigureGitHub(ctx context.Context, cfg *github.Config) error {
-	scope := ""
-	if cfg != nil {
-		if err := cfg.Validate(); err != nil {
-			return err
-		}
-		scope = cfg.Scope()
+// Each process uses only its configured PRs. Startup also revokes bindings
+// removed from configuration, keeping other scopes and generations intact.
+type gitHubScopeSet struct {
+	scopes  []string
+	encoded string
+}
+
+func gitHubScopesFor(watches []github.Config) (gitHubScopeSet, error) {
+	scopes, err := github.ConfiguredScopes(watches)
+	if err != nil {
+		return gitHubScopeSet{}, err
 	}
-	err := s.Transaction(ctx, func(tx *sql.Tx) error {
-		return revokeOtherGitHubScopes(ctx, tx, scope)
-	})
+	encoded, err := json.Marshal(scopes)
+	return gitHubScopeSet{scopes, string(encoded)}, err
+}
+func (s *Store) ConfigureGitHub(ctx context.Context, cfg *github.Config) error {
+	if cfg == nil {
+		return s.ConfigureGitHubWatches(ctx, nil)
+	}
+	return s.ConfigureGitHubWatches(ctx, []github.Config{*cfg})
+}
+func (s *Store) ConfigureGitHubWatches(ctx context.Context, watches []github.Config) error {
+	configured, err := gitHubScopesFor(watches)
+	if err != nil {
+		return err
+	}
+	err = s.Transaction(ctx, func(tx *sql.Tx) error { return revokeOtherGitHubScopes(ctx, tx, configured.encoded) })
 	if err == nil {
-		s.githubScope.Store(&scope)
+		s.githubScopes.Store(&configured)
 	}
 	return githubStorageError(err)
 }
-
-func (s *Store) currentGitHubScope() string {
-	if scope := s.githubScope.Load(); scope != nil {
-		return *scope
+func (s *Store) currentGitHubScopes() gitHubScopeSet {
+	if configured := s.githubScopes.Load(); configured != nil {
+		return *configured
 	}
-	return ""
+	return gitHubScopeSet{encoded: "[]"}
 }
-
-func revokeOtherGitHubScopes(ctx context.Context, tx *sql.Tx, scope string) error {
-	if _, err := tx.ExecContext(ctx, `UPDATE github_task_binding SET enabled=0,generation=generation+1,version=version+1 WHERE enabled=1 AND scope!=?`, scope); err != nil {
+func revokeOtherGitHubScopes(ctx context.Context, tx *sql.Tx, allowed string) error {
+	if _, err := tx.ExecContext(ctx, `UPDATE github_task_binding SET enabled=0,generation=generation+1,version=version+1 WHERE enabled=1 AND scope NOT IN (SELECT value FROM json_each(?))`, allowed); err != nil {
 		return err
 	}
 	return stopInvalidGitHubMains(ctx, tx)
 }
 
 func (s *Store) BindGitHubTask(ctx context.Context, cfg github.Config, q github.BindingRequest, enabled bool) error {
+	return s.BindGitHubTaskIn(ctx, cfg, []github.Config{cfg}, q, enabled)
+}
+func (s *Store) BindGitHubTaskIn(ctx context.Context, cfg github.Config, watches []github.Config, q github.BindingRequest, enabled bool) error {
+	configured, err := gitHubScopesFor(watches)
+	if err != nil || !slices.Contains(configured.scopes, cfg.Scope()) {
+		return task.ErrInvalid
+	}
 	if cfg.Validate() != nil || q.Version < 0 || enabled && (!task.ValidRef(q.TaskRef) || q.TaskEpoch < 1 || !q.ValidRule()) {
 		return task.ErrInvalid
 	}
@@ -71,7 +91,7 @@ func (s *Store) BindGitHubTask(ctx context.Context, cfg github.Config, q github.
 	if mode == "" {
 		mode = "automatic"
 	}
-	err := s.Transaction(ctx, func(tx *sql.Tx) error {
+	err = s.Transaction(ctx, func(tx *sql.Tx) error {
 		var prior int64
 		err := tx.QueryRowContext(ctx, `SELECT version FROM github_task_binding WHERE scope=?`, cfg.Scope()).Scan(&prior)
 		if err != nil && err != sql.ErrNoRows {
@@ -95,7 +115,7 @@ func (s *Store) BindGitHubTask(ctx context.Context, cfg github.Config, q github.
 		}
 		// cfg is trusted owner composition. Reconcile other scopes only after
 		// the requested binding passes its checks, in the same commit.
-		if err = revokeOtherGitHubScopes(ctx, tx, cfg.Scope()); err != nil {
+		if err = revokeOtherGitHubScopes(ctx, tx, configured.encoded); err != nil {
 			return err
 		}
 		if prior != 0 {
