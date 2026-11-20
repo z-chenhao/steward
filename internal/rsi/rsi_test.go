@@ -104,6 +104,9 @@ func runFixture() {
 			if err := rsiplugin.Decode(c.Input, &in); err != nil {
 				return rsiplugin.Result{}, err
 			}
+			if in.Text == "allocator-environment" {
+				return rsiplugin.JSONResult(ctx, map[string]string{"text": os.Getenv("MALLOC_ARENA_MAX")})
+			}
 			if in.Text == "kernel-limits" {
 				var limits testProcessLimits
 				for _, spec := range []struct {
