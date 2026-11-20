@@ -1011,8 +1011,10 @@ try{
   await page.getByLabel('Local time',{exact:true}).fill('02:30');
   await page.getByLabel('Time zone',{exact:true}).fill('America/New_York');
   await page.getByRole('button',{name:'Save schedule',exact:true}).click();
-  await page.getByRole('alert').filter({hasText:'unambiguous'}).waitFor();
-  if(await page.getByLabel('Local time',{exact:true}).inputValue()!=='02:30')throw Error('invalid local schedule time lost draft');
+  const timeInput=page.getByLabel('Local time',{exact:true});
+  const gapError=page.getByRole('alert').filter({hasText:'Choose a local time that exists in this time zone.'});
+  await gapError.waitFor();
+  if(await timeInput.inputValue()!=='02:30'||await timeInput.getAttribute('aria-invalid')!=='true'||await timeInput.getAttribute('aria-describedby')!==await gapError.getAttribute('id'))throw Error('nonexistent local schedule time did not retain the draft and identify its field');
   await page.setViewportSize({width:320,height:740});
   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('schedule editor overflowed compact viewport');
   await page.screenshot({path:evidence+'/schedule-mobile.png',fullPage:true});
