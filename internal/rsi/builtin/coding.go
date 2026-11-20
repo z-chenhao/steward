@@ -24,3 +24,6 @@ func codingCheckCases() []rsi.Case {
 func codingProjectCases() []rsi.Case {
 	return []rsi.Case{{InstanceID: "coding-workspace", Contract: contract.ProjectContract, Input: json.RawMessage(`{"document":"{\"version\":1,\"name\":\"fixture\",\"prepare\":{\"command\":\"true\",\"timeout_seconds\":5},\"doctor\":{\"command\":\"true\",\"timeout_seconds\":5},\"checks\":[{\"name\":\"build\",\"requirement\":\"Build exits successfully\",\"command\":\"true\",\"timeout_seconds\":5}],\"cleanup\":{\"command\":\"true\",\"timeout_seconds\":5}}","check":"build"}`), Expected: json.RawMessage(`{"plan":{"version":1,"name":"fixture","check":"build","requirement":"Build exits successfully","prepare":{"command":"true","timeout_seconds":5},"doctor":{"command":"true","timeout_seconds":5},"verify":{"command":"true","timeout_seconds":5},"cleanup":{"command":"true","timeout_seconds":5}}}`)}}
 }
+func codingDraftCases() []rsi.Case {
+	return []rsi.Case{{InstanceID: "coding-workspace", Contract: contract.DraftContract, Input: json.RawMessage(`{"verified":[false,true]}`), Expected: json.RawMessage(`{"proof":1,"body":"This candidate passed a recorded Steward verification."}`)}}
+}

@@ -102,3 +102,24 @@ execution:
 `make test-coding-development CODING_DEVELOPMENT_EVIDENCE=evidence/新的验收目录` 默认实际准备新镜像，再运行真实数据库/浏览器、服务恢复、同端口并行及确切候选构建的必需 race。显式设置 `STEWARD_TEST_CODING_DEVELOPMENT_IMAGE` 可复用所有者已准备的镜像；这次运行会注明不证明冷准备。PR 的独立 coding-development 分片使用默认路径，缺 Docker、缺依赖或跳过场景均不能通过。
 
 固定容器配置下的嵌套 bubblewrap 已观察到 namespace 权限拒绝，因此不承诺完整 Steward 插件运行时或全部系统测试可在此容器内自托管。构建与协议入口不代表应用启动，浏览器参考项目也不代替 Steward 产品流程；原 Host 平台的受托管系统门禁继续验收这些行为。不会为满足示例而扩大容器提权或增加原生项目验证兜底。
+
+
+### 审批候选并创建 GitHub 草稿 PR
+
+先在 Task 私有副本上运行独立检查。所有者从本地 CLI 将目标传给当前托管的 coding-workspace 方法。
+
+```sh
+steward coding draft-plan TASK_REF <<'JSON'
+{"repository":"owner/project","base":"main","branch":"review/feature","title":"Review feature","credential_ref":"env:STEWARD_GITHUB_TOKEN"}
+JSON
+```
+
+核对返回的完整候选 SHA-256、检查调用、目标仓库 ID、基分支提交、新分支、文件新增／替换／删除、标题和说明。目标是完整候选树，远端基分支中独有的文件会列为删除。凭据由所有者配置，需具备该仓库的 Contents 和 Pull requests 写权限；计划阶段只读取 GitHub。
+
+```sh
+steward coding draft-approve TASK_REF APPROVAL_SHA256
+steward coding draft-status TASK_REF APPROVAL_SHA256
+steward coding draft-reconcile TASK_REF APPROVAL_SHA256
+```
+
+批准时重新核验本地候选、验证回执、托管方法和远端分支。已存在的源分支必须另选，基分支变化需重做计划。创建成功后回执保留 PR URL、编号与提交。若返回 `unknown` 或进程中断留下 `started`，使用 `draft-reconcile` 只读查找原发布标记、仓库、分支和提交；查询无匹配时保留原状态供所有者检查。
