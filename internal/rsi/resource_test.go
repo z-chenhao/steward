@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -66,6 +68,32 @@ func TestResourceDomainDriveUsesRealProcessWithoutAnotherPendingLedger(t *testin
 	var count int
 	if err := f.db.QueryRow(`SELECT count(*) FROM rsi_call`).Scan(&count); err != nil || count != 0 {
 		t.Fatal("domain drive created a second opaque pending ledger", count, err)
+	}
+}
+
+func TestResourceAllocatorEnvironmentIsPrivateToLinuxResourceChildren(t *testing.T) {
+	requireSandbox(t)
+	t.Setenv("MALLOC_ARENA_MAX", "7")
+	f, revision := resourceFixture(t, 30000)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	input := json.RawMessage(`{"text":"allocator-environment"}`)
+	check := func(c context.Context) error { return c.Err() }
+	port := fixtureResource(func(context.Context, string, json.RawMessage) (json.RawMessage, error) {
+		t.Fatal("environment probe unexpectedly invoked a resource")
+		return nil, nil
+	})
+	out, err := f.host.DriveService(ctx, revision, "steward.echo/1", input, nil, check, []rsi.Resource{port})
+	want := `{"text":""}`
+	if runtime.GOOS == "linux" {
+		want = `{"text":"2"}`
+	}
+	if err != nil || string(out) != want {
+		t.Fatalf("resource process environment: %s %v", out, err)
+	}
+	out, err = f.host.ReadService(ctx, revision, "steward.echo/1", input, nil)
+	if err != nil || string(out) != `{"text":""}` || os.Getenv("MALLOC_ARENA_MAX") != "7" {
+		t.Fatalf("allocator setting escaped into pure process or Host: %s %v", out, err)
 	}
 }
 
