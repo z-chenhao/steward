@@ -564,6 +564,8 @@ class CIChecksTests(unittest.TestCase):
         from runner import REGISTRY
         lanes = {lane['lane']: lane for lane in ci.plan('system')['include']}
         self.assertIn('connected-apps-plugins', lanes)
+        self.assertEqual(lanes['connected-apps-plugins']['browser'], 'true',
+                         'the meeting-preparation gate requires guest-browser and Chromium')
         command = ci.command('connected-apps-plugins')
         self.assertIn('make build', command)
         self.assertEqual(command.count('--gate connected-apps-plugins'), 1)
