@@ -119,6 +119,7 @@ func TestArtifactWorkbenchSearchTenThousandAuthorizedRows(t *testing.T) {
 	calls := []llm.ToolCall{{ID: "one", Name: artifacttools.Search, Arguments: `{"query":"needle","limit":1}`}}
 	store, runs, claim, executor, exchange := admitPolicyRun(t, artifacttools.Definitions(), calls, false, func(s *Store, r *Runs) { installArtifactWorkbench(t, s, r) })
 	defer runs.Release(ctx, claim)
+	defer keepRunClaim(runs, claim)()
 	const count = 10000
 	now := time.Now()
 	_, err := store.db.Exec(`WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<?)
