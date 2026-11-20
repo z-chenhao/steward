@@ -7,7 +7,8 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.3", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.4", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){
+		contract.DraftContract:   draftRecipe,
 		contract.ProjectContract: projectPlan,
 		contract.CheckContract: func(ctx context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
 			var facts contract.CheckFacts

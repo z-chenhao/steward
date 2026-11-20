@@ -24,7 +24,7 @@ F-026 验证 Worker 四工具在真实隔离环境与统一 ToolExecutor 中的�
 
 | 需求 | 可观察行为与验证方式 | 覆盖边界 |
 | --- | --- | --- |
-| [F-026](../features/coding.md#f-026) | 隔离 fixture 仓库含未提交修改，两个 Task 并行准备、修改和验证；检查修改集分离、原文件保留、准备失败隔离、重启复用与证据真实。远端受控 peer 验证幂等/unknown；真实 GitHub 授权及模型代码质量独立验证，沿用现有 coding 系统入口。 | 本地 CLI、SQLite、内核 scope 与进程重启回归已接通。远端交付与 Live/效果评测待补 |
+| [F-026](../features/coding.md#f-026) | 隔离 fixture 仓库含未提交修改，两个 Task 并行准备、修改和验证；检查修改集分离、原文件保留、准备失败隔离、重启复用与证据真实。远端受控 peer 验证幂等/unknown；真实 GitHub 授权及模型代码质量独立验证，沿用现有 coding 系统入口。 | 本地 CLI、SQLite、内核 scope 与进程重启回归已接通。受控 GitHub 草稿发布覆盖审批、丢回包、重启和只读核对；真实授权及 Live/效果评测仍需单独验证 |
 
 ## 仍需独立验证
 
@@ -108,3 +108,7 @@ capabilities 的 coding／dirty-index／audit／crash／task-code-environments�
 确切内容入口额外验证缺少 Coding 方法、仅有 Coding 而无托管 Artifact 时均拒绝且无产物，保留旧 report/report-pr 的历史兼容。required capabilities 新增 `task-code-exact-report`：通过实际所有者 CLI、真实 Task、原 Git 对象及规范化观察，验证完整托管导入/报告、确切内容和原任务指南、错误 head、候选额外字节、源/index/refs/钩子不变，以及撤销绑定后的原 Artifact 字节。远端没有写入，不使用已知 head 代替逐文件比较。
 
 源码构建门禁直接使用原树中的 `coding.project.json`，逐文件比对导入前后的相对路径、内容和执行位。未跟踪脚本切换执行位会使门禁证据失效。缺少必需缓存或依赖时验证停在 prepare。具名检查按项目路径和检查名分别分组，包括名称含 `#` 的情况。
+
+## 所有者批准的 GitHub 草稿 PR
+
+`TestCodingDraftOwnerApprovalAndUnknownReconciliation` 用真实 Worker、独立命令审批、受管 coding-workspace 进程和 SQLite，在新 CLI 进程内调用计划、批准、核对与状态。固定 GitHub REST origin 在测试载体中只路由到本地 HTTP peer。peer 独立核验 blob 内容、Git tree、父提交、仓库、基分支和草稿字段。它先保存 PR 再丢掉响应，重启后重复批准不能新增 POST，近似匹配的 PR 不能结案，正确匹配写入原始 URL 和编号。等待中的检查、变化的候选和已有分支不能获得发布。换版后旧审批会被拒绝；回滚同一图可恢复原审批。停用后无法新建计划，Forget 后无法读取历史回执。独立的 `TestDraftTreeMatchesGitObjectsAndModes` 使用 Git 写树和哈希命令核验二进制内容、嵌套目录、排序与执行位。

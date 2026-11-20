@@ -4,7 +4,8 @@
     "steward.coding-import-limits/1",
     "steward.coding-report-recipe/1",
     "steward.coding-check-limits/1",
-    "steward.coding-project-plan/1"
+    "steward.coding-project-plan/1",
+    "steward.coding-draft-recipe/1"
   ],
   "cases": [
     {
@@ -106,6 +107,20 @@
             "timeout_seconds": 5
           }
         }
+      }
+    },
+    {
+      "instance_id": "coding-workspace",
+      "contract": "steward.coding-draft-recipe/1",
+      "input": {
+        "verified": [
+          false,
+          true
+        ]
+      },
+      "expected": {
+        "proof": 1,
+        "body": "This candidate passed a recorded Steward verification."
       }
     }
   ]

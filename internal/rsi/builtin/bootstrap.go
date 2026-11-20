@@ -79,6 +79,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	appsClient := false
 	appsInventory := false
 	artifactBody := false
+	codingDraft := false
 	codingChecks := false
 	watchdogAlerts := false
 	codingProject := false
@@ -118,6 +119,9 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
+				if service.Contract == "steward.coding-draft-recipe/1" {
+					codingDraft = true
+				}
 				if service.Contract == "steward.coding-project-plan/1" {
 					codingProject = true
 				}
@@ -303,6 +307,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		if codingProject {
 			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-project-plan/1")
 			policy.Cases = append(policy.Cases, codingProjectCases()...)
+		}
+		if codingDraft {
+			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-draft-recipe/1")
+			policy.Cases = append(policy.Cases, codingDraftCases()...)
 		}
 		if codingChecks {
 			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-check-limits/1")
