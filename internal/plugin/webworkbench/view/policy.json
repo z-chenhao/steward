@@ -73,6 +73,7 @@
   "execution_sheet": true,
   "row_open": true,
   "artifact_preview": true,
+  "github_rules": true,
   "history": [
     {
       "kind": "instruction",

@@ -204,6 +204,8 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	switch r.URL.Path {
+	case "/task/github-rule":
+		return s.changeGitHubRule(w, r)
 	case "/task/feedback":
 		return s.respondFeedback(w, r)
 	case "/schedule/trial":

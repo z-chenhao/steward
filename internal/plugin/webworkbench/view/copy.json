@@ -1063,5 +1063,130 @@
     "key": "Select a UTC offset",
     "en": "Select a UTC offset",
     "zh_cn": "选择 UTC 偏移"
+  },
+  {
+    "key": "GitHub pull request rule",
+    "en": "GitHub pull request rule",
+    "zh_cn": "GitHub PR 规则"
+  },
+  {
+    "key": "Choose a pull request",
+    "en": "Choose a pull request",
+    "zh_cn": "选择 PR"
+  },
+  {
+    "key": "Rule details are unavailable. Refresh to try again.",
+    "en": "Rule details are unavailable. Refresh to try again.",
+    "zh_cn": "暂时无法读取规则，请刷新后重试。"
+  },
+  {
+    "key": "Another task is watching this pull request.",
+    "en": "Another task is watching this pull request.",
+    "zh_cn": "另一个任务正在观察这个 PR。"
+  },
+  {
+    "key": "Observing",
+    "en": "Observing",
+    "zh_cn": "观察中"
+  },
+  {
+    "key": "Automatic continuation enabled",
+    "en": "Automatic continuation enabled",
+    "zh_cn": "已启用自动接续"
+  },
+  {
+    "key": "Waiting for a successful check of the configured pull request.",
+    "en": "Waiting for a successful check of the configured pull request.",
+    "zh_cn": "正在等待已配置的 PR 成功完成一次检查。"
+  },
+  {
+    "key": "Observe when",
+    "en": "Observe when",
+    "zh_cn": "观察事件"
+  },
+  {
+    "key": "Observation records matches. Your task will wait for instructions.",
+    "en": "Observation records matches. Your task will wait for instructions.",
+    "zh_cn": "观察期间只记录匹配情况，任务会等待你的指示。"
+  },
+  {
+    "key": "Start observing",
+    "en": "Start observing",
+    "zh_cn": "开始观察"
+  },
+  {
+    "key": "New matches can continue this task automatically.",
+    "en": "New matches can continue this task automatically.",
+    "zh_cn": "之后有事件匹配时，将自动接续此任务。"
+  },
+  {
+    "key": "Enable automatic continuation",
+    "en": "Enable automatic continuation",
+    "zh_cn": "启用自动接续"
+  },
+  {
+    "key": "Stop rule",
+    "en": "Stop rule",
+    "zh_cn": "停止规则"
+  },
+  {
+    "key": "Recent observations",
+    "en": "Recent observations",
+    "zh_cn": "最近观察记录"
+  },
+  {
+    "key": "Waiting for new events on this rule.",
+    "en": "Waiting for new events on this rule.",
+    "zh_cn": "正在等待符合观察范围的新事件。"
+  },
+  {
+    "key": "Refresh observations",
+    "en": "Refresh observations",
+    "zh_cn": "刷新观察记录"
+  },
+  {
+    "key": "github_review_comment",
+    "en": "Inline review comment",
+    "zh_cn": "行内评审评论"
+  },
+  {
+    "key": "github_issue_comment",
+    "en": "Conversation comment",
+    "zh_cn": "PR 会话评论"
+  },
+  {
+    "key": "github_review",
+    "en": "Submitted review",
+    "zh_cn": "提交评审"
+  },
+  {
+    "key": "github_check_run",
+    "en": "Completed CI check",
+    "zh_cn": "CI 检查完成"
+  },
+  {
+    "key": "github_failed_check",
+    "en": "Failed CI check",
+    "zh_cn": "CI 检查失败"
+  },
+  {
+    "key": "github_event_kind_matched",
+    "en": "Event type matched",
+    "zh_cn": "事件类型匹配"
+  },
+  {
+    "key": "github_event_kind_mismatch",
+    "en": "Different event type",
+    "zh_cn": "事件类型不匹配"
+  },
+  {
+    "key": "github_check_conclusion_matched",
+    "en": "Check failed as required",
+    "zh_cn": "检查结果符合失败条件"
+  },
+  {
+    "key": "github_check_conclusion_mismatch",
+    "en": "Check result did not meet the failure condition",
+    "zh_cn": "检查结果未达到失败条件"
   }
 ]

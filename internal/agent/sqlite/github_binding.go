@@ -101,6 +101,17 @@ func (s *Store) BindGitHubTaskIn(ctx context.Context, cfg github.Config, watches
 			return agent.ErrConflict
 		}
 		if !enabled {
+			// The task workbench pins the visible epoch too. Version-only CLI stops retain their existing contract.
+			if q.TaskRef != "" {
+				var current bool
+				if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM github_task_binding b JOIN task t USING(task_id)
+                    WHERE b.scope=? AND b.enabled=1 AND t.task_ref=? AND t.task_epoch=? AND b.task_epoch=t.task_epoch)`, cfg.Scope(), q.TaskRef, q.TaskEpoch).Scan(&current); err != nil {
+					return err
+				}
+				if !current {
+					return agent.ErrConflict
+				}
+			}
 			return revokeGitHubBinding(ctx, tx, cfg.Scope(), "")
 		}
 		var id string
