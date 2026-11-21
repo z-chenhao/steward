@@ -370,7 +370,17 @@ func TestArtifactMigrationV10Atomicity(t *testing.T) {
 
 func TestArtifactMainRunPrivacyAndInputGrant(t *testing.T) {
 	ctx := context.Background()
-	s, r, _, a, _ := loopFixture(t)
+	s, r, _, a, provider := loopFixture(t)
+	// Only the two text inputs request a tool. The attachment and any deferred
+	// tool receipts finish the turn without asking the model to echo its evidence.
+	echo := provider.respond
+	provider.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		last := req.Messages[len(req.Messages)-1]
+		if last.Role == "user" && (last.Text == "first" || last.Text == "second") {
+			return echo(req)
+		}
+		return llm.GenerationResult{Text: "Acknowledged."}, nil
+	}
 	receipt := mustSubmit(t, a, "first", "first")
 	scope := artifact.Scope{UserID: artifact.LocalUser, AgentID: idAgent(t, s), RunID: receipt.RunID}
 	ref := putArtifact(t, s, scope, "private Run output")
