@@ -1316,15 +1316,28 @@ try{
   if(await orientation.locator('#roll').inputValue()!=='15'||await orientation.getByRole('button',{name:'Yaw → Pitch',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('3D angle or rotation order was not restored');
   await architecture.locator('.node-detail strong').getByText('Tools',{exact:true}).waitFor();
   await geography.locator('.destination-detail strong').getByText('Los Angeles',{exact:true}).waitFor();
-  await page.setViewportSize({width:390,height:844});
-  await calculator.scrollIntoViewIfNeeded();
-  await calculator.evaluate(async node=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));const box=node.getBoundingClientRect();if(box.width<=0||box.bottom<=0||box.top>=innerHeight)throw Error('calculator capture has no visible content')});
-  await page.screenshot({path:evidence+'/intelligent-ui-widget-mobile.png'});
-  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2))throw Error('widget overflowed mobile viewport');
-  await page.setViewportSize({width:1400,height:980});
-  await calculator.scrollIntoViewIfNeeded();
-  await calculator.evaluate(async node=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));const box=node.getBoundingClientRect();if(box.width<=0||box.bottom<=0||box.top>=innerHeight)throw Error('calculator capture has no visible content')});
-  await page.screenshot({path:evidence+'/intelligent-ui-widget-desktop.png'});
+  // Reload follows the latest reply. A reader moves up before viewing an
+  // earlier calculator while its responsive neighbours finish changing size.
+  await page.mouse.move(4,200);
+  await page.mouse.wheel(0,-100);
+  const assertCalculatorReadable=async name=>{
+   const boxes=await Promise.all(['#n','#compute','#answer'].map(selector=>widget.locator(selector).boundingBox()));
+   const readable=await calculator.evaluate((node,controls)=>{
+    const frame=node.querySelector('iframe[title="Calculator"]');
+    return !!frame&&controls.every(box=>box&&box.width>0&&box.height>0&&
+     document.elementFromPoint(box.x+box.width/2,box.y+box.height/2)===frame);
+   },boxes);
+   if(!readable)throw Error(name+' calculator input, Compute button or result is outside the readable viewport');
+  };
+  for(const [name,width,height] of [['mobile',390,844],['desktop',1400,980]]){
+   await page.setViewportSize({width,height});
+   await calculator.evaluate(node=>node.scrollIntoView({block:'center',behavior:'instant'}));
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   await assertCalculatorReadable(name);
+   await page.screenshot({path:evidence+'/intelligent-ui-widget-'+name+'.png'});
+   await assertCalculatorReadable(name);
+   if(width===390&&await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2))throw Error('widget overflowed mobile viewport');
+  }
   const plain=await browser.newContext({javaScriptEnabled:false});try{await plain.addCookies(await context.cookies());const text=await plain.newPage();await text.goto(url);if(!await text.getByText('The calculator doubles its input. No network or Host access.',{exact:true}).count())throw Error('no-script text alternative missing')}finally{await plain.close()}
  }
  if(phase==='rich-replies'){
