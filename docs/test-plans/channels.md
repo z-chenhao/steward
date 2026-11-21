@@ -23,6 +23,8 @@
 
 ### F-018/F-004 Web 待办覆盖
 
+[页内审批回归](../../internal/agent/sqlite/approval_view_test.go)在一万条已决记录中读取一个页内决定及当前待审，并验证浏览不会恢复动作。
+
 `verify_channels.py --attention-only` 使用真实 Main Task 工具保存问题/审阅与失败执行，真实上传文件，再由认证 Web 与 Chromium 完成优先定位、已完成 Task 审阅、具体文件链接、回答/审阅及 Main 接续。`channels_browser.mjs` 的 attention 场景检查当前页数量与行数、长中文拒绝、native 输入/焦点/选区、Chat 草稿与附件、新标签页、中文窄宽、键盘提交、确认丢失后只读草稿、另一端使本地表单失效、断线陈旧页面被拒绝且保留意见。持久化 readback 证明三条反馈只产生三次接续、始终保留 Web 来源/路由、无审批替代，随后 CLI 同答重试仍返回原 receipt。
 
 `task_feedback_web_test.go` 以真实 SQLite/Actor 验证 CLI/Web 首次顺序、callback aliases、不同回答冲突、真实 Main 交付与绑定撤销先于去重；`attention_test.go` 验证转义、确切 Task/消息/文件定位和认证入口；51 个 Main 当前审批的有界投影保留50条并将更多入口指向Chat中第51条真实审批，而非无关Task列表。原冻结审批与对话 live 浏览器场景继续覆盖 approval-only 原定位。确定性模型证明协议和交互，真实模型何时提问及意见理解质量仍需外部评测。
@@ -36,6 +38,8 @@
 - Live/质量：涉及真实账户、Guest 平台或语义质量时单独记录环境与证据；不适用项说明理由，不用软件回归代替。
 
 ## 已有检查与缺失覆盖
+
+`guest-browser/web-reader-controls.test.mjs` 用 Chromium 滚轮和原生滚动条滑块在点击“返回最新”的 HTTP 响应前向上阅读，由无条件 GET 返回不同的 200 快照，再以匹配 ETag 的普通轮询返回 304，验证位置、跳转按钮、原输入节点、草稿、焦点与选区。单次点击、内容先缩短后增长和撤销后再次点击均须回到底部。
 
 `verify_channels.py` 的 `live_updates` 通过真实浏览器验证长回复滚动、草稿与附件、审批和 Task 更新、断线及会话轮换。该界面夹具明确声明 32768 的模型窗口，以保留滚动标记及原始工具结果；脚本摘要器只保存调用回执，不承担语义文本复述。上下文压缩的冻结与恢复由记忆/Task 场景单独验证，界面断言不通过放宽文字或超时来绕过。
 
@@ -60,7 +64,7 @@
 
 ### 个人飞书 Task 问题和成果审阅卡（F-004/F-020）
 
-`verify_channels.py --feishu-questions-only` 从签名原消息经过真实 Main、持久问题、投递 outbox 和受控 HTTP peer 生成卡片。使用实际卡片回执提交新版签名表单，验证 durable Main 输入、同 Task 一次接续、同步回复引用卡片与异步结果引用原 Task 消息。覆盖 CLI/Web/飞书同答重试、不同答案冲突、错误身份/会话、转发/换卡、审批组件、过期因果、暂停、撤权重绑、显式 TUI 偏好与本地来源。发送已到 peer 但丢失确认时，拒绝该卡回应，重启保持查询语义。
+`verify_channels.py --feishu-questions-only` 从签名原消息经过真实 Main、持久问题、投递 outbox 和受控 HTTP peer 生成卡片。使用实际卡片回执提交新版签名表单，验证 durable Main 输入、同 Task 一次接续、同步回复引用卡片与异步结果引用原 Task 消息。覆盖 CLI/Web/飞书同答重试、不同答案冲突、错误身份/会话、转发/换卡、审批组件、过期因果、暂停、撤权重绑、显式 TUI 偏好与本地来源。发送已到 peer 但丢失确认时，拒绝该卡回应，重启保持查询语义。 提问和答复可合入正在运行的 Main；以答复的消息 ID 关联原 Task 的接续指令、该轮 Root 完成记录，以及发回原飞书话题的回执。
 
 [Feishu 任务问题边界测试](../../internal/agent/sqlite/feishu_task_question_test.go) 阻塞真实本地 HTTP token 交换，验证凭据返回前撤权和 Forget 后卡片无法发送。已有回执上的 CLI 优先回复保留原路由，Forget 后拒绝飞书重放并保留既有投递回执。真实飞书客户端的表单呈现、权限与回调仍需单独验证。
 
@@ -185,6 +189,8 @@ F-018/F-039：`foundation_test.go` 实际 HTTP listener 在 Main provider failur
 
 ## F-019 实时更新验收
 
+[条件聊天回归](../../internal/interaction/web/updates_test.go)验证五次连续 304 仅执行一次消息投影，以及审批过期、语言、投影版本、交互组件和撤权的重新检查。
+
 - `internal/interaction/web/reply_stream_test.go`：真实 HTTP 流检查未认证拒绝、Worker 和过期事件隔离、增量仅发送后缀、绑定撤销关闭已有连接。`internal/agent/sqlite/foundation_test.go` 验证工具开始前撤下预览、取消时在供应商清理完成前撤下预览，并验证正式通知晚于消息持久化。
 - `tests/system/verify_channels.py` 的 streaming 场景：真实 Node/Pi HTTP 流等待 Chromium 观察首段和第二段后才继续；后打开的页面接收当前文本，同一页面断开重连后逐字核对草稿。延迟正式投影时，尾段仍进入纯文本草稿；完成后展示一个富结果，供应商断流只留下 Host 失败通知。检查无整页跳转，输入、焦点、选区与附件保留。
 - `internal/interaction/web/updates_test.go`：条件 ETag、消息/审批/状态变化、历史游标、HTML 转义、无输入/内部字段、失败无部分响应；条件请求也必须重新认证和检查绑定；Settings/Tasks 不查询 Conversation。
@@ -298,6 +304,8 @@ Trace 列表回归验证状态前置、Name／Input 合并、无伪排序箭头�
 
 ## 飞书状态插件验收
 
+飞书话题投递验收会在发送前查询真实 CLI，分别验证 HTTPS 配置与仅限本机标记。成果审阅验收检查未认证访问被拒、卡片固定到原任务和成果、转发卡与替换引用无法提交。移动 Chromium 在受控 HTTPS 代理后打开卡上的原地址，校验错误令牌后的重新登录仍返回原审阅锚点和成果。真实飞书手机应用与实际部署另行验收。
+
 修改前实际 Client.ConnectionStatus／Check 和 App.FeishuStatus 的 12 组输出保留在 `tests/fixtures/plugins/feishu-native-v1/status.json` 及 provenance；六种唯一状态进入独立 Owner 政策，当前标准组合为 35 包／370 项。
 
 - `TestFeishuStatusMatches12ExecutedNativeCases` 对照原修复指引；原凭据／认证缓存组件继续验证网络次数、刷新、到期与私密值隔离。
@@ -344,3 +352,5 @@ Trace 列表回归验证状态前置、Name／Input 合并、无伪排序箭头�
 `TestWorkbenchBrowserOriginalStylesAndPinnedUpdates` 纳入必需 browser 门禁，以原封存完整样式和同一有内容事实对照四类页面，覆盖桌面／手机和明暗主题的实际计算字体／字号／间距／布局／颜色，检查真实同 Reader 更新请求、CSS 与执行侧栏前进／后退。传输配置和版本化样式链接不参与纯 DOM 内容比较，真实样式由上述浏览器比较证明。独立 App 生命周期同时修改文案、真实字号、轮询间隔和区域集合，并在原图／回退／退役／停用／首次冷读验证页面、配置、CSS 和实时片段的原版本一致性。原安排冲突草稿、长 UTF-8 回答、来源绑定与提交、转义／审批及 ETag 回归已改用托管视图路径。
 
 共享列表对齐仍按 `assertDataList` 检查实际 Search／Filters 矩形；错误诊断保留矩形、布局属性与所用样式引用，不记录用户内容。当前非工作台页面使用当前共享基础样式；保留的旧 Memory 页面也使用同一共享搜索／工具栏 gutter，不能被旧私有12px布局覆盖。
+
+浏览器回归覆盖纽约时区回拨时的原始筛选值、详情边界的键盘方向、树栏最小／最大宽度恢复、Computer 与 Worker 的权限变化，以及同帧文本合并和 Mermaid 下载恢复／图表替代文本。

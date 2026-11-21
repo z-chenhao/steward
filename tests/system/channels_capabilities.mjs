@@ -278,7 +278,9 @@ export async function capabilityDefaults(page,context,url,evidence){
  const heading=await page.getByRole('heading',{level:1}).boundingBox();await page.mouse.click(heading.x+heading.width/2,heading.y+heading.height/2);await languagePopup.waitFor({state:'hidden'});
  if(await languagePopup.isVisible())throw Error('outside click kept dropdown open');
  const popup=page.locator('.control-select-menu:visible');
- if(await page.locator('.section-sidebar input[type=search]').count()||await page.locator('.settings-navigation a:visible').count()!==5)throw Error('Settings should expose all five categories directly');
+ const settingsPaths=await page.locator('.settings-navigation a:visible').evaluateAll(links=>links.map(link=>new URL(link.href).pathname));
+ const expectedPaths=['/settings/preferences','/settings/notifications','/settings/models','/settings/apps','/settings/meeting-preparation','/settings/capabilities'];
+ if(await page.locator('.section-sidebar input[type=search]').count()||JSON.stringify(settingsPaths)!==JSON.stringify(expectedPaths))throw Error('Settings should expose each configured section in navigation order: '+settingsPaths.join(', '));
  await navigationViewports(page,evidence);
  await selectValue(page,page.locator('#interface-theme'),'dark');
  if(!await page.locator('html').evaluate(node=>node.classList.contains('dark')))throw Error('appearance did not apply');
@@ -500,7 +502,18 @@ export async function settingsConsistency(page,context,url,evidence){
  // No script retains the native save path.
  const plain=await context.browser().newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
  try{
-  await plain.addCookies(await context.cookies());const native=await plain.newPage();await native.goto(url+'/settings/notifications');await native.locator('#notification-target').selectOption('tui:');await native.getByRole('button',{name:'Save notification channel',exact:true}).click();await native.reload();if(await native.locator('#notification-target').inputValue()!=='tui:')throw Error('native preference save lost');
+  await plain.addCookies(await context.cookies());
+  const native=await plain.newPage();
+  await native.goto(url+'/settings/notifications');
+  await native.locator('#notification-target').selectOption('tui:');
+  const [saved]=await Promise.all([
+   native.waitForResponse(response=>response.url()===url+'/notification'&&response.request().method()==='POST'),
+   native.getByRole('button',{name:'Save notification channel',exact:true}).click(),
+  ]);
+  assert.equal(saved.status(),303,'native notification save should redirect after committing');
+  await native.waitForURL(url+'/settings/notifications?notice=saved',{waitUntil:'load'});
+  await native.reload();
+  assert.equal(await native.locator('#notification-target').inputValue(),'tui:','native preference save lost');
   await native.goto(url+'/tasks');await native.locator('[data-task-filter-fallback]>summary').click();await native.locator('select[name=view]').selectOption('closed');await native.locator('[name=needs_me]').check();await native.getByRole('button',{name:'Apply filters',exact:true}).click();if(new URL(native.url()).searchParams.get('needs_me')!=='1')throw Error('native filter lost attention');
  }finally{await plain.close()}
  await page.goto(url+'/tasks');

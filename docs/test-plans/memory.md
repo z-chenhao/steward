@@ -15,6 +15,8 @@
 
 ## 入口与证据
 
+Dream 变更回执回归通过一次真实 Curator 写入检验新增、替代、撤回及各链接对应的确切文档；在投影结束前执行 Forget 后整页不得交付，重新打开后已撤权引用消失。双语模板测试使用非空变更和真实受限模板编译器。
+
 ```sh
 go test ./internal/agent/sqlite ./internal/interaction/web -run 'MemoryInspection|MemoryRoutes|MemoryFailures|Chinese' -count=1
 python3 tests/system/verify_channels.py --binary bin/steward --memory-only --evidence evidence/CHOOSE_FRESH_MEMORY_RUN/report.json
@@ -75,3 +77,7 @@ Worker 来源分页回归通过真实接纳的 63／64／65 条回执，验证�
 必须执行 `make test-memory`、`memory-maintenance`／`recall` 系统门禁和跨模块 `make test lint`。Memory 实际进程围栏测试必须留在必需 Memory race 清单；真实浏览器入口必须留在 test-browser recipe，CI 检查可达性。测试存在或被发现，不代替终态通过证据。 `test-go` 的四个分区保留原15分钟包级时限和 `-p 1`；Memory Inspector 与 Web 托管版本用例同组，每个测试根必须恰好归属一个分区。
 
 视觉复核使用非空原正文，检查桌面／移动端×浅色／深色四个详情场景、中文和无脚本页面；验证实际字体、字号、间距、来源布局、控件、身份及无横向溢出。保存原版对照、真实计算值和截图。生命周期事件测试不作为真实 BFCache 接纳证明。完整执行记录、失败尝试和固定源码哈希保留在 PR／CI 或验收证据，不在设计文档累积阶段日志。
+
+记忆详情纠正入口由 `TestMemoryInspectorCorrectionOpensEditableDraftForExactVisibleRecord` 和 `TestMemoryInspectorCorrectionRevalidatesBeforeOpeningDraft` 覆盖。操作是在已选详情打开中／英文纠正草稿；验收检查实际可编辑输入框的引用与修订，旧检视器、错项、转录、忘记、退役、换版、未登录及多余参数均不能读取该条作为草稿，正文和来源不会进入地址或草稿。
+
+`TestMemoryInspectorCorrectionSubmittedInputRestrictsRealMutations` 安装实际检视器，提交真实表单，再让受控模型在同一轮申请不同记忆写入。验收要求改写草稿里的引用仍只允许所选同名记录产生一个新修订，并保留此条用户输入的来源。先前打开的第二个草稿产生修订冲突，随后普通聊天可独立更新另一项。必跑的 Memory race 与 software-core 均包含此场景。

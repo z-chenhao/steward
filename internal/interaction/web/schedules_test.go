@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,10 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/automation"
+	"github.com/z-chenhao/assistant/internal/plugin/webworkbench"
+	"github.com/z-chenhao/assistant/internal/plugin/webworkbench/contract"
 	"github.com/z-chenhao/assistant/internal/task"
+	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
 func scheduleValues() url.Values {
@@ -105,10 +109,13 @@ type scheduleServiceFixture struct {
 	calls      int
 	err        error
 	restricted bool
+	minBelow   int64
 }
 
 func (f *scheduleServiceFixture) ScheduleDefaults(context.Context) (automation.EditorDefaults, error) {
-	return automation.LegacyEditorDefaults(), nil
+	v := automation.LegacyEditorDefaults()
+	v.MinBelow = f.minBelow
+	return v, nil
 }
 
 func (f *scheduleServiceFixture) Schedule(_ context.Context, ref string) (task.ScheduledWork, error) {
@@ -119,6 +126,33 @@ func (f *scheduleServiceFixture) ConfigureSchedule(_ context.Context, key string
 	f.q = q
 	f.key = key
 	return automation.OwnerReceipt{Ref: "automation:saved", Version: 8}, f.err
+}
+
+func TestScheduleThresholdShowsReachableMinimumAndKeepsRejectedDraft(t *testing.T) {
+	f := &scheduleServiceFixture{minBelow: 1, err: automation.ThresholdMinimumError{Minimum: 1}}
+	server := &Server{Core: &updatesCore{allowed: true, status: "idle"}, Tasks: workspaceReader{}, Schedules: f, WebWorkbench: currentWorkbenchReader(t)}
+	visit := func(method, path string, body url.Values) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(method, "http://127.0.0.1:8080"+path, strings.NewReader(body.Encode()))
+		req.RemoteAddr = "127.0.0.1:8000"
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		return w
+	}
+	newForm := visit("GET", "/tasks/schedules/new", nil)
+	if newForm.Code != 200 || !strings.Contains(newForm.Body.String(), `name="threshold" min="1"`) || !strings.Contains(newForm.Body.String(), "Enter 1 to detect zero") {
+		t.Fatal("new threshold guidance missing", newForm.Code)
+	}
+	q := scheduleValues()
+	w := visit("POST", "/schedule/configure", q)
+	for _, want := range []string{`class="technical-details" open`, `aria-invalid="true" aria-describedby="threshold-error"`, `id="threshold-error"`, q.Get("source_id"), q.Get("instruction")} {
+		if !strings.Contains(w.Body.String(), want) {
+			t.Fatalf("missing %q after rejected threshold (HTTP %d)", want, w.Code)
+		}
+	}
+	if w.Code != 422 || f.calls != 1 {
+		t.Fatal("wrong threshold rejection", w.Code, f.calls)
+	}
 }
 
 func TestScheduleFormsUseOwnerWriterAndPreserveConflictingDraft(t *testing.T) {
@@ -161,7 +195,7 @@ func TestScheduleFormsUseOwnerWriterAndPreserveConflictingDraft(t *testing.T) {
 	}
 	f.err = errors.New("PRIVATE_OWNER_ERROR")
 	w = request("POST", "/schedule/configure", v, false)
-	if w.Code != 409 || strings.Contains(w.Body.String(), "PRIVATE_OWNER_ERROR") || !strings.Contains(w.Body.String(), "Draft &lt;img src=x&gt;") {
+	if w.Code != 503 || strings.Contains(w.Body.String(), "PRIVATE_OWNER_ERROR") || !strings.Contains(w.Body.String(), "Draft &lt;img src=x&gt;") {
 		t.Fatal("private failure leaked or lost draft", w.Code)
 	}
 	f.restricted = true
@@ -175,8 +209,8 @@ type schedulePresentationReader struct {
 	value *task.Schedule
 }
 
-func (f schedulePresentationReader) Detail(ctx context.Context, ref, after string) (task.Detail, error) {
-	v, err := f.workspaceReader.Detail(ctx, ref, after)
+func (f schedulePresentationReader) DetailPage(ctx context.Context, ref, after string, before int64) (task.Detail, error) {
+	v, err := f.workspaceReader.DetailPage(ctx, ref, after, before)
 	v.Schedule = f.value
 	return v, err
 }
@@ -195,5 +229,88 @@ func TestScheduleTaskPageUsesAcceptedBilingualPresentationAsText(t *testing.T) {
 		if w.Code != 200 || !strings.Contains(markup, c.label+" &lt;script&gt;bad()&lt;/script&gt;") || !strings.Contains(markup, c.at) || strings.Contains(markup, "<script>bad()") {
 			t.Fatal("presentation ignored or interpreted as markup", c, w.Code)
 		}
+	}
+}
+
+func currentWorkbenchReader(t *testing.T) func(context.Context, string) (contract.Presentation, string, bool, error) {
+	t.Helper()
+	ctx := context.Background()
+	result, err := webworkbench.Plugin().Services[contract.Service](ctx, rsiplugin.Call{Input: json.RawMessage("{}")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var presentation contract.Presentation
+	if err := json.Unmarshal(result.Output, &presentation); err != nil {
+		t.Fatal(err)
+	}
+	revision := "sha256:" + strings.Repeat("b", 64)
+	return func(context.Context, string) (contract.Presentation, string, bool, error) {
+		return presentation, revision, true, nil
+	}
+}
+
+func TestManagedScheduleFormAndOccurrenceRespectTimezones(t *testing.T) {
+	s := &Server{
+		Core:         &updatesCore{allowed: true, status: "idle"},
+		Schedules:    &scheduleServiceFixture{},
+		Tasks:        schedulePresentationReader{value: &task.Schedule{Ref: "automation:render", Type: "cron", Spec: "0 8 * * *", Timezone: "America/New_York", Enabled: true, NextAt: "2026-12-15T13:00:00Z"}},
+		WebWorkbench: currentWorkbenchReader(t),
+	}
+	for _, c := range []struct{ path, zone, expected string }{
+		{"/tasks/schedules/new", "Europe/London", `name="timezone" value="Europe/London"`},
+		{"/tasks/schedules/new", "invalid/zone", `name="timezone" value="UTC"`},
+		{"/tasks/schedules/automation:existing", "Europe/London", `name="timezone" value="Asia/Shanghai"`},
+		{"/tasks/task:visible", "Asia/Shanghai", "2026-12-15 08:00:00 -05:00"},
+	} {
+		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+c.path, nil)
+		r.RemoteAddr = "127.0.0.1:4321"
+		r.AddCookie(&http.Cookie{Name: timezoneCookie, Value: url.QueryEscape(c.zone)})
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		if strings.HasPrefix(c.path, "/tasks/schedules/") && strings.Contains(w.Body.String(), `action="/schedule/trial"`) != strings.HasSuffix(c.path, "automation:existing") {
+			t.Fatal("incorrect trial entry", c.path)
+		}
+		if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), c.expected) {
+			t.Fatalf("%s %s: HTTP %d, want %q", c.path, c.zone, w.Code, c.expected)
+		}
+	}
+}
+
+func TestManagedScheduleFieldDiagnosticsAndFoldChoice(t *testing.T) {
+	f := &scheduleServiceFixture{}
+	s := &Server{Core: &updatesCore{allowed: true, status: "idle"}, Tasks: workspaceReader{}, Schedules: f, WebWorkbench: currentWorkbenchReader(t)}
+	v := scheduleValues()
+	v.Set("instruction", "Keep this original draft")
+	v.Set("frequency", "once")
+	v.Set("date", "2026-11-01")
+	v.Set("time", "01:30")
+	v.Set("timezone", "America/New_York")
+	v.Del("threshold")
+	post := func() *httptest.ResponseRecorder {
+		r := httptest.NewRequest("POST", "http://127.0.0.1:8080/schedule/configure", strings.NewReader(v.Encode()))
+		r.RemoteAddr = "127.0.0.1:9000"
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		return w
+	}
+	for _, c := range []struct{ issue, field, text string }{{"timezone", "timezone", "IANA time zone"}, {"cron", "cron", "five-field cron"}, {"future", "date", "future date and time"}} {
+		f.err = automation.ScheduleInputError{Issue: c.issue}
+		w := post()
+		body := w.Body.String()
+		if w.Code != 422 || !strings.Contains(body, `name="`+c.field+`" aria-invalid="true" aria-describedby="schedule-page-error"`) || !strings.Contains(body, `id="schedule-page-error"`) || !strings.Contains(body, c.text) || !strings.Contains(body, v.Get("instruction")) || !strings.Contains(body, v.Get("source_id")) {
+			t.Fatal("field or draft lost", c.issue, w.Code)
+		}
+	}
+	f.err = automation.ScheduleInputError{Issue: "utc_offset", UTCOffsets: []string{"-04:00", "-05:00"}}
+	w := post()
+	if w.Code != 422 || !strings.Contains(w.Body.String(), `name="utc_offset" required aria-invalid="true"`) || !strings.Contains(w.Body.String(), "UTC-04:00") || !strings.Contains(w.Body.String(), "UTC-05:00") {
+		t.Fatal("missing distinct fold offsets", w.Code)
+	}
+	f.err = nil
+	v.Set("utc_offset", "-05:00")
+	w = post()
+	if w.Code != 303 || f.q.UTCOffset != "-05:00" || f.q.LocalDate != "2026-11-01" || f.q.LocalClock != "01:30" || f.key != v.Get("source_id") {
+		t.Fatal("offset or original identity lost", w.Code, f.q)
 	}
 }

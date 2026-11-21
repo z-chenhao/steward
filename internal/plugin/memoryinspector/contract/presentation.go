@@ -102,10 +102,11 @@ type BrowserProgram struct {
 }
 
 type Result struct {
-	Program      BrowserProgram `json:"program"`
-	Localization Localization   `json:"localization"`
-	Stylesheet   Stylesheet     `json:"stylesheet"`
-	View         View           `json:"view"`
-	URLs         []string       `json:"urls"`
-	Labels       Labels         `json:"labels"`
+	CorrectionDraft bool           `json:"correction_draft,omitempty"`
+	Program         BrowserProgram `json:"program"`
+	Localization    Localization   `json:"localization"`
+	Stylesheet      Stylesheet     `json:"stylesheet"`
+	View            View           `json:"view"`
+	URLs            []string       `json:"urls"`
+	Labels          Labels         `json:"labels"`
 }

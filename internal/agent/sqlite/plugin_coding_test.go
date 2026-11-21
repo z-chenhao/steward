@@ -28,7 +28,8 @@ import (
 
 func installCodingPlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
 	t.Helper()
-	return installRuntimeFeature(t, s, r, "coding-workspace", rsi.Policy{ID: "coding-owner-fixture", AllowedContracts: []string{contract.ImportContract, contract.ReportContract, contract.CheckContract, contract.ProjectContract}, Cases: []rsi.Case{
+	return installRuntimeFeature(t, s, r, "coding-workspace", rsi.Policy{ID: "coding-owner-fixture", AllowedContracts: []string{contract.ImportContract, contract.ReportContract, contract.CheckContract, contract.ProjectContract, contract.DraftContract}, Cases: []rsi.Case{
+		{InstanceID: "coding-workspace", Contract: contract.DraftContract, Input: json.RawMessage(`{"verified":[false,true]}`), Expected: json.RawMessage(`{"proof":1,"body":"This candidate passed a recorded Steward verification."}`)},
 		{InstanceID: "coding-workspace", Contract: contract.ProjectContract, Input: json.RawMessage(`{"document":"{\"version\":1,\"name\":\"fixture\",\"prepare\":{\"command\":\"true\",\"timeout_seconds\":5},\"doctor\":{\"command\":\"true\",\"timeout_seconds\":5},\"checks\":[{\"name\":\"build\",\"requirement\":\"Build exits successfully\",\"command\":\"true\",\"timeout_seconds\":5}],\"cleanup\":{\"command\":\"true\",\"timeout_seconds\":5}}","check":"build"}`), Expected: json.RawMessage(`{"plan":{"version":1,"name":"fixture","check":"build","requirement":"Build exits successfully","prepare":{"command":"true","timeout_seconds":5},"doctor":{"command":"true","timeout_seconds":5},"verify":{"command":"true","timeout_seconds":5},"cleanup":{"command":"true","timeout_seconds":5}}}`)},
 		{InstanceID: "coding-workspace", Contract: contract.CheckContract, Input: json.RawMessage(`{"ceilings":{"timeout_seconds":120,"output_bytes":48000}}`), Expected: json.RawMessage(`{"timeout_seconds":60,"output_bytes":48000}`)},
 		{InstanceID: "coding-workspace", Contract: contract.ImportContract, Input: json.RawMessage(`{"ceilings":{"entries":4096,"file_bytes":8388608,"tree_bytes":67108864}}`), Expected: json.RawMessage(`{"entries":4096,"file_bytes":8388608,"tree_bytes":67108864}`)},
@@ -124,7 +125,7 @@ func codingVersionPackage(t *testing.T, version string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.3"`, `Version: "`+version+`"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.4"`, `Version: "`+version+`"`, 1)
 	if version == "1.1.0" {
 		code = strings.Replace(code, `TimeoutSeconds: timeout, OutputBytes: facts.Ceilings.OutputBytes`, `TimeoutSeconds: min(timeout,30), OutputBytes: min(facts.Ceilings.OutputBytes,1024)`, 1)
 		code = strings.Replace(code, `return rsiplugin.JSONResult(ctx, facts.Ceilings)`, `facts.Ceilings.Entries=min(facts.Ceilings.Entries,64);return rsiplugin.JSONResult(ctx,facts.Ceilings)`, 1)

@@ -5,6 +5,7 @@ const PluginID = "steward.service-watchdog"
 const Service = "steward.service-watchdog/1"
 
 type Recipe struct {
-	Attempts     uint8  `json:"attempts"`
-	RetryDelayMS uint32 `json:"retry_delay_ms"`
+	AlertAfterSeconds uint16 `json:"alert_after_seconds,omitempty"`
+	Attempts          uint8  `json:"attempts"`
+	RetryDelayMS      uint32 `json:"retry_delay_ms"`
 }

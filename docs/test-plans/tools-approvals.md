@@ -95,3 +95,7 @@ Computer 动作参数的原 hash／解析选项、批准前固化与不重算、
 `TestToolUnknownReconciliationUsesOnlyOriginalQueryableResource` 经真实审批与 unknown 回执结束 Run，再改变无关能力，分别验证无 Query／原 Query 确认成功／原 Query 仍未知／目标资源漂移／目标移除。无关能力不得阻断扫描；原目标指纹改变不得调用 Query，原参数和幂等键保持冻结，不重发或复活 Run。该入口随 required `mcp-plugins` race 执行，实际默认二十二包审批／unknown 冷恢复另经 MCP 专项系统链验证。
 
 `TestToolUnknownUnfrozenOperationCannotAcquireNewQueryAuthority` 验证能力快照以外的未知动作在工具仍不可用、后注册 Query 或后注册无 Query 定义时都保持未知；不调用新定义、不重发、不复活 Run。原 `TestTaskControlCancelTreeAndInvocationOutcomes` 的 once／ongoing 取消树与继续语义同时保留，并进入 required MCP 恢复 race。
+
+### 测试商户的单次付款
+
+参考 Cue 的预算与回执流程。所有者先读取已报价订单，批准固定商户、订单、币种与按最小单位计的上限。MCP 插件门禁覆盖批准前未付款、批准后精确成交、截断付款应答后冷恢复只查原单。使用独立商户接收日志核对每单只有一次 `pay_order`，以账本核对查询所得回执。单元回归覆盖超额、错币种、错商户以及并发重复付款。

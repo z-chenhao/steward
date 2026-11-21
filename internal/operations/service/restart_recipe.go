@@ -10,8 +10,9 @@ import (
 // Actual death, human intent, fatal health and durable attempt admission remain
 // independent control facts in Manager.
 type RestartRecipe struct {
-	Attempts     uint8  `json:"attempts"`
-	RetryDelayMS uint32 `json:"retry_delay_ms"`
+	AlertAfterSeconds uint16 `json:"alert_after_seconds,omitempty"`
+	Attempts          uint8  `json:"attempts"`
+	RetryDelayMS      uint32 `json:"retry_delay_ms"`
 }
 type RestartReceipt struct {
 	GraphRevision string        `json:"graph_revision"`
@@ -23,7 +24,7 @@ const recipeAccepted = "accepted"
 const recipeUnavailable = "unavailable"
 
 func validRestartReceipt(r RestartReceipt) bool {
-	return len(r.GraphRevision) == 71 && strings.HasPrefix(r.GraphRevision, "sha256:") && strings.Trim(r.GraphRevision[7:], "0123456789abcdef") == "" && r.Recipe.RetryDelayMS > 0
+	return len(r.GraphRevision) == 71 && strings.HasPrefix(r.GraphRevision, "sha256:") && strings.Trim(r.GraphRevision[7:], "0123456789abcdef") == "" && r.Recipe.RetryDelayMS > 0 && r.Recipe.AlertAfterSeconds <= 3600
 }
 func (s settings) restartRecipe() (RestartRecipe, bool) {
 	if s.Version == 1 {

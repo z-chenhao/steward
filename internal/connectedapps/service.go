@@ -49,6 +49,7 @@ type Connection struct {
 	RevocationConfirmed bool   `json:"revocation_confirmed"`
 }
 type State struct {
+	Meeting     *MeetingGrant     `json:"meeting_preparation,omitempty"`
 	Revision    int64             `json:"-"`
 	KeyRef      string            `json:"key_ref"`
 	UserID      string            `json:"user_id"`
@@ -164,6 +165,15 @@ func (s *Service) View(ctx context.Context, search, category, cursor string) (Vi
 }
 
 func (s *Service) save(ctx context.Context, state State) error {
+	if state.Meeting != nil {
+		for _, pin := range []SourcePin{state.Meeting.Calendar, state.Meeting.Mail} {
+			c := find(&state, pin.ID)
+			if c == nil || c.Status != "active" || c.Public || BindingHash(state, *c) != pin.Hash {
+				state.Meeting = nil
+				break
+			}
+		}
+	}
 	return s.Store.SaveApps(ctx, state, state.Revision)
 }
 func (s *Service) changed(ctx context.Context) error {

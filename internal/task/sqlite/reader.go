@@ -4,6 +4,7 @@ package sqlite
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -48,13 +49,18 @@ func decode(raw, scope string) (cursor, error) {
 	}
 	b, e := base64.RawURLEncoding.DecodeString(raw)
 	var c cursor
-	if e != nil || json.Unmarshal(b, &c) != nil || c.Scope != scope || c.At <= 0 || len(c.Ref) > 300 || c.Ref == "" {
+	if e != nil || json.Unmarshal(b, &c) != nil || (c.Scope != scope && c.Scope != cursorScope(scope)) || c.At <= 0 || len(c.Ref) > 300 || c.Ref == "" {
 		return c, task.ErrInvalid
 	}
 	return c, nil
 }
+func cursorScope(scope string) string {
+	digest := sha256.Sum256([]byte(scope))
+	return "sha256:" + base64.RawURLEncoding.EncodeToString(digest[:])
+}
+
 func encode(scope string, at int64, ref string) string {
-	b, _ := json.Marshal(cursor{scope, at, ref})
+	b, _ := json.Marshal(cursor{cursorScope(scope), at, ref})
 	return base64.RawURLEncoding.EncodeToString(b)
 }
 func stamp(at int64) string { return time.UnixMicro(at).UTC().Format(time.RFC3339Nano) }
@@ -83,7 +89,7 @@ const progressCTE = `WITH current_runs AS (
  EXISTS(SELECT 1 FROM tool_invocation i JOIN current_runs r USING(run_id) WHERE r.task_id=t.task_id AND i.status='unknown') unknown
  ,coalesce(a.automation_id,'') schedule_id,coalesce(a.instruction,'') schedule_instruction,coalesce(a.trigger_type,'') trigger_type,coalesce(a.trigger_spec,'') trigger_spec,coalesce(a.timezone,'') timezone,coalesce(a.version,0) schedule_revision,coalesce(a.enabled,0) schedule_enabled,a.next_fire_at,a.below_value,a.presentation_json schedule_presentation,
  EXISTS(SELECT 1 FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest'),json_each(p.manifest_json,'$.provides') x WHERE g.revision=a.method_graph AND json_extract(x.value,'$.contract')='steward.schedule-display/1') schedule_display_managed,coalesce(a.intent_privacy_epoch=coalesce((SELECT epoch FROM memory_privacy WHERE agent_id=t.agent_id),0),0) schedule_visible
- FROM task t LEFT JOIN counts c USING(task_id) LEFT JOIN current_runs root ON root.task_id=t.task_id AND root.worker_position='root' LEFT JOIN automation a ON a.task_id=t.task_id AND a.agent_id=t.agent_id
+ FROM task t LEFT JOIN counts c USING(task_id) LEFT JOIN current_runs root ON root.task_id=t.task_id AND root.worker_position='root' LEFT JOIN automation a ON a.task_id=t.task_id AND a.agent_id=t.agent_id AND a.automation_id NOT LIKE 'trial:%'
  WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
 )
 `
@@ -157,7 +163,7 @@ func (r *Reader) List(ctx context.Context, q task.ListQuery) (task.List, error) 
 		query += ` AND status='active' AND (approval OR input OR unknown OR root_status='failed')`
 	}
 	if q.Query != "" {
-		query += ` AND (instr(lower(title),lower(?))>0 OR instr(lower(anchor_task),lower(?))>0)`
+		query += ` AND (instr(steward_task_fold(title),steward_task_fold(?))>0 OR instr(steward_task_fold(anchor_task),steward_task_fold(?))>0)`
 		args = append(args, q.Query, q.Query)
 	}
 	if q.Cursor != "" {
@@ -188,8 +194,12 @@ func (r *Reader) List(ctx context.Context, q task.ListQuery) (task.List, error) 
 }
 
 func (r *Reader) Detail(ctx context.Context, ref, after string) (task.Detail, error) {
+	return r.DetailPage(ctx, ref, after, 0)
+}
+
+func (r *Reader) DetailPage(ctx context.Context, ref, after string, before int64) (task.Detail, error) {
 	var out task.Detail
-	if !task.ValidRef(ref) || len(after) > 1024 {
+	if !task.ValidRef(ref) || len(after) > 1024 || before < 0 {
 		return out, task.ErrInvalid
 	}
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
@@ -219,7 +229,7 @@ func (r *Reader) Detail(ctx context.Context, ref, after string) (task.Detail, er
 	if err = taskHistory(ctx, tx, &out, after); err != nil {
 		return out, err
 	}
-	if err = taskConversation(ctx, tx, &out); err != nil {
+	if err = taskConversation(ctx, tx, &out, before); err != nil {
 		return out, err
 	}
 	return out, tx.Commit()

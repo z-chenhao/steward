@@ -52,13 +52,14 @@ type heartbeat struct {
 
 // Status exposes fixed diagnostic codes, never configuration or provider text.
 type Status struct {
-	Installed      bool   `json:"installed"`
-	Enabled        bool   `json:"enabled"`
-	Running        bool   `json:"running"`
-	Code           string `json:"code"`
-	Notice         string `json:"notice,omitempty"`
-	NoticeSequence int64  `json:"notice_sequence"`
-	LastCheckedAt  string `json:"last_checked_at,omitempty"`
+	Alerts         *AlertStatus `json:"alerts,omitempty"`
+	Installed      bool         `json:"installed"`
+	Enabled        bool         `json:"enabled"`
+	Running        bool         `json:"running"`
+	Code           string       `json:"code"`
+	Notice         string       `json:"notice,omitempty"`
+	NoticeSequence int64        `json:"notice_sequence"`
+	LastCheckedAt  string       `json:"last_checked_at,omitempty"`
 }
 
 func New(root, home, executable string) (*Manager, error) {
@@ -440,7 +441,18 @@ func (m *Manager) Status() (Status, error) {
 	if err != nil {
 		return Status{}, err
 	}
-	return m.status(s)
+	v, err := m.status(s)
+	if err != nil {
+		return v, err
+	}
+	alerts, err := m.alertStatus(s)
+	if err != nil {
+		// Notification metadata must never suppress the independent health report.
+		v.Alerts = &AlertStatus{Policy: "unavailable"}
+		return v, nil
+	}
+	v.Alerts = alerts
+	return v, nil
 }
 
 // Inspect runs as a separate launchd interval job. It never drives an Actor,

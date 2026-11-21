@@ -135,7 +135,7 @@ func installScheduleMethodVersion(t *testing.T, s *Store, r *Runs, version strin
 	}
 	legacyEditor := len(withoutEditor) > 0 && withoutEditor[0]
 	legacyThreshold := version == "1.0.0" // Explicit historical F-015 metadata shape.
-	code := strings.Replace(string(raw), `Version: "1.0.0"`, `Version: "`+version+`"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.2"`, `Version: "`+version+`"`, 1)
 	if legacyEditor {
 		code = strings.Replace(code, ", contract.Projection: editorProjection", "", 1)
 		code = strings.Replace(code, ", contract.Display: scheduleDisplay", "", 1)
@@ -165,7 +165,7 @@ func installScheduleMethodVersion(t *testing.T, s *Store, r *Runs, version strin
 		t.Fatal(err)
 	}
 	localCode = []byte(strings.Replace(string(localCode), `if facts.OriginalSpec != "" {`, `if facts.OriginalSpec != "" && facts.Clock == "08:31" { facts.Clock="08:30" }; if facts.OriginalSpec != "" {`, 1))
-	localCode = []byte(strings.Replace(string(localCode), "if spec, err := exactLocalOnce(facts.Date, facts.Clock, facts.Timezone); err == nil {", "if facts.Clock == \"owner\" { facts.Clock = \"08:30\" }; if spec, err := exactLocalOnce(facts.Date, facts.Clock, facts.Timezone); err == nil {", 1))
+	localCode = []byte(strings.Replace(string(localCode), "wall, err := time.Parse(", "if facts.Clock == \"owner\" { facts.Clock = \"08:30\" }; wall, err := time.Parse(", 1))
 	localReplacement := filepath.Join(t.TempDir(), "local_time.go.txt")
 	if err = os.WriteFile(localReplacement, localCode, 0600); err != nil {
 		t.Fatal(err)
@@ -178,7 +178,7 @@ func installScheduleMethodVersion(t *testing.T, s *Store, r *Runs, version strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	frequencyCode = []byte(strings.Replace(string(frequencyCode), "if spec, err := frequencyExpression(", "if facts.Clock==\"08:31\" { facts.Clock=\"09:30\" }; if spec, err := frequencyExpression(", 1))
+	frequencyCode = []byte(strings.Replace(string(frequencyCode), "if spec, field := frequencyExpression(", "if facts.Clock==\"08:31\" { facts.Clock=\"09:30\" }; if spec, field := frequencyExpression(", 1))
 	frequencyReplacement := filepath.Join(t.TempDir(), "frequency.go.txt")
 	if err = os.WriteFile(frequencyReplacement, frequencyCode, 0600); err != nil {
 		t.Fatal(err)
@@ -252,6 +252,9 @@ func installScheduleMethodVersion(t *testing.T, s *Store, r *Runs, version strin
 	defaultsCode, err := os.ReadFile(defaultsPath)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if version == "1.0.0" {
+		defaultsCode = []byte(strings.Replace(string(defaultsCode), "MinBelow: 1, ", "", 1))
 	}
 	if version == "1.0.2" {
 		defaultsCode = []byte(strings.ReplaceAll(string(defaultsCode), `Frequency: "daily"`, `Frequency: "weekdays"`))
@@ -680,6 +683,14 @@ func activateScheduleMethod(t *testing.T, h rsi.Host, id, expected, target strin
 			}
 			if policy.Cases[i].Contract == contract.Defaults && pkg.Manifest.Version == "1.0.2" {
 				policy.Cases[i].Expected = json.RawMessage(`{"frequency":"weekdays","date":"","clock":"09:15","timezone":"Asia/Shanghai","cron":"","weekday":"1","day":"1","enabled":true}`)
+			}
+			if policy.Cases[i].Contract == contract.Defaults && pkg.Manifest.Version != "1.0.0" {
+				var defaults contract.DefaultsResult
+				if err = json.Unmarshal(policy.Cases[i].Expected, &defaults); err != nil {
+					t.Fatal(err)
+				}
+				defaults.MinBelow = 1
+				policy.Cases[i].Expected, _ = json.Marshal(defaults)
 			}
 			if policy.Cases[i].Contract == contract.Guidance {
 				var expected contract.GuidanceResult

@@ -14,7 +14,7 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: extract}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.2", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Contract: extract}}
 }
 func extract(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
 	var request contract.Request
@@ -28,7 +28,7 @@ func extract(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error)
 	if err != nil {
 		return rsiplugin.Result{}, err
 	}
-	text, err := docx.Text(ctx, bytes.NewReader(data))
+	text, err := docx.TextWithContentControls(ctx, bytes.NewReader(data))
 	response := contract.Response{Text: text}
 	switch {
 	case errors.Is(err, docx.ErrInvalid):

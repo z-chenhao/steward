@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -189,5 +190,105 @@ func TestLiveProgressAndSettingsKeepPageQueryBoundaries(t *testing.T) {
 		if w.Code != 200 {
 			t.Fatal(view, w.Code, w.Body.String())
 		}
+	}
+}
+
+type scopedApprovalsCore struct {
+	*updatesCore
+	ids []string
+}
+
+func (c *scopedApprovalsCore) WebApprovals(context.Context) ([]interaction.Approval, error) {
+	return nil, errors.New("unbounded history requested")
+}
+func (c *scopedApprovalsCore) PageApprovals(_ context.Context, ids []string, includePending bool) ([]interaction.Approval, error) {
+	c.ids = ids
+	if !includePending {
+		return nil, errors.New("missing pending actions")
+	}
+	return []interaction.Approval{{ID: "visible", Status: "approved"}, {ID: "other", Status: "pending"}}, nil
+}
+func TestChatRequestsOnlyHostAuthoredApprovalIDs(t *testing.T) {
+	c := &scopedApprovalsCore{updatesCore: &updatesCore{messages: []conversation.Message{
+		{MessageID: "approval:visible", Source: "security", Role: "assistant", Sequence: 1},
+		{MessageID: "approval:forged", Source: "web", Role: "user", Sequence: 2},
+	}}}
+	s := &Server{Core: c}
+	p := page{}
+	if err := s.loadConversation(context.Background(), &p); err != nil {
+		t.Fatal(err)
+	}
+	if len(c.ids) != 1 || c.ids[0] != "visible" || p.Messages[0].Approval == nil || p.PendingCount != 1 || len(p.Approvals) != 1 {
+		t.Fatal(c.ids, p.Messages, p.Approvals)
+	}
+}
+
+type countedStaticCore struct {
+	*updatesCore
+	calls   int
+	version string
+	dynamic bool
+}
+
+func (c *countedStaticCore) WebProjection(ctx context.Context, m conversation.Message) (json.RawMessage, error) {
+	c.calls++
+	return c.updatesCore.WebProjection(ctx, m)
+}
+func (c *countedStaticCore) StaticWebProjectionVersions(context.Context, []string) ([]string, bool, error) {
+	return []string{c.version}, !c.dynamic, nil
+}
+func TestConditionalChatSkipsProjectionAndLayoutWhileRevalidating(t *testing.T) {
+	c := &countedStaticCore{updatesCore: &updatesCore{allowed: true, messages: []conversation.Message{{MessageID: "one", Role: "assistant", Sequence: 1, Content: conversation.Text("test")}}}}
+	s := &Server{Core: c, Config: Config{TokenRef: "credential:test"}, Secrets: fakeSecrets{}, WebWorkbench: workbenchTestReader(t)}
+	read := func(etag, language, revision string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest("GET", "http://127.0.0.1:8080/api/updates?view=/", nil)
+		req.Header.Set("Authorization", "Bearer private-token-at-least-24-bytes")
+		req.Header.Set("If-None-Match", etag)
+		req.Header.Set("X-Steward-Workbench-Reader", revision)
+		if language != "" {
+			req.AddCookie(&http.Cookie{Name: languageCookie, Value: language})
+		}
+		res := httptest.NewRecorder()
+		s.ServeHTTP(res, req)
+		return res
+	}
+	rev := "sha256:" + strings.Repeat("a", 64)
+	first := read("", "", rev)
+	if first.Code != 200 {
+		t.Fatal(first.Code, first.Body.String())
+	}
+	tag := first.Header().Get("ETag")
+	for range 5 {
+		got := read(tag, "", rev)
+		if got.Code != 304 || got.Body.Len() != 0 || got.Header().Get("X-Steward-Workbench-Reader") != rev || c.calls != 1 {
+			t.Fatal(got.Code, c.calls, got.Body.String())
+		}
+	}
+	read(tag, "zh-CN", rev)
+	if c.calls != 2 {
+		t.Fatal("language reused a different layout", c.calls)
+	}
+	c.approvals = []interaction.Approval{{ID: "due", Status: "pending"}}
+	pending := read(tag, "", rev)
+	if pending.Code != 200 || c.calls != 3 {
+		t.Fatal("new approval skipped", pending.Code, c.calls)
+	}
+	c.approvals[0].Status = "expired"
+	if got := read(pending.Header().Get("ETag"), "", rev); got.Code != 200 {
+		t.Fatal("expiry reused pending action", got.Code)
+	}
+	c.version = "newly delivered"
+	read(tag, "", rev)
+	if c.calls != 5 {
+		t.Fatal("new frozen projection did not render", c.calls)
+	}
+	c.dynamic = true
+	read(tag, "", rev)
+	if c.calls != 6 {
+		t.Fatal("live widget reused passive result", c.calls)
+	}
+	c.allowed = false
+	if got := read(tag, "", rev); got.Code != 403 {
+		t.Fatal("revocation", got.Code)
 	}
 }

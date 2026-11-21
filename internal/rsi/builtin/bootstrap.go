@@ -41,7 +41,7 @@ import (
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
-type Directories struct{ DOCX, OCR, Trace, Context, Recall, Conversation, Curator, Evidence, Skills, Experience, Task, Progress, Feedback, Delegation, CodeMode, Files, Shell, Coding, Computer, Web, Extract, MCP, Apps, Discovery, AppsDirectory, AppsAccounts, AppsLogos, AppsInterface, GitHub, Artifact, UI, Schedule, MemoryInspector, ModelConnections, Feishu, CapabilityForms, Terminal, ReferencePricing, WebWorkbench, ServiceWatchdog string }
+type Directories struct{ DOCX, OCR, Trace, Context, Recall, Conversation, Curator, Evidence, Skills, Experience, Task, Progress, Feedback, Delegation, CodeMode, Files, Shell, Coding, Computer, Web, Extract, MCP, Apps, Discovery, AppsDirectory, AppsAccounts, AppsLogos, AppsInterface, GitHub, Artifact, UI, Schedule, MemoryInspector, ModelConnections, Feishu, CapabilityForms, Terminal, ReferencePricing, WebWorkbench, ServiceWatchdog, MeetingPreparation string }
 
 // EnsureDefault selects the shipped composition only for a never-selected
 // installation. Operator choices, stops and deactivation survive restart; later
@@ -72,9 +72,16 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	traceWorkbench, traceActivity, traceLegacy := false, false, false
 	uiPlan, uiCards, uiTable, uiChart, uiForm := false, false, false, false, false
 	uiVersion := ""
+	feedbackVersion := ""
+	scheduleVersion := ""
+	var memoryInspectorVersion, memoryInspectorDirectory string
+	githubIssueComments := false
 	appsClient := false
 	appsInventory := false
+	artifactBody := false
+	codingDraft := false
 	codingChecks := false
+	watchdogAlerts := false
 	codingProject := false
 	for _, p := range bundledPlugins(&d) {
 		if *p.Directory == "" {
@@ -87,8 +94,34 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
 		}
+		if p.Name == "github-pr-followup" {
+			githubIssueComments = installed.Manifest.Version == "1.0.2"
+		}
+		if p.Name == "task-feedback" {
+			feedbackVersion = installed.Manifest.Version
+		}
+		if p.Name == "schedule" {
+			scheduleVersion = installed.Manifest.Version
+		}
+		if p.Name == "memory-inspector" {
+			memoryInspectorVersion = installed.Manifest.Version
+			memoryInspectorDirectory = h.Catalog.Path(installed.Digest)
+		}
+		if p.Name == "artifact-workbench" {
+			for _, service := range installed.Manifest.Provides {
+				if service.Contract == artifact.BodyMatch {
+					artifactBody = true
+				}
+			}
+		}
+		if p.Name == "service-watchdog" {
+			watchdogAlerts = installed.Manifest.Version == "1.1.0"
+		}
 		if p.Name == "coding-workspace" {
 			for _, service := range installed.Manifest.Provides {
+				if service.Contract == "steward.coding-draft-recipe/1" {
+					codingDraft = true
+				}
 				if service.Contract == "steward.coding-project-plan/1" {
 					codingProject = true
 				}
@@ -232,8 +265,12 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.skill-discovery/1", "steward.skill-entry/1")
 		policy.Cases = append(policy.Cases, skillCases()...)
 	}
+	if d.MeetingPreparation != "" {
+		policy.AllowedContracts = append(policy.AllowedContracts, "steward.meeting-preparation/1")
+		policy.Cases = append(policy.Cases, meetingPreparationCases()...)
+	}
 	if d.Experience != "" {
-		policy.AllowedContracts = append(policy.AllowedContracts, "steward.experience-policy/1")
+		policy.AllowedContracts = append(policy.AllowedContracts, "steward.experience-policy/1", "steward.browser-demonstration/1", "steward.correction-recipe/1")
 		policy.Cases = append(policy.Cases, experienceCases()...)
 	}
 	if d.Task != "" {
@@ -246,7 +283,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	}
 	if d.Feedback != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.task-feedback-policy/1")
-		policy.Cases = append(policy.Cases, feedbackCases()...)
+		policy.Cases = append(policy.Cases, feedbackCases(feedbackVersion)...)
 	}
 	if d.Delegation != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.delegation-policy/1")
@@ -270,6 +307,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		if codingProject {
 			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-project-plan/1")
 			policy.Cases = append(policy.Cases, codingProjectCases()...)
+		}
+		if codingDraft {
+			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-draft-recipe/1")
+			policy.Cases = append(policy.Cases, codingDraftCases()...)
 		}
 		if codingChecks {
 			policy.AllowedContracts = append(policy.AllowedContracts, "steward.coding-check-limits/1")
@@ -313,7 +354,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, toolDiscoveryCases()...)
 	}
 	if d.GitHub != "" {
-		cases, err := githubCases()
+		cases, err := githubCases(githubIssueComments)
 		if err != nil {
 			return err
 		}
@@ -323,9 +364,13 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	if d.Artifact != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, artifact.Recipe, artifact.Read, artifact.Search, artifact.Cleanup)
 		policy.Cases = append(policy.Cases, artifactCases()...)
+		if artifactBody {
+			policy.AllowedContracts = append(policy.AllowedContracts, artifact.BodyMatch)
+			policy.Cases = append(policy.Cases, artifactBodyCase())
+		}
 	}
 	if d.ServiceWatchdog != "" {
-		cases, err := serviceWatchdogCases()
+		cases, err := serviceWatchdogCases(watchdogAlerts)
 		if err != nil {
 			return err
 		}
@@ -381,7 +426,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.Cases = append(policy.Cases, cases...)
 	}
 	if d.MemoryInspector != "" {
-		cases, err := memoryInspectorCases()
+		cases, err := MemoryInspectorCases(memoryInspectorVersion, memoryInspectorDirectory)
 		if err != nil {
 			return err
 		}
@@ -390,7 +435,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	}
 	if d.Schedule != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, schedule.Next, schedule.LocalTime, schedule.Frequency, schedule.Projection, schedule.Display, schedule.InstructionLabel, schedule.Guidance, schedule.Defaults, schedule.Threshold)
-		policy.Cases = append(policy.Cases, scheduleCases()...)
+		policy.Cases = append(policy.Cases, scheduleCases(scheduleVersion)...)
 	}
 	if d.UI != "" {
 		cases, err := uiCases(d.UI, uiVersion, uiPlan, uiCards, uiTable, uiChart, uiForm)

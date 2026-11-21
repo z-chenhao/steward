@@ -4,6 +4,8 @@
 
 ## 范围与证据
 
+用带重音拉丁字母、希腊文、中文及 150 个 HTML 特殊字符的同一搜索查询连续读取两页，并验证不同条件拒绝原游标。
+
 F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../internal/agent/sqlite/github_followup_test.go) 的真实 HTTP/SQLite/Actor/Tool 链路；覆盖自然完成、人工结束、重复与不同追加、旧 owner/晚模型与工具、停止/Forget 和 unknown 效果。原飞书 Task 的 GitHub 接续经真实 HTTP peer 验证原话题交付；平台登录、真实飞书渲染和真实模型范围判断不由该确定性回归证明，参见 [集成测试方案](integrations.md)。
 
 本方案回答如何证明需求完成，不是测试执行报告。已有入口只表示测试存在，不能推导特定版本已通过或真实模型效果已达标。
@@ -54,7 +56,7 @@ F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../inte
 ### F-004 信息反馈验收路径
 
 - `internal/task/task_test.go`：新问题/审阅分支的严格 union、必填/越臂/重复/null 字段、成果数量与冻结旧 schema 拒绝；旧请求省略新字段时保留规范化身份。
-- `internal/agent/sqlite/task_feedback_test.go`：真实 Main Tool/Actor 保存问题，所有者并发八次回应只生成一条 Main input，Main 接续原 Task；不同重复冲突、源消息关联、原子失败回滚与重开读取。独立检查 supersede、到期、epoch、pause/cancel/Forget、当前反馈换目标/因果、已接纳反馈遇到后续停止、新普通输入继续与新审阅取代旧修订。成果引用沿真实 ArtifactStore 保留、作为回应附件进入 Main，始终不产生动作审批。
+- `internal/agent/sqlite/task_feedback_test.go`：真实 Main Tool/Actor 保存问题，所有者并发八次回应只生成一条 Main input，Main 接续原 Task；不同重复冲突、源消息关联、原子失败回滚与重开读取。同轮检查问题与审阅同时可答、同种替代、旧单槽兼容与不可变范围；独立检查 supersede、到期、epoch、pause/cancel/Forget、当前反馈换目标/因果、已接纳反馈遇到后续停止、新普通输入继续与新审阅取代旧修订。成果引用沿真实 ArtifactStore 保留、作为回应附件进入 Main，始终不产生动作审批。
 - 同文件的读取 fixture 验证 52 个当前问题跨稳定游标完整读取，按 Task 筛选与读取前后事件数不变；历史和隐私撤销不占待办页；元数据 read fixture 覆盖缺失/删除/其他所有者/到期成果被过滤，受活动 Task 保护的原 TTL 到期成果仍可用，不读取 blob。它不替代实际写入口验证。
 - `verify_tasks.py` 的 feedback 场景通过现有脚本模型、实际 CLI、每次独立进程和 SQLite readback：记录问题 → 列表 → 回答/重试 → Main append → 原 Task 的新 Root；暂停后拒绝旧回答；真实上传成果经 Main 记录精确修订审阅、回应与接续不创建动作批准；回应提交前后 SIGKILL 后只接续一次。软件协议证据不证明真实模型能稳定识别何时提问或准确理解成果意见。
 - Web 的具名待办与跨 CLI 回应复用见 [渠道测试](channels.md)；个人飞书问题和成果审阅卡的签名提交、同 Task 接续及跨端重试见[渠道测试](channels.md#feishu-task-question-tests)。真实客户端兼容与模型语义质量仍为缺口。
@@ -74,6 +76,8 @@ F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../inte
 <a id="task-control-model-counterexample-and-implementation-evidence"></a>
 
 ### Counterexample and implementation evidence
+
+[积压回归](../../internal/agent/sqlite/tasks_test.go)以一万条更新验证首批提交后接纳新输入、取消与重试，并检查全量收件和消费各恰好一次。
 
 `test_one_shot_completion_uses_root_outcome_after_child_drains` and
 `TestTaskControlModelCompletionUsesRootOutcome` pair eight traces: both Root
@@ -183,3 +187,5 @@ Task 搜索／默认标题已独立迁移；状态、Root、epoch、审批、原
 ### 版本方法的实际冷恢复
 
 `TestTaskPluginIndependentUpgradeRollbackKeepsOriginalRequests` 和 `TestFeedbackPluginIndependentUpgradeRetainsAcceptedQuestionsAndResponseData` 在回退并退役后关闭原 Store、新建 Store／Catalog，直接 drain 已排队请求；核对原默认标题、canonical hash、确切问题和所选配方。停用后再次重开，禁止新标签／问题恢复 native，但所有已接纳问答仍可按原配方、原来源去重回答。`TestProgressPluginIndependentUpgradeRetainedRootsChildIsolationAndDisable` 同样直接恢复原 Root，保留原版本／Child 隔离，停用不阻断业务也不恢复摘要。
+
+超过 50 条计划和 10 条 Main 交付时，用下一页逐项验证末页和不重复；保留原查询和 live 刷新游标。检查任务和审阅的文本/图片预览、原文件下载、错误媒体和撤权。

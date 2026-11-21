@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"strings"
 
 	"github.com/z-chenhao/assistant/internal/app"
 	"github.com/z-chenhao/assistant/internal/config"
@@ -23,12 +24,17 @@ func dispatchCommand(ctx context.Context, application *app.App, cfg config.Confi
 		application.StartMemory(ctx)
 	}
 	switch command.kind {
+	case commandTaskMail:
+		return runTaskMail(ctx, application, flags, in, out)
 	case commandPlugin:
 		if flags.Arg(1) == "parser-resource" {
 			return runParserResource(ctx, application, cfg, flags.Arg(2), out)
 		}
 		return runPlugin(ctx, application, flags, in, out)
 	case commandCoding:
+		if strings.HasPrefix(flags.Arg(1), "draft-") {
+			return runCodingDraft(ctx, application, flags, in, out)
+		}
 		if flags.Arg(1) == "report-pr-exact" {
 			value, err := application.SaveCodePRExactReport(ctx, flags.Arg(2), flags.Arg(3), cfg.ExecutionConfig().RepositorySource)
 			if err != nil {
@@ -51,6 +57,18 @@ func dispatchCommand(ctx context.Context, application *app.App, cfg config.Confi
 			return json.NewEncoder(out).Encode(value)
 		}
 		value, err := application.CodeReport(ctx, flags.Arg(2), flags.Arg(1) == "diff")
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(out).Encode(value)
+	case commandAudio:
+		var value any
+		var err error
+		if flags.Arg(1) == "enable-plugin" {
+			value, err = application.EnableAudioTranscript(ctx, flags.Arg(2))
+		} else {
+			value, err = application.TranscribeLocalAudio(ctx, flags.Arg(2), flags.Arg(3))
+		}
 		if err != nil {
 			return err
 		}

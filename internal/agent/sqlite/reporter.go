@@ -151,12 +151,17 @@ func (r *Runs) finishTask(ctx context.Context, tx *sql.Tx, runID, status, reason
 	if n != 1 {
 		return agent.ErrClaimLost
 	}
+	// An explicit trial always produces its own owner-visible result, including a quiet observation.
+	var trial bool
+	if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM automation WHERE task_id=? AND automation_id LIKE 'trial:%')`, taskID.String).Scan(&trial); err != nil {
+		return err
+	}
 	if status == "completed" {
 		var monitored, suppressed, missing bool
 		if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM automation_fire WHERE root_run_id=? AND below_value IS NOT NULL),EXISTS(SELECT 1 FROM automation_fire WHERE root_run_id=? AND below_value IS NOT NULL AND observed_value IS NOT NULL AND notify=0),EXISTS(SELECT 1 FROM automation_fire WHERE root_run_id=? AND below_value IS NOT NULL AND observed_value IS NULL)`, runID, runID, runID).Scan(&monitored, &suppressed, &missing); err != nil {
 			return err
 		}
-		if monitored && suppressed {
+		if monitored && suppressed && !trial {
 			return nil
 		}
 		if missing {
@@ -217,10 +222,21 @@ const currentAutomationUpdate = `NOT EXISTS(SELECT 1 FROM automation_fire f JOIN
 // lost. Inbox and consumer dedup commit together; repeating it is harmless.
 // Stale epochs and schedule versions are consumed but never enter a new Main.
 func (r *Runs) Report(ctx context.Context) error {
-	changed := false
+	for {
+		n, err := r.reportBatch(ctx)
+		if err != nil || n < reportBatchSize {
+			return err
+		}
+	}
+}
+
+const reportBatchSize = 100
+
+func (r *Runs) reportBatch(ctx context.Context) (int, error) {
+	count := 0
 	err := r.write(ctx, func(tx *sql.Tx) error {
-		changed = false
-		rows, err := tx.QueryContext(ctx, `SELECT u.event_id,u.task_id,u.root_run_id,u.task_epoch,u.kind,u.content,u.artifact_refs,u.occurred_at,t.agent_id,t.task_ref,t.title,CASE WHEN t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0) AND `+currentAutomationUpdate+` THEN t.task_epoch ELSE -1 END FROM task_update u JOIN task t USING(task_id) WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND NOT EXISTS(SELECT 1 FROM event_inbox i WHERE i.consumer='task_reporter' AND i.event_id=u.event_id) ORDER BY u.occurred_at,u.event_id`)
+		count = 0
+		rows, err := tx.QueryContext(ctx, `SELECT u.event_id,u.task_id,u.root_run_id,u.task_epoch,u.kind,u.content,u.artifact_refs,u.occurred_at,t.agent_id,t.task_ref,t.title,CASE WHEN t.created_at>coalesce((SELECT updated_at FROM memory_privacy WHERE agent_id=t.agent_id),0) AND `+currentAutomationUpdate+` THEN t.task_epoch ELSE -1 END FROM task_update u JOIN task t USING(task_id) WHERE t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1) AND NOT EXISTS(SELECT 1 FROM event_inbox i WHERE i.consumer='task_reporter' AND i.event_id=u.event_id) ORDER BY u.occurred_at,u.event_id LIMIT ?`, reportBatchSize)
 		if err != nil {
 			return err
 		}
@@ -265,16 +281,16 @@ func (r *Runs) Report(ctx context.Context) error {
 				return err
 			}
 		}
-		if len(updates) > 0 {
-			changed = true
+		count = len(updates)
+		if count > 0 {
 			r.host.boundary("before_report_commit")
 		}
 		return nil
 	})
-	if err == nil && changed {
+	if err == nil && count > 0 {
 		r.host.boundary("after_report_commit")
 	}
-	return err
+	return count, err
 }
 
 // promoteFollowups admits one compatible original-source group into a new Main,

@@ -81,7 +81,11 @@ func TestMemoryInspectorActualOwnerPageGraphPinDisableAndFirstColdReference(t *t
 		return host
 	}
 	host := configure()
-	pkg, e := host.Install(ctx, defaultFeaturePackage(t, "memory-inspector", nil))
+	originalPackage := t.TempDir()
+	if out, e := exec.Command("python3", "../../tests/fixtures/plugins/memory-inspector-original-v1/build.py", originalPackage).CombinedOutput(); e != nil {
+		t.Fatal(e, string(out))
+	}
+	pkg, e := host.Install(ctx, originalPackage)
 	if e != nil {
 		t.Fatal(e)
 	}

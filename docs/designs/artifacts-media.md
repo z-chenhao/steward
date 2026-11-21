@@ -6,11 +6,15 @@
 
 ## 当前架构
 
+渠道先暂存附件字节，随后在同一 Host 写事务复核绑定、查重、接纳 Artifact 和写渠道引用。并发重投只保留最先接纳的引用。
+
 文件字节位于 Artifact store，引用与权限由 Host 解析。Conversation 保留语义引用；支持的用户图片与显式选择的工具图片在 dispatch 时由 Host 解码，再送入冻结 Provider envelope。
 
 <a id="artifact-插件边界迁移中"></a>
 
 ### Artifact 插件边界
+
+Host 在读事务内以一次集合查询取得可见并有效的候选，依次编码名称、媒体类型和创建时间供原冻结插件排序，只保留复核所需的身份字段。
 
 仓库私有、实验级的 `artifact-workbench` 在隔离进程中实际执行 Unicode 名称／MIME 匹配、按创建时间排序、文本／二进制读取配方、产物默认元数据／保留期与清理候选排序。它仅接收匿名元数据、原始请求和 Host 已批准的候选位置，不接收引用、路径、scope、数据库、文件内容或凭据；输出不能新增事实或授权删除。
 
@@ -74,12 +78,22 @@ Settings 不再提供图片复选框。ChatGPT 账户模型按认证目录的图
 - 通过共享 Executor/Code Mode/OutputStore 处理期限、并发、取消、错误和重放。已完成调用不重新识别；未完成的只读调用可按原冻结身份重试。OCR 不自动 publish，不写长期 Memory，不修改 system prompt，也不切换模型。返回的文字是低信任证据，空结果不证明图片没有文字或无需视觉分析。
 - 比较 [Codex view_image](https://github.com/openai/codex/blob/ce2d47bdc4dd2513d5b3567090593b07b0fdfa0a/codex-rs/core/src/tools/handlers/view_image.rs#L99)：它要求视觉模型并返回 InputImage，本链路没有 OCR 回退。借鉴统一媒体处理，保留 Steward 的 Artifact 引用和独立 OCR 语义。本增强不新增 feature 编号，也不把 OCR 质量评测放入 CI。
 
+### 私有 PDF 正文证据（F-014）
+
+Main 在新执行的上下文政策中固定 `private_pdf_text`，Child 继承该政策，历史快照继续原有元数据读取。Host 在同一已验证文件描述符读取受大小限制的字节，按原授权和隐私代际调用冻结图中的 Web Extract。解析器无需公开 URL，证据页保留原 Artifact 引用与文档页码。本地所有者的续页使用上一页返回的 `reader_revision`。解析前后检查源文件存活、授权和图的可用性。
+
 ### DOCX 正文证据（F-014）
+
+托管解释器只将 w:sdt 的 w:sdtContent 接入已有正文结构，沿用 XML 预算和段落／单元格边界；忽略控件属性与原本不可读取的子树。
 
 - 用户提供 DOCX Artifact ref 后，Main 与本地操作者可沿用证据读取。工具定义、输入 schema、角色、审批与授权均沿用现有入口。新 Run 在 `run_context_policy` 冻结 `docx_text:true`；缺失字段时沿用原二进制元数据结果，已提交调用照常复用。统一停止旧进程后再升级。
 - Host 按标准 DOCX MIME 选择冻结解释器。已启用的独立 `docx-reader` 包使用 `steward.docx-text/1`，通过本次调用的不可变分块输入解析原始字节；插件不接触文件路径或数据库。新 Run 在首次成功激活该服务后冻结 `docx_plugin:true`，并绑定确切插件图；缺失该标记的历史 Run 保留原生解释器，Child 继承父政策。停用后的新工作明确返回不可用，不绕回原生实现。所有者可携带上一页的 `reader_revision` 继续已验收旧版本；该字段不进入 Main 工具 schema，未激活候选、停机和被隔离解释器拒绝读取。读取同一授权 fd 并校验哈希，在 SQLite 事务外提取；返回前重检源文件存活、授权、claim 和隐私。结果是低信任 Tool 回执文本，正文和 ZIP 字节不另存为派生产物。没有 schema migration 或新 Tool。
 - ZIP 只打开三个固定部件。根关系必须唯一选择内部 `word/document.xml`，且内容类型声明为普通 Word 主文档。拒绝歧义部件、重定向或声明型 XML 实体，正常 XML 字符转义可以解码。只提取正文普通段落、直接表格单元格及超链接标签；换行分段或分行，Tab 分单元格。布局、样式、修订、嵌套表格、页眉页脚、绘图与其他嵌入内容不参与正文投影。解析器不加载关系目标、运行宏或渲染 Office。
 - ZIP 限 8 MiB、512 个条目、声明解压总量 32 MiB；主文档 XML 限 2 MiB，两个包描述 XML 各 64 KiB。实际打开的部件校验长度和 CRC，XML 限 64 层、每部件 200,000 个 token，完整提取文字限 256 KiB。页长 4–4096 字节，`docx_text` 表示按提取文本而非压缩包分页。托管 Run 将确切输入摘要和提取结果写入原插件调用回执，分页复用同一结果；每次仍检查源对象和执行权，Forget 清除调用正文。所有者的纯只读入口不写回执，历史 Run 保留原提取路径。
+
+### 本地录音转写（F-014）
+
+操作者对单个已保存 WAV 执行本地转写命令。Host 验证原件字节、当前 owner、可见期、图和 Guardian，再请求所选独立 audio-transcript 包给出解码方案。当前包只选英文 tiny.en CPU 方案，随后解析固定版本识别器的结果，校验时间范围并封装去除外围空白的本地片段。Host 只可运行固定参数的已审核本地驱动，校验实际模型文件的 SHA-256，网络隔离，临时目录随请求清理。每次插件读及交付前重新检查原件、图和隐私 epoch。操作没有外部提交，也不生成自动进入任务历史的文本。命令自愿输出的副本由其保存者管理。
 
 ### 短事务与文件所有权（F-039）
 
@@ -240,3 +254,8 @@ Artifact 流读取与校验在 SQLite 事务外完成；配额与结果接纳保
 
 
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
+
+审阅预览由原工作台版本选择，链接携带对应工作台引用；每次读取仍校验当前文件授权。Host 将文本强制为纯文字，核对 JPEG/PNG 解码配置、尺寸与预算，并保留独立的原字节下载。
+
+
+成果正文搜索只在显式指定时启动。Artifact Workbench 的独立 `steward.artifact-body-match/1` 接收当前授权的不可变文本窗口并只返回是否匹配。Host 根据查询长度保留相邻窗口的重叠字节，为每个输入块重新核对原件和隐私代际，再由冻结的选择服务返回可见描述符。正文不写入搜索索引，历史元数据搜索继续走原有协议。

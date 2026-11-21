@@ -58,7 +58,7 @@ function regionPatcher(ids:readonly string[],scope:ParentNode=document){
       child=old;
       const button=native.querySelector<HTMLButtonElement>('button[type=submit]');
       const next=incoming.querySelector<HTMLButtonElement>('button[type=submit]');
-      if(button&&next&&!native.dataset.submitting)button.disabled=next.disabled;
+      if(button&&next&&!native.dataset.submitting)button.disabled=next.disabled||native.dataset.feedbackAccepted==='true';
       const hint=native.querySelector<HTMLElement>('[data-feedback-model-needed]'),nextHint=incoming.querySelector<HTMLElement>('[data-feedback-model-needed]');
       if(hint&&nextHint)hint.hidden=nextHint.hidden;
      }
@@ -134,21 +134,25 @@ export function startLiveUpdates(){
  const taskQuery=new URLSearchParams(location.search);
  const patch=regionPatcher(regions);
  const thread=view==='/'?document.querySelector<HTMLElement>('.thread'):null;
- const reader=thread?createChatScroll(thread,()=>syncJump()):null;
+ let follow=false,pendingTarget='';
+ const reader=thread?createChatScroll(thread,()=>syncJump(),()=>{
+  // An in-flight refresh may still apply newer facts after a user scrolls away.
+  follow=false;pendingTarget='';
+ }):null;
  const atBottom=()=>reader?.isFollowing()??(scrollY+innerHeight>=document.documentElement.scrollHeight-100);
  const scrollToLatest=()=>reader?reader.toBottom():window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'});
  const feedback=document.getElementById('live-update-status');
  const jump=document.querySelector<HTMLButtonElement>('#new-messages');
  const draft=document.querySelector<HTMLElement>('#conversation-draft');
  const draftNode=draft?.querySelector<HTMLElement>('[data-draft-text]');
- let draftText='';
+ let draftText='',draftFrame=0;
  let before=Number(main.dataset.liveBefore??0),latest=Number(main.dataset.liveLatest??0);
- let etag='',timer=0,generation=0,delay=timing.poll_ms,stopped=false,follow=false,pendingTarget='';
+ let etag='',timer=0,generation=0,delay=timing.poll_ms,stopped=false;
  let request:AbortController|null=null;
  let replies:EventSource|null=null,draftKey='',committing=false;
  const uiNode=document.getElementById('conversation-ui-preview');
  const uiPreview=uiNode?createUIPreview(uiNode):null;
- const clearDraft=()=>{draftKey='';committing=false;draftText='';if(draftNode)draftNode.replaceChildren();if(draft)draft.hidden=true};
+ const clearDraft=()=>{cancelAnimationFrame(draftFrame);draftFrame=0;draftKey='';committing=false;draftText='';if(draftNode)draftNode.replaceChildren();if(draft)draft.hidden=true};
  const stopReplies=()=>{replies?.close();replies=null;clearDraft();uiPreview?.clear()};
  const hasReply=(key:string)=>!!key&&!!document.querySelector(`[data-reply-key="${key}"]`);
  const startReplies=()=>{
@@ -172,9 +176,14 @@ export function startLiveUpdates(){
     clearDraft();draftKey=key;
    }
    if(text&&draftKey===key&&!hasReply(key)){
-    const bottom=atBottom();
-    draftText+=text;if(draftNode)renderDraftMarkdown(draftNode,draftText);draft.hidden=false;
-    if(bottom)scrollToLatest();else showJump();
+    draftText+=text;
+    if(!draftFrame)draftFrame=requestAnimationFrame(()=>{
+     draftFrame=0;
+     const bottom=atBottom();
+     if(draftNode)renderDraftMarkdown(draftNode,draftText);
+     draft.hidden=false;
+     if(bottom)scrollToLatest();else showJump();
+    });
    }
    if(state==='committed')void refresh();
   });
@@ -221,7 +230,7 @@ export function startLiveUpdates(){
   const timeout=setTimeout(()=>controller.abort(),timing.read_timeout_ms);
   try{
    const query=new URLSearchParams({view});if(before)query.set('before',String(before));
-   if(view==='/tasks'||view.startsWith('/tasks/')){for(const key of ['q','cursor','history','feedback_before','needs_me']){const value=taskQuery.get(key);if(value)query.set(key,value)}const taskView=taskQuery.get('view');if(taskView)query.set('task_view',taskView)}
+   if(view==='/tasks'||view.startsWith('/tasks/')){for(const key of ['q','cursor','history','delivery_before','schedules_after','feedback_before','needs_me']){const value=taskQuery.get(key);if(value)query.set(key,value)}const taskView=taskQuery.get('view');if(taskView)query.set('task_view',taskView)}
    const response=await fetch('/api/updates?'+query,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:workbenchHeaders(etag)});
    if(current!==generation)return;
    workbenchResponse(response);
@@ -317,7 +326,7 @@ export function startLiveUpdates(){
   if(!form.reportValidity())return;
   const data=new URLSearchParams();
   for(const [key,value] of new FormData(form)){if(typeof value==='string')data.append(key,value)}
-  form.dataset.submitting='true';button.disabled=true;
+  form.dataset.submitting='true';button.disabled=true;answer.readOnly=true;
   if(status)status.textContent=t('Sending your response…');
   void(async()=>{
    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000);
@@ -336,7 +345,7 @@ export function startLiveUpdates(){
    }catch{
     delete form.dataset.feedbackDraftKept;keepFeedbackDraft(form,message);
    }finally{
-    clearTimeout(timeout);delete form.dataset.submitting;button.disabled=false;void refresh();
+    clearTimeout(timeout);delete form.dataset.submitting;const accepted=form.dataset.feedbackAccepted==='true';answer.readOnly=accepted;button.disabled=accepted;void refresh();
    }
   })();
  });

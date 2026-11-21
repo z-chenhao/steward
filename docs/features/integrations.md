@@ -50,7 +50,7 @@
 
 **当前实现**：显式配置一个 GitHub.com 仓库/PR 后，前台 Web/TUI/Automation 运行时持续读取 review comments、已提交 reviews 与当前 PR head 的已完成 check-runs。完整分页扫描后，将来源版本身份、观察内容、健康及补读成功时间原子保存到 `state.db`，通过 `github status/events` 查看；重复和乱序不重复保存同一来源版本，自身份的评论/评审不回流。
 
-**边界与剩余工作**：未绑定的观察只供本机诊断；本机所有者可将当前精确 PR 显式关联到已有 Task，只有绑定后新观察才交 Main 作为不可信外部证据，再由 Main 判断是否在原目标内追加工作。事件不能创建新 Task 或扩大权限；移除/切换配置与明确撤权持久停止旧绑定，暂时轮询故障保留已接纳观察；GitHub 因果 Main/Task 结果复用 F-020 回原渠道/话题，显式通知偏好仍优先。补读重扫 GitHub 仍保留的当前资源；不保证已删除评论、扫描间消失的中间修改、旧 head 的 CI 或普通 issue comments/legacy commit statuses。每类至多扫描 20 页、每页 100 项；总规范化内容至多 8 MiB，超过界限显示 `HISTORY_LIMIT` 并保留原成功边界，不能称为完整审计流。
+**边界与剩余工作**：未绑定的观察只供本机诊断；本机所有者可将当前精确 PR 显式关联到已有 Task，只有绑定后新观察才交 Main 作为不可信外部证据，再由 Main 判断是否在原目标内追加工作。事件不能创建新 Task 或扩大权限；移除/切换配置与明确撤权持久停止旧绑定，暂时轮询故障保留已接纳观察；GitHub 因果 Main/Task 结果复用 F-020 回原渠道/话题，显式通知偏好仍优先。补读重扫 GitHub 仍保留的当前资源；不保证已删除评论、扫描间消失的中间修改、旧 head 的 CI 或 legacy commit statuses。需要普通 PR Conversation 评论时，所有者把该 Task 的绑定规则设为 `event_kind: issue_comment`；托管包 1.0.2 才读取同一 PR 的评论，按既有观察／自动模式去重、继续原 Task。其他规则及未绑定监听只读原有来源。每类至多接纳 20 页、每页 100 项。当前托管扫描在第 20 页满时额外探测一页：空页确认恰好 2,000 项，非空页报告超限且整批不提交。总规范化内容至多 8 MiB，超过界限显示 `HISTORY_LIMIT` 并保留原成功边界，不能称为完整审计流。
 
 **验收目标**：重复接收不重复接单；断连、重启、乱序和来源权限撤销后按明确边界恢复或停止；监听中断不展示为正常。接收信息不授予任务执行或外部动作权限。
 
@@ -333,3 +333,28 @@ Apps 单卡片的实际版本化资源与有限组合已接入私有实验，保
 ### 客户端与样式的候选接管
 
 私有 Apps profile `/3` 在一次同包读取中携带本地化规则、隔离 Worker 与被动 stylesheet；现有主页面的列表、轮询、动作提示、详情打开、别名恢复及分类提交决策均已接通。CSS 通过原图 URI 实际加载，无脚本仍使用同一包的样式和原生表单；原全局 Apps CSS/import 已清理，具名旧样式仅保留历史消费者。独立样式换版／回退、旧引用、冷恢复、停用、原控件及视觉专项已有验证。源码标准默认已为1.21；标准32包及六种保留组合已通过实际分发，全量测试与清理后的完整 lint 已通过，未将此候选接管标记为整个 F-071 已迁移完成。
+
+### 任务的专用邮件转发地址（F-042）
+
+本机所有者可以给进行中的一个 Task 分配随机收件别名。需要已有的收件域名和能按信封收件人调用本机程序的转发器。通过 `make build` 构建的 `bin/plugins/task-mail` 是可选解析包。运行以下命令启用它，然后把返回的地址登记到自己的转发器。
+
+```sh
+steward mailbox enable-plugin /absolute/path/to/bin/plugins/task-mail
+steward mailbox bind "$task_ref" forward.example.org
+```
+
+转发器把未修改的邮件交给标准输入，并传入已接纳的信封收件人和该次投递的稳定 ID。重试须复用 ID 和原始邮件字节。读取、翻页与关闭使用以下入口。
+
+```sh
+steward mailbox receive "$envelope_recipient" "$delivery_id" < message.eml
+steward mailbox messages "$task_ref"
+steward mailbox messages "$task_ref" "$last_sequence"
+steward mailbox close "$envelope_recipient"
+```
+
+解析器接纳最大 256 KiB 的 UTF-8 或 ASCII 纯文本邮件，支持常见传输编码及编码主题。成功结果包含任务和文本 Artifact 引用。可用 `steward artifact open "$artifact_ref"` 查看。转发器应把非零退出按自身的退信／重试策略处理。关闭、任务暂停／终止或 Forget 后，旧地址停止接纳；需要继续时按当前任务状态重新绑定。收件域名、MX 和远端转发器由域名所有者管理。
+
+
+### 并行监听多个精确 PR
+
+保留单个 `github` 配置，也可在 `github_watches` 列表中分别指定 repository、pull_number、credential_ref 和轮询间隔。一个精确 PR 只能出现一次。用 `steward github scopes` 列出范围，多个 PR 时用 `steward -github-scope owner/repo#123 github binding` 等命令明确选择。每个 PR 的 Task 关联、观察决策和停止状态独立。移除配置时，运行时启动会撤销该范围；其他绑定保留原有代次。

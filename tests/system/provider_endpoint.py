@@ -143,13 +143,16 @@ class Endpoint(BaseHTTPRequestHandler):
                         function=dict(name='builtin__task_manage', arguments=json.dumps(arguments)))]})
                     chunk({}, 'tool_calls')
             elif self.server.mode == "mcp-plugins" and any(m.get('role') == 'user' and
-                    str(m.get('content', '')).startswith(('MCP_PLUGIN_READ ', 'MCP_PLUGIN_EFFECT ')) for m in body['messages']):
+                    str(m.get('content', '')).startswith(('MCP_PLUGIN_READ ', 'MCP_PLUGIN_EFFECT ', 'MCP_MERCHANT_PAY ', 'MCP_MERCHANT_GET ')) for m in body['messages']):
                 marker = max(i for i, m in enumerate(body['messages']) if m.get('role') == 'user' and
-                             str(m.get('content', '')).startswith(('MCP_PLUGIN_READ ', 'MCP_PLUGIN_EFFECT ')))
+                             str(m.get('content', '')).startswith(('MCP_PLUGIN_READ ', 'MCP_PLUGIN_EFFECT ', 'MCP_MERCHANT_PAY ', 'MCP_MERCHANT_GET ')))
                 outputs = [m for m in body['messages'][marker+1:] if m['role'] == 'tool']
                 if not outputs:
                     value = body['messages'][marker]['content']
-                    if value.startswith('MCP_PLUGIN_EFFECT '):
+                    if value.startswith(('MCP_MERCHANT_PAY ', 'MCP_MERCHANT_GET ')):
+                        method = 'pay_order' if value.startswith('MCP_MERCHANT_PAY ') else 'get_order'
+                        source = 'return await tools.mcp__test_merchant__'+method+'('+json.dumps(json.loads(value.split(' ',1)[1]))+');'
+                    elif value.startswith('MCP_PLUGIN_EFFECT '):
                         source = 'return await tools.mcp__fixture__send(' + json.dumps(dict(
                             text=value.split(' ', 1)[1], behavior='unknown')) + ');'
                     else:

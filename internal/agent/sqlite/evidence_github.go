@@ -18,7 +18,7 @@ const githubEvidenceRows = ` FROM github_task_followup f
  JOIN github_watch w ON w.scope=b.scope
  JOIN github_observation o ON o.sequence=f.observation_sequence AND o.scope=f.scope
  JOIN task t ON t.task_id=f.task_id
- WHERE b.scope=? AND t.agent_id=? AND t.conversation_id=? AND b.privacy_epoch=?
+ WHERE b.scope IN (SELECT value FROM json_each(?)) AND t.agent_id=? AND t.conversation_id=? AND b.privacy_epoch=?
  AND t.agent_id=(SELECT agent_id FROM agent_config WHERE singleton=1)
  AND t.created_at>? AND o.received_at>?
  AND b.enabled=1 AND b.rule_mode='automatic' AND w.enabled=1 AND w.repository_id IS NOT NULL
@@ -30,12 +30,18 @@ const githubEvidenceRows = ` FROM github_task_followup f
    OR (f.state='continued' AND f.continued_epoch>f.task_epoch AND f.continued_epoch<=t.task_epoch))`
 
 func (a evidenceAccess) githubEvidenceArgs() []any {
-	return []any{a.githubScope, a.scope.AgentID, a.conversation, a.epoch, a.floor, a.floor}
+	return []any{a.githubScopesJSON, a.scope.AgentID, a.conversation, a.epoch, a.floor, a.floor}
 }
 
 // ReadGitHubLinkedEvidence takes the owner's configured source without
 // configuring a watcher or reconciling any bindings.
 func (r *Runs) ReadGitHubLinkedEvidence(ctx context.Context, q evidence.Request, cfg *github.Config) (evidence.Page, error) {
+	if cfg == nil {
+		return r.ReadGitHubEvidenceForWatches(ctx, q, nil)
+	}
+	return r.ReadGitHubEvidenceForWatches(ctx, q, []github.Config{*cfg})
+}
+func (r *Runs) ReadGitHubEvidenceForWatches(ctx context.Context, q evidence.Request, watches []github.Config) (evidence.Page, error) {
 	raw, err := encoded(q)
 	if err != nil {
 		return evidence.Page{}, evidence.ErrInvalid
@@ -46,14 +52,15 @@ func (r *Runs) ReadGitHubLinkedEvidence(ctx context.Context, q evidence.Request,
 	if !strings.HasPrefix(q.Ref, "task:") && !strings.HasPrefix(q.Ref, "github:") {
 		return evidence.Page{}, evidence.ErrInvalid
 	}
-	var scope string
-	if cfg != nil {
-		if err = cfg.Validate(); err != nil {
-			return evidence.Page{}, evidence.ErrInvalid
-		}
-		scope = cfg.Scope()
+	configured, err := gitHubScopesFor(watches)
+	if err != nil {
+		return evidence.Page{}, evidence.ErrInvalid
 	}
-	page, err := r.readScopedEvidence(ctx, q, nil, scope)
+	encoded := ""
+	if len(configured.scopes) > 0 {
+		encoded = configured.encoded
+	}
+	page, err := r.readScopedEvidence(ctx, q, nil, encoded)
 	if err != nil {
 		return evidence.Page{}, evidenceReadError(err)
 	}
@@ -62,7 +69,7 @@ func (r *Runs) ReadGitHubLinkedEvidence(ctx context.Context, q evidence.Request,
 
 func (r *Runs) readGitHubObservation(ctx context.Context, a evidenceAccess, q evidence.Request, page *evidence.Page) error {
 	sequence, ok := evidence.GitHubSequence(q.Ref)
-	if !ok || a.githubScope == "" {
+	if !ok || a.githubScopesJSON == "" {
 		return artifact.ErrNotFound
 	}
 	var raw, taskRef string
@@ -101,7 +108,7 @@ func (r *Runs) readGitHubObservation(ctx context.Context, a evidenceAccess, q ev
 }
 
 func (r *Runs) recheckGitHubEvidence(ctx context.Context, tx *sql.Tx, a evidenceAccess, page *evidence.Page) error {
-	if a.githubScope == "" {
+	if a.githubScopesJSON == "" {
 		return nil
 	}
 	visible := func(sequence int64, taskRef string) (bool, error) {

@@ -104,6 +104,9 @@ func runFixture() {
 			if err := rsiplugin.Decode(c.Input, &in); err != nil {
 				return rsiplugin.Result{}, err
 			}
+			if in.Text == "allocator-environment" {
+				return rsiplugin.JSONResult(ctx, map[string]string{"text": os.Getenv("MALLOC_ARENA_MAX")})
+			}
 			if in.Text == "kernel-limits" {
 				var limits testProcessLimits
 				for _, spec := range []struct {
@@ -895,4 +898,49 @@ type testProcessLimits struct {
 	FDSoft, FDHard     uint64
 	ASSoft, ASHard     uint64
 	RaiseDenied        bool
+}
+
+func TestServiceLookupIgnoresUnrelatedPackagesAndVerifiesSelectedBytes(t *testing.T) {
+	ctx := context.Background()
+	f := newFixture(t)
+	m := manifest()
+	selected := install(t, f, m)
+	original := graph(t, f, selected, "selected")
+	m.PluginID = "steward.unrelated"
+	m.Provides[0].Contract = "steward.unrelated/1"
+	m.Tools = nil
+	m.Hooks = nil
+	unrelated := install(t, f, m)
+	g := original.Graph
+	for i := 1; i < 32; i++ {
+		g.Bindings = append(g.Bindings, rsiplugin.Binding{InstanceID: fmt.Sprintf("extra-%d", i), PackageDigest: unrelated.Digest, Config: json.RawMessage(`{"tag":"other"}`), StateNamespace: fmt.Sprintf("extra-%d", i), StateVersion: 1})
+	}
+	full, err := f.host.Prepare(ctx, g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Make all 31 other instances' files unavailable. The old resolver tried
+	// to read each one even when its admitted manifest had no such contract.
+	if err = os.Rename(f.host.Catalog.Path(unrelated.Digest), filepath.Join(t.TempDir(), "unavailable")); err != nil {
+		t.Fatal(err)
+	}
+	for _, rev := range []string{original.Revision, full.Revision} {
+		start := time.Now()
+		for range 5 {
+			b, err := f.host.ServiceInstance(ctx, rev, "steward.echo/1")
+			if err != nil || b.PackageDigest != selected.Digest {
+				t.Fatal(b, err)
+			}
+		}
+		t.Logf("lookup for %s, five selected-package integrity checks %s", rev, time.Since(start))
+	}
+	if _, err = f.host.ServiceInstance(ctx, full.Revision, "steward.unrelated/1"); !errors.Is(err, rsi.ErrConflict) {
+		t.Fatal(err)
+	}
+	if err = os.Remove(filepath.Join(f.host.Catalog.Path(selected.Digest), "plugin")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = f.host.ServiceInstance(ctx, full.Revision, "steward.echo/1"); !errors.Is(err, rsi.ErrInvalid) {
+		t.Fatal(err)
+	}
 }

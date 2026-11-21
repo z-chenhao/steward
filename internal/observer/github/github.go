@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -34,6 +35,23 @@ func (c Config) Validate() error {
 		return errors.New("github requires an exact owner/repository, pull_number, credential_ref and poll_seconds between 5 and 3600")
 	}
 	return nil
+}
+
+func ConfiguredScopes(watches []Config) ([]string, error) {
+	scopes := make([]string, 0, len(watches))
+	for _, watch := range watches {
+		if err := watch.Validate(); err != nil {
+			return nil, err
+		}
+		scopes = append(scopes, watch.Scope())
+	}
+	slices.Sort(scopes)
+	for index := 1; index < len(scopes); index++ {
+		if scopes[index] == scopes[index-1] {
+			return nil, errors.New("duplicate configured GitHub PR")
+		}
+	}
+	return scopes, nil
 }
 
 func (c Config) Scope() string { return strings.ToLower(c.Repository) + "#" + fmt.Sprint(c.PullNumber) }
@@ -101,11 +119,12 @@ func (b *Batch) add(e Observation) error {
 }
 
 type Ticket struct {
-	Version           int64
-	Epoch             int64
-	BindingGeneration int64
-	Managed           bool
-	GraphRevision     string
+	Version              int64
+	Epoch                int64
+	BindingGeneration    int64
+	IncludeIssueComments bool
+	Managed              bool
+	GraphRevision        string
 }
 
 type Status struct {

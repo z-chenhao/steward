@@ -1,7 +1,7 @@
 {
   "protocol": "steward-rsi-plugins/0.1",
   "plugin_id": "steward.artifact-workbench",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "feature_ids": [
     "F-012"
   ],
@@ -92,6 +92,9 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 50
+          },
+          "paged": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -122,6 +125,9 @@
             "enum": [
               "INVALID_ARGUMENT"
             ]
+          },
+          "more": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -244,6 +250,35 @@
         "required": [
           "indices",
           "limit"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "contract": "steward.artifact-body-match/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "match": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "match"
         ],
         "additionalProperties": false
       }

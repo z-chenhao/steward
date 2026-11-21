@@ -146,7 +146,7 @@ func TestServiceResultBudgetDoesNotWidenToolArguments(t *testing.T) {
 }
 
 func TestHostErrorCodesStripAllProviderDetails(t *testing.T) {
-	for _, code := range []string{"INVALID_ARGUMENT", "NOT_FOUND", "PERMISSION_DENIED", "APPROVAL_DENIED", "TIMEOUT", "CANCELLED", "PROVIDER_UNAVAILABLE", "RESOURCE_LIMIT", "UNKNOWN_SIDE_EFFECT", "NON_DETERMINISTIC_REPLAY", "private raw SQL credential"} {
+	for _, code := range []string{"INVALID_ARGUMENT", "NOT_FOUND", "CONFLICT", "PERMISSION_DENIED", "APPROVAL_DENIED", "TIMEOUT", "CANCELLED", "PROVIDER_UNAVAILABLE", "RESOURCE_LIMIT", "UNKNOWN_SIDE_EFFECT", "NON_DETERMINISTIC_REPLAY", "private raw SQL credential"} {
 		result := Normalize(Result{Text: "private internal Run ID", Error: &Error{Code: code, Message: "credential internal-id /private/path SQL", Retryable: true}})
 		want := code
 		if code == "private raw SQL credential" {

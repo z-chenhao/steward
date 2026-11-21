@@ -95,10 +95,31 @@ execution:
 
 ## 固定准备与可执行检查地图
 
-所有者执行 `python3 scripts/prepare_coding_image.py --socket /absolute/local/docker.sock --evidence evidence/新的准备目录`，从固定 Debian 根文件系统、官方校验的 Go/Node、仓库锁定依赖和 Playwright 构建本地镜像。公开下载可复用原生缓存，每次均核对身份；源码按明确 Git 工作树清单复制，安装后只保留依赖和工具，删除准备时源码与旧二进制。`image.txt` 是本次成功准备的完整镜像 ID；失败只保存诊断及未完成 checkpoint，不标记就绪。该脚本是显式所有者联网准备，Worker 的每次验证仍离线。
+所有者执行 `python3 scripts/prepare_coding_image.py --socket /absolute/local/docker.sock --evidence evidence/新的准备目录`，从固定 Debian 根文件系统、官方校验的 Go/Node、仓库锁定依赖和 Playwright 构建本地镜像。公开下载可复用原生缓存，每次均核对身份；源码按明确 Git 工作树清单复制，安装后只保留依赖和工具，删除准备时源码与旧二进制。`image.txt` 是本次成功准备的完整镜像 ID；证据和缓存在仓外或 Git 忽略的输出目录中。清理准备容器后才发布就绪标志，成功流程只提交最终镜像；失败只保存诊断及未完成 checkpoint，不标记就绪。该脚本是显式所有者联网准备，Worker 的每次验证仍离线。
 
 源码内的 `coding.project.json` 提供 build、frontend-contracts 和 policy-boundaries 三个具名入口。Worker 读取原项目/AGENTS 指引，再用对应文件名与检查名取得具体计划。原需求文字、确切命令与产物声明均保留；改动配方会体现在文档变化和候选身份中。完整入口、判据及范围见[检查地图](../test-plans/coding.md#可执行检查地图)。
 
 `make test-coding-development CODING_DEVELOPMENT_EVIDENCE=evidence/新的验收目录` 默认实际准备新镜像，再运行真实数据库/浏览器、服务恢复、同端口并行及确切候选构建的必需 race。显式设置 `STEWARD_TEST_CODING_DEVELOPMENT_IMAGE` 可复用所有者已准备的镜像；这次运行会注明不证明冷准备。PR 的独立 coding-development 分片使用默认路径，缺 Docker、缺依赖或跳过场景均不能通过。
 
 固定容器配置下的嵌套 bubblewrap 已观察到 namespace 权限拒绝，因此不承诺完整 Steward 插件运行时或全部系统测试可在此容器内自托管。构建与协议入口不代表应用启动，浏览器参考项目也不代替 Steward 产品流程；原 Host 平台的受托管系统门禁继续验收这些行为。不会为满足示例而扩大容器提权或增加原生项目验证兜底。
+
+
+### 审批候选并创建 GitHub 草稿 PR
+
+先在 Task 私有副本上运行独立检查。所有者从本地 CLI 将目标传给当前托管的 coding-workspace 方法。
+
+```sh
+steward coding draft-plan TASK_REF <<'JSON'
+{"repository":"owner/project","base":"main","branch":"review/feature","title":"Review feature","credential_ref":"env:STEWARD_GITHUB_TOKEN"}
+JSON
+```
+
+核对返回的完整候选 SHA-256、检查调用、目标仓库 ID、基分支提交、新分支、文件新增／替换／删除、标题和说明。目标是完整候选树，远端基分支中独有的文件会列为删除。凭据由所有者配置，需具备该仓库的 Contents 和 Pull requests 写权限；计划阶段只读取 GitHub。
+
+```sh
+steward coding draft-approve TASK_REF APPROVAL_SHA256
+steward coding draft-status TASK_REF APPROVAL_SHA256
+steward coding draft-reconcile TASK_REF APPROVAL_SHA256
+```
+
+批准时重新核验本地候选、验证回执、托管方法和远端分支。已存在的源分支必须另选，基分支变化需重做计划。创建成功后回执保留 PR URL、编号与提交。若返回 `unknown` 或进程中断留下 `started`，使用 `draft-reconcile` 只读查找原发布标记、仓库、分支和提交；查询无匹配时保留原状态供所有者检查。

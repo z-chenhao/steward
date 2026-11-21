@@ -37,7 +37,7 @@ func (r *Runs) inspectMemory(ctx context.Context, q memory.InspectionQuery, stor
 		return r.inspectMemoryTranscripts(ctx, q, access, project)
 	}
 	if q.View == "maintenance" {
-		return r.inspectMemoryMaintenance(ctx, q, access, project)
+		return r.inspectMemoryMaintenance(ctx, q, access, store, project)
 	}
 	if store == nil {
 		return memory.InspectionPage{}, memory.ErrInspectionUnavailable
@@ -182,7 +182,7 @@ func (r *Runs) recheckMemoryOwner(ctx context.Context, access evidenceAccess) er
 	}
 	return nil
 }
-func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.InspectionQuery, access evidenceAccess, project memoryInspectionProjector) (memory.InspectionPage, error) {
+func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.InspectionQuery, access evidenceAccess, store *memorysqlite.Store, project memoryInspectionProjector) (memory.InspectionPage, error) {
 	out := memory.InspectionPage{Items: []memory.InspectionRecord{}, Maintenance: []memory.MaintenanceRecord{}}
 	position, err := q.Position(access.scope.AgentID, access.floor)
 	if err != nil {
@@ -231,6 +231,7 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 	if q.Ref != "" && len(out.Maintenance) != 1 {
 		return out, memory.ErrInspectionNotFound
 	}
+	var snapshot *memorysqlite.InspectionSnapshot
 	for i := range out.Maintenance {
 		m, e := r.memoryMetrics(ctx, strings.TrimPrefix(out.Maintenance[i].Ref, "memory-event:"))
 		if e != nil {
@@ -238,6 +239,32 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 		}
 		out.Maintenance[i].Metrics = &m
 		if q.Ref != "" {
+			item := &out.Maintenance[i]
+			if item.Operation == "dream" && item.CreatedAt.UnixMicro() > access.floor && store != nil {
+				var changes []memory.MaintenanceChange
+				e = r.evidenceReadTx(ctx, func(tx *sql.Tx) error {
+					rows, err := tx.QueryContext(ctx, `SELECT memory_ref,operation FROM memory_dream_change WHERE event_id=? AND operation IN ('write','retire') ORDER BY pass_index,proposal_index`, strings.TrimPrefix(item.Ref, "memory-event:"))
+					if err != nil {
+						return err
+					}
+					defer rows.Close()
+					for rows.Next() {
+						var change memory.MaintenanceChange
+						if err := rows.Scan(&change.Ref, &change.Operation); err != nil {
+							return err
+						}
+						changes = append(changes, change)
+					}
+					return rows.Err()
+				})
+				if e != nil {
+					return memory.InspectionPage{}, memory.ErrInspectionUnavailable
+				}
+				item.Changes, snapshot, e = store.InspectDreamChanges(ctx, recall.Scope{UserID: access.scope.UserID, AgentID: access.scope.AgentID}, access.floor, changes)
+				if e != nil {
+					return memory.InspectionPage{}, e
+				}
+			}
 			out.Maintenance[i].Generations, e = r.memoryInspectionGenerations(ctx, strings.TrimPrefix(out.Maintenance[i].Ref, "memory-event:"), access)
 			if e != nil {
 				return memory.InspectionPage{}, memory.ErrInspectionUnavailable
@@ -250,6 +277,11 @@ func (r *Runs) inspectMemoryMaintenance(ctx context.Context, q memory.Inspection
 		}
 	}
 	r.host.boundary("after_memory_maintenance_inspection")
+	if snapshot != nil {
+		if err = store.RecheckInspection(ctx, *snapshot); err != nil {
+			return memory.InspectionPage{}, err
+		}
+	}
 	if err = r.recheckMemoryOwner(ctx, access); err != nil {
 		return memory.InspectionPage{}, err
 	}

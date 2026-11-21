@@ -159,3 +159,9 @@ details[open]>.resource-summary::before{transform:rotate(45deg)}
 .worker-row:hover strong{text-decoration:underline}
 [data-worker-list]{margin-bottom:24px}
 @media(min-width:1280px){.workspace-panel-open:not(.workspace-panel-expanded) .workspace-main{margin-right:460px}}
+
+.teaching-page{max-width:54rem}
+.teaching-page .page-heading{margin-bottom:1rem}
+.teaching-page form{margin:1.5rem 0}
+.teaching-page textarea{display:block;width:100%;margin-top:7px;resize:vertical}
+.teaching-page ol{list-style:decimal;padding-inline-start:1.5rem;margin-block:1rem}

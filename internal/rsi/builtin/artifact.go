@@ -16,3 +16,7 @@ func artifactCases() []rsi.Case {
 		{InstanceID: "artifact-workbench", Contract: contract.Cleanup, Input: json.RawMessage(`{"count":3,"batch":2}`), Inputs: []rsi.InputData{{ID: contract.CleanupInput, Data: contract.EncodeCleanup([]contract.CleanupRow{{ExpiresAt: 30}, {ExpiresAt: 2}, {ExpiresAt: 4}})}}, Expected: json.RawMessage(`{"indices":[1,2],"limit":2}`)},
 	}
 }
+
+func artifactBodyCase() rsi.Case {
+	return rsi.Case{InstanceID: "artifact-workbench", Contract: contract.BodyMatch, Input: json.RawMessage(`{"query":"clause"}`), Inputs: []rsi.InputData{{ID: contract.BodyInput, Data: []byte("private clause seven")}}, Expected: json.RawMessage(`{"match":true}`)}
+}

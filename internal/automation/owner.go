@@ -1,7 +1,9 @@
 package automation
 
 import (
+	"fmt"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -16,6 +18,7 @@ type OwnerConfiguration struct {
 	Below        *int64
 	// Unresolved Web minute; omitted so existing command hashes remain byte-stable.
 	LocalDate  string          `json:",omitempty"`
+	UTCOffset  string          `json:",omitempty"`
 	LocalClock string          `json:",omitempty"`
 	Frequency  *OwnerFrequency `json:",omitempty"`
 }
@@ -38,6 +41,31 @@ type OwnerReceipt struct {
 	Version int64
 }
 
+// ThresholdMinimumError reports the creating method's smallest reachable threshold.
+type ThresholdMinimumError struct{ Minimum int64 }
+
+func (e ThresholdMinimumError) Error() string {
+	return fmt.Sprintf("below must be at least %d", e.Minimum)
+}
+func (e ThresholdMinimumError) Unwrap() error { return ErrInvalid }
+
+// ScheduleInputError carries bounded editor diagnostics from a rejected request.
+type ScheduleInputError struct {
+	Issue      string
+	UTCOffsets []string
+}
+
+func (e ScheduleInputError) Error() string { return "invalid schedule " + e.Issue }
+func (e ScheduleInputError) Unwrap() error { return ErrInvalid }
+
+func ValidUTCOffset(value string) bool {
+	if len(value) != 6 || (value[0] != '+' && value[0] != '-') {
+		return false
+	}
+	t, err := time.Parse("-07:00", value)
+	return err == nil && t.Format("-07:00") == value
+}
+
 // ValidateShape preserves owner command bounds without interpreting calendar policy.
 func (q OwnerConfiguration) ValidateShape() error {
 	if len(q.PreserveSpec) > 256 || (q.PreserveSpec != "" && (q.Ref == "" || q.Type != "at" || (q.PreserveSpec != q.Spec && q.LocalDate == ""))) {
@@ -54,6 +82,9 @@ func (q OwnerConfiguration) ValidateShape() error {
 		return ErrInvalid
 	}
 	local := q.LocalDate != "" || q.LocalClock != ""
+	if q.UTCOffset != "" && (!local || !ValidUTCOffset(q.UTCOffset)) {
+		return ErrInvalid
+	}
 	if local && (q.Type != "at" || q.Spec != "" || q.LocalDate == "" || q.LocalClock == "" || len(q.LocalDate) > 10 || len(q.LocalClock) > 5) {
 		return ErrInvalid
 	}
@@ -75,6 +106,7 @@ type SchedulePresentation struct {
 
 // EditorDefaults contains only existing draft fields, never identities or authority.
 type EditorDefaults struct {
+	MinBelow  int64  `json:"min_below,omitempty"`
 	Frequency string `json:"frequency"`
 	Date      string `json:"date"`
 	Clock     string `json:"clock"`
@@ -91,7 +123,7 @@ func (v EditorDefaults) Validate() error {
 	default:
 		return ErrInvalid
 	}
-	if len(v.Date) > 10 || v.Clock == "" || len(v.Clock) > 5 || v.Timezone == "" || len(v.Timezone) > 128 || len(v.Cron) > 256 || len(v.Weekday) > 2 || len(v.Day) > 2 {
+	if v.MinBelow < 0 || v.MinBelow > 1000000000000 || len(v.Date) > 10 || v.Clock == "" || len(v.Clock) > 5 || v.Timezone == "" || len(v.Timezone) > 128 || len(v.Cron) > 256 || len(v.Weekday) > 2 || len(v.Day) > 2 {
 		return ErrInvalid
 	}
 	return nil

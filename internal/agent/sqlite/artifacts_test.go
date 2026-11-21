@@ -19,6 +19,7 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/artifact"
+	artifactsqlite "github.com/z-chenhao/assistant/internal/artifact/sqlite"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/llm"
@@ -369,7 +370,17 @@ func TestArtifactMigrationV10Atomicity(t *testing.T) {
 
 func TestArtifactMainRunPrivacyAndInputGrant(t *testing.T) {
 	ctx := context.Background()
-	s, r, _, a, _ := loopFixture(t)
+	s, r, _, a, provider := loopFixture(t)
+	// Only the two text inputs request a tool. The attachment and any deferred
+	// tool receipts finish the turn without asking the model to echo its evidence.
+	echo := provider.respond
+	provider.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		last := req.Messages[len(req.Messages)-1]
+		if last.Role == "user" && (last.Text == "first" || last.Text == "second") {
+			return echo(req)
+		}
+		return llm.GenerationResult{Text: "Acknowledged."}, nil
+	}
 	receipt := mustSubmit(t, a, "first", "first")
 	scope := artifact.Scope{UserID: artifact.LocalUser, AgentID: idAgent(t, s), RunID: receipt.RunID}
 	ref := putArtifact(t, s, scope, "private Run output")
@@ -507,18 +518,24 @@ func artifactTaskLifetime(t *testing.T, managed bool) {
 			t.Fatal("protected object has finite expiry", d, err)
 		}
 		if err := s.Transaction(ctx, func(tx *sql.Tx) error {
-			var list []artifact.Descriptor
+			var count int
 			var err error
 			if managed {
-				list, err = s.Artifacts().CandidatesTx(ctx, tx, scope)
+				err = s.Artifacts().VisitSearchCandidatesTx(ctx, tx, scope, func(c artifactsqlite.SearchCandidate) {
+					if c.Ref == ref {
+						count++
+					}
+				})
 			} else {
+				var list []artifact.Descriptor
 				list, err = s.Artifacts().SearchLegacyTx(ctx, tx, scope, "", 50)
+				count = len(list)
 			}
 			if err != nil {
 				return err
 			}
-			if len(list) != 1 {
-				return fmt.Errorf("protected object omitted from list: %v", list)
+			if count != 1 {
+				return fmt.Errorf("protected object omitted from list: %d", count)
 			}
 			return nil
 		}); err != nil {

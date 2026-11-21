@@ -81,6 +81,6 @@ func (t *tools) prepareMainSchedule(ctx context.Context, inv tool.Invocation, no
 	if err = tx.Rollback(); err != nil {
 		return nil, err
 	}
-	prepared, err := t.runs.computeSchedule(ctx, plan, automation.OwnerConfiguration{Instruction: q.Instruction, Type: q.Type, Spec: q.Spec, Timezone: q.Timezone}, now)
+	prepared, err := t.runs.computeSchedule(ctx, plan, automation.OwnerConfiguration{Instruction: q.Instruction, Type: q.Type, Spec: q.Spec, Timezone: q.Timezone, Below: q.Below}, now)
 	return &prepared, err
 }

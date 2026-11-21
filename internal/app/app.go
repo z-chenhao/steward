@@ -50,6 +50,7 @@ import (
 )
 
 type App struct {
+	meetingCache            meetingCache
 	connectedApps           *connectedapps.Service
 	connectedAppsRegistryMu sync.Mutex
 	capabilitySettings      *configsetup.Manager
@@ -64,7 +65,7 @@ type App struct {
 	runtimeDone             <-chan struct{}
 	rootLock                *os.File
 	feishu                  *feishu.Client
-	github                  *github.Service
+	githubWatches           map[string]*github.Service
 	computer                *macosvm.Provider
 	computerPreviewMu       sync.Mutex
 	memoryCurator           *memory.Curator
@@ -146,6 +147,10 @@ func OpenWithTestBridge(ctx context.Context, cfg config.Config, fixture string) 
 }
 
 func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.SecretStore, deferred bool) (*App, error) {
+	watches := cfg.ExactPRWatches()
+	if _, err := github.ConfiguredScopes(watches); err != nil {
+		return nil, err
+	}
 	if err := cfg.ValidateDefaults(); err != nil {
 		return nil, err
 	}
@@ -262,8 +267,11 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 	a.connectedApps.ReadSettings = a.readAppsSettings
 	a.connectedApps.ReadInventory = a.readAppsAccountInventory
 	a.connectedApps.Changed = a.refreshConnectedApps
-	if cfg.GitHub != nil {
-		a.github = &github.Service{Config: *cfg.GitHub, Store: store, Client: github.Client{Secrets: secrets}, ReadStep: store.ReadGitHubStep}
+	a.githubWatches = make(map[string]*github.Service)
+	for _, watch := range watches {
+		a.githubWatches[watch.Scope()] = &github.Service{Config: watch, Store: store, Client: github.Client{Secrets: secrets}, ReadStep: store.ReadGitHubStep}
+	}
+	if len(a.githubWatches) > 0 {
 		// A source poll is execution, even through OpenControl. It prepares only
 		// the verified feature composition, not models/Skills/runtime/scope.
 		a.prepareGitHubPlugins = func(ctx context.Context) error { return a.prepareBuiltinPlugins(ctx, cfg) }

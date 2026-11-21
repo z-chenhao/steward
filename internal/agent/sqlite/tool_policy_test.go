@@ -31,7 +31,13 @@ func admitLegacyMainPolicy(t *testing.T, defs []tool.Definition, calls []llm.Too
 }
 func admitPolicyRun(t *testing.T, defs []tool.Definition, calls []llm.ToolCall, legacy bool, configure ...func(*Store, *Runs)) (*Store, *Runs, agent.RunClaim, tool.Executor, string) {
 	t.Helper()
-	ctx := context.Background()
+	s, r, p, runID := preparePolicyRun(t, defs, calls, legacy, configure...)
+	claim, executor, exchange := claimPolicyExchange(t, r, p, runID)
+	return s, r, claim, executor, exchange
+}
+
+func preparePolicyRun(t *testing.T, defs []tool.Definition, calls []llm.ToolCall, legacy bool, configure ...func(*Store, *Runs)) (*Store, *Runs, *loopProvider, string) {
+	t.Helper()
 	s, r, _, a, p := loopFixture(t)
 	for _, setup := range configure {
 		setup(s, r)
@@ -52,6 +58,12 @@ func admitPolicyRun(t *testing.T, defs []tool.Definition, calls []llm.ToolCall, 
 	} else {
 		runID = admitToolRun(t, s, r, a, registry.Describe(), nil)
 	}
+	return s, r, p, runID
+}
+
+func claimPolicyExchange(t *testing.T, r *Runs, p *loopProvider, runID string) (agent.RunClaim, tool.Executor, string) {
+	t.Helper()
+	ctx := context.Background()
 	claim, err := r.Claim(ctx, runID)
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +82,7 @@ func admitPolicyRun(t *testing.T, defs []tool.Definition, calls []llm.ToolCall, 
 	if _, err = p.Generate(ctx, generation.Request, nil); err != nil {
 		t.Fatal(err)
 	}
-	return s, r, claim, tool.Executor{Registry: registry, Store: r.ToolStore(claim), Concurrency: 16}, generation.Request.GenerationID
+	return claim, tool.Executor{Registry: r.registry, Store: r.ToolStore(claim), Concurrency: 16}, generation.Request.GenerationID
 }
 
 // Persist a pre-role-reduction Main before ingress. Recovery must honor its

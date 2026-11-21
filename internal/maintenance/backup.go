@@ -24,6 +24,18 @@ import (
 const maxBackupBytes = int64(64 << 30)
 const maxBackupFiles = 65536
 
+type cancellingReader struct {
+	ctx context.Context
+	r   io.Reader
+}
+
+func (r cancellingReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.r.Read(p)
+}
+
 func privateRegular(info os.FileInfo) bool {
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	return info.Mode().IsRegular() && ok && stat.Nlink == 1
@@ -87,8 +99,8 @@ func CheckVersions(ctx context.Context, root string, max map[string]int) error {
 func allowed(path string) bool {
 	return path == "state.db" || path == "conversation.db" || path == "memory.db" || path == "default-memory.json" || strings.HasPrefix(path, "artifacts/") && !strings.Contains(strings.TrimPrefix(path, "artifacts/"), "/") && len(strings.TrimPrefix(path, "artifacts/")) > 0
 }
-func inspect(ctx context.Context, root string, max map[string]int, checkpoint bool) (Manifest, error) {
-	m := Manifest{Version: 1, CreatedAt: time.Now().UTC().Format(time.RFC3339Nano), Schemas: map[string]int{}}
+func inspect(ctx context.Context, root string, max map[string]int, checkpoint bool, archiveVersion int) (Manifest, error) {
+	m := Manifest{Version: archiveVersion, CreatedAt: time.Now().UTC().Format(time.RFC3339Nano), Schemas: map[string]int{}}
 	if CheckVersions(ctx, root, max) != nil {
 		return m, ErrInvalid
 	}
@@ -151,6 +163,25 @@ func inspect(ctx context.Context, root string, max map[string]int, checkpoint bo
 	for _, entry := range entries {
 		paths = append(paths, "artifacts/"+entry.Name())
 	}
+	if archiveVersion >= 2 && m.Schemas["state.db"] >= 52 {
+		db, err := database(ctx, filepath.Join(root, "state.db"))
+		if err != nil {
+			return m, err
+		}
+		packages, err := packageFiles(ctx, root, db)
+		db.Close()
+		if err != nil {
+			return m, err
+		}
+		for name, mode := range packages {
+			paths = append(paths, name)
+			if !checkpoint {
+				if err = os.Chmod(filepath.Join(root, name), mode); err != nil {
+					return m, err
+				}
+			}
+		}
+	}
 	sort.Strings(paths)
 	if len(paths) > maxBackupFiles {
 		return m, ErrInvalid
@@ -173,7 +204,7 @@ func inspect(ctx context.Context, root string, max map[string]int, checkpoint bo
 			return m, ErrInvalid
 		}
 		h := sha256.New()
-		n, e := io.Copy(h, f)
+		n, e := io.Copy(h, cancellingReader{ctx, f})
 		f.Close()
 		if e != nil {
 			return m, e
@@ -232,7 +263,7 @@ func Backup(ctx context.Context, root, target string, key []byte, max map[string
 		return empty, e
 	}
 	defer lock.Close()
-	m, e := inspect(ctx, root, max, true)
+	m, e := inspect(ctx, root, max, true, 2)
 	if e != nil {
 		return empty, e
 	}
@@ -260,8 +291,11 @@ func Backup(ctx context.Context, root, target string, key []byte, max map[string
 			return empty, e
 		}
 		h := sha256.New()
-		n, e := io.Copy(io.MultiWriter(archive, h), source)
+		n, e := io.Copy(io.MultiWriter(archive, h), cancellingReader{ctx, source})
 		source.Close()
+		if ctx.Err() != nil {
+			return empty, ctx.Err()
+		}
 		if e != nil || n != entry.Bytes || hex.EncodeToString(h.Sum(nil)) != entry.SHA256 {
 			return empty, ErrInvalid
 		}
@@ -280,6 +314,9 @@ func Backup(ctx context.Context, root, target string, key []byte, max map[string
 		return empty, ErrInvalid
 	}
 	// Link publishes atomically without replacing an existing archive.
+	if err := ctx.Err(); err != nil {
+		return empty, err
+	}
 	if os.Link(f.Name(), target) != nil {
 		return empty, ErrInvalid
 	}
@@ -349,7 +386,7 @@ func Restore(ctx context.Context, source, root string, key []byte, max map[strin
 			return empty, ErrInvalid
 		}
 		name := header.Name
-		if manifestSeen || seen[name] || header.Typeflag != tar.TypeReg || header.Size < 0 || name != filepath.ToSlash(filepath.Clean(name)) || name == ".." || strings.Contains(name, "\\") || name != "manifest.json" && !allowed(name) {
+		if manifestSeen || seen[name] || header.Typeflag != tar.TypeReg || header.Size < 0 || name != filepath.ToSlash(filepath.Clean(name)) || name == ".." || strings.Contains(name, "\\") || name != "manifest.json" && !allowed(name) && !packagePath(name) {
 			return empty, ErrInvalid
 		}
 		seen[name] = true
@@ -359,7 +396,7 @@ func Restore(ctx context.Context, source, root string, key []byte, max map[strin
 			}
 			decoder := json.NewDecoder(io.LimitReader(archive, header.Size))
 			decoder.DisallowUnknownFields()
-			if decoder.Decode(&m) != nil || m.Version != 1 {
+			if decoder.Decode(&m) != nil || (m.Version != 1 && m.Version != 2) {
 				return empty, ErrInvalid
 			}
 			var extra any
@@ -381,13 +418,21 @@ func Restore(ctx context.Context, source, root string, key []byte, max map[strin
 			return empty, ErrInvalid
 		}
 		total += header.Size
+		if packagePath(name) {
+			if e = os.MkdirAll(filepath.Dir(filepath.Join(tmp, name)), 0700); e != nil {
+				return empty, e
+			}
+		}
 		destination, e := os.OpenFile(filepath.Join(tmp, name), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 		if e != nil {
 			return empty, ErrInvalid
 		}
-		n, e := io.Copy(destination, archive)
+		n, e := io.Copy(destination, cancellingReader{ctx, archive})
 		syncErr := destination.Sync()
 		closeErr := destination.Close()
+		if ctx.Err() != nil {
+			return empty, ctx.Err()
+		}
 		if e != nil || syncErr != nil || closeErr != nil || n != header.Size {
 			return empty, ErrInvalid
 		}
@@ -405,8 +450,11 @@ func Restore(ctx context.Context, source, root string, key []byte, max map[strin
 	if !manifestSeen {
 		return empty, ErrInvalid
 	}
-	actual, e := inspect(ctx, tmp, max, false)
-	if e != nil || !reflect.DeepEqual(actual.Schemas, m.Schemas) || !reflect.DeepEqual(actual.Files, m.Files) {
+	actual, e := inspect(ctx, tmp, max, false, m.Version)
+	if ctx.Err() != nil {
+		return empty, ctx.Err()
+	}
+	if e != nil || len(seen) != len(actual.Files)+1 || !reflect.DeepEqual(actual.Schemas, m.Schemas) || !reflect.DeepEqual(actual.Files, m.Files) {
 		return empty, ErrInvalid
 	}
 	// Keep the operator's recovery point policy explicit; never silently resume
@@ -414,8 +462,8 @@ func Restore(ctx context.Context, source, root string, key []byte, max map[strin
 	if os.WriteFile(filepath.Join(tmp, ".restore-pending"), []byte("retire source and reconcile external outcomes before ops activate\n"), 0600) != nil {
 		return empty, ErrInvalid
 	}
-	if syncDir(filepath.Join(tmp, "artifacts")) != nil || syncDir(tmp) != nil {
-		return empty, ErrInvalid
+	if err := syncRestoreDirectories(tmp); err != nil {
+		return empty, err
 	}
 	// A parent lock serializes restores targeting the same new root.
 	parentLock, e := Lock(filepath.Dir(root), true)
@@ -425,6 +473,9 @@ func Restore(ctx context.Context, source, root string, key []byte, max map[strin
 	defer parentLock.Close()
 	if _, e = os.Lstat(root); !os.IsNotExist(e) {
 		return empty, ErrInvalid
+	}
+	if err := ctx.Err(); err != nil {
+		return empty, err
 	}
 	if os.Rename(tmp, root) != nil || syncDir(filepath.Dir(root)) != nil {
 		return empty, ErrInvalid
@@ -447,6 +498,9 @@ func Activate(root, attestation string) error {
 		return e
 	}
 	defer lock.Close()
+	if err := checkActivationPackages(root); err != nil {
+		return err
+	}
 	if os.Remove(filepath.Join(root, ".restore-pending")) != nil {
 		return ErrInvalid
 	}

@@ -13,8 +13,9 @@
  <nav class="section-navigation settings-navigation" aria-label="{{tr "Settings sections"}}">
   <a href="/settings/preferences" {{if eq .Settings.Section "preferences"}}aria-current="page"{{end}}>{{template "icon-configuration"}}<span>{{tr "Preferences"}}</span></a>
   <a href="/settings/notifications" {{if eq .Settings.Section "notifications"}}aria-current="page"{{end}}>{{template "icon-notification"}}<span>{{tr "Notifications"}}</span></a>
-  <a href="/settings/models" {{if and (ne .Settings.Section "notifications") (ne .Settings.Section "apps") (ne .Settings.Section "capabilities") (ne .Settings.Section "preferences")}}aria-current="page"{{end}}>{{template "icon-connection"}}<span>{{tr "Models"}}</span></a>
+  <a href="/settings/models" {{if and (ne .Settings.Section "meeting") (ne .Settings.Section "notifications") (ne .Settings.Section "apps") (ne .Settings.Section "capabilities") (ne .Settings.Section "preferences")}}aria-current="page"{{end}}>{{template "icon-connection"}}<span>{{tr "Models"}}</span></a>
   <a href="/settings/apps" {{if eq .Settings.Section "apps"}}aria-current="page"{{end}}>{{template "icon-apps"}}<span>{{tr "Apps"}}</span></a>
+  <a href="/settings/meeting-preparation" {{if eq .Settings.Section "meeting"}}aria-current="page"{{end}}>{{template "icon-calendar"}}<span>{{tr "Meeting preparation"}}</span></a>
   <a href="/settings/capabilities" {{if eq .Settings.Section "capabilities"}}aria-current="page"{{end}}>{{template "icon-computer"}}<span>{{tr "Capabilities"}}</span></a>
  </nav>
  {{if eq .View "apps"}}<section id="apps-sidebar">{{template "app-sidebar" .}}</section>{{end}}

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"syscall"
@@ -96,6 +97,11 @@ func (r Runner) Invoke(ctx context.Context, b rsiplugin.Binding, method string, 
 	defer cleanup()
 	cmd.Dir = work
 	cmd.Env = []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8", "HOME=" + work, "TMPDIR=" + work}
+	if runtime.GOOS == "linux" && r.resources != nil {
+		// Each glibc arena reserves virtual space against the existing 2 GiB
+		// limit, even when most of its pages are unused during resource reads.
+		cmd.Env = append(cmd.Env, "MALLOC_ARENA_MAX=2")
+	}
 	requests := []struct {
 		method string
 		value  any

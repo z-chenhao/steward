@@ -4,6 +4,8 @@
 
 ## 完整组合与兼容验收
 
+并发导入用暂存边界交错两个相同渠道附件，核对一个活动 Artifact 和一个映射。通过真实 HTTP 下载验证原长度、完整字节及中途读失败的客户端结果。
+
 四服务提取必须同时证明真实 Tool、无模型所有者操作、Web／飞书上传、Coding／PR 报告与清理调用；仅通过包安装或纯方法样本不能完成迁移。标准组合覆盖 `make test lint`、核心／功能系统、Prompt、Memory 与相关竞态入口；Linux 使用实际交叉编译 Host／封存插件和真实保留的旧二十九包二进制，不能以当前 SDK 重建包冒充旧版本。
 
 归档兼容验证须保留原 Main／Root／Child／Grandchild、已完成生成／调用与文件事实；在真实崩溃恢复后立即核对原选择与冻结版本，实际读取／发布原文件，不通过额外 select、回填配方或重载修复夹具。旧二十四包只作为保留候选边界，不能称为已发布版本。未改动实现的通过证据可以保留，但须逐文件核对实现／资源与封存字节，分别记录原来源与二进制身份；修正的系统夹具和受影响检查重新执行，原失败记录不得改写。
@@ -50,7 +52,7 @@
 
 原 `TestEvidenceCLIReadsOriginalAcrossReopenedBoundedPages` 的建数明确使用原生历史测试载体，之后每页仍走普通 owner CLI 与损坏执行配置，不能把裸 Go 测试进程的新建路径当作生产默认。完整三十包 stock CLI 另验证托管文件在缺失 Node 的配置下仍能通过普通 evidence 控制入口读取原字节；这与停用后的独立 raw open／describe／delete 控制分别验证，不借恢复原生默认规避服务边界。
 
-必需 `artifact-plugins` CI 分区先执行 `make test-artifact-plugins`：纯方法／原生 oracle 全包 race、不经名称过滤；Host／存储／App 执行真实生命周期及 schema 回归。随后 `verify_artifact_plugins.py` 使用 stock CLI、实际文件字节和默认三十包验证缺省／显式配置、冷启停用、裸 Host 缺包拒绝及独立控制。可选 `--prior29-binary` 使用真实归档二十九包，证明原始所有者引用和显式组合升级／回退边界，并分别在真实 Child 接纳后 SIGKILL：旧树恢复后新 Grandchild 继承原能力／模型／上下文／图，旧文件由 Child 实际读取与发布；迁移及恢复保持原 Main／Root／Child 身份、已完成 generation／调用及文件事实，不回填新配方。Task 结束时展示到期可按原 TTL 正常推进，不能据此要求重写或冻结底层元数据。未提供归档时明确未运行；既有 scripted children bridge 只替换外部模型，不证明模型质量。CI 可达性由 `tests/harness/test_ci.py` 保护，不能以测试被跳过或未匹配当作通过。
+必需 `artifact-plugins` CI 分区先执行 `make test-artifact-plugins`：纯方法／原生 oracle 全包 race、不经名称过滤；Host／存储／App 执行真实生命周期及 schema 回归。SQLite 由相同表达式发现全部测试，每个进程最多按原发现顺序运行八个根用例，各批依次启动、继承调用环境的 Go 运行时并行度，逐个核对 race 结果。各批保留 15 分钟上限，库存、实际通过的用例及耗时随 CI 归档。万行搜索夹具先按已创建的 Run 写入全部授权文件，再由真实 worker 首次领取并用同一租约执行搜索。Main 私有成果授权夹具保留两条真实工具调用；附件输入与晚到的工具回执由当前 Run 结算，模型不会拿到工具回执后再次请求相同工作。随后 `verify_artifact_plugins.py` 使用 stock CLI、实际文件字节和默认三十包验证缺省／显式配置、冷启停用、裸 Host 缺包拒绝及独立控制。可选 `--prior29-binary` 使用真实归档二十九包，证明原始所有者引用和显式组合升级／回退边界，并分别在真实 Child 接纳后 SIGKILL：旧树恢复后新 Grandchild 继承原能力／模型／上下文／图，旧文件由 Child 实际读取与发布；迁移及恢复保持原 Main／Root／Child 身份、已完成 generation／调用及文件事实，不回填新配方。Task 结束时展示到期可按原 TTL 正常推进，不能据此要求重写或冻结底层元数据。未提供归档时明确未运行；既有 scripted children bridge 只替换外部模型，不证明模型质量。CI 可达性由 `tests/harness/test_ci.py` 保护，不能以测试被跳过或未匹配当作通过。
 
 `TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions` 使用同一真实完整三十包 App 和原 HTTP 处理器：Web multipart 与签名飞书 callback 经实际凭据／归属校验、平台下载、创建策略及 Inbound 接纳保存原像素。只替换实际 Artifact 二进制，旧 owner 用例先拒绝新媒体策略，另行批准后新图片按 file 接纳，旧输入继续按 image；回退、冷重启及停用后，原输入去重保持各自的创建事实，新输入不回退且不残留文件。伪造 Origin／签名在导入前拒绝。模型 probe 使用显式协议夹具，测试只要求真实入站接纳，不执行付费模型生成，也不证明视觉质量。 Linux 无 Go 编译器的承载器由测试控制面提供同源码交叉编译的真实 App、test2json 与独立变更插件；原安装哈希、旧用例拒绝、新用例接纳及全部 HTTP 断言保持一致，不能用平台 skip 代替。
 
@@ -89,7 +91,17 @@
 - 既有 `verify_local_provider.py` 从 CLI 上传同一实际 PNG，正常选择纯文本模型，由协议 peer 请求 OCR；读取真实 Tesseract 的 Tool 结果，检查 Pi HTTP 没有图片像素且含识别文字。结果提交后、下一轮模型响应前 SIGKILL，恢复必须保留 invocation/attempt、Artifact 与 generation/hash，不重复识别。沿用已有 gate，不新增脚本或 CI 评测阶段。
 - 软件回归证明支持的格式、处理链路和失败边界。多语种准确率、低分辨率/手写/复杂版面质量、真实 DeepSeek 选择工具与答案效果属于独立 Live/eval；不能由受控 HTTP peer 通过推定。
 
+### F-014 私有 PDF 正文回归
+
+`TestPrivatePDFEvidenceUsesOriginalArtifactAndPinnedParser` 将带文字的 PDF 保存为私人原件，以真实已激活的隔离解析器读取文件。检查页码、原件引用、换版后的旧页与新读，以及删除文件后旧续页拒绝访问。
+
+### F-014 英文 WAV 转写
+
+通过 CLI 保存测试 WAV 后显式启用包和转写，核对每段真实起止毫秒、可重新打开的原件和字节摘要。普通证据读取、未启用、错误模型、过大或格式不支持、无声录音、缺失时间点、失败命令和沙箱撤权分别覆盖。独立原始 CLI JSON 及二进制、模型和音频 SHA-256 记录在 [语音协议夹具](../../tests/fixtures/speech/README.md)。本地准备模型和 JFK 音频后，设置 `STEWARD_TEST_WHISPER_MODEL`、`STEWARD_TEST_WHISPER_WAV` 并运行 `go test ./internal/agent/sqlite -run '^TestAudioTranscriptOfficialLocalCLI$' -v -count=1`。常规回归通过真实验证的插件消费受控协议样本并在发布前执行 Forget；该夹具不评估会议语音准确率。
+
 ### F-014 DOCX 正文回归
+
+覆盖块、行内、嵌套和表格内容控件，比较旧原生解释，并从授权原件经独立构建插件读取大文档。
 
 - [插件业务集成](../../internal/rsi/docx_test.go) 编译真实独立 DOCX 程序，经 Host 安装／验证／激活后走原 Main 证据工具。覆盖大于 1 MiB 的原文件、分页、历史原生解释器、新 Run 固定图、源摘要冲突、隔离及停用后不可用、独立 v1/v1.1 二进制升级回退、所有者旧分页修订及未激活版本拒绝。SDK 输入回归覆盖坏块、截断、摘要与尺寸上限；构建命令覆盖离线封装不初始化用户状态。
 
@@ -105,6 +117,8 @@
 <a id="artifacts-verification"></a>
 
 ### Verification
+
+[托管搜索](../../internal/agent/sqlite/plugin_artifact_test.go)在一万项授权候选中查找唯一名称，并覆盖独立写事务、撤销和任务生命周期。
 
 For focused receipt recovery, add `--recovery-only` to the command below. It
 launches approved Worker effects, kills after the effect or terminal unknown
@@ -159,3 +173,13 @@ CLI 入口 `verify_artifacts.py --ocr-only` 使用独立政策验收分发包，
 
 
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
+
+从审阅任务验证受信工作台引用、文本以纯文字呈现、PNG 实际格式匹配、原件下载及撤权。类型不支持或 MIME 与字节不一致时预览拒绝，下载保留原文件。
+
+
+视觉模型 WebP 回归用自制的 8×4 红色无损样例，经真实模型桥转码成有界 JPEG，核对像素和原件引用。动画标志、超出像素预算、伪造 MIME 都在供应商调用前拒绝。OCR 保持原先的格式边界。
+
+
+`TestArtifactWorkbenchSearchContinuesPastFiftyTiedFiles` 通过真实托管搜索查询 51 份同名、同创建时间的成果，检查跨页无遗漏或重复、恰满最后一页没有续页以及查询变更后拒绝旧游标。
+
+`TestArtifactWorkbenchSearchAuthorizedBodyAndWithdrawals` 用跨越 512 KiB 窗口的中文条款查询真实已授权原件，对照无授权和过期的同类成果，并在撤权后再次检索。回执只包含描述符。独立 Owner 通过固定输入核对正文匹配服务。

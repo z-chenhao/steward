@@ -6,6 +6,8 @@
 
 ## 当前架构
 
+只读搜索使用同一 Unicode 简单折叠规则。新分页游标以固定长度摘要绑定查询作用域；旧的明文作用域游标仍可继续读取。
+
 GitHub 精确 PR 的显式 Task 关联复用现有 Main/Task 控制，机制与私有因果 fencing 见 [集成方案](integrations.md#明确-task-关联与-main-接续)。Task 的 private explicit_end_epoch 记录人工 complete 的停止边界，区分 once Root 的自然结束；不增加新的 Task 状态，不向第三方事件授予权限。
 
 Task 保存目标和指令；Root Run 表示一轮执行。Task epoch 与 claim 拒绝旧结果，Reporter 将业务结果交给 Main。进度是单独投影，不承担通知或调度。
@@ -72,7 +74,7 @@ sequenceDiagram
 
 当前消费者是 Main 的既有 Task 工具、本机所有者 CLI、已认证 Web 及个人飞书反馈卡。`request_input` 和 `request_review` 是 Main-only `task_manage` 的严格 union 分支；后者必须包含 1–16 个现有作用域内的不可变 ArtifactRef。ToolInvocation、请求源去重、Main claim fencing 与 Task 接纳事务不另建管线。Task 仍只有原四种状态。
 
-schema v34 的私有 `task_feedback` 保存确切 Task/epoch、隐私 epoch、问题种类/正文、可定位的原用户消息、成果引用、七天有效期与回应消息。一次事务替代旧 pending 并保存新记录、原有工具回执和事件；成果经原 ArtifactStore 保留。源是 Reporter 运行时事件时，回溯真实用户消息，而不把事件 ID 冒充消息 ID。新请求也使旧的已回答记录失去接续因果效力。
+schema v34 的私有 `task_feedback` 保存确切 Task/epoch、隐私 epoch、问题种类/正文、可定位的原用户消息、成果引用、七天有效期与回应消息。一次事务按创建时固定的替代范围更新旧 pending 并保存新记录、原有工具回执和事件；成果经原 ArtifactStore 保留。源是 Reporter 运行时事件时，回溯真实用户消息，而不把事件 ID 冒充消息 ID。同一范围的新请求也使旧的已回答记录失去接续因果效力。
 
 所有者 `task feedbacks` 仅读取当前可处理 pending，按不可变行顺序以不透明 feedback ref 分页，每页最多 50 条，并可按确切 TaskRef 筛选。过期、停止、旧 epoch 和隐私撤销在读谓词中排除；同一个只读事务复用 ArtifactStore 的访问与 Task 保护型到期规则，过滤缺失、删除和不可访问成果而不打开 blob。每页检查至多 50 个候选，过滤后仍按已检查位置推进游标；历史记录保留作审计，不作为待办回传。回答先载入不可变记录构造具名上下文，再在现有 Main submit 的同一事务中权威验证当前状态/隐私/成果可访问性，提交确定性 request key、Main input、Conversation intent、已回答状态和原有唤醒事件。任何失败全部回滚；相同重试回原 receipt，不同文本冲突。
 
@@ -100,7 +102,7 @@ flowchart LR
     V --> M[既有 Main ingress／去重／接续]
 ```
 
-`steward.task-feedback-policy/1` 不收到 Task／问题／回答／成果身份，只收到 `kind`；返回 `lifetime_seconds` 和单行 `response_guidance`。当前 Host 上限保持原七天（1–604800 秒），指引限制为 2048 UTF-8 字节且拒绝控制字符。这是本机可逆的当前政策约束，不是永久 SDK 保证。默认与原生期限和指引逐字一致；独立版本可以缩短期限并调整续作方法。
+`steward.task-feedback-policy/1` 不收到 Task／问题／回答／成果身份，只收到 `kind`；返回 `lifetime_seconds` 和单行 `response_guidance`。1.0.2 还返回 `separate_kinds`，由 schema 84 固定到每条记录，独立保留同一轮的信息问题和成果审阅。若任一记录来自旧单槽配方，新记录按原全任务范围取代旧记录。Web、CLI 与飞书卡使用同一当前性谓词，跨轮、失效成果和隐私检查优先。当前 Host 上限保持原七天（1–604800 秒），指引限制为 2048 UTF-8 字节且拒绝控制字符。这是本机可逆的当前政策约束，不是永久 SDK 保证。默认与原生期限和指引逐字一致；独立版本可以缩短期限并调整续作方法。
 
 Host 保留问题／成果的原文与引用、原消息来源、权限、审批、隐私／Task epoch、单 pending、过期与陈旧拒绝、第一回答及跨渠道幂等、Artifact pin、飞书签名／路由和完整事务。回答的固定 JSON 数据框架与“不授予外部动作批准”提示由 Host 重建，插件无法改写这些事实。
 
@@ -541,6 +543,8 @@ The database still enforces one active Main per Agent and one Root per Task.
 
 ### Results, Reporter and priority
 
+单批最多接纳 100 条任务更新，收件与去重仍同事务。已提交批次保留，取消后下一次扫描继续处理剩余记录。
+
 The Root's natural-language result is stored privately. Its terminal Run,
 one-shot Task completion, semantic TaskUpdate and Outbox commit atomically.
 Failed Roots leave their Task active; failures are not a Task state. Root
@@ -711,3 +715,5 @@ Root 失败的安全通知由 Host 在终态事务中经既有 notification_inte
 执行详情的结果／进展、属性与证据仍使用同一 owner 读取投影；本轮只调整呈现政策：单列阅读替代常驻次级栏、元信息压缩、说明与历史按需展开。原始标题不改写，Task／Root／Main 交付身份不变，未增加过程事件或模型推理。原生 details 的打开状态只在 execution-side 同键区域更新时延续，不覆盖其他受控业务区域的服务端状态。
 
 Task 搜索／默认标题已独立迁移；默认标题通过纯读计算与完整方案冻结恢复，不产生 pending 外部效果，历史已完成选择保留、未知调用不重试；状态、Root、epoch、审批、原始 brief 与回执仍归 Host，已定位任务的安全控制保持独立。契约与恢复取舍见[插件设计](../designs/plugins-evolution.md#已提取的-task-发现与标题边界)。验证为 `TestTaskPlugin*`、`make test-prompts`、`tasks` 和 `task-control` 的实际分发包门禁。
+
+任务的交付与里程碑分别在只读快照内分页，交付游标取最后一个可见的 Main 消息序号。计划页游标只含本所有者计划引用，服务端按原排序定位下一页；普通任务分页独立。Host 重新校验文件权限并强制被动内容类型和大小，预览入口归工作台托管模板，存量模板保留原菜单。

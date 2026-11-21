@@ -40,7 +40,7 @@ func TestCapabilityOwnedViewRetainsOriginalFormSurface(t *testing.T) {
 func TestCapabilityOwnedViewRejectsEffectEscapesAndPrivateFields(t *testing.T) {
 	for _, tc := range []struct{ name, from, to string }{
 		{"script", "<section class=", "<script>bad()</script><section class="},
-		{"noscript-network", "<noscript>", `<noscript><img src="https://outside.invalid/leak">`},
+		{"noscript-network", "</form>", `<noscript><img src="https://outside.invalid/leak"></noscript></form>`},
 		{"alternate-effect", `action="/capability/configure"`, `action="/model/delete"`},
 		{"foreign-link", `href="/settings/capabilities"`, `href="https://outside.invalid"`},
 		{"wrong-revision", `value="{{.Revision}}"`, `value="foreign-revision"`},

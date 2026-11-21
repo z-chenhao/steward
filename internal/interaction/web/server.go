@@ -77,6 +77,7 @@ type Server struct {
 	WebWorkbench          func(context.Context, string) (workbench.Presentation, string, bool, error)
 	modelMu               sync.Mutex
 	appLogos              appLogoCache
+	chatValidators        chatValidators
 	Interface             AppInterfaceReader
 	Logos                 AppLogoReader
 	Apps                  AppConnections

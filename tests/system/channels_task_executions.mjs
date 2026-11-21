@@ -43,9 +43,11 @@ export async function executionDetails(page,context,browser,url,evidence,facts){
  await page.waitForFunction(id=>document.querySelector('#execution-detail')?.getAttribute('data-execution-id')!==id,facts.root);
  await page.goBack();await page.waitForFunction(id=>document.querySelector('#execution-detail')?.getAttribute('data-execution-id')===id,facts.root);
  const resize=sheet.getByRole('separator',{name:'Resize details',exact:true});
- await resize.focus();await resize.press('ArrowRight');
- if((await sheet.boundingBox()).width<=700)throw Error('execution sheet keyboard resizing failed');
- await resize.press('ArrowLeft');
+ const originalWidth=(await sheet.boundingBox()).width;
+ await resize.focus();await resize.press('ArrowLeft');
+ if(Math.abs((await sheet.boundingBox()).width-originalWidth-16)>1)throw Error('moving the execution sheet edge left did not widen it by one step');
+ await resize.press('ArrowRight');
+ if(Math.abs((await sheet.boundingBox()).width-originalWidth)>1)throw Error('moving the execution sheet edge right did not restore its width');
  await sheet.getByRole('button',{name:'Expand details',exact:true}).click();
  if((await sheet.boundingBox()).width<1398)throw Error('execution sheet did not expand');
  await sheet.getByRole('button',{name:'Expand details',exact:true}).click();

@@ -15,6 +15,8 @@ import (
 
 // Launcher is trusted Host composition/test-carrier input. It never comes from
 // a package, SDK request, source document or environment variable.
+const MaxDocumentBytes = 8 << 20
+
 type Process struct {
 	Vault    Vault
 	Launcher string
@@ -34,7 +36,7 @@ type Response struct {
 // computation over the original page; it cannot fetch a URL or choose a command.
 func (p Process) Parse(ctx context.Context, id string, input Request) (Response, error) {
 	var result Response
-	if len(input.Data) > 8<<20 || (input.MediaType != "text/html" && input.MediaType != "application/pdf") || len(input.URL) > 4096 {
+	if len(input.Data) > MaxDocumentBytes || (input.MediaType != "text/html" && input.MediaType != "application/pdf") || len(input.URL) > 4096 {
 		return result, ErrInvalid
 	}
 	if _, err := p.Vault.Load(ctx, id); err != nil {

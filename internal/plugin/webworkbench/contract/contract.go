@@ -22,14 +22,16 @@ type HistoryLabel struct {
 	Key  string `json:"key"`
 }
 type Policy struct {
-	Live           []RegionSet    `json:"live"`
-	PageLive       []string       `json:"page_live"`
-	PollMS         int            `json:"poll_ms"`
-	MaxPollMS      int            `json:"max_poll_ms"`
-	ReadTimeoutMS  int            `json:"read_timeout_ms"`
-	ExecutionSheet bool           `json:"execution_sheet"`
-	RowOpen        bool           `json:"row_open"`
-	History        []HistoryLabel `json:"history"`
+	GitHubRules     bool           `json:"github_rules,omitempty"`
+	ArtifactPreview bool           `json:"artifact_preview,omitempty"`
+	Live            []RegionSet    `json:"live"`
+	PageLive        []string       `json:"page_live"`
+	PollMS          int            `json:"poll_ms"`
+	MaxPollMS       int            `json:"max_poll_ms"`
+	ReadTimeoutMS   int            `json:"read_timeout_ms"`
+	ExecutionSheet  bool           `json:"execution_sheet"`
+	RowOpen         bool           `json:"row_open"`
+	History         []HistoryLabel `json:"history"`
 }
 type Presentation struct {
 	View       Asset  `json:"view"`

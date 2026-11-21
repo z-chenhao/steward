@@ -62,7 +62,7 @@ func (r *Reader) Executions(ctx context.Context, q task.ListQuery) (task.Executi
 		query += ` AND needs_attention`
 	}
 	if q.Query != "" {
-		query += ` AND (instr(lower(title),lower(?))>0 OR instr(lower(anchor_task),lower(?))>0)`
+		query += ` AND (instr(steward_task_fold(title),steward_task_fold(?))>0 OR instr(steward_task_fold(anchor_task),steward_task_fold(?))>0)`
 		args = append(args, q.Query, q.Query)
 	}
 	if q.Cursor != "" {
@@ -149,7 +149,7 @@ func (r *Reader) Execution(ctx context.Context, id string) (task.ExecutionDetail
 		return out, err
 	}
 	slices.Reverse(out.Instructions)
-	out.Messages, err = relatedDeliveries(ctx, tx, v.TaskRef, id)
+	out.Messages, _, err = relatedDeliveries(ctx, tx, v.TaskRef, id, 0)
 	if err != nil {
 		return out, err
 	}

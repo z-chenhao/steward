@@ -36,7 +36,7 @@ def plan(kind):
     names = SOFTWARE if kind == 'software' else (*SYSTEM, *('channels-' + group for group in CHANNEL_GROUPS), 'capabilities-race', 'memory-context', 'computer-plugins', 'web-plugins', 'mcp-plugins', 'connected-apps-plugins', 'tool-discovery-plugins', 'github-plugins', 'artifact-plugins', 'coding-development')
     return dict(include=[dict(lane=name,
         frontend=str(name in ('frontend', 'browser-infra', 'lint')).lower(),
-        browser=str(name in ('browser-infra', 'lint', 'tools-provider', 'startup-ui') or name.startswith('channels-')).lower())
+        browser=str(name in ('browser-infra', 'lint', 'tools-provider', 'startup-ui', 'connected-apps-plugins') or name.startswith('channels-')).lower())
         for name in names])
 
 

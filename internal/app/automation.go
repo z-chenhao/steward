@@ -22,6 +22,10 @@ func (a *App) ConfigureSchedule(ctx context.Context, key string, q automation.Ow
 	return a.runtimeRuns().ConfigureAutomation(ctx, "web:"+key, q, a.runtimeRuns().AutomationNow())
 }
 
+func (a *App) TrialSchedule(ctx context.Context, key, ref string, version int64) (string, error) {
+	return a.runtimeRuns().TrialAutomation(ctx, key, ref, version)
+}
+
 func (a *App) ManageAutomation(ctx context.Context, key string, q automation.Request) (tool.Result, error) {
 	return a.runtimeRuns().ManageAutomation(ctx, key, q, a.runtimeRuns().AutomationNow())
 }

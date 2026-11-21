@@ -127,21 +127,22 @@ type Link struct {
 	Ref      string `json:"ref"`
 }
 type Page struct {
-	Ref             string    `json:"ref"`
-	Kind            string    `json:"kind"`
-	Representation  string    `json:"representation,omitempty"`
-	ReaderRevision  string    `json:"reader_revision,omitempty"`
-	PageRevision    string    `json:"page_revision,omitempty"`
-	Title           string    `json:"title,omitempty"`
-	Author          string    `json:"author,omitempty"`
-	OccurredAt      time.Time `json:"occurred_at"`
-	Text            string    `json:"text,omitempty"`
-	Offset          int64     `json:"offset"`
-	Bytes           int       `json:"bytes"`
-	TotalBytes      int64     `json:"total_bytes"`
-	NextOffset      *int64    `json:"next_offset,omitempty"`
-	Links           []Link    `json:"links"`
-	NextLinksOffset *int      `json:"next_links_offset,omitempty"`
+	LocalTranscriptionCommand string    `json:"local_transcription_command,omitempty"`
+	Ref                       string    `json:"ref"`
+	Kind                      string    `json:"kind"`
+	Representation            string    `json:"representation,omitempty"`
+	ReaderRevision            string    `json:"reader_revision,omitempty"`
+	PageRevision              string    `json:"page_revision,omitempty"`
+	Title                     string    `json:"title,omitempty"`
+	Author                    string    `json:"author,omitempty"`
+	OccurredAt                time.Time `json:"occurred_at"`
+	Text                      string    `json:"text,omitempty"`
+	Offset                    int64     `json:"offset"`
+	Bytes                     int       `json:"bytes"`
+	TotalBytes                int64     `json:"total_bytes"`
+	NextOffset                *int64    `json:"next_offset,omitempty"`
+	Links                     []Link    `json:"links"`
+	NextLinksOffset           *int      `json:"next_links_offset,omitempty"`
 }
 
 func Window(p *Page, text string, q Request) error {

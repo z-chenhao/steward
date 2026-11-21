@@ -3,6 +3,7 @@ package memory
 // InspectionPresentation is a Host-owned, request-local display projection.
 // It is separate from both the stored inspection page and the private RPC schema.
 type InspectionPresentation struct {
+	CorrectionDraft        bool
 	Program, ProgramDigest string
 	Copy                   []InspectionTranslation
 	CopyDigest             string

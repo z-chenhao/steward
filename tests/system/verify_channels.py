@@ -168,7 +168,7 @@ class ChannelHarness(MainHarness):
         executable=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
         if executable.exists():env['STEWARD_BROWSER_EXECUTABLE']=str(executable)
         run=self.processes.run if self.processes is not None else subprocess.run
-        long_phase=phase in ('capability-setup', 'model-connections') or phase.startswith('intelligent-ui-preview-')
+        long_phase=phase in ('capability-setup', 'model-connections', 'ui-interactions') or phase.startswith('intelligent-ui-preview-')
         timeout=90 if long_phase else 45
         result=run(['node',str(ROOT/'tests/system/channels_browser.mjs'),self.url,str(evidence),phase],env=env,capture_output=True,text=True,timeout=timeout)
         require(result.returncode==0,'browser drive failed: '+result.stderr)
@@ -328,6 +328,8 @@ def feishu_topic_delivery(binary, report, managed=False):
             h.enable_default_plugins()
         try:
             h.config.write_text(h.config.read_text() + '  workspace_url: https://owner-workspace.example.test\n')
+            require(h.command('channel', 'status').get('workspace_link_scope') == 'configured_https',
+                    'owner cannot identify the configured HTTPS workspace before delivery')
             h.setup(); h.start()
             h.callback('task-origin', 'Delegate: Review the bounded repository result.')
             state = h.wait(lambda s: len(s['deliveries']) == 2 and all(d['status'] == 'sent' for d in s['deliveries']), 'synchronous acceptance and asynchronous original-topic delivery')
@@ -376,6 +378,8 @@ def feishu_topic_delivery(binary, report, managed=False):
         h = ChannelHarness(binary, Path(temp), platform, 'artifacts')
         try:
             h.config.write_text(h.config.read_text() + '  workspace_url: http://127.0.0.1:8787\n')
+            require(h.command('channel', 'check').get('workspace_link_scope') == 'same_device_only',
+                    'channel check did not identify a link limited to the current device')
             h.setup(); h.start()
             content = 'Complete source evidence with citations and the final checklist.\n'
             h.callback('linked-artifact', json.dumps(dict(name='evidence.txt', mediaType='text/plain', text=content)))
@@ -403,13 +407,14 @@ def feishu_task_questions(binary, report, managed=False):
         def rows(query, args=()):
             with closing(sqlite3.connect(state)) as db, db:
                 db.row_factory = sqlite3.Row
+                db.execute('BEGIN')
                 return [dict(row) for row in db.execute(query, args)]
 
         def wait(read, predicate, description):
             return h.wait_state(predicate, description, lambda _: read(), timeout=20)
 
         def question_rows():
-            return rows("""SELECT f.feedback_ref, f.prompt, f.status, f.response_message_id,
+            return rows("""SELECT f.feedback_ref, f.prompt, f.status, f.source_message_id, f.response_message_id,
                 q.binding_version, d.delivery_id, d.version AS delivery_version, d.status AS delivery_status, c.remote_id
                 FROM task_feedback f LEFT JOIN feishu_task_question q USING(feedback_ref)
                 LEFT JOIN delivery_request d ON d.message_id=q.message_id
@@ -461,8 +466,28 @@ def feishu_task_questions(binary, report, managed=False):
             require(action(q, card_id, answer, 'valid-answer')['toast']['type'] == 'success', 'valid answer rejected')
             accepted = rows('SELECT response_message_id FROM task_feedback WHERE feedback_ref=?', (q['feedback_ref'],))[0]['response_message_id']
             require(accepted, 'success toast preceded durable acceptance')
-            h.wait(lambda s: len(s['runs']) >= 6 and all(r['status'] == 'completed' for r in s['runs']) and
-                   len(s['deliveries']) >= 6 and all(d['status'] == 'sent' for d in s['deliveries']), 'Main continuation and delivery')
+            # A question and its answer can join the active Main that reported the
+            # original work. Follow the accepted answer through its own Task epoch.
+            def delivered_continuation(message_id):
+                return rows("""SELECT w.run_id AS worker, b.run_id AS reporting_main, d.delivery_id, c.remote_id
+                    FROM task_instruction i JOIN task t USING(task_id)
+                    JOIN run w ON w.task_id=i.task_id AND w.task_epoch=i.task_epoch
+                    JOIN task_update u ON u.root_run_id=w.run_id AND u.kind='completed'
+                    JOIN main_inbox b USING(event_id) JOIN main_reply p ON p.run_id=b.run_id
+                    JOIN delivery_request d ON d.delivery_id=p.delivery_id
+                    JOIN message_route m ON m.message_id=d.message_id
+                    JOIN channel_receipt c ON c.delivery_id=d.delivery_id AND c.part=0
+                    WHERE t.task_ref=? AND i.source_message_id=? AND i.instruction=?
+                      AND w.worker_position='root' AND w.status='completed'
+                      AND d.channel='feishu' AND d.status='sent' AND m.reply_source_id='om_task_origin'""",
+                    (ref, message_id, answer))
+
+            continuation = wait(lambda: delivered_continuation(accepted), bool,
+                                'accepted card answer continued the original Task and delivered its result')
+            require(len(continuation) == 1, 'accepted card answer produced multiple continuations or result deliveries')
+            require(not delivered_continuation(q['source_message_id']), 'original question matched the answer continuation')
+            h.wait(lambda s: all(r['status'] == 'completed' for r in s['runs']) and
+                   len(s['deliveries']) >= 6 and all(d['status'] == 'sent' for d in s['deliveries']), 'all fixture work and deliveries completed')
             require(rows('SELECT count(*) AS n FROM task_instruction')[0]['n'] == 1 and
                     rows('SELECT task_ref FROM task') == [dict(task_ref=ref)] and not h.rows()['approvals'],
                     'answer did not continue one existing Task independently of approvals')
@@ -470,6 +495,8 @@ def feishu_task_questions(binary, report, managed=False):
                          FROM main_input i JOIN message_route m USING(message_id) WHERE message_id=?""", (accepted,)) ==
                     [dict(source='feishu', reply_source_id=card_id)], 'answer did not retain the real card route')
             outbound = platform.evidence()['messages']
+            require(any('remote-' + m['uuid'] == continuation[0]['remote_id'] and m.get('reply_to') == 'om_task_origin'
+                        for m in outbound), 'continued Task result receipt did not match the original Feishu topic')
             require(sum(m.get('reply_to') == card_id for m in outbound) == 1 and
                     sum(m.get('reply_to') == 'om_task_origin' for m in outbound) == 3,
                     'answer reply or asynchronous continuation lost its Feishu topic')
@@ -540,13 +567,13 @@ def feishu_task_questions(binary, report, managed=False):
             report['scenarios']['feishu-task-questions'] = dict(
                 feedback_ref=q['feedback_ref'], card_id=card_id, accepted_message_id=accepted,
                 original_question_topic=remote['reply_to'], unknown_card_attempts=attempts,
-                answered=1, continuations=1, final_task_status='paused')
+                answered=1, continuations=1, continuation=continuation[0], final_task_status='paused')
             report['checks'].append('Feishu Task question Card 2.0, signed owner/context/receipt checks, three-channel dedup, original reply routing, stale/reenrolled/ambiguous rejection and query-only restart')
         finally:
             h.cleanup()
 
 
-def feishu_artifact_reviews(binary, report, managed=False):
+def feishu_artifact_reviews(binary, report, managed=False, mobile=False):
     """Authenticated Workspace link and the exact review revision round trip."""
     from urllib.parse import urlsplit
     with tempfile.TemporaryDirectory(prefix='steward-feishu-reviews-') as temp, Sandbox() as platform:
@@ -619,6 +646,10 @@ def feishu_artifact_reviews(binary, report, managed=False):
             require('Review this result' in section and 'revision-a.txt' in section and 'other.txt' not in section and
                     h.http(file_url) == content, 'authenticated review did not resolve its exact artifact')
 
+            if mobile:
+                h.env['STEWARD_MOBILE_REVIEW_URL'] = href
+                h.env['STEWARD_MOBILE_REVIEW_FILE'] = 'revision-a.txt'
+                h.browser(h.root / 'mobile-review', 'feishu-review')
             answer = 'Revise the introduction.'
             require(h.card_feedback(local['feedback_ref'], card_id, answer, 'cross-ref')['toast']['type'] == 'error',
                     'card authorized a substituted feedback reference')
@@ -733,7 +764,7 @@ def transport_channels(binary, evidence, report):
     feishu_auth_lifecycle(binary,report)
     feishu_topic_delivery(binary,report)
     feishu_task_questions(binary, report)
-    feishu_artifact_reviews(binary, report)
+    feishu_artifact_reviews(binary, report, mobile=True)
     with tempfile.TemporaryDirectory(prefix='steward-channels-') as temp, Sandbox() as platform:
         h=ChannelHarness(binary,Path(temp),platform)
         try:
@@ -840,6 +871,7 @@ def web_channels(binary, evidence, report):
 
     capability_settings(binary,evidence,report)
     dependency_recovery(binary,report)
+    browser_demonstration(binary, evidence, report)
     native_components(binary, evidence, report)
     rich_replies(binary, evidence, report)
     account_presentation(binary, evidence.parent/'account-ui', report)
@@ -909,8 +941,11 @@ def task_control_components(binary, evidence, report):
     # uncalled example. All schedule writes use a disposable data root.
     with tempfile.TemporaryDirectory(prefix='steward-task-controls-') as temp, Sandbox() as platform:
         h = ChannelHarness(binary, Path(temp), platform)
-        h.now = '2026-10-15T12:00:00+08:00'
         try:
+            # Field diagnostics belong to the schedule plugin selected by the
+            # shipped composition. A test bridge alone exercises historical schedules.
+            h.enable_default_plugins()
+            h.now = '2026-10-15T12:00:00+08:00'
             h.setup()
             h.start()
             output = evidence.parent / 'task-controls-ui'
@@ -1550,6 +1585,25 @@ def native_components(binary, evidence, report):
         finally:h.cleanup()
 
 
+def browser_demonstration(binary, evidence, report):
+    with tempfile.TemporaryDirectory(prefix='steward-browser-demonstration-') as temp, Sandbox() as platform:
+        h=ChannelHarness(binary,Path(temp),platform)
+        try:
+            h.enable_default_plugins()
+            h.start()
+            target = evidence.parent / 'browser-demonstration'
+            env = h.env.copy()
+            chrome = Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+            if chrome.exists():
+                env['STEWARD_BROWSER_EXECUTABLE'] = str(chrome)
+            result = subprocess.run(['node', str(ROOT/'guest-browser/demonstration.mjs'), h.url, str(target)],
+                                    env=env, capture_output=True, text=True, timeout=90)
+            require(result.returncode == 0, 'browser demonstration: ' + result.stderr)
+            report['checks'].append('Private browser teaching: two local captures, secret exclusion, edited mismatch, managed sample verification and private download')
+        finally:
+            h.cleanup()
+
+
 def early_composer(binary, evidence, report):
     with tempfile.TemporaryDirectory(prefix='steward-channel-early-composer-') as temp, Sandbox() as platform:
         h=ChannelHarness(binary,Path(temp),platform)
@@ -1963,6 +2017,7 @@ if __name__=='__main__':
             attention_workspace(args.binary.resolve(),args.evidence.resolve(),report)
         elif args.ui_components_only:
             sending_feedback(args.binary.resolve(),args.evidence.resolve(),report)
+            browser_demonstration(args.binary.resolve(),args.evidence.resolve(),report)
             early_composer(args.binary.resolve(),args.evidence.resolve(),report)
             native_components(args.binary.resolve(),args.evidence.resolve(),report)
             rich_replies(args.binary.resolve(),args.evidence.resolve(),report)

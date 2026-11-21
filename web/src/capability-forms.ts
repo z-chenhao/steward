@@ -56,9 +56,10 @@ export function enhanceCapabilityForms(){
     }
     const current=document.querySelector('.capabilities-page>.page-heading .status-pill'),updated=parsed.querySelector('.capabilities-page>.page-heading .status-pill');
     if(current&&updated)current.replaceWith(updated);
+    baseline=sent;
     saved=true;
     if(fields()!==sent)queued=true;
-    else{baseline=fields();feedback('Saved.')}
+    else feedback('Saved.')
    }catch(error){feedback(error instanceof Error?error.message:'Could not save. Your changes are kept.',true)}
    finally{clearTimeout(timeout);pending=false;form.removeAttribute('aria-busy');sync();if(saved&&queued)void save()}
   };
@@ -72,5 +73,7 @@ export function enhanceCapabilityForms(){
   form.addEventListener('input',event=>{if(!(event.target instanceof HTMLSelectElement))changed(event)});
   form.addEventListener('submit',event=>{const submitter=(event as SubmitEvent).submitter;if(submitter instanceof HTMLButtonElement&&submitter.name==='action'&&submitter.value!=='apply')return;event.preventDefault();void save()});
   form.dataset.autosaveReady='true';
+  const fallback=form.querySelector<HTMLElement>('.capability-submit');
+  if(fallback)fallback.hidden=true;
  }
 }

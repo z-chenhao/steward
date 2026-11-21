@@ -19,6 +19,7 @@ type Policy struct {
 	// Host-frozen projection opt-in. Missing on older Runs means reference-only
 	// user images, preserving their accepted request bytes and replay hashes.
 	UserImages bool `yaml:"-" json:"user_images,omitempty"`
+	PDFText    bool `yaml:"-" json:"private_pdf_text,omitempty"`
 	DOCXText   bool `yaml:"-" json:"docx_text,omitempty"`
 	// Missing on historical Runs preserves their native DOCX interpreter.
 	DOCXPlugin     bool `yaml:"-" json:"docx_plugin,omitempty"`

@@ -118,6 +118,18 @@ func (t *tools) manageMemory(ctx context.Context, inv tool.Invocation) (tool.Res
 			result = tool.Failure("INVALID_ARGUMENT")
 			return nil
 		}
+		if kind == "main" && m.Operation != "read" && m.Operation != "list" {
+			var source string
+			e := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT CASE WHEN json_extract(i.message_json,'$.source')='web' THEN json_extract(i.message_json,'$.source_event_id') ELSE '' END
+    FROM main_input i JOIN run r USING(run_id) WHERE i.run_id=? AND i.sequence<=json_extract(r.checkpoint_json,'$.input_sequence') ORDER BY i.sequence DESC LIMIT 1),'')`, t.claim.RunID()).Scan(&source)
+			if e != nil {
+				return e
+			}
+			if !memory.MatchesCorrection(source, m) {
+				result = tool.Failure("PERMISSION_DENIED")
+				return nil
+			}
+		}
 		if m.Operation == "read" && strings.HasPrefix(m.MemoryRef, "run:") {
 			var version int
 			if e := tx.QueryRowContext(ctx, `SELECT coalesce(json_extract(j.value,'$.version'),1) FROM run r JOIN capability_snapshot c ON c.snapshot_id=r.capability_snapshot_id,json_each(c.tools_json) j WHERE r.run_id=? AND json_extract(j.value,'$.name')=?`, t.claim.RunID(), memory.ManageName).Scan(&version); e != nil {

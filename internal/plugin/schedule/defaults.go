@@ -14,5 +14,5 @@ func editorDefaults(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result,
 	if len(call.Inputs) != 0 {
 		return rsiplugin.Result{}, errInvalid
 	}
-	return rsiplugin.JSONResult(ctx, contract.DefaultsResult{Frequency: "daily", Clock: "08:00", Timezone: "UTC", Enabled: true, Weekday: "1", Day: "1"})
+	return rsiplugin.JSONResult(ctx, contract.DefaultsResult{MinBelow: 1, Frequency: "daily", Clock: "08:00", Timezone: "UTC", Enabled: true, Weekday: "1", Day: "1"})
 }

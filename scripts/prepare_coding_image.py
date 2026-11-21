@@ -30,6 +30,19 @@ def digest(path):
 
 
 
+def check_output_path(destination):
+    """Preparing inside the source is safe only under an ignored directory."""
+    destination = destination.resolve()
+    if not destination.is_relative_to(ROOT):
+        return
+    relative = destination.relative_to(ROOT)
+    if (not relative.parts or relative.parts[0] == '.git'
+            or subprocess.run(['git', 'check-ignore', '-q', '--', relative.as_posix() + '/'],
+                              cwd=ROOT).returncode != 0
+            or subprocess.check_output(['git', 'ls-files', '-z', '--', relative.as_posix()], cwd=ROOT)):
+        raise ValueError('use an ignored output directory or a directory outside the checkout: ' + str(destination))
+
+
 def source_paths():
     names = subprocess.check_output(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'], cwd=ROOT).decode().split('\0')
     return sorted(name for name in names if name and ((ROOT / name).exists() or (ROOT / name).is_symlink()))
@@ -52,11 +65,13 @@ def snapshot_source(source):
 
 
 def prepare(evidence, cache, socket):
+    check_output_path(evidence)
+    check_output_path(cache)
     evidence.mkdir(parents=True, exist_ok=False)
     cache.mkdir(parents=True, exist_ok=True)
     report = dict(outcome='failed', steps=[], checkpoints=[])
     started = time.monotonic()
-    cid, docker = None, None
+    cid, docker, image = None, None, None
     config = tempfile.TemporaryDirectory(prefix='steward-image-docker-')
     environment = dict(os.environ)
     for name in ('DOCKER_HOST', 'DOCKER_CONTEXT', 'DOCKER_TLS_VERIFY', 'DOCKER_CERT_PATH', 'DOCKER_AUTH_CONFIG', 'DOCKER_CUSTOM_HEADERS'):
@@ -167,20 +182,16 @@ def prepare(evidence, cache, socket):
         run('start-preparation', docker + ['start', cid])
         run('system-runtime', docker + ['exec', '--env', 'DEBIAN_FRONTEND=noninteractive', cid, '/bin/sh', '-ceu',
             'apt-get update && apt-get install -y --no-install-recommends ca-certificates xz-utils bubblewrap python3 sqlite3 make git gcc libc6-dev'], timeout=900)
-        checkpoint('system')
         run('toolchain-directories', docker + ['exec', cid, 'mkdir', '-p', '/usr/local/go', '/opt/steward/source'])
         run('copy-go', docker + ['cp', toolchain['Dir'] + '/.', cid + ':/usr/local/go/'])
         run('copy-node', docker + ['cp', str(node), cid + ':/tmp/node.tar.xz'])
         run('install-toolchains', docker + ['exec', cid, '/bin/sh', '-ceu', 'chmod a+rx /usr/local/go/bin/* /usr/local/go/pkg/tool/linux_*/*; tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1; rm /tmp/node.tar.xz; go version; node --version'])
         run('copy-source', docker + ['cp', str(source) + '/.', cid + ':/opt/steward/source/'])
         run('go-dependencies', docker + ['exec', '--workdir', '/opt/steward/source', cid, 'go', 'mod', 'download'], timeout=600)
-        checkpoint('go-dependencies')
         for i, component in enumerate(PACKAGES):
             run('node-dependencies-' + str(i), docker + ['exec', '--workdir', '/opt/steward/source', cid, 'npm', 'ci', '--prefix', component, '--ignore-scripts', '--prefer-offline', '--fetch-retries=0', '--fetch-timeout=30000'], timeout=600)
-        checkpoint('node-dependencies')
         cli = '/opt/steward/source/guest-browser/node_modules/playwright-core/cli.js'
         run('browser-libraries', docker + ['exec', cid, 'node', cli, 'install-deps', 'chromium'], timeout=900)
-        checkpoint('browser-libraries')
         run('locked-browser', docker + ['exec', cid, 'node', cli, 'install', 'chromium'], timeout=600)
         run('actual-browser-doctor', docker + ['exec', '--workdir', '/opt/steward/source', cid, 'node', 'scripts/setup_browser.cjs'])
         run('cold-steward-build', docker + ['exec', '--workdir', '/opt/steward/source', cid, 'go', 'build', '-p', '2', '-trimpath', '-o', '/opt/steward/prepared-steward', './cmd/steward'], timeout=900)
@@ -204,22 +215,20 @@ chmod -R a+rX /opt/steward/deps /opt/steward/go-mod /opt/steward/go-build /opt/s
             if not original.is_file() or digest(original) != item['sha256'] or bool(original.stat().st_mode & 0o111) != item['executable']:
                 raise RuntimeError('source changed during preparation: ' + item['path'])
         image = checkpoint('ready')
-        report.update(outcome='passed', image=image)
-        (evidence / 'image.txt').write_text(image + '\n')
-        print(image, flush=True)
-        return report
     finally:
         interrupted = isinstance(sys.exc_info()[1], (KeyboardInterrupt, SystemExit))
         report['interrupted'] = interrupted
         try:
             if cid and docker:
                 try:
-                    if report['outcome'] != 'passed' and not interrupted:
+                    if image is None and not interrupted:
                         checkpoint('incomplete')
                 finally:
                     try:
                         run('cleanup-preparation', docker + ['rm', '--force', cid], timeout=3 if interrupted else 30)
                         report['owned_cleanup'] = 'confirmed'
+                        if image is not None and not interrupted:
+                            report.update(outcome='passed', image=image)
                     except BaseException:
                         report.update(outcome='failed', owned_cleanup='unconfirmed')
                         raise
@@ -227,6 +236,13 @@ chmod -R a+rX /opt/steward/deps /opt/steward/go-mod /opt/steward/go-build /opt/s
             config.cleanup()
             report['wall_seconds'] = time.monotonic() - started
             (evidence / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
+
+    # Consumers use the marker only after the final report and confirmed cleanup.
+    marker = evidence / 'image.tmp'
+    marker.write_text(image + '\n')
+    marker.replace(evidence / 'image.txt')
+    print(image, flush=True)
+    return report
 
 
 def stop(*_):

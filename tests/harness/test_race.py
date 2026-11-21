@@ -195,6 +195,38 @@ class SQLiteRaceInventoryTests(unittest.TestCase):
             for required in ('-race', '-count=1', '-timeout=15m'):
                 self.assertIn(required, command)
 
+    def test_artifact_batches_preserve_serial_order_and_native_runtime_parallelism(self):
+        names = [*race.SERIAL_SQLITE, 'TestUnrelated', *[f'TestArtifactNew{i:02}' for i in reversed(range(19))]]
+        chosen = names[len(race.SERIAL_SQLITE) + 1:]
+        for inherited in (None, '2'):
+            with self.subTest(inherited=inherited), tempfile.TemporaryDirectory() as directory:
+                selected = []
+                def execute(command, env, output, stopped, metrics):
+                    metrics.update(owned_group_drained=True, cpu_seconds=.01)
+                    if '-list' in command:
+                        output.write_text('\n'.join(names) + '\nok\t' + race.SQLITE + '\t0.01s\n')
+                        return 0
+                    batch = command[command.index('-run') + 1][2:-2].split('|')
+                    selected.append(batch)
+                    self.assertEqual(env.get('GOMAXPROCS'), inherited)
+                    for flag in ('-p=1', '-race', '-count=1', '-timeout=15m'):
+                        self.assertIn(flag, command)
+                    output.write_text('\n'.join(map(json.dumps, events(batch))))
+                    return 0
+                with patch.dict(os.environ, {}), patch.object(race, 'run_command', side_effect=execute), \
+                     patch.object(race, 'cpu_budget', return_value=4), \
+                     patch.object(race, 'ThreadPoolExecutor', wraps=race.ThreadPoolExecutor) as pool:
+                    os.environ.pop('GOMAXPROCS', None)
+                    if inherited:
+                        os.environ['GOMAXPROCS'] = inherited
+                    result = race.run_remainder([race.SQLITE], Path(directory), threading.Event(),
+                                                pattern=race.ARTIFACT_SQLITE_PATTERN)
+                self.assertEqual(result['returncode'], 0)
+                pool.assert_called_once_with(max_workers=1)
+                self.assertEqual(result['sqlite_workers'], 1)
+                self.assertEqual(result['partition_strategy'], 'discovery_order')
+                self.assertEqual(selected, [chosen[:8], chosen[8:16], chosen[16:]])
+
     def test_large_inventory_uses_bounded_batches_and_checks_later_evidence(self):
         names = [*race.SERIAL_SQLITE, *[f'TestBatch{i:03}' for i in range(400)]]
         for fault in (None, 'missing', 'duplicate'):

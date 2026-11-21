@@ -56,7 +56,7 @@ func (s *Server) loadAttention(ctx context.Context, p *page, ref, before string,
 			for _, artifactRef := range f.ArtifactRefs {
 				d, err := s.Core.DescribeArtifact(ctx, artifactRef)
 				if err == nil {
-					entry.Artifacts = append(entry.Artifacts, shownArtifact{Ref: artifactRef, Name: d.Name})
+					entry.Artifacts = append(entry.Artifacts, shownArtifact{Ref: artifactRef, Name: d.Name, Previewable: artifactPreviewType(d) != ""})
 				}
 			}
 			v.Feedbacks = append(v.Feedbacks, entry)
@@ -70,7 +70,7 @@ func (s *Server) loadAttention(ctx context.Context, p *page, ref, before string,
 	} else {
 		if reader, ok := s.Feedbacks.(interface {
 			PendingApprovals(context.Context) ([]interaction.Approval, error)
-		}); ok {
+		}); ok && approvals == nil {
 			approvals, err = reader.PendingApprovals(ctx)
 			if err != nil {
 				v.Unavailable = true

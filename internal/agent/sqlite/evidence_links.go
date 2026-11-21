@@ -32,7 +32,7 @@ func (r *Runs) evidenceLinks(ctx context.Context, a evidenceAccess, q evidence.R
  UNION SELECT 'conversation:'||q.source_message_id,'original_message' FROM task_request q WHERE json_extract(q.receipt_json,'$.taskRef')=? AND q.source_message_id!=''
  UNION SELECT 'conversation:'||m.message_id,'delivery' FROM task_update u JOIN task t USING(task_id) JOIN main_inbox b USING(event_id) JOIN main_reply m ON m.run_id=b.run_id WHERE t.task_ref=?`
 		args = []any{q.Ref, q.Ref, q.Ref, q.Ref, q.Ref}
-		if a.githubScope != "" {
+		if a.githubScopesJSON != "" {
 			query += ` UNION SELECT 'github:'||o.sequence,'github_observation'` + githubEvidenceRows + ` AND t.task_ref=?`
 			args = append(args, a.githubEvidenceArgs()...)
 			args = append(args, q.Ref)
@@ -74,7 +74,7 @@ func (r *Runs) evidenceLinks(ctx context.Context, a evidenceAccess, q evidence.R
 	page.NextLinksOffset = next
 	candidates = candidates[:take]
 	for _, link := range candidates {
-		if a.githubScope != "" && link.Relation == "github_observation" {
+		if a.githubScopesJSON != "" && link.Relation == "github_observation" {
 			// The final state snapshot rechecks these associations together.
 			page.Links = append(page.Links, link)
 			continue

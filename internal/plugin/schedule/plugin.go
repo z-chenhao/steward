@@ -9,7 +9,7 @@ import (
 )
 
 func Plugin() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Next: nextTime, contract.LocalTime: localTime, contract.Frequency: frequencyTime, contract.Projection: editorProjection, contract.Display: scheduleDisplay, contract.InstructionLabel: instructionLabel, contract.Guidance: guidance, contract.Defaults: editorDefaults, contract.Threshold: thresholdDecision}}
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.2", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Next: nextTime, contract.LocalTime: localTime, contract.Frequency: frequencyTime, contract.Projection: editorProjection, contract.Display: scheduleDisplay, contract.InstructionLabel: instructionLabel, contract.Guidance: guidance, contract.Defaults: editorDefaults, contract.Threshold: thresholdDecision}}
 }
 
 func nextTime(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error) {
@@ -24,6 +24,12 @@ func nextTime(ctx context.Context, call rsiplugin.Call) (rsiplugin.Result, error
 	at, err := next(facts.Type, facts.Spec, facts.Timezone, facts.After)
 	if err == nil {
 		result = contract.NextResult{Next: at.UTC().Format(time.RFC3339Nano)}
+	} else if _, zoneErr := calendarLocation(facts.Timezone); zoneErr != nil {
+		result.Field = "timezone"
+	} else if facts.Type == "cron" {
+		result.Field = "cron"
+	} else if facts.Type == "at" {
+		result.Field = "date"
 	}
 	return rsiplugin.JSONResult(ctx, result)
 }

@@ -10,7 +10,8 @@ if [ -z "$plugin_dependencies" ]; then plugin_dependencies=$plugin_source/runtim
 plugin_names=$("$plugin_host" -builtin-plugin-names)
 [ -n "$plugin_names" ]
 set -f
-for plugin_name in $plugin_names; do
+# The mail forwarder is distributed for explicit owner activation.
+for plugin_name in $plugin_names task-mail audio-transcript; do
   plugin_directory=$plugin_output/$plugin_name
   mkdir -p "$plugin_directory"
   (cd "$plugin_source" && go build -trimpath -o "$plugin_directory/plugin" "./cmd/plugins/$plugin_name")

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/z-chenhao/assistant/internal/artifact"
 	"github.com/z-chenhao/assistant/internal/conversation"
 	"github.com/z-chenhao/assistant/internal/task"
 )
@@ -24,12 +25,12 @@ func (f workspaceReader) Execution(context.Context, string) (task.ExecutionDetai
 	return task.ExecutionDetail{Execution: task.Execution{ID: "owned-root", TaskRef: "task:visible", Title: "Review report", Status: "completed", Epoch: 1}, Description: "Prepare a review"}, f.err
 }
 
-func (f workspaceReader) Detail(context.Context, string, string) (task.Detail, error) {
+func (f workspaceReader) DetailPage(context.Context, string, string, int64) (task.Detail, error) {
 	return task.Detail{Entry: task.Entry{Summary: task.Summary{TaskRef: "task:visible", Title: "Review <img src=x>", GoalSummary: "Prepare a review", Status: "active"}, Stage: "Working", CompletionPolicy: "ongoing", Progress: task.Progress{Running: 1, Succeeded: 2, Waiting: 1}}, SourceSequence: 8, Instructions: []task.Instruction{{Text: "Use the primary sources", At: "2026-11-03T00:00:00Z", Epoch: 1}}}, f.err
 }
 
-func (f workspaceReader) Scheduled(context.Context, string) ([]task.ScheduledWork, error) {
-	return []task.ScheduledWork{{Schedule: task.Schedule{Ref: "automation:next", Instruction: "Prepare tomorrow <script>", Type: "cron", Spec: "0 8 * * *", Timezone: "Asia/Shanghai", Enabled: true, NextAt: "2026-11-04T00:00:00Z"}}}, f.err
+func (f workspaceReader) ScheduledPage(context.Context, string, string) ([]task.ScheduledWork, string, error) {
+	return []task.ScheduledWork{{Schedule: task.Schedule{Ref: "automation:next", Instruction: "Prepare tomorrow <script>", Type: "cron", Spec: "0 8 * * *", Timezone: "Asia/Shanghai", Enabled: true, NextAt: "2026-11-04T00:00:00Z"}}}, "", f.err
 }
 
 type unavailableScheduleReader struct{ workspaceReader }
@@ -124,8 +125,8 @@ func TestLegacyWorkbenchV1PageCountMatchesRenderedRows(t *testing.T) {
 	}
 }
 
-func (unavailableScheduleReader) Scheduled(context.Context, string) ([]task.ScheduledWork, error) {
-	return nil, errors.New("PRIVATE_SCHEDULE_ERROR")
+func (unavailableScheduleReader) ScheduledPage(context.Context, string, string) ([]task.ScheduledWork, string, error) {
+	return nil, "", errors.New("PRIVATE_SCHEDULE_ERROR")
 }
 
 func TestTaskPagesAreAuthenticatedReadOnlyAndErrorsStayPrivate(t *testing.T) {
@@ -238,6 +239,54 @@ func TestExecutionFiltersDefaultToAllAndPreserveIndependentAttention(t *testing.
 	for _, path := range []string{"/tasks?needs_me=no", "/tasks?needs_me=1&needs_me=1"} {
 		if _, err := tasksQuery(httptest.NewRequest("GET", path, nil)); err == nil {
 			t.Fatal("invalid filter accepted", path)
+		}
+	}
+}
+
+type pagedJourneyReader struct{ workspaceReader }
+
+func (f pagedJourneyReader) ScheduledPage(_ context.Context, query, after string) ([]task.ScheduledWork, string, error) {
+	if query != "report" {
+		return nil, "", task.ErrInvalid
+	}
+	if after == "" {
+		return []task.ScheduledWork{{Schedule: task.Schedule{Ref: "automation:first", Instruction: "first schedule"}}}, "automation:first", nil
+	}
+	if after == "automation:first" {
+		return []task.ScheduledWork{{Schedule: task.Schedule{Ref: "automation:tail", Instruction: "last schedule"}}}, "", nil
+	}
+	return nil, "", task.ErrInvalid
+}
+func (f pagedJourneyReader) DetailPage(ctx context.Context, ref, history string, before int64) (task.Detail, error) {
+	d, e := f.workspaceReader.DetailPage(ctx, ref, history, before)
+	d.Artifacts = []string{"artifact:original"}
+	if before == 0 {
+		d.DeliveriesBefore = 10
+	} else {
+		d.Messages = []conversation.Message{{Role: "assistant", Sequence: 1, Content: conversation.Text("earliest delivery")}}
+	}
+	return d, e
+}
+func TestManagedJourneyPagingActionsAndRefresh(t *testing.T) {
+	s := Server{Core: &previewCore{updatesCore: &updatesCore{allowed: true, status: "idle"}, d: artifact.Descriptor{Name: "notes.txt", MediaType: "text/plain"}}, Tasks: pagedJourneyReader{}, WebWorkbench: currentWorkbenchReader(t)}
+	for _, c := range []struct{ path, want string }{
+		{"/tasks/configurations?q=report", "schedules_after=automation%3Afirst"},
+		{"/tasks/configurations?q=report&schedules_after=automation:first", "last schedule"},
+		{"/api/updates?view=/tasks/configurations&q=report&schedules_after=automation:first", "last schedule"},
+		{"/tasks/task:visible", "delivery_before=10"},
+		{"/tasks/task:visible", "/artifact/preview?ref=artifact%3aoriginal"},
+		{"/tasks/task:visible?delivery_before=10", "earliest delivery"},
+		{"/api/updates?view=/tasks/task:visible&delivery_before=10", "earliest delivery"},
+	} {
+		r := httptest.NewRequest("GET", "http://127.0.0.1:8080"+c.path, nil)
+		r.RemoteAddr = "127.0.0.1:4321"
+		if strings.HasPrefix(c.path, "/api/updates") {
+			r.Header.Set("X-Steward-Workbench-Reader", "sha256:"+strings.Repeat("b", 64))
+		}
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		if w.Code != 200 || !strings.Contains(strings.ToLower(w.Body.String()), strings.ToLower(c.want)) {
+			t.Errorf("%s HTTP %d missing %q", c.path, w.Code, c.want)
 		}
 	}
 }

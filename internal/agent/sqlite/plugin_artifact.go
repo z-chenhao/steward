@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/artifact"
+	artifactsqlite "github.com/z-chenhao/assistant/internal/artifact/sqlite"
 	artifacttools "github.com/z-chenhao/assistant/internal/artifact/tools"
 	"github.com/z-chenhao/assistant/internal/plugin/artifactworkbench/contract"
 	"github.com/z-chenhao/assistant/internal/rsi"
@@ -23,10 +25,15 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	if err != nil || !managed {
 		return tool.Result{}, false, err
 	}
-	var request contract.SearchRequest
+	var args struct {
+		Query   string  `json:"query"`
+		Limit   int     `json:"limit"`
+		Content bool    `json:"content"`
+		Cursor  *string `json:"cursor"`
+	}
 	handled := false
 	err = t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error {
-		_, name, args, err := t.acceptedBuiltin(ctx, tx, invocation)
+		_, name, raw, err := t.acceptedBuiltin(ctx, tx, invocation)
 		if err != nil {
 			return err
 		}
@@ -34,7 +41,7 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 			return nil
 		}
 		handled = true
-		return json.Unmarshal([]byte(args), &request)
+		return json.Unmarshal([]byte(raw), &args)
 	})
 	if errors.Is(err, tool.ErrApprovalDenied) {
 		return tool.Failure("PERMISSION_DENIED"), handled, nil
@@ -55,7 +62,29 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		result, e := artifactPolicyFailure(err)
 		return result, true, e
 	}
-	var candidates []artifact.Descriptor
+	request := contract.SearchRequest{Query: args.Query, Limit: args.Limit, Paged: args.Cursor != nil}
+	scopeKey := artifactSearchKey(t.claim.RunID(), access.pluginGraph, args.Query, args.Content)
+	if args.Content {
+		if strings.TrimSpace(args.Query) == "" {
+			return tool.Failure("INVALID_ARGUMENT"), true, nil
+		}
+		if _, err = host.ServiceInstance(ctx, access.pluginGraph, contract.BodyMatch); err != nil {
+			result, e := artifactPolicyFailure(err)
+			return result, true, e
+		}
+		request.Query = ""
+	}
+	after, err := readArtifactSearchCursor(scopeKey, args.Cursor)
+	if err != nil {
+		return tool.Failure("INVALID_ARGUMENT"), true, nil
+	}
+	type candidateIdentity struct {
+		ref, hash          string
+		version, createdAt int64
+	}
+	var candidates []candidateIdentity
+	var bodies []artifactsqlite.SearchCandidate
+	var metadata []byte
 	err = t.runs.evidenceReadTx(ctx, func(tx *sql.Tx) error {
 		if err := t.runs.evidenceFence(ctx, tx, access); err != nil {
 			return err
@@ -64,22 +93,44 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		if err != nil {
 			return err
 		}
-		candidates, err = t.runs.host.Artifacts().CandidatesTx(ctx, tx, scope)
-		return err
+		access.scope = scope
+		return t.runs.host.Artifacts().VisitSearchCandidatesTx(ctx, tx, scope, func(c artifactsqlite.SearchCandidate) {
+			if after.Ref != "" && (c.CreatedAt > after.CreatedAt || c.CreatedAt == after.CreatedAt && c.Ref <= after.Ref) {
+				return
+			}
+			if args.Content {
+				bodies = append(bodies, c)
+				return
+			}
+			candidates = append(candidates, candidateIdentity{c.Ref, c.ContentHash, c.Version, c.CreatedAt})
+			metadata = contract.AppendSearchRow(metadata, contract.SearchRow{CreatedAt: c.CreatedAt, Name: c.Name, MediaType: c.MediaType})
+		})
 	})
 	if err != nil {
 		return tool.Result{}, true, err
 	}
-	rows := make([]contract.SearchRow, len(candidates))
-	for i, candidate := range candidates {
-		rows[i] = contract.SearchRow{CreatedAt: candidate.CreatedAt.UnixMicro(), Name: candidate.Name, MediaType: candidate.MediaType}
+	if args.Content {
+		for _, c := range bodies {
+			match, err := t.artifactBodyMatches(ctx, invocation, host, access, c, args.Query)
+			if errors.Is(err, artifact.ErrNotFound) {
+				continue
+			}
+			if err != nil {
+				result, e := artifactPolicyFailure(err)
+				return result, true, e
+			}
+			if match {
+				candidates = append(candidates, candidateIdentity{c.Ref, c.ContentHash, c.Version, c.CreatedAt})
+				metadata = contract.AppendSearchRow(metadata, contract.SearchRow{CreatedAt: c.CreatedAt, Name: c.Name, MediaType: c.MediaType})
+			}
+		}
 	}
-	request.Count = len(rows)
+	request.Count = len(candidates)
 	input, err := json.Marshal(request)
 	if err != nil {
 		return tool.Result{}, true, err
 	}
-	response, err := host.ReadServiceStream(ctx, access.pluginGraph, contract.Search, input, rsi.InputData{ID: contract.SearchInput, Data: contract.EncodeSearch(rows)})
+	response, err := host.ReadServiceStream(ctx, access.pluginGraph, contract.Search, input, rsi.InputData{ID: contract.SearchInput, Data: metadata})
 	if err != nil {
 		result, e := artifactPolicyFailure(err)
 		return result, true, e
@@ -94,14 +145,20 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	if plan.ErrorCode != "" || plan.Limit < 1 || plan.Limit > 50 || len(plan.Indices) > plan.Limit || (request.Limit > 0 && plan.Limit > request.Limit) {
 		return tool.Result{}, true, rsi.ErrInvalid
 	}
-	selected := []artifact.Descriptor{}
+	selected := make([]artifact.Descriptor, 0, len(plan.Indices))
 	seen := map[int]bool{}
-	for _, index := range plan.Indices {
+	for position, index := range plan.Indices {
 		if index < 0 || index >= len(candidates) || seen[index] {
 			return tool.Result{}, true, rsi.ErrInvalid
 		}
 		seen[index] = true
-		selected = append(selected, candidates[index])
+		if request.Paged && position > 0 {
+			prev := candidates[plan.Indices[position-1]]
+			curr := candidates[index]
+			if curr.createdAt > prev.createdAt || curr.createdAt == prev.createdAt && curr.ref <= prev.ref {
+				return tool.Result{}, true, rsi.ErrInvalid
+			}
+		}
 	}
 	// Only Host facts are projected. Recheck the original authorization and live
 	// metadata after the untrusted calculation, including empty-result reads.
@@ -119,15 +176,16 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 		if err != nil {
 			return err
 		}
-		for i, value := range selected {
-			fresh, err := t.runs.host.Artifacts().DescribeTx(ctx, tx, scope, value.Ref, true)
+		for _, index := range plan.Indices {
+			value := candidates[index]
+			fresh, err := t.runs.host.Artifacts().DescribeTx(ctx, tx, scope, value.ref, true)
 			if err != nil {
 				return err
 			}
-			if fresh.Version != value.Version || fresh.ContentHash != value.ContentHash {
+			if fresh.Version != value.version || fresh.ContentHash != value.hash {
 				return artifact.ErrConflict
 			}
-			selected[i] = fresh
+			selected = append(selected, fresh)
 		}
 		return nil
 	})
@@ -137,6 +195,18 @@ func (t *tools) searchArtifactPlugin(ctx context.Context, invocation tool.Invoca
 	if err != nil {
 		result, e := artifactPolicyFailure(err)
 		return result, true, e
+	}
+	if request.Paged {
+		page := artifactSearchPage{Artifacts: selected}
+		if plan.More {
+			if len(selected) != plan.Limit {
+				return tool.Result{}, true, rsi.ErrInvalid
+			}
+			last := selected[len(selected)-1]
+			page.NextCursor = artifactSearchCursor{Key: scopeKey, CreatedAt: last.CreatedAt.UnixMicro(), Ref: last.Ref}.encode()
+		}
+		raw, err := encoded(page)
+		return tool.Result{Text: raw}, true, err
 	}
 	raw, err := encoded(selected)
 	return tool.Result{Text: raw}, true, err

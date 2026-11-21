@@ -16,6 +16,7 @@ import (
 	"github.com/z-chenhao/assistant/internal/plugin/memoryinspector/contract"
 	"github.com/z-chenhao/assistant/internal/recall"
 	"github.com/z-chenhao/assistant/internal/rsi"
+	"github.com/z-chenhao/assistant/internal/rsi/builtin"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
@@ -49,7 +50,12 @@ func memoryInspectorDelayedProcessPackage(t *testing.T) string {
 	if out, err := exec.Command("go", "build", "-overlay", overlayPath, "-o", filepath.Join(source, "plugin"), "../../../cmd/plugins/memory-inspector").CombinedOutput(); err != nil {
 		t.Fatal(err, string(out))
 	}
-	raw, err = os.ReadFile("../../../plugins/memory-inspector/steward.plugin.json")
+	return sealMemoryInspectorTestPackage(t, source)
+}
+
+func sealMemoryInspectorTestPackage(t *testing.T, source string) string {
+	t.Helper()
+	raw, err := os.ReadFile("../../../plugins/memory-inspector/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,12 +88,8 @@ func memoryInspectorDelayedProcessPackage(t *testing.T) string {
 
 func TestMemoryInspectorActualProcessLateForgetReplacementPrivacyAndGuardian(t *testing.T) {
 	source := memoryInspectorDelayedProcessPackage(t)
-	raw, err := os.ReadFile("../../rsi/builtin/memory-inspector-owner-v1.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var cases []rsi.Case
-	if err = json.Unmarshal(raw, &cases); err != nil || len(cases) < 1 {
+	cases, err := builtin.MemoryInspectorCases("1.1.1", source)
+	if err != nil || len(cases) < 1 {
 		t.Fatal("independent Owner oracle missing", err)
 	}
 	for _, mode := range []string{"unchanged", "forget", "replacement", "privacy-epoch", "stop"} {

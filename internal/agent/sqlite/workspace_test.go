@@ -148,3 +148,30 @@ CREATE VIEW task AS SELECT `+updateDuringRead+`(title) AS title, task_data.* FRO
 		t.Fatal(detail.Instructions[0])
 	}
 }
+
+func TestTaskListPagesEscapedUnicodeSearch(t *testing.T) {
+	s := openModels(t)
+	ctx := context.Background()
+	reader := s.TaskReader()
+	query := strings.Repeat("&", 150) + " équipe κόσμος 项目"
+	title := strings.Repeat("&", 150) + " ÉQUIPE ΚΌΣΜΟΣ 项目"
+	for _, id := range []string{"a", "b"} {
+		if _, err := s.db.Exec(`INSERT INTO task(task_id,task_ref,agent_id,conversation_id,title,anchor_task,anchor_artifact_refs,status,task_epoch,created_at,updated_at,version) SELECT ?,?,agent_id,agent_id,'Search',?,'[]','active',1,100,100,1 FROM agent_config WHERE singleton=1`, id, "task:"+id, title); err != nil {
+			t.Fatal(err)
+		}
+	}
+	q := task.ListQuery{Query: query, View: "all", Limit: 1}
+	first, err := reader.List(ctx, q)
+	if err != nil || len(first.Items) != 1 || first.Next == "" {
+		t.Fatal(first, err)
+	}
+	q.Cursor = first.Next
+	second, err := reader.List(ctx, q)
+	if err != nil || len(second.Items) != 1 || second.Items[0].TaskRef == first.Items[0].TaskRef || second.Next != "" {
+		t.Fatal(second, err)
+	}
+	q.Query = "different"
+	if _, err = reader.List(ctx, q); !errors.Is(err, task.ErrInvalid) {
+		t.Fatal("cursor crossed searches", err)
+	}
+}

@@ -13,6 +13,10 @@ import (
 
 func pageRoute(path string) (tab, view, title string) {
 	switch {
+	case path == "/developer/demonstration":
+		return "/developer/demonstration", "teaching", "Browser demonstration"
+	case path == "/settings/meeting-preparation":
+		return "/settings", "meeting-preparation", "Meeting preparation"
 	case path == "/settings/apps/service":
 		return "/settings", "app-service", "App connection service"
 	case path == "/settings/apps":

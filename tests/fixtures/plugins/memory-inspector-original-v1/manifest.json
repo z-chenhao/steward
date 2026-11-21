@@ -1,0 +1,393 @@
+{
+  "protocol": "steward-rsi-plugins/0.1",
+  "plugin_id": "steward.memory-inspector",
+  "version": "1.0.0",
+  "feature_ids": [
+    "F-033"
+  ],
+  "runtime": {
+    "entry": "plugin",
+    "timeout_ms": 10000
+  },
+  "files": [],
+  "provides": [
+    {
+      "contract": "steward.memory-inspector-presentation/1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "navigation": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "object",
+                  "properties": {
+                    "layer": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "since": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "until": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "ref": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "search": {
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "tier": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "origin": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "status": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "view": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "cursor": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "source": {
+                      "type": "string",
+                      "maxLength": 4096
+                    },
+                    "sources_after": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [],
+                  "additionalProperties": false
+                },
+                "key": {
+                  "type": "string",
+                  "maxLength": 32
+                },
+                "value": {
+                  "type": "string",
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "query",
+                "key",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "navigation"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "urls": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "maxLength": 16384
+            }
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "object",
+                "properties": {
+                  "conversation": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "task": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "tool": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "control": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "other": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "conversation",
+                  "task",
+                  "tool",
+                  "control",
+                  "other"
+                ],
+                "additionalProperties": false
+              },
+              "origin": {
+                "type": "object",
+                "properties": {
+                  "written": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "dream": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "original": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "automatic": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "explicit": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "other": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "written",
+                  "dream",
+                  "original",
+                  "automatic",
+                  "explicit",
+                  "other"
+                ],
+                "additionalProperties": false
+              },
+              "layer": {
+                "type": "object",
+                "properties": {
+                  "transcripts": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "representations": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "injected": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "notes": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "transcripts",
+                  "representations",
+                  "injected",
+                  "notes"
+                ],
+                "additionalProperties": false
+              },
+              "default_status": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [
+              "source",
+              "origin",
+              "layer",
+              "default_status"
+            ],
+            "additionalProperties": false
+          },
+          "view": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "enum": [
+                  "memory-inspector-page"
+                ]
+              },
+              "digest": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 65536
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "stylesheet": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "enum": [
+                  "memory-inspector-styles"
+                ]
+              },
+              "digest": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32768
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "localization": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "enum": [
+                  "memory-inspector-copy"
+                ]
+              },
+              "digest": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 65536
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "program": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "enum": [
+                  "memory-inspector-program"
+                ]
+              },
+              "digest": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 65536
+              }
+            },
+            "required": [
+              "resource",
+              "digest",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "urls",
+          "labels",
+          "view",
+          "stylesheet",
+          "localization",
+          "program"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "state": {
+    "version": 1,
+    "schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "initial": {}
+  },
+  "requests": [],
+  "resources": [
+    {
+      "kind": "view",
+      "name": "memory-inspector-page",
+      "path": "views/memory.html"
+    },
+    {
+      "kind": "view",
+      "name": "memory-inspector-styles",
+      "path": "views/memory.css"
+    },
+    {
+      "kind": "view",
+      "name": "memory-inspector-copy",
+      "path": "views/copy.json"
+    },
+    {
+      "kind": "view",
+      "name": "memory-inspector-program",
+      "path": "views/memory-worker.js"
+    }
+  ]
+}

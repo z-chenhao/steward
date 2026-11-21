@@ -1,5 +1,9 @@
 # 自动化与安静监控：测试方案
 
+时区回拨验收分别保存纽约两次 01:30，拒绝第三个偏移、提前与重复触发。Web 经真实 HTTP 检查日期、时区和 cron 错误时的字段提示与草稿内容，以及版本冲突／服务故障状态码。
+
+`TestScheduleRejectsUnreachableThresholdAtAdmission` 经实际托管插件核对 Web 所有者写入、CLI 和 Main 工具：零阈值拒绝，同一草稿改为 1 可保存，历史零阈值可重放及停用。
+
 [功能与验收目标](../features/automation.md) · [技术方案](../designs/automation.md) · [主索引](../feature-map.md) · [统一测试入口](product.md)
 
 ## 范围与证据
@@ -29,6 +33,7 @@
 | 入口 | 覆盖用途与限制 |
 | --- | --- |
 | [tests/system/verify_automation.py](../../tests/system/verify_automation.py) | 已有相关回归入口；具体断言以实现为准，不代表覆盖全部目标 |
+| [internal/app/github_rule_workbench_test.go](../../internal/app/github_rule_workbench_test.go) | 参照 Grok Bot 先观察再启用的例程。真实工作台表单和受控 PR 轮询覆盖观察、查看命中依据、自动接续、停止和过期表单。 |
 | [internal/agent/sqlite/github_rule_test.go](../../internal/agent/sqlite/github_rule_test.go) | 真实 Store 轮询事务和 Actor 验证同候选三模式、显式自动同 Task、CAS、旧代迟到与去重、重启、历史 Task/作用域/Forget、分页与 schema 37 迁移 |
 | [internal/agent/sqlite/github_failed_check_rule_test.go](../../internal/agent/sqlite/github_failed_check_rule_test.go) | 成功或异常结论不触发失败规则，观察命中无执行，自动失败仅继续原 Task 一次。规则改动保留冻结决策，旧代迟到/重试不复活，schema 40 中已排队的类型匹配可继续 |
 | [internal/agent/sqlite/github_followup_test.go](../../internal/agent/sqlite/github_followup_test.go) | 规则修订及已有授权撤销后拒绝迟到模型和 Tool，保留现有 Task 状态和未知副作用约束 |
@@ -37,6 +42,8 @@
 现有入口仍需在后续相关实现变更时按风险运行；需求范围变化时同步扩展场景。
 
 ## 详细测试入口与证明边界
+
+[调度隔离回归](../../internal/agent/sqlite/plugin_schedule_scan_isolation_test.go)验证撤权后新计划恰好触发一次、单个冻结包缺失时其他工作继续，以及恢复原包后的首个扫描仍接纳原 fire。
 
 本功能协议在此维护。既有编号用于追溯协议，不代表所有设计目标均已实现；完成状态以需求主索引为准。
 
@@ -116,3 +123,16 @@ Main 迁移回归通过真实 Actor／模型／工具调用：在模型返回前
 `TestScheduleThresholdGuidanceFreezesRealRootRequestsAcrossLifecycle` 经真实 Actor 的模型→observe→模型续接检查独立 Root／工具说明、原消息字节前缀、固定工具权限及原事实。中途升级、正式精确回退、撤回均不改旧 Root；新 Root 缺方法时拒绝，本地取消不依赖候选。历史 description-only 元数据图生成的旧 Root 在激活新策略后仍用原文案与判断；迁移后的新 Root 不能借旧图恢复 native。`TestScheduleThresholdColdRootGuidanceForgetDoesNotResurrectIntent` 在实际元数据准备后 Forget，断言零 Task／Root／指令／模型释放，并在第一次后续 admission 将原 fire 标为 skipped。
 
 Schedule 的 Main／Root 指引与阈值冻结回归纳入 `make test-prompts` 的现有方法／Task 分组；CI 回归保证新增同族用例仍在必跑入口中，普通全量测试继续逐根覆盖。
+
+任务配置应在伦敦浏览器新建时使用 Europe/London，损坏的时区偏好恢复到原配方默认时区；在该浏览器编辑上海计划仍显示 Asia/Shanghai。上海浏览器查看纽约冬令时 08:00 的下次触发时，断言正文含 08:00 和 -05:00。HTTP 路径回归见 TestManagedScheduleFormAndOccurrenceRespectTimezones。
+
+### 试运行已保存的计划
+
+参考 Grok Bot 的周期任务测试。所有者在已有阈值计划点击试运行，将进入独立任务。HTTP 重试应打开相同结果，正式计划版本、下次触发、阈值、进入状态及通知历史保持原值。
+
+`TestOwnerScheduleTrialIsolatedThroughRootAndThreshold` 经真实 HTTP、托管插件、原 Root 观察工具及 Main 交付核对结果、Web 路由、重复提交与停止后的已有回执。
+
+
+### 次日会议与邮件来源
+
+参考 OpenAI Dots 的主动只读研究。该系统分片安装固定的 guest-browser 依赖与 Chromium，实际运行会议准备的浏览器验收。操作者选择两个账号并授权，看到明日会议与相关邮件的各自链接；关闭研究或撤回来源后无后续内容读取。Steward 只请求主题元数据，匹配窗口和时区在页面可见。connected-apps-plugins 系统门禁通过 `TestMeetingPreparationProductionWebAndRevocation`、真实完整托管组合、Chromium 设置页面和受控 Composio 协议端核对目标账号、GET 方法、字段、来源链接、停用和两次读取之间撤权；截图覆盖明暗和手机/桌面。`TestMeetingPreparationDSTWindow` 验证 23/25 小时的本地日历日。

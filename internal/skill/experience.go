@@ -32,7 +32,7 @@ func (r ReviewRequest) Valid() bool {
 		return true
 	}
 	if r.Operation != "propose" {
-		return strings.HasPrefix(r.CandidateRef, "experience:") && len(r.CandidateRef) <= 256 && r.Version > 0 && r.Name == "" && r.Description == "" && r.Procedure == "" && r.Reason == "" && len(r.SourceRefs) == 0 && (r.Operation == "verify" && strings.HasPrefix(r.VerificationRef, "invocation:") || r.VerificationRef == "" && (r.Operation == "promote" || r.Operation == "reject" || r.Operation == "retire"))
+		return strings.HasPrefix(r.CandidateRef, "experience:") && len(r.CandidateRef) <= 256 && r.Version > 0 && r.Name == "" && r.Description == "" && r.Procedure == "" && r.Reason == "" && len(r.SourceRefs) == 0 && (r.Operation == "verify" && strings.HasPrefix(r.VerificationRef, "invocation:") || r.VerificationRef == "" && (r.Operation == "view" || r.Operation == "promote" || r.Operation == "reject" || r.Operation == "retire"))
 	}
 	if r.Name == "" || len(r.Name) > 80 || r.Description == "" || len(r.Description) > 1024 || len(r.Procedure) < 20 || len(r.Procedure) > 8192 || len(r.SourceRefs) == 0 || len(r.SourceRefs) > 16 {
 		return false

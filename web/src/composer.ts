@@ -45,11 +45,14 @@ export function enhanceComposer(messageAccepted?: (target:URL)=>void){
    pending=true;form.dataset.submitting='true';if(submit)submit.disabled=true;outgoingState(entry,'sending');
    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
    try{
-    await flushUIStates().catch(()=>{});
+    try{await flushUIStates(controller.signal)}catch{
+     outgoingState(entry,'state-failed',()=>void send());return;
+    }
     const response=await fetch('/message',{method:'POST',body:data,credentials:'same-origin',signal:controller.signal,headers:{Accept:'application/json'}});
     if([400,413,422].includes(response.status)){
      outgoingState(entry,'rejected',()=>{
       if(pending||text.value||file?.files?.length){if(feedback)feedback.textContent=t('Finish or clear your current draft before editing this message.');return}
+      source.value=root.dataset.sourceId=submittedSource;
       text.value=submittedText;
       if(file&&submittedFile){const transfer=new DataTransfer();transfer.items.add(submittedFile);file.files=transfer.files}
       showFile();discardOutgoing(entry);if(feedback)feedback.textContent='';text.focus();

@@ -70,6 +70,50 @@ func TestImagePreviewBoundsAndEnvelopeSelection(t *testing.T) {
 	}
 }
 
+// Generated from an 8 x 4 solid red RGB fixture with lossless cwebp.
+const selectedWebP = "UklGRh4AAABXRUJQVlA4TBEAAAAvB8AAAAdQhXoXof+BiOh/AAA="
+
+func TestStaticWebPUsesBoundedModelInputDecoder(t *testing.T) {
+	raw, err := base64.StdEncoding.DecodeString(selectedWebP)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := previewImage("image/webp", raw)
+	if err != nil || p.MediaType != "image/jpeg" || p.OriginalWidth != 8 || p.OriginalHeight != 4 {
+		t.Fatal(p, err)
+	}
+	preview, err := base64.StdEncoding.DecodeString(p.Data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, _, err := image.Decode(bytes.NewReader(preview))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, g, b, _ := img.At(3, 2).RGBA()
+	if r < 4*g || r < 4*b {
+		t.Fatal("lost the red pixels")
+	}
+	extended := append([]byte("RIFF0000WEBPVP8X"), 10, 0, 0, 0, 2, 0, 0, 0, 7, 0, 0, 3, 0, 0)
+	animated := append(extended, raw[12:]...)
+	binary.LittleEndian.PutUint32(animated[4:], uint32(len(animated)-8))
+	if _, err = previewImage("image/webp", animated); err != llm.ModelIncompatible {
+		t.Fatal("animated input accepted", err)
+	}
+	oversized := append([]byte(nil), animated...)
+	oversized[20] = 0
+	copy(oversized[24:30], []byte{255, 31, 0, 255, 31, 0})
+	if _, err = media.DecodeModelImage("image/webp", oversized); err != media.ErrLimit {
+		t.Fatal("pixel limit", err)
+	}
+	if _, err = media.DecodeImage("image/webp", raw); err != media.ErrInvalid {
+		t.Fatal("changed the OCR format boundary", err)
+	}
+	if _, err = previewImage("image/png", raw); err != llm.ModelIncompatible {
+		t.Fatal("accepted a disguised WebP")
+	}
+}
+
 func TestExplicitScopedImageIsSentToNativeBridgeAndSanitizedObservation(t *testing.T) {
 	ctx := context.Background()
 	var pngBytes bytes.Buffer
@@ -115,6 +159,16 @@ func TestExplicitScopedImageIsSentToNativeBridgeAndSanitizedObservation(t *testi
 	}}
 	result, err := client.Generate(ctx, req, nil)
 	if err != nil || result.Text != "seen" {
+		t.Fatal(result, err)
+	}
+	webp, _ := base64.StdEncoding.DecodeString(selectedWebP)
+	req.ResolveImage = func(_ context.Context, ref string) (string, []byte, error) {
+		if ref != "artifact:allowed" {
+			t.Fatal("wrong original reference", ref)
+		}
+		return "image/webp", webp, nil
+	}
+	if result, err = client.Generate(ctx, req, nil); err != nil || result.Text != "seen" {
 		t.Fatal(result, err)
 	}
 	var wire []byte

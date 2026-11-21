@@ -27,6 +27,7 @@ function localizeTime(element:HTMLTimeElement){
 
 export function enhanceLocalTimes(){
  const initializedInputs=new WeakSet<HTMLInputElement>();
+ const originalInstants=new WeakMap<HTMLInputElement,{local:string;instant:string}>();
  const initialize=(scope:ParentNode)=>{
   const times=[...(scope instanceof HTMLTimeElement&&scope.matches('[data-local-time]')?[scope]:[]),...scope.querySelectorAll<HTMLTimeElement>('time[data-local-time]')];
   for(const element of times)localizeTime(element);
@@ -37,6 +38,7 @@ export function enhanceLocalTimes(){
    if(!Number.isNaN(date.valueOf())){
     const pad=(value:number)=>String(value).padStart(2,'0');
     field.value=`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    originalInstants.set(field,{local:field.value,instant:date.toISOString()});
    }
   }
  };
@@ -75,6 +77,9 @@ export function enhanceLocalTimes(){
    if(!(control instanceof HTMLInputElement)||!control.matches('[data-local-input]'))continue;
    const field=control;
    if(!field.name||!field.value||field.disabled)continue;
+   const original=originalInstants.get(field);
+   if(original?.local===field.value){event.formData.set(field.name,original.instant);continue}
+   // For newly entered repeated wall times, Date chooses the earlier offset.
    const date=new Date(field.value);
    if(!Number.isNaN(date.valueOf())){
     const local=new Date(date.valueOf()-date.getTimezoneOffset()*60000).toISOString().slice(0,field.value.length);

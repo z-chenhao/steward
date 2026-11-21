@@ -35,7 +35,9 @@ const (
 	commandService
 	commandCoding
 	commandEvidence
+	commandAudio
 	commandPlugin
+	commandTaskMail
 )
 
 type command struct {
@@ -50,10 +52,12 @@ type commandGrammar struct {
 // Arity includes the command and operation. The grammar is validated before
 // configuration/state is opened; handlers do not independently admit commands.
 var commandGrammars = map[string]commandGrammar{
+	"mailbox":    {commandTaskMail, map[string][]int{"enable-plugin": {3}, "bind": {4}, "close": {3}, "receive": {4}, "messages": {3, 4}}},
 	"plugin":     {commandPlugin, map[string][]int{"parser-bundle": {5}, "parser-resource": {3}, "deactivate": {2}, "uninstall": {3}, "calls": {3}, "retry-call": {5}, "retry-event": {3}, "work": {2}, "seal": {3}, "install": {3}, "prepare": {2}, "policy": {2}, "propose": {2}, "verify": {3}, "activate": {2}, "status": {2}, "audit": {2}, "stop": {2}, "resume": {2}, "quarantine": {3}}},
+	"audio":      {commandAudio, map[string][]int{"enable-plugin": {3}, "transcribe-local": {4}}},
 	"evidence":   {commandEvidence, map[string][]int{"read": {2}}},
 	"task":       {commandTask, map[string][]int{"feedbacks": {2, 3, 4}, "respond": {3}}},
-	"github":     {commandGitHub, map[string][]int{"status": {2}, "poll": {2}, "events": {2, 3}, "stop": {2}, "resume": {2}, "bind": {2}, "unbind": {2}, "binding": {2}, "decisions": {2, 3}}},
+	"github":     {commandGitHub, map[string][]int{"scopes": {2}, "status": {2}, "poll": {2}, "events": {2, 3}, "stop": {2}, "resume": {2}, "bind": {2}, "unbind": {2}, "binding": {2}, "decisions": {2, 3}}},
 	"model":      {commandModel, map[string][]int{"add": {2, 4, 5}, "discover": {3, 4}, "list": {2}, "cancel": {2}, "accounts": {2}, "catalog": {2, 3}, "login": {2, 3}, "login-chatgpt": {2, 3}, "test": {3}, "refresh": {3}, "logout": {3}, "account-catalog": {3}, "account-add": {4}, "select": {5}}},
 	"chat":       {commandChat, map[string][]int{"send": {2, 3}, "send-parts": {2, 3}, "work": {2}, "history": {2}}},
 	"artifact":   {commandArtifact, map[string][]int{"save": {4}, "delete": {4}, "open": {3}, "describe": {3}, "cleanup": {2, 3}}},
@@ -67,8 +71,8 @@ var commandGrammars = map[string]commandGrammar{
 	"channel":    {commandChannel, map[string][]int{"manage": {2}, "status": {2}, "check": {2}}},
 	"automation": {commandAutomation, map[string][]int{"manage": {3}, "list": {2}, "tick": {2}, "work": {2}}},
 	"ops":        {commandOps, map[string][]int{"health": {2}, "report": {2}, "broker": {2}, "upgrade-broker": {2}, "trace": {3}, "activate": {3}, "backup": {4}, "restore": {4}, "retry-event": {4}}},
-	"service":    {commandService, map[string][]int{"install": {2}, "start": {2, 3}, "stop": {2, 3}, "status": {2, 3}, "uninstall": {2, 3}, "run": {3}, "inspect": {3}}},
-	"coding":     {commandCoding, map[string][]int{"inspect": {3}, "diff": {3}, "report": {3}, "report-pr": {4}, "report-pr-exact": {4}}},
+	"service":    {commandService, map[string][]int{"install": {2}, "start": {2, 3}, "stop": {2, 3}, "status": {2, 3}, "uninstall": {2, 3}, "run": {3}, "inspect": {3}, "alerts-feishu": {4}, "alerts-off": {3}}},
+	"coding":     {commandCoding, map[string][]int{"inspect": {3}, "diff": {3}, "report": {3}, "report-pr": {4}, "report-pr-exact": {4}, "draft-plan": {3}, "draft-approve": {4}, "draft-status": {4}, "draft-reconcile": {4}}},
 }
 
 func selectCommand(flags *flag.FlagSet, in io.Reader) (command, error) {

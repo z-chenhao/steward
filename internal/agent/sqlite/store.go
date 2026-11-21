@@ -277,7 +277,19 @@ var codingCheckPlanSQL string
 //go:embed migrations/083_coding_project_plan.sql
 var codingProjectPlanSQL string
 
-var migrations = []string{bootstrapSQL, eventsSQL, modelsSQL, providerSQL, localProviderSQL, accountAuthSQL, mainLoopSQL, tasksSQL, taskControlSQL, toolPolicySQL, artifactsSQL, deliverySQL, childrenSQL, schedulerSQL, spendSQL, codemodeSQL, codeRecoverySQL, recallSQL, memoryMaintenanceSQL, mainSuccessorSQL, computersSQL, computerUseSQL, automationSQL, automationPrivacySQL, channelsSQL, operationsSQL, contextSQL, toolNamesSQL, nativeExecutionSQL, inspectionSQL, dispatchObservationsSQL, responsiveMainSQL, githubObservationsSQL, taskFeedbackSQL, feishuReplySourcesSQL, githubTaskContinuationSQL, taskCodeEnvironmentsSQL, githubRuleObservationSQL, feishuTaskQuestionsSQL, feishuReviewLinksSQL, githubFailedCheckRuleSQL, providerTimingsSQL, uiWidgetsSQL, accountCatalogSelectionSQL, uiInteractionsSQL, connectedAppsSQL, costEstimatesSQL, semanticMemorySQL, layeredMemorySQL, memoryRuntimeSQL, memoryEvidenceSQL, rsiPluginsSQL, rsiFeatureSnapshotsSQL, recallSelectionSQL, memoryPolicyBindingSQL, experiencePolicyBindingSQL, taskFeedbackPolicySQL, delegationPolicySQL, codeDescriptionReplySQL, fileMethodPlanSQL, shellMethodPlanSQL, codingMethodsSQL, nativePluginBindingsSQL, taskLabelPlanSQL, computerActionPlanSQL, codeSearchReplySQL, childMembershipSQL, githubSourceMethodSQL, artifactRecipeSQL, uiFormAnswerSQL, uiPlanViewSQL, uiCardsViewSQL, uiTableViewSQL, scheduleMethodSQL, scheduleOwnerFrequencySQL, scheduleOwnerLocalSQL, schedulePresentationSQL, automationTaskLabelSQL, uiChartViewSQL, uiFormViewSQL, referencePriceRatesSQL, codingCheckPlanSQL, codingProjectPlanSQL}
+//go:embed migrations/084_task_feedback_scope.sql
+var taskFeedbackScopeSQL string
+
+//go:embed migrations/085_task_mail.sql
+var taskMailSQL string
+
+//go:embed migrations/086_github_conversation_comments.sql
+var gitHubConversationCommentsSQL string
+
+//go:embed migrations/087_coding_draft_publication.sql
+var codingDraftPublicationSQL string
+
+var migrations = []string{bootstrapSQL, eventsSQL, modelsSQL, providerSQL, localProviderSQL, accountAuthSQL, mainLoopSQL, tasksSQL, taskControlSQL, toolPolicySQL, artifactsSQL, deliverySQL, childrenSQL, schedulerSQL, spendSQL, codemodeSQL, codeRecoverySQL, recallSQL, memoryMaintenanceSQL, mainSuccessorSQL, computersSQL, computerUseSQL, automationSQL, automationPrivacySQL, channelsSQL, operationsSQL, contextSQL, toolNamesSQL, nativeExecutionSQL, inspectionSQL, dispatchObservationsSQL, responsiveMainSQL, githubObservationsSQL, taskFeedbackSQL, feishuReplySourcesSQL, githubTaskContinuationSQL, taskCodeEnvironmentsSQL, githubRuleObservationSQL, feishuTaskQuestionsSQL, feishuReviewLinksSQL, githubFailedCheckRuleSQL, providerTimingsSQL, uiWidgetsSQL, accountCatalogSelectionSQL, uiInteractionsSQL, connectedAppsSQL, costEstimatesSQL, semanticMemorySQL, layeredMemorySQL, memoryRuntimeSQL, memoryEvidenceSQL, rsiPluginsSQL, rsiFeatureSnapshotsSQL, recallSelectionSQL, memoryPolicyBindingSQL, experiencePolicyBindingSQL, taskFeedbackPolicySQL, delegationPolicySQL, codeDescriptionReplySQL, fileMethodPlanSQL, shellMethodPlanSQL, codingMethodsSQL, nativePluginBindingsSQL, taskLabelPlanSQL, computerActionPlanSQL, codeSearchReplySQL, childMembershipSQL, githubSourceMethodSQL, artifactRecipeSQL, uiFormAnswerSQL, uiPlanViewSQL, uiCardsViewSQL, uiTableViewSQL, scheduleMethodSQL, scheduleOwnerFrequencySQL, scheduleOwnerLocalSQL, schedulePresentationSQL, automationTaskLabelSQL, uiChartViewSQL, uiFormViewSQL, referencePriceRatesSQL, codingCheckPlanSQL, codingProjectPlanSQL, taskFeedbackScopeSQL, taskMailSQL, gitHubConversationCommentsSQL, codingDraftPublicationSQL}
 
 type Store struct {
 	pluginCatalog       atomic.Pointer[rsi.Catalog]
@@ -287,7 +299,7 @@ type Store struct {
 	taskReader          *tasksqlite.Reader
 	dispatches          *inspectionsqlite.Recorder
 	scheduler           atomic.Pointer[agent.SchedulerLimits]
-	githubScope         atomic.Pointer[string]
+	githubScopes        atomic.Pointer[gitHubScopeSet]
 	nextRun             *sql.Stmt
 	activeRun           *sql.Stmt
 	db                  *sql.DB

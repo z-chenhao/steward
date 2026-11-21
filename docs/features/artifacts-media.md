@@ -6,6 +6,8 @@
 
 ## 功能说明
 
+同一渠道事件的同一个附件只占用一份配额。Web 下载声明原文件长度，传输中断后客户端可以识别不完整结果。
+
 用户能上传、保存、搜索、下载交付物，引用具有访问边界。
 
 用户上传图片后，选定视觉模型能实际收到授权图片内容。
@@ -19,6 +21,8 @@
 <a id="f-012"></a>
 
 ### F-012 · 可重新打开的文件产物
+
+成果搜索传入空字符串 `cursor` 开始分页，后续沿用原查询和返回的 `next_cursor`。每页最多 50 份，创建时间相同的文件按引用排序。原有无游标调用仍返回描述符数组。记得正文而忘记文件名时，可在原工具传入 `content:true` 和准确的非空片段。该模式在已授权的文本、JSON 和已启用阅读器的 DOCX 中匹配原文，直接返回原件引用。每次新搜索重查来源授权和到期时间。
 
 **需求**：用户能上传、保存、搜索、下载交付物，引用具有访问边界。
 
@@ -38,7 +42,7 @@
 
 **当前实现**：Web 上传和 CLI `chat send-parts` 的显式用户图片进入冻结的 ImageRefs 投影；已启用图片能力的选定模型会在实际供应商请求中收到授权缩图；ChatGPT 账户按认证目录默认启用，自定义兼容端点经过视觉 Probe。Main/Worker 默认获得 `builtin__image_ocr`，可由独立版本化 OCR 插件制定识别策略并处理本地 Tesseract 结果，提取授权图片中的文字、词框和引擎置信分数，完整结果保存为关联原图的 Artifact。
 
-**边界**：支持 PNG/JPEG，单图最多 8 MiB、约 3355 万像素（32 × 1024²）。工作集最多保留 8 张不同图片，激进上下文重试最多 4 张；省略的像素保留引用与说明。文本模型保留引用并明确说明未看到图片，不读取或发送像素。格式不支持、图片损坏或越界在供应商调用前失败，不把文件名当作图像理解。真实模型的理解质量独立评测。
+**边界**：支持 PNG/JPEG 和静态 WebP，单图最多 8 MiB、约 3355 万像素（32 × 1024²）。工作集最多保留 8 张不同图片，激进上下文重试最多 4 张；省略的像素保留引用与说明。文本模型保留引用并明确说明未看到图片，不读取或发送像素。格式不支持、图片损坏或越界在供应商调用前失败，不把文件名当作图像理解。真实模型的理解质量独立评测。
 
 **验收目标**：通过真实消息入口上传图片，在最终供应商请求中验证图片存在，并验证无权限/不支持模型的行为；纯文本模型通过真实 OCR 工具收到文字，已提交 OCR 结果在重启后复用。
 
@@ -46,11 +50,25 @@
 
 ### F-014 · 音视频与文档内容处理
 
+托管 DOCX 读取器 1.0.2 提取正文与表格内内容控件的当前显示文本；先前版本的分页引用沿用原读取器。
+
 **需求**：用户交付音视频或文档后，Agent 能获取适合任务的内容和来源。
 
 **当前实现**：DOCX 解析已接入独立 Go 插件，保留原有工具与文件引用。标准构建／安装分发该包，首次运行按独立用例验证初始组合；已有自定义组合由所有者显式纳入，历史执行继续原解释器。上传普通 DOCX 并随消息提交原文件引用后，Main 可显式调用 `builtin__evidence_read({kind:"artifact",ref,offset,limit})`。正文段落与表格单元格按文件顺序返回。每页保留原 Artifact ref，原文件可继续打开。页面的 `representation: "docx_text"` 表示偏移与总长度按提取后的 UTF-8 文本字节计；用 `next_offset` 继续。本地操作者同时携带返回的 `reader_revision`，可在换版或停用后继续同一已验收解释器的分页；停机／隔离仍会拒绝。Main 的解释器已按 Run 固定，无需选择字段。
 
-**边界与剩余工作**：仅接受标准 DOCX MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。音视频转写、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
+上传的 PDF 可用同一入口读取带页码的正文。每页保留原文件引用，`pdf_text` 的偏移按 UTF-8 字节计算。原件留在本地，冻结的 Web Extract 插件直接读取经授权的字节。大小上限为 8 MiB，扫描图像中的文字需要独立 OCR。
+
+**边界与剩余工作**：DOCX 仅读取标准 MIME 和指向标准主文档部件的包。损坏或不支持的包返回 `INVALID_ARGUMENT`，超出预算返回 `RESOURCE_LIMIT`。正文读取无须 Office 或网络。其他音频／视频编码、其他文档格式、复杂版面与嵌入内容仍待验证或实现。
+
+本地英文录音转写支持最长十分钟的单声道、16 kHz、16-bit PCM WAV。先安装 whisper.cpp 1.9.2 并准备官方 ggml-tiny.en.bin，然后执行下列命令。最后一条命令是对这一个原件的本次转写授权。
+
+```sh
+steward audio enable-plugin /absolute/path/to/plugins/audio-transcript
+steward artifact save meeting.wav audio/wav < meeting.wav
+steward audio transcribe-local artifact:ID /absolute/path/to/ggml-tiny.en.bin
+```
+
+返回 JSON 包含原件名称、可打开的原件引用、内容摘要，以及每段转写的起止毫秒与文本。使用 `steward artifact open artifact:ID` 可核对原音。系统可分别报告格式不支持、模型缺失或不匹配、解码器不可用、识别失败、输出不兼容和静音。普通附件保存与证据读取只显示原有元数据；启用后，本地 owner 读取 WAV 元数据还可看到转写命令。音频与识别文本只在本地处理，转写结果由命令返回，未写入 Agent 或任务历史。
 
 **验收目标**：逐格式验证可获取的内容、原始文件关联、失败反馈和实际任务输出；质量由独立评测衡量。
 
@@ -60,7 +78,7 @@ CLI 可用 DOCX MIME 保存文件，再用 `chat send-parts` 的 `file` ContentP
 
 Web 的附件选择器可随文字提交文件。CLI 用 `steward artifact save NAME MEDIA_TYPE` 从 stdin 保存，随后用 `steward artifact describe REF` 或 `steward artifact open REF` 检查和读取。
 
-在 Settings 添加 ChatGPT 账户模型后，图片能力按模型目录默认启用，无需勾选或连接测试；自定义兼容端点默认请求图片能力并在连接时验证。随后随消息上传 PNG/JPEG 即可。CLI 的模型 JSON 输入使用 `capabilities.image_input: true`，图片 ContentPart 必须为 `{"type":"image","artifact_ref":"artifact:..."}`；普通 `file` 不自动加载像素。
+在 Settings 添加 ChatGPT 账户模型后，图片能力按模型目录默认启用，无需勾选或连接测试；自定义兼容端点默认请求图片能力并在连接时验证。随后可随消息上传 PNG/JPEG 或静态 WebP。CLI 的模型 JSON 输入使用 `capabilities.image_input: true`，图片 ContentPart 必须为 `{"type":"image","artifact_ref":"artifact:..."}`；普通 `file` 不自动加载像素。
 
 新 Run 才启用这条用户图片投影；升级前的活动 Run 沿用其冻结表示。正常停止旧进程后统一升级，不混跑不同投影版本。音视频和复杂文档仍由 F-014 跟踪，文件运输不等于内容理解。
 
@@ -99,6 +117,8 @@ OCR 能提供截图中的文字证据，不能证明布局、颜色、图表关�
 <a id="artifacts-artifact-storage-and-operations-steward-14"></a>
 
 ## Artifact storage and operations
+
+历史与新对象均在同一可见范围内按元数据发现；选中引用交付前再核对版本、内容哈希与当前授权。
 
 Artifacts reopen through opaque `artifact:` references. Only the Store resolves
 references to storage keys. Files live beneath `app.data_root/artifacts`;
@@ -156,3 +176,5 @@ provides scoped file transfer. Those paths have separate proof limits.
 
 
 Artifact 名称与媒体类型约束由内部 `artifact.Input.Validate` 统一维护，staging 与 Computer 导出展示接纳复用，原限制与授权不变。Computer 方法只能选择缺省展示字段，不能改原字节、路径或 ArtifactRef；集成场景见 [Computer 测试方案](../test-plans/computer-use.md)。
+
+审阅工作中的小文本、JSON（最多 1 MiB）和 PNG/JPEG（最多 8 MiB）可在 Web 打开被动预览。HTML 类文本按纯文字显示。其他文件保留原件下载；预览照常检查授权。

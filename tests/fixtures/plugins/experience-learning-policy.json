@@ -1,7 +1,9 @@
 {
   "id": "experience-system-policy",
   "allowed_contracts": [
-    "steward.experience-policy/1"
+    "steward.experience-policy/1",
+    "steward.browser-demonstration/1",
+    "steward.correction-recipe/1"
   ],
   "allowed_requests": [],
   "allowed_hooks": [],
@@ -37,6 +39,82 @@
       "expected": {
         "required_runs": 1,
         "introduction": ""
+      }
+    },
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.browser-demonstration/1",
+      "input": {
+        "name": "Preview report",
+        "steps": [
+          {
+            "action": "activate",
+            "label": "Preview"
+          }
+        ],
+        "sample": [
+          {
+            "step": {
+              "action": "activate",
+              "label": "Preview"
+            },
+            "to": 1,
+            "from": 0
+          }
+        ],
+        "goal": 1
+      },
+      "expected": {
+        "steps": [
+          "1. Activate \"Preview\"."
+        ],
+        "matched": 1,
+        "verified": true
+      }
+    },
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.browser-demonstration/1",
+      "input": {
+        "name": "Preview report",
+        "steps": [
+          {
+            "action": "activate",
+            "label": "Preview"
+          }
+        ],
+        "sample": [
+          {
+            "step": {
+              "action": "activate",
+              "label": "Preview"
+            },
+            "to": 1,
+            "from": 0
+          }
+        ],
+        "goal": 2
+      },
+      "expected": {
+        "steps": [
+          "1. Activate \"Preview\"."
+        ],
+        "matched": 1,
+        "verified": false
+      }
+    },
+    {
+      "instance_id": "experience-learning",
+      "contract": "steward.correction-recipe/1",
+      "input": {
+        "steps": [
+          "Review the staged change.",
+          "Run the focused checks."
+        ]
+      },
+      "expected": {
+        "independent_runs": 2,
+        "procedure": "1. Review the staged change.\n2. Run the focused checks."
       }
     }
   ]

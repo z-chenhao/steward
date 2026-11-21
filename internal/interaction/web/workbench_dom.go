@@ -36,55 +36,77 @@ func safeWorkbenchDOM(source string, p page) bool {
 	formOK := func(form *html.Node) bool {
 		action := attr(form, "action")
 		method := strings.ToLower(attr(form, "method"))
-		if method == "get" {
-			return action == "/tasks" || action == "/tasks/configurations"
+		if method == "get" && (action == "/tasks" || action == "/tasks/configurations") {
+			return true
 		}
-		if method != "post" {
+		refresh := method == "get" && p.Tasks != nil && p.Tasks.Detail != nil && action == taskURL(p.Tasks.Detail.TaskRef)
+		if method != "post" && !refresh {
 			return false
 		}
 		expected := map[string]string{}
-		switch action {
-		case "/message":
-			expected["source_id"] = p.SourceID
-			if p.DraftTask != nil {
-				expected["task_ref"] = p.DraftTask.Ref
+		if refresh {
+			if p.Tasks.GitHubRule == nil || !p.Tasks.GitHubRule.CanStop {
+				return false
 			}
-		case "/model/choose":
-			expected["consent"] = "yes"
-			expected["config_version"] = strconv.FormatInt(p.Status.ConfigVersion, 10)
-		case "/task/feedback":
-			ref := ""
-			var scan func(*html.Node)
-			scan = func(n *html.Node) {
-				if n.Type == html.ElementNode && n.Data == "input" && attr(n, "name") == "feedback_ref" {
-					ref = attr(n, "value")
+			expected["github_scope"] = p.Tasks.GitHubRule.Scope
+		} else {
+			switch action {
+			case "/message":
+				expected["source_id"] = p.SourceID
+				if p.DraftTask != nil {
+					expected["task_ref"] = p.DraftTask.Ref
 				}
-				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					scan(c)
+			case "/model/choose":
+				expected["consent"] = "yes"
+				expected["config_version"] = strconv.FormatInt(p.Status.ConfigVersion, 10)
+			case "/task/github-rule":
+				if p.Tasks == nil || p.Tasks.Detail == nil || p.Tasks.GitHubRule == nil || p.Workbench == nil || !p.Workbench.Presentation.Policy.GitHubRules {
+					return false
 				}
-			}
-			scan(form)
-			var found bool
-			if p.Attention != nil {
-				for _, f := range p.Attention.Feedbacks {
-					if f.Ref == ref {
-						expected["source_id"], expected["feedback_ref"], expected["return_to"] = ref, ref, taskURL(f.TaskRef)
-						found = true
-						break
+				d, rule := p.Tasks.Detail, p.Tasks.GitHubRule
+				if !rule.CanStart && !rule.CanStop {
+					return false
+				}
+				expected = map[string]string{"task_ref": d.TaskRef, "epoch": strconv.FormatInt(d.Epoch, 10), "scope": rule.Scope, "version": strconv.FormatInt(rule.Version, 10), "workbench_revision": p.Workbench.ReaderRevision}
+			case "/task/feedback":
+				ref := ""
+				var scan func(*html.Node)
+				scan = func(n *html.Node) {
+					if n.Type == html.ElementNode && n.Data == "input" && attr(n, "name") == "feedback_ref" {
+						ref = attr(n, "value")
+					}
+					for c := n.FirstChild; c != nil; c = c.NextSibling {
+						scan(c)
 					}
 				}
-			}
-			if !found {
+				scan(form)
+				var found bool
+				if p.Attention != nil {
+					for _, f := range p.Attention.Feedbacks {
+						if f.Ref == ref {
+							expected["source_id"], expected["feedback_ref"], expected["return_to"] = ref, ref, taskURL(f.TaskRef)
+							found = true
+							break
+						}
+					}
+				}
+				if !found {
+					return false
+				}
+			case "/schedule/trial":
+				if p.Schedule == nil || p.Schedule.Ref == "" {
+					return false
+				}
+				expected = map[string]string{"ref": p.Schedule.Ref, "version": strconv.FormatInt(p.Schedule.Version, 10), "source_id": p.Schedule.Key}
+			case "/schedule/configure":
+				if p.Schedule == nil {
+					return false
+				}
+				s := p.Schedule
+				expected = map[string]string{"ref": s.Ref, "version": strconv.FormatInt(s.Version, 10), "source_id": s.Key, "original_spec": s.OriginalSpec, "original_timezone": s.OriginalTimezone, "task_ref": s.TaskRef}
+			default:
 				return false
 			}
-		case "/schedule/configure":
-			if p.Schedule == nil {
-				return false
-			}
-			s := p.Schedule
-			expected = map[string]string{"ref": s.Ref, "version": strconv.FormatInt(s.Version, 10), "source_id": s.Key, "original_spec": s.OriginalSpec, "original_timezone": s.OriginalTimezone, "task_ref": s.TaskRef}
-		default:
-			return false
 		}
 		hidden := map[string]string{}
 		var visit func(*html.Node) bool

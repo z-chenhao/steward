@@ -14,6 +14,8 @@ import (
 	"github.com/z-chenhao/assistant/internal/app"
 	"github.com/z-chenhao/assistant/internal/config"
 	"github.com/z-chenhao/assistant/internal/interaction/web"
+	"github.com/z-chenhao/assistant/internal/llm"
+	"github.com/z-chenhao/assistant/internal/llm/secret"
 	"github.com/z-chenhao/assistant/internal/operations/service"
 	"github.com/z-chenhao/assistant/internal/startup"
 )
@@ -55,11 +57,39 @@ func runService(ctx context.Context, options commandOptions, out io.Writer) erro
 	case "run":
 		return runBackground(ctx, m, root, options, out)
 	case "inspect":
-		v, err := m.Inspect(ctx)
+		var secrets llm.SecretStore = secret.Files{DataRoot: root}
+		if options.testSecrets != "" {
+			secrets = secret.TestSocket{Path: options.testSecrets}
+		}
+		v, err := m.InspectAndNotify(ctx, secrets)
+		if err != nil && v.Code == "" {
+			return err
+		}
+		return errors.Join(err, json.NewEncoder(out).Encode(v))
+	case "alerts-feishu":
+		if configPath == "" {
+			configPath, err = m.DeploymentConfigPath()
+			if err != nil {
+				return err
+			}
+		}
+		cfg, err := config.Load(configPath, func(key string) (string, bool) {
+			if key == "STEWARD_DATA_ROOT" {
+				return root, true
+			}
+			return os.LookupEnv(key)
+		})
 		if err != nil {
 			return err
 		}
-		return json.NewEncoder(out).Encode(v)
+		if cfg.Feishu == nil {
+			return errors.New("configure a Feishu account before selecting its alert chat")
+		}
+		if err = m.ConfigureFeishuAlerts(options.flags.Arg(3), *cfg.Feishu); err != nil {
+			return err
+		}
+	case "alerts-off":
+		err = m.DisableAlerts()
 	case "install":
 		err = m.Install(ctx, configPath)
 	case "start":

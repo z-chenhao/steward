@@ -19,6 +19,7 @@ import (
 // template syntax is private/experimental; it is not a public domain-model API.
 type memoryTemplateModel struct{ Memory *memoryTemplateView }
 type memoryTemplateView struct {
+	CorrectionURL       string
 	Query               memory.InspectionQuery
 	Page                memory.InspectionPage
 	Selected            *memory.InspectionRecord
@@ -30,7 +31,7 @@ type memoryTemplateSelection struct{ ReaderRevision string }
 var memoryViewNames = map[string]bool{"memory-page": true, "memory-workbench": true, "memory-document-detail": true, "memory-maintenance-cost": true, "memory-maintenance-detail": true}
 var memorySharedNames = map[string]bool{"help": true, "identifier": true, "icon-arrow-right": true, "icon-chevron": true, "icon-filter": true, "icon-memory": true, "icon-search": true, "icon-source": true}
 
-const memoryViewFields = "Attempts CacheReadTokens Content ContentState Costs CreatedAt Currency DocumentsRetired DocumentsWritten Error Failure Format Generations ID InputTokens IsZero Items Kind KnownUsageGenerations LatencyMS LaterInjections LaterToolReads Layer Maintenance MaintenanceSelected Memory Metrics Model Next NextOffset NextSourcesOffset Operation Origin OutputTokens Page Presentation Purpose Query ReaderRevision Ref ReferenceMicros Related ReplacedBy Revision RunID Search Selected Since Source SourceCount Sources Status Supersedes Text Tier Title Total UnchangedWrites Until View"
+const memoryViewFields = "Attempts CacheReadTokens Changes Content ContentState CorrectionURL Costs CreatedAt Currency DocumentsRetired DocumentsWritten Error Failure Format Generations ID InputTokens IsZero Items Kind KnownUsageGenerations LatencyMS LaterInjections LaterToolReads Layer Maintenance MaintenanceSelected Memory Metrics Model Next NextOffset NextSourcesOffset Operation Origin OutputTokens Page Presentation Purpose Query ReaderRevision Ref ReferenceMicros Related ReplacedBy Revision RunID Search Selected Since Source SourceCount Sources Status Supersedes Text Tier Title Total UnchangedWrites Until View"
 const memoryViewClasses = " back-link button compact control-help control-help-trigger control-icon-button control-identifier control-identifier-button control-identifier-link control-identifier-value control-kind-badge control-list-footer control-list-heading control-list-search control-list-table control-list-toolbar control-metric-badge control-search control-status-badge control-toolbar-button control-tooltip empty-state error feedback icon memory-col-attempts memory-col-content memory-col-created memory-col-error memory-col-execution memory-col-operation memory-col-origin memory-col-sources memory-col-status memory-col-tier memory-content memory-content-section memory-detail memory-generation-history memory-lineage memory-list-toolbar memory-maintenance memory-metadata memory-open memory-page memory-preview-tab memory-record-list memory-select memory-source memory-source-content memory-source-label memory-source-list memory-source-reference memory-sources memory-workbench muted obs-active-filters obs-cell-text obs-col-cost obs-col-created obs-col-id obs-col-tokens obs-cost obs-detail-header obs-detail-note obs-detail-pane obs-detail-properties obs-detail-tabs obs-detail-toolbar obs-empty obs-facet obs-filter-actions obs-filter-fields obs-filter-rail obs-filter-rail-content obs-filters obs-list-footer obs-list-heading obs-metrics obs-node-facts obs-node-header obs-pane-heading obs-results-layout obs-results-main obs-search obs-selected-heading obs-selected-icon obs-selected-name obs-started-time obs-table-scroll obs-table-toolbar obs-trace-list obs-tree-pane obs-workbench observability secondary section-tabs sr-only status-pill technical-details text-link "
 
 const memoryViewFunctions = " tr identifier help taskURL money milliseconds memoryURL memorySourceLabel memoryOriginLabel memoryLayerLabel memoryStatus memoryOffset memorySourcesOffset traceTime localTime timeInput eq ne and or not len index "
@@ -63,7 +64,7 @@ func renderMemoryView(t *template.Template, v *memoryView) (template.HTML, error
 	// Original list content can occur in both text and tooltip, with HTML escaping.
 	// Bound candidate amplification using actual authorized data, not a new record cap.
 	out := memoryViewBuffer{remaining: 65536 + 16*len(raw)}
-	model := memoryTemplateModel{Memory: &memoryTemplateView{Query: v.Query, Page: v.Page, Selected: v.Selected, MaintenanceSelected: v.MaintenanceSelected, Presentation: &memoryTemplateSelection{ReaderRevision: v.Presentation.ReaderRevision}}}
+	model := memoryTemplateModel{Memory: &memoryTemplateView{CorrectionURL: memoryCorrectionURL(v), Query: v.Query, Page: v.Page, Selected: v.Selected, MaintenanceSelected: v.MaintenanceSelected, Presentation: &memoryTemplateSelection{ReaderRevision: v.Presentation.ReaderRevision}}}
 	if err = t.ExecuteTemplate(&out, "memory-page", model); err != nil {
 		return "", memory.ErrInspectionUnavailable
 	}
@@ -79,6 +80,9 @@ func safeMemoryViewDOM(source string, v *memoryView) bool {
 		return false
 	}
 	urls := map[string]bool{"/developer/memory": true}
+	if target := memoryCorrectionURL(v); target != "" {
+		urls[target] = true
+	}
 	for _, link := range v.Presentation.Links {
 		urls[link.URL] = true
 	}
@@ -138,7 +142,7 @@ func safeMemoryViewDOM(source string, v *memoryView) bool {
 		}
 		return b.String()
 	}
-	allowedTags := " section div form input button nav a span table colgroup col thead tbody tr th td details summary label fieldset legend h1 h2 h3 p strong small dl dt dd header time svg path circle rect line polyline polygon g title "
+	allowedTags := " section div form input button nav a span table colgroup col thead tbody tr th td details summary label fieldset legend h1 h2 h3 ul li p strong small dl dt dd header time svg path circle rect line polyline polygon g title "
 	visible := func(n *html.Node) bool {
 		for at := n; at != nil; at = at.Parent {
 			if at.Type != html.ElementNode {

@@ -36,7 +36,7 @@ def selected_default_computer(h):
     with closing(sqlite3.connect(Path(h.env['STEWARD_DATA_ROOT'])/'state.db')) as db:
         graph=json.loads(db.execute('SELECT graph_json FROM rsi_graph WHERE revision=?',(status['graph_revision'],)).fetchone()[0])
         packages={row[0] for row in db.execute("SELECT p.plugin_id FROM rsi_graph g,json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=?",(status['graph_revision'],))}
-    require(len(packages)==40 and {'steward.computer-use','steward.web-access','steward.web-extract','steward.mcp-bridge','steward.connected-apps','steward.tool-discovery','steward.apps-directory','steward.apps-accounts','steward.apps-logos','steward.apps-interface', 'steward.github-pr-followup', 'steward.artifact-workbench'}.issubset(packages), 'Computer replaced the complete default composition')
+    require(len(packages)==41 and {'steward.computer-use','steward.web-access','steward.web-extract','steward.mcp-bridge','steward.connected-apps','steward.tool-discovery','steward.apps-directory','steward.apps-accounts','steward.apps-logos','steward.apps-interface', 'steward.github-pr-followup', 'steward.artifact-workbench'}.issubset(packages), 'Computer replaced the complete default composition')
     binding=next(b for b in graph['bindings'] if b['instance_id']=='computer-use')
     source=Path(__file__).resolve().parents[2]
     upload=hashlib.sha256(b'computer-browser-upload-v1\0playwright-core@1.64.1\0'+(source/'internal/computer/macosvm/browser_upload_v1.mjs').read_bytes()+b'\0'+(source/'internal/computer/macosvm/transfer.py').read_bytes()).hexdigest()

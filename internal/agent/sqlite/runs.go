@@ -236,6 +236,7 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 			return agent.Receipt{}, conversation.ErrInvalid
 		}
 	}
+	correction, correctionErr := r.planCorrection(ctx, parts, inbound)
 	receipt := agent.Receipt{RequestKey: key}
 	content, _ := encoded(parts)
 	err = r.write(ctx, func(tx *sql.Tx) error {
@@ -295,6 +296,9 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 				return err
 			}
 		}
+		if correctionErr != nil {
+			return correctionErr
+		}
 		if profile == "" || status != "ready" {
 			return agent.ErrSetup
 		}
@@ -352,6 +356,9 @@ func (r *Runs) submit(ctx context.Context, key string, parts []conversation.Cont
 		if _, err = tx.ExecContext(ctx, `INSERT INTO conversation_intent(message_id,message_json) VALUES(?,?)`, receipt.MessageID, raw); err != nil {
 			return err
 		}
+		if err = r.materializeCorrection(ctx, tx, agentID, correction); err != nil {
+			return err
+		}
 		if feedbackRef != "" {
 			if _, err = tx.ExecContext(ctx, `UPDATE task_feedback SET status='answered',response_message_id=? WHERE feedback_ref=? AND status='pending'`, receipt.MessageID, feedbackRef); err != nil {
 				return err
@@ -400,7 +407,8 @@ func (r *Runs) Recover(ctx context.Context) error {
 	if r.automationClock != nil {
 		now = r.automationClock()
 	}
-	if err := r.ScheduleAutomations(ctx, now); err != nil {
+	var missing *missingSchedulePackage
+	if err := r.ScheduleAutomations(ctx, now); err != nil && !errors.As(err, &missing) {
 		return err
 	}
 	if err := r.admitAutomations(ctx); err != nil {
@@ -572,8 +580,12 @@ func (r *Runs) Flush(ctx context.Context) error {
 	}
 	return r.write(ctx, func(tx *sql.Tx) error {
 		for _, m := range messages {
-			if err := r.observeMemory(ctx, tx, m.ConversationID, "conversation", m.MessageID); err != nil {
-				return err
+			// The selected correction has one explicit mutation path. Do not queue
+			// the same user input as an unscoped automatic Curator proposal.
+			if m.Source != "web" || !memory.IsCorrectionSource(m.SourceEventID) {
+				if err := r.observeMemory(ctx, tx, m.ConversationID, "conversation", m.MessageID); err != nil {
+					return err
+				}
 			}
 			if _, err := tx.ExecContext(ctx, `UPDATE conversation_intent SET flushed=1 WHERE message_id=?`, m.MessageID); err != nil {
 				return err

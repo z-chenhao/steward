@@ -19,11 +19,15 @@ type ScheduleSettings interface {
 	ConfigureSchedule(context.Context, string, automation.OwnerConfiguration) (automation.OwnerReceipt, error)
 }
 type scheduleEditor struct {
+	InvalidField, UTCOffset                                                          string
+	UTCOffsets                                                                       []string
+	MinBelow                                                                         int64
+	ThresholdRejected                                                                bool
 	Ref, Key, Instruction, Frequency, Date, Time, Timezone, Cron, Threshold, TaskRef string
 	Version                                                                          int64
 	Weekday, Day                                                                     string
 	Enabled                                                                          bool
-	OriginalSpec, OriginalTimezone                                                   string
+	BrowserTimezone, OriginalSpec, OriginalTimezone                                  string
 }
 
 func scheduleURL(ref string) string { return "/tasks/schedules/" + url.PathEscape(ref) }
@@ -59,6 +63,9 @@ func (s *Server) loadSchedule(ctx context.Context, r *http.Request, p *page) err
 			return err
 		}
 		applyScheduleDefaults(e, defaults)
+		if loc := browserLocation(r); loc != nil {
+			e.BrowserTimezone = loc.String()
+		}
 		return nil
 	}
 	ref := strings.TrimPrefix(r.URL.Path, "/tasks/schedules/")
@@ -107,16 +114,23 @@ func (s *Server) loadSchedule(ctx context.Context, r *http.Request, p *page) err
 func decodeScheduleForm(r *http.Request) (*scheduleEditor, automation.OwnerConfiguration, error) {
 	e := &scheduleEditor{}
 	q := automation.OwnerConfiguration{}
-	allowed := map[string]bool{"ref": true, "version": true, "source_id": true, "instruction": true, "frequency": true, "date": true, "time": true, "timezone": true, "cron": true, "threshold": true, "weekday": true, "day": true, "enabled": true, "original_spec": true, "original_timezone": true}
+	allowed := map[string]bool{"ref": true, "version": true, "source_id": true, "instruction": true, "frequency": true, "date": true, "time": true, "timezone": true, "cron": true, "threshold": true, "weekday": true, "day": true, "enabled": true, "original_spec": true, "original_timezone": true, "utc_offset": true}
 	get := r.PostForm.Get
 	e.Ref, e.Key, e.Instruction, e.Frequency, e.Date, e.Time, e.Timezone, e.Cron, e.Threshold, e.Weekday, e.Day = get("ref"), get("source_id"), get("instruction"), get("frequency"), get("date"), get("time"), get("timezone"), get("cron"), get("threshold"), get("weekday"), get("day")
 	e.Enabled = get("enabled") == "yes"
+	e.UTCOffset = get("utc_offset")
+	if automation.ValidUTCOffset(e.UTCOffset) {
+		e.UTCOffsets = []string{e.UTCOffset}
+	}
 	e.OriginalSpec, e.OriginalTimezone = get("original_spec"), get("original_timezone")
 	var err error
 	e.Version, err = strconv.ParseInt(get("version"), 10, 64)
 	// Retain the submitted editor before enforcing byte limits: maxlength counts
 	// characters, and ordinary CJK input may exceed the domain's UTF-8 byte limit.
 	for key, values := range r.PostForm {
+		if key == "instruction" && len(values) == 1 && len(values[0]) > 8192 {
+			return e, q, automation.ScheduleInputError{Issue: "instruction"}
+		}
 		if !allowed[key] || len(values) != 1 || len(values[0]) > 8192 {
 			return e, q, automation.ErrInvalid
 		}
@@ -125,17 +139,29 @@ func decodeScheduleForm(r *http.Request) (*scheduleEditor, automation.OwnerConfi
 		return e, q, automation.ErrInvalid
 	}
 	q = automation.OwnerConfiguration{Ref: e.Ref, Version: e.Version, Instruction: e.Instruction, Timezone: e.Timezone, Enabled: e.Enabled}
+	if strings.TrimSpace(e.Instruction) == "" {
+		return e, q, automation.ScheduleInputError{Issue: "instruction"}
+	}
+	if e.Timezone == "" || len(e.Timezone) > 128 {
+		return e, q, automation.ScheduleInputError{Issue: "timezone"}
+	}
 	if e.Threshold != "" {
 		value, err := strconv.ParseInt(e.Threshold, 10, 64)
-		if err != nil {
-			return e, q, automation.ErrInvalid
+		if err != nil || value < 0 || value > 1000000000000 {
+			return e, q, automation.ScheduleInputError{Issue: "threshold"}
 		}
 		q.Below = &value
 	}
 	switch e.Frequency {
 	case "once":
 		q.Type = "at"
-		q.LocalDate, q.LocalClock = e.Date, e.Time
+		q.LocalDate, q.LocalClock, q.UTCOffset = e.Date, e.Time, e.UTCOffset
+		if e.Date == "" {
+			return e, q, automation.ScheduleInputError{Issue: "date"}
+		}
+		if e.Time == "" {
+			return e, q, automation.ScheduleInputError{Issue: "time"}
+		}
 		if e.Ref != "" && e.OriginalSpec != "" && e.OriginalTimezone == e.Timezone {
 			q.PreserveSpec = e.OriginalSpec
 		}
@@ -143,6 +169,9 @@ func decodeScheduleForm(r *http.Request) (*scheduleEditor, automation.OwnerConfi
 	case "custom":
 		q.Type = "cron"
 		q.Spec = e.Cron
+		if q.Spec == "" || len(q.Spec) > 256 {
+			return e, q, automation.ScheduleInputError{Issue: "cron"}
+		}
 	case "daily", "weekdays", "weekly", "monthly":
 		q.Type = "cron"
 		q.Frequency = &automation.OwnerFrequency{Frequency: e.Frequency, Clock: e.Time}
@@ -154,7 +183,7 @@ func decodeScheduleForm(r *http.Request) (*scheduleEditor, automation.OwnerConfi
 		}
 
 	default:
-		err = automation.ErrInvalid
+		err = automation.ScheduleInputError{Issue: "frequency"}
 	}
 	if err == nil {
 		err = q.ValidateShape()
@@ -174,11 +203,30 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 			return nil
 		}
 	}
-	message := "Check the instructions, schedule, time zone and threshold. One-time local times must be valid and unambiguous; enabled occurrences must be in the future."
-	if errors.Is(err, agent.ErrConflict) {
+	message := "Check the schedule fields and try again."
+	statusCode := http.StatusUnprocessableEntity
+	var minimum automation.ThresholdMinimumError
+	var issue automation.ScheduleInputError
+	switch {
+	case errors.As(err, &minimum):
+		e.MinBelow, e.ThresholdRejected = minimum.Minimum, true
+		message = "Check the notification threshold under Advanced."
+	case errors.As(err, &issue):
+		e.InvalidField, message = scheduleFieldDiagnostic(issue.Issue)
+		if len(issue.UTCOffsets) == 1 {
+			message = "Choose the UTC offset for the edited date and time."
+		}
+		if len(issue.UTCOffsets) > 0 {
+			e.UTCOffsets = issue.UTCOffsets
+		}
+		if e.InvalidField == "threshold" {
+			e.ThresholdRejected = true
+		}
+	case errors.Is(err, agent.ErrConflict):
+		statusCode = http.StatusConflict
 		message = "This schedule changed or can no longer be edited. Your draft is preserved. Reload the saved schedule before making a new change."
-	}
-	if err != nil && !errors.Is(err, automation.ErrInvalid) && !errors.Is(err, agent.ErrConflict) {
+	case !errors.Is(err, automation.ErrInvalid):
+		statusCode = http.StatusServiceUnavailable
 		message = "The schedule could not be saved. Your draft is preserved; try again with the same form."
 	}
 	p := page{Tab: "/tasks", View: "schedule", Title: "Schedule settings", Path: r.URL.Path, Schedule: e, Error: message}
@@ -190,11 +238,66 @@ func (s *Server) configureSchedule(w http.ResponseWriter, r *http.Request) error
 		p.Status = status
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusConflict)
+	w.WriteHeader(statusCode)
 	s.render(w, r, p)
 	return nil
 }
 
+// The owner confirms a saved revision. The editor draft never becomes executable input.
+func (s *Server) trialSchedule(w http.ResponseWriter, r *http.Request) error {
+	service, ok := s.Schedules.(interface {
+		TrialSchedule(context.Context, string, string, int64) (string, error)
+	})
+	if !ok {
+		return errPageNotFound
+	}
+	f := r.PostForm
+	if len(f) != 3 || len(f["version"]) != 1 || len(f["source_id"]) != 1 || len(f["ref"]) != 1 {
+		fail(w, 400)
+		return nil
+	}
+	version, err := strconv.ParseInt(f.Get("version"), 10, 64)
+	if err != nil {
+		fail(w, 400)
+		return nil
+	}
+	ref, err := service.TrialSchedule(r.Context(), f.Get("source_id"), f.Get("ref"), version)
+	if err != nil {
+		return err
+	}
+	http.Redirect(w, r, taskURL(ref), http.StatusSeeOther)
+	return nil
+}
+
+func scheduleFieldDiagnostic(issue string) (string, string) {
+	switch issue {
+	case "timezone":
+		return "timezone", "Enter an IANA time zone such as Asia/Shanghai."
+	case "cron":
+		return "cron", "Enter a valid five-field cron expression with a future occurrence."
+	case "date":
+		return "date", "Enter a valid calendar date."
+	case "future":
+		return "date", "Choose a future date and time for this one-time schedule."
+	case "time":
+		return "time", "Choose a local time that exists in this time zone."
+	case "utc_offset":
+		return "utc_offset", "This local time occurs twice. Choose which UTC offset to use."
+	case "instruction":
+		return "instruction", "Enter instructions of up to 8192 UTF-8 bytes."
+	case "weekday":
+		return "weekday", "Select a day of the week."
+	case "day":
+		return "day", "Enter a day of the month from 1 to 31."
+	case "frequency":
+		return "frequency", "Select a supported schedule frequency."
+	case "threshold":
+		return "threshold", "Enter a whole number within the threshold limits."
+	}
+	return "", "Check the schedule fields and try again."
+}
+
 func applyScheduleDefaults(e *scheduleEditor, v automation.EditorDefaults) {
+	e.MinBelow = v.MinBelow
 	e.Frequency, e.Date, e.Time, e.Timezone, e.Cron, e.Weekday, e.Day, e.Enabled = v.Frequency, v.Date, v.Clock, v.Timezone, v.Cron, v.Weekday, v.Day, v.Enabled
 }

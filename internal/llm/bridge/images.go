@@ -67,7 +67,7 @@ func resolveImages(ctx context.Context, r llm.GenerationRequest) (map[string]ima
 // Decode and resize one authorized input; selection, deduplication and envelope
 // budgeting stay with resolveImages. Invalid files fail before provider dispatch.
 func previewImage(kind string, data []byte) (imagePayload, error) {
-	img, err := media.DecodeImage(kind, data)
+	img, err := media.DecodeModelImage(kind, data)
 	if err != nil {
 		return imagePayload{}, llm.ModelIncompatible
 	}

@@ -31,6 +31,8 @@ type ownerSchedulePlan struct {
 	epoch              int64
 	next               time.Time
 	invalid            bool
+	minimumBelow       int64
+	inputIssue         automation.ScheduleInputError
 	managed            bool
 	localDisable       bool
 	requireActive      bool
@@ -126,7 +128,7 @@ func (r *Runs) prepareOwnerScheduleRequest(ctx context.Context, key, hash string
 	if !errors.Is(err, sql.ErrNoRows) {
 		return plan, err
 	}
-	if !q.Enabled && q.Ref != "" {
+	if !q.Enabled && q.Ref != "" && q.UTCOffset == "" {
 		// Unchanged local stop is a Host control, not a new business configuration.
 		var originalSpec string
 		var originalFrequency, originalLocal sql.NullString
@@ -192,6 +194,10 @@ func (r *Runs) prepareOwnerScheduleRequest(ctx context.Context, key, hash string
 		return plan, err
 	}
 	if !plan.managed {
+		if q.UTCOffset != "" {
+			plan.invalid = true
+			return plan, nil
+		}
 		if q.Frequency != nil {
 			q.Spec, err = automation.HistoricalFrequency(q.Frequency.Frequency, q.Frequency.Clock, q.Frequency.Weekday, q.Frequency.Day)
 			if err != nil {
@@ -229,7 +235,7 @@ func (r *Runs) computeSchedule(ctx context.Context, plan ownerSchedulePlan, q au
 	control.Fence = func(ctx context.Context, tx *sql.Tx) error { return r.ownerScheduleFence(ctx, tx, frozen) }
 	host := rsi.Host{Catalog: catalog, Store: control}
 	if q.LocalDate != "" {
-		input, _ := json.Marshal(contract.LocalTimeFacts{Date: q.LocalDate, Clock: q.LocalClock, Timezone: q.Timezone, OriginalSpec: q.PreserveSpec})
+		input, _ := json.Marshal(contract.LocalTimeFacts{Date: q.LocalDate, Clock: q.LocalClock, Timezone: q.Timezone, UTCOffset: q.UTCOffset, OriginalSpec: q.PreserveSpec})
 		output, err := host.ReadService(ctx, plan.graph, contract.LocalTime, input, nil)
 		if err != nil {
 			return plan, err
@@ -239,11 +245,24 @@ func (r *Runs) computeSchedule(ctx context.Context, plan ownerSchedulePlan, q au
 			return plan, rsi.ErrInvalid
 		}
 		if local.ErrorCode == "INVALID_ARGUMENT" && local.Spec == "" {
+			switch local.Field {
+			case "", "date", "timezone", "time":
+				if len(local.UTCOffsets) != 0 {
+					return plan, rsi.ErrInvalid
+				}
+			case "utc_offset":
+				if len(local.UTCOffsets) < 1 || len(local.UTCOffsets) > 2 || !automation.ValidUTCOffset(local.UTCOffsets[0]) || (len(local.UTCOffsets) == 2 && (!automation.ValidUTCOffset(local.UTCOffsets[1]) || local.UTCOffsets[0] == local.UTCOffsets[1])) {
+					return plan, rsi.ErrInvalid
+				}
+			default:
+				return plan, rsi.ErrInvalid
+			}
+			plan.inputIssue = automation.ScheduleInputError{Issue: local.Field, UTCOffsets: local.UTCOffsets}
 			plan.invalid = true
 			return plan, nil
 		}
 		at, err := time.Parse(time.RFC3339Nano, local.Spec)
-		if local.ErrorCode != "" || err != nil || at.IsZero() || (at.UTC().Format(time.RFC3339) != local.Spec && local.Spec != q.PreserveSpec) {
+		if local.ErrorCode != "" || local.Field != "" || len(local.UTCOffsets) != 0 || err != nil || at.IsZero() || (at.UTC().Format(time.RFC3339) != local.Spec && local.Spec != q.PreserveSpec) {
 			return plan, rsi.ErrInvalid
 		}
 		q.Spec = local.Spec
@@ -261,10 +280,16 @@ func (r *Runs) computeSchedule(ctx context.Context, plan ownerSchedulePlan, q au
 			return plan, rsi.ErrInvalid
 		}
 		if value.ErrorCode == "INVALID_ARGUMENT" && value.Spec == "" {
+			switch value.Field {
+			case "", "time", "day", "weekday", "frequency":
+			default:
+				return plan, rsi.ErrInvalid
+			}
+			plan.inputIssue.Issue = value.Field
 			plan.invalid = true
 			return plan, nil
 		}
-		if value.ErrorCode != "" || value.Spec == "" || len(value.Spec) > 256 {
+		if value.ErrorCode != "" || value.Field != "" || value.Spec == "" || len(value.Spec) > 256 {
 			return plan, rsi.ErrInvalid
 		}
 		q.Spec = value.Spec
@@ -280,10 +305,16 @@ func (r *Runs) computeSchedule(ctx context.Context, plan ownerSchedulePlan, q au
 		return plan, rsi.ErrInvalid
 	}
 	if value.ErrorCode == "INVALID_ARGUMENT" && value.Next == "" {
+		switch value.Field {
+		case "", "timezone", "date", "cron":
+		default:
+			return plan, rsi.ErrInvalid
+		}
+		plan.inputIssue.Issue = value.Field
 		plan.invalid = true
 		return plan, nil
 	}
-	if value.ErrorCode != "" {
+	if value.ErrorCode != "" || value.Field != "" {
 		return plan, rsi.ErrInvalid
 	}
 	plan.next, err = time.Parse(time.RFC3339Nano, value.Next)
@@ -352,6 +383,11 @@ func (r *Runs) computeSchedule(ctx context.Context, plan ownerSchedulePlan, q au
 		if err != nil {
 			return plan, err
 		}
+		if q.Below != nil && *q.Below < value.MinBelow {
+			plan.invalid = true
+			plan.minimumBelow = value.MinBelow
+			return plan, nil
+		}
 		plan.presentation.EditorDefaults = &value
 	}
 
@@ -376,6 +412,9 @@ func checkScheduleGraphTx(ctx context.Context, tx *sql.Tx, graph string) error {
 // authenticates an existing receipt; it never accepts new managed work or
 // changes its saved result. Retire with pre-local-input owner receipts.
 func historicalOwnerScheduleReceipt(q automation.OwnerConfiguration, hash string) bool {
+	if q.UTCOffset != "" {
+		return false
+	}
 	var spec string
 	var err error
 	if q.Frequency != nil {

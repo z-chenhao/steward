@@ -6,16 +6,20 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/netip"
+	"net/url"
+	"strings"
 	"time"
 )
 
 // StatusFacts are authoritative credential/transport observations, without
 // replaceable repair instructions or presentation policy.
 type StatusFacts struct {
-	Channel   string     `json:"channel"`
-	Mode      string     `json:"mode"`
-	State     string     `json:"state"`
-	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	Channel            string     `json:"channel"`
+	Mode               string     `json:"mode"`
+	State              string     `json:"state"`
+	WorkspaceLinkScope string     `json:"workspace_link_scope,omitempty"`
+	ExpiresAt          *time.Time `json:"expires_at,omitempty"`
 }
 type ConnectionStatus struct {
 	StatusFacts
@@ -25,6 +29,15 @@ type ConnectionStatus struct {
 
 func (c Client) ConnectionFacts() StatusFacts {
 	status := StatusFacts{Channel: "feishu", Mode: "external_token", State: "unchecked"}
+	if origin, err := url.Parse(c.Config.WorkspaceURL); err == nil && origin.Hostname() != "" {
+		host := strings.TrimSuffix(strings.ToLower(origin.Hostname()), ".")
+		ip, _ := netip.ParseAddr(host)
+		if host == "localhost" || strings.HasSuffix(host, ".localhost") || ip.Unmap().IsLoopback() {
+			status.WorkspaceLinkScope = "same_device_only"
+		} else if origin.Scheme == "https" {
+			status.WorkspaceLinkScope = "configured_https"
+		}
+	}
 	if c.Config.AppSecretRef != "" {
 		status.Mode = "app_credentials"
 	}

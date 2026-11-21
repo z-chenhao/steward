@@ -22,7 +22,7 @@
 
 **当前实现**：已有前台应用/worker、doctor/status/ops 健康诊断、日志轮转、加密备份、恢复验证和显式切换，以及持久执行恢复。macOS 新增显式安装、启停和卸载的用户级后台 Web 服务，以及独立的每分钟巡检；人工停止先持久保存，巡检只重启退出的进程，连续恢复有上限，未配置、凭据/供应商不可用和依赖失效分别可见。
 
-**边界与剩余工作**：后台服务首个平台限 macOS 的当前图形登录会话，退出登录后停止，重新登录时仅恢复仍启用的意图；不支持 Linux/Windows、系统级开机运行或云端部署。巡检的去重提示保存在 `service status`，尚无主动渠道告警。真实 launchd 登录/重启、系统升级与系统集成需在隔离账户进行平台验证；协议替身和 CLI 回归不能证明这些系统集成已经验收。复用既有恢复器，不重试 unknown 副作用，不进行语义 Watchdog 自治修改。备份不包含凭据、Guest 镜像或服务安装状态等外部资源，不能同时运行同身份的两个恢复副本。
+**边界与剩余工作**：后台服务首个平台限 macOS 的当前图形登录会话，退出登录后停止，重新登录时仅恢复仍启用的意图；不支持 Linux/Windows、系统级开机运行或云端部署。巡检的去重提示保存在 `service status`。服务拥有者可选择飞书会话接收持续故障和恢复通知。真实 launchd 登录/重启、系统升级与系统集成需在隔离账户进行平台验证；协议替身和 CLI 回归不能证明这些系统集成已经验收。复用既有恢复器，不重试 unknown 副作用，不进行语义 Watchdog 自治修改。备份不包含凭据、Guest 镜像或服务安装状态等外部资源，不能同时运行同身份的两个恢复副本。
 
 **验收目标**：备份认证、坏包拒绝、隔离恢复、兼容升级及激活 fencing 正确；关闭界面后后台任务继续，主服务退出时巡检仍独立工作并按故障类别处理；重启、升级、凭据失效和人工停机后行为正确，无双实例执行或通知风暴。
 
@@ -59,7 +59,9 @@ steward service uninstall
 
 安装只写入两个用户 LaunchAgent，保持停止；`start` 才授权登录后持续运行。默认服务提供 `http://127.0.0.1:8787` 的既有 Web 工作台、托管本地 broker 和相同运行时；未选模型时保留设置界面，不自动选择模型。使用 `steward -config /absolute/config.yaml service install` 时，配置必须包含现有 `web` 与外部 broker 设置。自定义 data root 继续用 `STEWARD_DATA_ROOT`；安装不复制凭据或任意环境变量，仅保存配置路径、data root 和非秘密 PATH。使用本地私有文件中的凭据；shell 中临时设置的 `env:` 凭据不会自动进入 launchd。
 
-`service status` 分别返回安装、启用和实际进程锁状态。`setup_required` 表示尚未配置模型；`credential_or_provider_unavailable` 与 `dependency_unavailable` 表示仍存活的运行时需要修复，巡检不会反复重启。心跳过期返回 `health_stale`，不会假装健康或杀死仍持锁的进程。退出进程最多每分钟尝试一次恢复，连续三次且未观察到 ready 后转为 `restart_limit`；修复后显式 `service start` 重置次数。`configuration_error`/`startup_failed` 也需要修复后手动启动。去重 `notice` 与 `notice_sequence` 是本地诊断提示，不代表渠道消息已投递。
+`service status` 分别返回安装、启用和实际进程锁状态。`setup_required` 表示尚未配置模型；`credential_or_provider_unavailable` 与 `dependency_unavailable` 表示仍存活的运行时需要修复，巡检不会反复重启。心跳过期返回 `health_stale`，不会假装健康或杀死仍持锁的进程。退出进程最多每分钟尝试一次恢复，连续三次且未观察到 ready 后转为 `restart_limit`；修复后显式 `service start` 重置次数。`configuration_error`/`startup_failed` 也需要修复后手动启动。本地 `notice` 与 `notice_sequence` 记录诊断变化。已选择飞书渠道时，`alerts.last_fault` 和 `alerts.last_recovery` 分别记录最近一次故障／恢复的接纳时间、固定诊断码和投递结果。
+
+使用 `steward -config /absolute/config.yaml service alerts-feishu /absolute/data-root oc_CHAT_ID` 选择一个已配置飞书账户的会话。使用 `steward service alerts-off /absolute/data-root` 可关闭投递。用户设备上保留收件会话与 SecretStore 引用。当前 watchdog 配方观察连续异常至少 60 秒后发送一次，诊断从进程退出转为重启受限仍属于同次故障；首次再次观察到 ready 后发送恢复。外部响应丢失记为 `unknown` 并保留，发送进程不重放。同一部署尚未取得支持通知的配方时显示 `waiting_for_watchdog_recipe`，本地状态仍可查询。飞书消息只含固定诊断和本机状态命令。
 
 人工 `stop` 先保存禁用意图，再停止主服务和巡检；信号失败、排队中的巡检及下一次登录都不能覆盖禁用意图。若配置文件损坏，可跳过配置解析直接执行 `steward service stop /absolute/data-root`，`start/status/uninstall` 同样支持明确 data root。相同 root 的后台实例由 OS 锁排他；不要同时启动该 root 的另一前台 Web 服务。
 
@@ -89,6 +91,8 @@ its recovery point.
 <a id="operations-run-and-diagnose"></a>
 
 ### Run and diagnose
+
+运维命令 `ops trace` 在同一个只读快照内返回 Run 状态和事件，并区分记录缺失、取消与存储不可用。
 
 `steward -config CONFIG web serve`, `tui`, and `automation work` own the
 foreground production lifecycle. Setup remains available without a usable
@@ -209,6 +213,8 @@ and serving commands validate policy; they never silently alter existing bounds.
 <a id="operations-cold-encrypted-backup-and-isolated-restore"></a>
 
 ### Cold encrypted backup and isolated restore
+
+备份清单版本 2 同时保留 Host 已安装且未退役的内容寻址插件包，包括已停用但被历史 Run 引用的版本。恢复后仍须显式激活。旧版归档可恢复，若有缺失包，从独立副本把原 digest 的包目录复制到新根的 `rsi/packages/` 后再执行激活。单个大文件复制期间取消会中止发布。
 
 Stop **every** process using the data root, including temporary CLI commands and
 external database writers. Every Steward process holds a shared OS lock. Backup

@@ -20,7 +20,7 @@ import (
 
 func workbenchOwnerCase(t *testing.T) rsi.Case {
 	t.Helper()
-	raw, err := os.ReadFile("../rsi/builtin/web-workbench-owner-v1.json")
+	raw, err := os.ReadFile("../rsi/builtin/web-workbench-owner-v1.0.6.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func independentWorkbenchPackage(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.0"`, `Version: "1.1.0"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.6"`, `Version: "1.1.0"`, 1)
 	code = strings.Replace(code, `"encoding/json"`, `"encoding/json"`+"\n\"strings\"", 1)
 	code = strings.Replace(code, `asset(copyText)`, `asset(strings.Replace(copyText, `+"`\"en\": \"Execution records\"`"+`, `+"`\"en\": \"Execution records v2\"`"+`, 1))`, 1)
 	code = strings.Replace(code, `return contract.Presentation{View:`, `policy.PollMS=1200

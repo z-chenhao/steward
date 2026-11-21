@@ -69,6 +69,9 @@ func memoryInspectionNavigation(q memory.InspectionQuery, page memory.Inspection
 	}
 	for _, m := range page.Maintenance {
 		add("ref", m.Ref)
+		for _, change := range m.Changes {
+			add("ref", change.Ref)
+		}
 	}
 	for _, item := range page.Items {
 		add("ref", item.Ref)
@@ -140,7 +143,7 @@ func acceptMemoryInspectionPresentation(revision string, req contract.Request, r
 			return nil, invalid
 		}
 	}
-	p := &memory.InspectionPresentation{ReaderRevision: revision, Program: result.Program.Source, ProgramDigest: digests.Program, Copy: copy, CopyDigest: digests.Copy, ViewSource: result.View.Source, ViewDigest: digest, Stylesheet: result.Stylesheet.Source, StylesheetDigest: stylesDigest, Links: make([]memory.InspectionLink, len(result.URLs)), Source: memory.InspectionSourceLabels{Conversation: s.Conversation, Task: s.Task, Tool: s.Tool, Control: s.Control, Other: s.Other}, Origin: memory.InspectionOriginLabels{Written: o.Written, Dream: o.Dream, Original: o.Original, Automatic: o.Automatic, Explicit: o.Explicit, Other: o.Other}, Layer: memory.InspectionLayerLabels{Transcripts: l.Transcripts, Representations: l.Representations, Injected: l.Injected, Notes: l.Notes}, DefaultStatus: result.Labels.DefaultStatus}
+	p := &memory.InspectionPresentation{CorrectionDraft: result.CorrectionDraft, ReaderRevision: revision, Program: result.Program.Source, ProgramDigest: digests.Program, Copy: copy, CopyDigest: digests.Copy, ViewSource: result.View.Source, ViewDigest: digest, Stylesheet: result.Stylesheet.Source, StylesheetDigest: stylesDigest, Links: make([]memory.InspectionLink, len(result.URLs)), Source: memory.InspectionSourceLabels{Conversation: s.Conversation, Task: s.Task, Tool: s.Tool, Control: s.Control, Other: s.Other}, Origin: memory.InspectionOriginLabels{Written: o.Written, Dream: o.Dream, Original: o.Original, Automatic: o.Automatic, Explicit: o.Explicit, Other: o.Other}, Layer: memory.InspectionLayerLabels{Transcripts: l.Transcripts, Representations: l.Representations, Injected: l.Injected, Notes: l.Notes}, DefaultStatus: result.Labels.DefaultStatus}
 	for i, raw := range result.URLs {
 		u, e := url.Parse(raw)
 		if e != nil || len(raw) > 16384 || u.Scheme != "" || u.Host != "" || u.User != nil || u.Opaque != "" || u.Fragment != "" || u.Path != "/developer/memory" || u.RawPath != "" {

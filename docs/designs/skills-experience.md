@@ -6,7 +6,7 @@
 
 ## 当前架构
 
-Catalog 向 Worker 提供冻结版本的读取工具；可信 Reviewer 维护 skill_candidate 与验证回执，并将已晋升方法发布进目录。自动事件到 Reviewer 的路径尚未连接。
+Catalog 向 Worker 提供冻结版本的读取工具；可信 Reviewer 维护 skill_candidate 与验证回执，并将已晋升方法发布进目录。显式授权的多次独立纠正进入 Reviewer 候选队列。
 
 system 不注入 `<skills>` 或 Skill 索引。Agent 通过 `skill_list({query?, limit?})` 按需搜索当前 Run 的冻结目录；query 匹配名称与用途，复用工具发现的确定性关键词排名（支持中英文），空查询按名称浏览。默认 8 条，limit 限于 1–128 条，返回仅含 name/description，不加载正文。Host 的版本、范围、资源来源留在冻结元数据中。`skill_view({name, path?})` 按名称读取正文或相对资源，适配器校验冻结文件指纹；Skill 不声明角色，也不授予工具权限。
 
@@ -137,4 +137,12 @@ Skill 是方法库，Memory 是用户事实，两者分开。Skill 目录保存�
 
 方法库发现／资源入口已迁入独立策略包，冻结文件与权限仍归 Host；设计边界见[插件设计](../designs/plugins-evolution.md#已提取的方法库边界)。相关回归为 `TestSkillPlugin*`、`make test-prompts` 与 `capabilities` 实际分发包场景。经验 Reviewer 的原始证据、验证和晋升不因此开放给普通插件。
 
-经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。F-023 的自动触发／编排仍待实现。
+经验配方已迁入私有独立服务；候选原始方法、版本、可信最低门槛与发布归属仍由 Host 持有。组合固定、升级回退与拒绝降低门槛的边界见[插件设计](../designs/plugins-evolution.md#已提取的经验配方边界)，回归为 `TestExperiencePlugin*` 与 `memory-maintenance` 真实 Reviewer 场景。已授权纠正的自动入口与独立来源门槛见本页，重复成功和恢复失败的自动编排仍待实现。
+
+### 示范草案的私有边界
+
+浏览器只监听操作者显式开始和停止之间的受信事件，每次限于当前本机页面，最多 32 步。录制文件和最终草案由操作者持有。经身份验证的 Web 入口只接受动作、标签和独立样例的有限状态转移。Host 读取当前有效组合，向 `experience-learning` 独立进程分发私有 `steward.browser-demonstration/1`；停用或隔离后拒绝新的复验。插件生成步骤并从初态沿样例边验证终态，无浏览器、持久化或网络写入能力。此操作独立于带执行证据的经验候选晋升，跨页面录制与网站自动回放超出此试点。
+
+### 独立纠正的聚合
+
+受信入口只识别本机操作者显式发送的单文本学习指令，按私密内容检查和大小上限筛查。当前 `experience-learning` 组合的私有 `steward.correction-recipe/1` 将授权步骤组织成程序并指定独立来源门槛。Host 校验门槛至少为二、检查当前组合和 Forget 界线，再在原输入事务中按 Main Run 去重、按 Conversation 顺序绑定原始引用，复用既有 Reviewer 提案与版本记录。正式方法只由既有独立验证和所有者晋升写出。历史拒绝不会因重试、换组合或再次使用同名方法键而恢复。

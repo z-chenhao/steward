@@ -22,7 +22,7 @@ import (
 
 func installExperiencePlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
 	t.Helper()
-	policy := rsi.Policy{ID: "experience-owner-fixture", AllowedContracts: []string{contract.Contract}}
+	policy := rsi.Policy{ID: "experience-owner-fixture", AllowedContracts: []string{contract.Contract, contract.Demonstration, contract.CorrectionRecipe}}
 	for _, reason := range []string{"success", "correction", "recovered_failure"} {
 		n := 1
 		if reason == "success" {
@@ -32,6 +32,10 @@ func installExperiencePlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
 		expected, _ := json.Marshal(contract.Policy{RequiredRuns: n, Introduction: ""})
 		policy.Cases = append(policy.Cases, rsi.Case{InstanceID: "experience-learning", Contract: contract.Contract, Input: input, Expected: expected})
 	}
+	policy.Cases = append(policy.Cases, rsi.Case{InstanceID: "experience-learning", Contract: contract.Demonstration, Input: json.RawMessage(`{"name":"Preview","steps":[{"action":"activate","label":"Preview"}],"sample":[],"goal":0}`), Expected: json.RawMessage(`{"steps":["1. Activate \"Preview\"."],"matched":0,"verified":false}`)})
+	input, _ := json.Marshal(contract.CorrectionInput{Steps: []string{"Review the staged change.", "Run the focused checks."}})
+	output, _ := json.Marshal(contract.CorrectionPlan{IndependentRuns: 2, Procedure: "1. Review the staged change.\n2. Run the focused checks."})
+	policy.Cases = append(policy.Cases, rsi.Case{InstanceID: "experience-learning", Contract: contract.CorrectionRecipe, Input: input, Expected: output})
 	return installRuntimeFeature(t, s, r, "experience-learning", policy)
 }
 func TestExperiencePluginCannotLowerTrustedEvidenceFloor(t *testing.T) {
@@ -115,7 +119,7 @@ func experienceVersionPackage(t *testing.T, version string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.1"`, `Version: "`+version+`"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.3"`, `Version: "`+version+`"`, 1)
 	if version == "1.1.0" {
 		code = strings.Replace(code, `n = 2`, `n = 3`, 1)
 		code = strings.Replace(code, `Introduction: ""`, `Introduction: "Independently reviewed reusable method."`, 1)
@@ -186,6 +190,9 @@ func TestExperiencePluginIndependentPolicyCandidateFreezeAndRollback(t *testing.
 	}
 	policy.ID = "experience-owner-v11"
 	for i := range policy.Cases {
+		if policy.Cases[i].Contract != contract.Contract {
+			continue
+		}
 		var expected contract.Policy
 		if err = json.Unmarshal(policy.Cases[i].Expected, &expected); err != nil {
 			t.Fatal(err)

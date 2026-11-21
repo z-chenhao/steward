@@ -96,7 +96,8 @@ test-github-plugins: build
 # Keep owner, Run, historical reference and pure-method regressions in CI.
 test-artifact-plugins: build
 	go test -race ./internal/artifact/... ./internal/plugin/artifactworkbench/... -count=1
-	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" go test -race -p 1 -timeout=15m ./internal/rsi ./internal/agent/sqlite ./internal/app ./cmd/steward -run '^Test(Artifact.*|V68Artifact.*|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$$' -count=1
+	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" go test -race -p 1 -timeout=15m ./internal/rsi ./internal/app ./cmd/steward -run '^Test(Artifact.*|V68Artifact.*|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$$' -count=1
+	STEWARD_TEST_APP_DEFAULT_BUNDLE="$(CURDIR)/bin/steward" python3 tests/system/race.py --part artifact-sqlite
 
 test-node:
 	npm run check --prefix web

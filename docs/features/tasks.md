@@ -6,6 +6,8 @@
 
 ## 功能说明
 
+工作区的配置、执行及计划搜索支持 Unicode 简单大小写折叠。带特殊字符的搜索词也可以连续翻页。
+
 用户能把耗时工作交给后台，之后通过对话追加、暂停、继续、取消或结束。
 
 用户主动查看时能了解当前阶段、摘要与子任务完成情况。
@@ -72,7 +74,7 @@ steward chat work  # 未运行前台工作服务时，显式处理已接纳的�
 
 回答文本上限 16 KiB。重复提交同一记录与完全相同文本返回原接纳回执，不同的第二次回答得到冲突。回答与 Main 输入原子保存，回应本身不创建 Worker，也不批准外部动作。Main 若据此追加工作，保留 `feedbackRef` 因果；宿主重检确切 Task、epoch 和隐私边界。新的普通用户输入仍由 Main 理解其意图，宿主不推断自然语言授权。
 
-每个 Task 只保留一个当前待办，新问题/审阅替代旧待办；默认七天到期。暂停、取消、Forget、新一轮工作或更新的成果审阅会使旧反馈失效；即使旧回答已入队，后续处理也不能借其恢复旧工作。用户需要通过新的普通对话明确继续。待办属于非阻塞信息，不替代审批，也不将“认可成果”转换成具体动作授权。
+每个 Task 在同一轮可同时保留一个问题和一个成果审阅。再次提问只替代原问题，再次请求审阅只替代原审阅，默认七天到期。旧版本固定的反馈沿用整个 Task 单槽。暂停、取消、Forget、新一轮工作或更新的成果审阅会使旧反馈失效；即使旧回答已入队，后续处理也不能借其恢复旧工作。用户需要通过新的普通对话明确继续。待办属于非阻塞信息，不替代审批，也不将“认可成果”转换成具体动作授权。
 
 ## 详细操作参考
 
@@ -86,6 +88,8 @@ steward chat work  # 未运行前台工作服务时，显式处理已接纳的�
 <a id="tasks-task-delegation-and-root-recovery"></a>
 
 ## Task delegation and Root recovery
+
+恢复积压结果时，Reporter 按发生顺序分批提交收件箱与消费记录，每批释放写事务以便接纳新输入。
 
 The M2 slices add Main-only Task discovery, create/append/pause/cancel/complete,
 independent Root execution and durable Main follow-ups. Use a selected, probed
@@ -220,3 +224,5 @@ Root 执行失败时，Task 保持可续作；Host 同时持久保存带任务�
 Task 搜索／默认标题已独立迁移；状态、Root、epoch、审批、原始 brief 与回执仍归 Host，已定位任务的安全控制保持独立。契约与恢复取舍见[插件设计](../designs/plugins-evolution.md#已提取的-task-发现与标题边界)。验证为 `TestTaskPlugin*`、`make test-prompts`、`tasks` 和 `task-control` 的实际分发包门禁。
 
 Task 搜索／标题及问答配方的原生兼容入口集中在具名 `task_legacy_v1.go`，只服务无迁移标记的历史执行与 never-managed 嵌入，随这些消费者退役删除。实际重开 Store／Catalog 后，原排队请求和已接纳问答继续使用原版本；停用不阻断原问题回答，也不恢复新标签／问题创建。状态、epoch、单活动 Root、来源与交付事务仍由 Host 保持。
+
+任务详情可以按消息序号向前翻阅全部正式交付，并跳转到原消息；配置列表的计划与普通任务有独立翻页入口。较小的纯文本、JSON、PNG 和 JPEG 文件在审阅入口可直接预览，原件仍可下载。

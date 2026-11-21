@@ -440,6 +440,21 @@
     "zh_cn": "数值进入以下阈值时通知"
   },
   {
+    "key": "More schedules →",
+    "en": "More schedules →",
+    "zh_cn": "更多计划 →"
+  },
+  {
+    "key": "Older deliveries →",
+    "en": "Older deliveries →",
+    "zh_cn": "更早的交付 →"
+  },
+  {
+    "key": "Preview",
+    "en": "Preview",
+    "zh_cn": "预览"
+  },
+  {
     "key": "Older milestones →",
     "en": "Older milestones →",
     "zh_cn": "更早的里程碑 →"
@@ -485,9 +500,14 @@
     "zh_cn": "在新标签页打开"
   },
   {
-    "key": "Optional integer threshold. Leave blank for ordinary scheduling; zero is a valid threshold. Editing a schedule stops observations from older schedule versions from notifying.",
-    "en": "Optional integer threshold. Leave blank for ordinary scheduling; zero is a valid threshold. Editing a schedule stops observations from older schedule versions from notifying.",
-    "zh_cn": "可选的整数阈值；普通计划请留空，0 也是有效值。编辑计划后，旧版本计划的观测不再触发通知。"
+    "key": "Notify when the observed integer drops below this threshold. Enter 1 to detect zero. Leave blank for ordinary scheduling.",
+    "en": "Notify when the observed integer drops below this threshold. Enter 1 to detect zero. Leave blank for ordinary scheduling.",
+    "zh_cn": "观测到的整数降到阈值以下时通知。要在数值降到零时提醒，请填 1。普通计划请留空。"
+  },
+  {
+    "key": "Minimum threshold",
+    "en": "Minimum threshold",
+    "zh_cn": "阈值下限"
   },
   {
     "key": "Outcome unconfirmed",
@@ -578,6 +598,11 @@
     "key": "Running / queued / waiting",
     "en": "Running / queued / waiting",
     "zh_cn": "运行中 / 排队中 / 等待中"
+  },
+  {
+    "key": "Runs the saved instructions in a separate task with its own approvals and results. Unsaved edits are excluded.",
+    "en": "Runs the saved instructions in a separate task with its own approvals and results. Unsaved edits are excluded.",
+    "zh_cn": "使用已保存的指令创建独立任务，可单独查看审批和结果。当前未保存的修改不会进入试运行。"
   },
   {
     "key": "Saturday",
@@ -740,6 +765,11 @@
     "zh_cn": "技术详情"
   },
   {
+    "key": "Test saved schedule",
+    "en": "Test saved schedule",
+    "zh_cn": "试运行已保存的计划"
+  },
+  {
     "key": "The original objective and completion rule are fixed for this task. Create a new task to use a different completion rule.",
     "en": "The original objective and completion rule are fixed for this task. Create a new task to use a different completion rule.",
     "zh_cn": "此任务的原始目标和完成规则已固定；如需不同的完成规则，请创建新任务。"
@@ -830,9 +860,9 @@
     "zh_cn": "更新已暂停，草稿已保留。 "
   },
   {
-    "key": "Use an IANA time zone. One-time times during a clock change must identify one unambiguous instant.",
-    "en": "Use an IANA time zone. One-time times during a clock change must identify one unambiguous instant.",
-    "zh_cn": "请使用 IANA 时区；单次计划在夏令时切换期间必须对应唯一的有效时间。"
+    "key": "Use an IANA time zone. If the same local time occurs twice, choose its UTC offset.",
+    "en": "Use an IANA time zone. If the same local time occurs twice, choose its UTC offset.",
+    "zh_cn": "请输入 IANA 时区。本地时间出现两次时，请选择对应的 UTC 偏移。"
   },
   {
     "key": "Use model",
@@ -1023,5 +1053,140 @@
     "key": "· epoch",
     "en": "· epoch",
     "zh_cn": "· 执行轮次"
+  },
+  {
+    "key": "UTC offset",
+    "en": "UTC offset",
+    "zh_cn": "UTC 偏移"
+  },
+  {
+    "key": "Select a UTC offset",
+    "en": "Select a UTC offset",
+    "zh_cn": "选择 UTC 偏移"
+  },
+  {
+    "key": "GitHub pull request rule",
+    "en": "GitHub pull request rule",
+    "zh_cn": "GitHub PR 规则"
+  },
+  {
+    "key": "Choose a pull request",
+    "en": "Choose a pull request",
+    "zh_cn": "选择 PR"
+  },
+  {
+    "key": "Rule details are unavailable. Refresh to try again.",
+    "en": "Rule details are unavailable. Refresh to try again.",
+    "zh_cn": "暂时无法读取规则，请刷新后重试。"
+  },
+  {
+    "key": "Another task is watching this pull request.",
+    "en": "Another task is watching this pull request.",
+    "zh_cn": "另一个任务正在观察这个 PR。"
+  },
+  {
+    "key": "Observing",
+    "en": "Observing",
+    "zh_cn": "观察中"
+  },
+  {
+    "key": "Automatic continuation enabled",
+    "en": "Automatic continuation enabled",
+    "zh_cn": "已启用自动接续"
+  },
+  {
+    "key": "Waiting for a successful check of the configured pull request.",
+    "en": "Waiting for a successful check of the configured pull request.",
+    "zh_cn": "正在等待已配置的 PR 成功完成一次检查。"
+  },
+  {
+    "key": "Observe when",
+    "en": "Observe when",
+    "zh_cn": "观察事件"
+  },
+  {
+    "key": "Observation records matches. Your task will wait for instructions.",
+    "en": "Observation records matches. Your task will wait for instructions.",
+    "zh_cn": "观察期间只记录匹配情况，任务会等待你的指示。"
+  },
+  {
+    "key": "Start observing",
+    "en": "Start observing",
+    "zh_cn": "开始观察"
+  },
+  {
+    "key": "New matches can continue this task automatically.",
+    "en": "New matches can continue this task automatically.",
+    "zh_cn": "之后有事件匹配时，将自动接续此任务。"
+  },
+  {
+    "key": "Enable automatic continuation",
+    "en": "Enable automatic continuation",
+    "zh_cn": "启用自动接续"
+  },
+  {
+    "key": "Stop rule",
+    "en": "Stop rule",
+    "zh_cn": "停止规则"
+  },
+  {
+    "key": "Recent observations",
+    "en": "Recent observations",
+    "zh_cn": "最近观察记录"
+  },
+  {
+    "key": "Waiting for new events on this rule.",
+    "en": "Waiting for new events on this rule.",
+    "zh_cn": "正在等待符合观察范围的新事件。"
+  },
+  {
+    "key": "Refresh observations",
+    "en": "Refresh observations",
+    "zh_cn": "刷新观察记录"
+  },
+  {
+    "key": "github_review_comment",
+    "en": "Inline review comment",
+    "zh_cn": "行内评审评论"
+  },
+  {
+    "key": "github_issue_comment",
+    "en": "Conversation comment",
+    "zh_cn": "PR 会话评论"
+  },
+  {
+    "key": "github_review",
+    "en": "Submitted review",
+    "zh_cn": "提交评审"
+  },
+  {
+    "key": "github_check_run",
+    "en": "Completed CI check",
+    "zh_cn": "CI 检查完成"
+  },
+  {
+    "key": "github_failed_check",
+    "en": "Failed CI check",
+    "zh_cn": "CI 检查失败"
+  },
+  {
+    "key": "github_event_kind_matched",
+    "en": "Event type matched",
+    "zh_cn": "事件类型匹配"
+  },
+  {
+    "key": "github_event_kind_mismatch",
+    "en": "Different event type",
+    "zh_cn": "事件类型不匹配"
+  },
+  {
+    "key": "github_check_conclusion_matched",
+    "en": "Check failed as required",
+    "zh_cn": "检查结果符合失败条件"
+  },
+  {
+    "key": "github_check_conclusion_mismatch",
+    "en": "Check result did not meet the failure condition",
+    "zh_cn": "检查结果未达到失败条件"
   }
 ]
