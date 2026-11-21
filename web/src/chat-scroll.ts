@@ -1,11 +1,12 @@
 // Document-level reading state, independent of the Agent or transport.
 // Content growth must not erase follow intent; upward input and text selection
 // must cancel it before any queued resize callback can move the viewport.
-export function createChatScroll(content:HTMLElement,changed:()=>void){
+export function createChatScroll(content:HTMLElement,changed:()=>void,onRead?:()=>void){
  let following=nearBottom(),escaped=false,lastTop=scrollY,lastHeight=content.getBoundingClientRect().height,frame=0,disposed=false,touchY:number|undefined;
  const interacting=()=>!!document.activeElement?.closest('.intelligent-widget,.openintelligentui-native,.rich-answer-form')||!!window.getSelection()?.toString();
  function nearBottom(){return scrollY+innerHeight>=document.documentElement.scrollHeight-100}
  const cancel=()=>{following=false;escaped=true;cancelAnimationFrame(frame);frame=0};
+ const readHistory=()=>{cancel();onRead?.()};
  const toBottom=()=>{following=true;escaped=false;window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'});lastTop=scrollY;lastHeight=content.getBoundingClientRect().height};
  // Shrinking content can clamp scrollY without a reading gesture. Compare
  // against the previous position clamped to the current scrollable range.
@@ -20,11 +21,11 @@ export function createChatScroll(content:HTMLElement,changed:()=>void){
  // Explicit wheel/key/touch cancellation still wins during a resize; retain
  // stable-layout scroll detection for native navigation and pane restoration.
  const scroll=()=>{if(content.getBoundingClientRect().height===lastHeight&&movedUp())cancel();else if(!escaped&&nearBottom())following=true;lastTop=scrollY};
- const wheel=(event:WheelEvent)=>{if(event.deltaY<0)cancel();else if(event.deltaY>0)escaped=false};
- const key=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey||event.target instanceof Element&&event.target.closest('input,textarea,select,[contenteditable]'))return;if(['ArrowUp','PageUp','Home'].includes(event.key))cancel();else if(['ArrowDown','PageDown','End'].includes(event.key))escaped=false};
+ const wheel=(event:WheelEvent)=>{if(event.deltaY<0)readHistory();else if(event.deltaY>0)escaped=false};
+ const key=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey||event.target instanceof Element&&event.target.closest('input,textarea,select,[contenteditable]'))return;if(['ArrowUp','PageUp','Home'].includes(event.key))readHistory();else if(['ArrowDown','PageDown','End'].includes(event.key))escaped=false};
  const touchStart=(event:TouchEvent)=>{touchY=event.touches[0]?.clientY};
- const touchMove=(event:TouchEvent)=>{const y=event.touches[0]?.clientY;if(y!==undefined&&touchY!==undefined){if(y>touchY+1)cancel();else if(y<touchY-1)escaped=false}touchY=y};
- const selection=()=>{if(window.getSelection()?.toString())cancel()};
+ const touchMove=(event:TouchEvent)=>{const y=event.touches[0]?.clientY;if(y!==undefined&&touchY!==undefined){if(y>touchY+1)readHistory();else if(y<touchY-1)escaped=false}touchY=y};
+ const selection=()=>{if(window.getSelection()?.toString())readHistory()};
  const observer=new ResizeObserver(resize);observer.observe(content);
  window.addEventListener('scroll',scroll,{passive:true});window.addEventListener('wheel',wheel,{passive:true});
  window.addEventListener('keydown',key);window.addEventListener('touchstart',touchStart,{passive:true});window.addEventListener('touchmove',touchMove,{passive:true});document.addEventListener('selectionchange',selection);

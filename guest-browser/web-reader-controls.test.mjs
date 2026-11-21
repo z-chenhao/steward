@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {before,after,test} from 'node:test';
 import {fileURLToPath} from 'node:url';
+import {createServer} from 'node:http';
 import {chromium} from 'playwright-core';
 import {build} from '../web/node_modules/esbuild/lib/main.js';
 
@@ -83,4 +84,74 @@ test('Mermaid retries a failed loader, exposes its description and keeps its sou
  await page.evaluate(()=>ui.enhanceDiagrams(document.querySelector('#one')));await page.locator('#one pre[aria-label]').waitFor();
  await page.evaluate(()=>ui.enhanceDiagrams(document.querySelector('#two')));await page.getByRole('img',{name:'Flow · B to C'}).waitFor();
  await page.locator('#two summary').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#two code').isVisible(),true);assert.equal(reads,2);
+});
+
+test('the newest reading gesture owns a delayed Latest messages response',{timeout:45000},async t=>{
+ const regions={'workspace-status':'','conversation-attention':'','conversation-messages':'','conversation-approvals':''};
+ let hold;
+ const server=createServer((req,res)=>{
+  if(req.url==='/'){
+   res.setHeader('Content-Type','text/html');
+   res.end('<main data-live-view="/"><div class="thread" style="height:4000px">History</div><footer id="composer-root" style="position:fixed;bottom:0"><textarea></textarea><button id="new-messages" hidden>Latest messages</button></footer></main>');
+   return;
+  }
+  if(req.url.startsWith('/api/updates?')){
+   if(hold&&!req.headers['if-none-match']){
+    const accept=hold;hold=undefined;accept(res);return;
+   }
+   res.writeHead(200,{'content-type':'application/json',etag:'"reader"'});
+   res.end(JSON.stringify({view:'/',before:0,latest:1,regions}));return;
+  }
+  res.writeHead(404).end();
+ });
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const page=await browser.newPage({viewport:{width:1000,height:700}});
+ t.after(async()=>{await page.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve))});
+ page.setDefaultTimeout(8000);
+ await page.goto('http://127.0.0.1:'+server.address().port);
+ await page.addScriptTag({content:script});
+ const initial=page.waitForResponse(response=>response.url().includes('/api/updates?'));
+ await page.evaluate(()=>ui.startLiveUpdates().start());
+ await (await initial).finished();
+ const bottom=()=>page.waitForFunction(()=>Math.abs(document.documentElement.scrollHeight-innerHeight-scrollY)<2);
+ await bottom();
+ const jump=page.getByRole('button',{name:'Latest messages'});
+ async function wheelUp(){
+  const previous=await page.evaluate(()=>scrollY);
+  await page.mouse.move(120,240);await page.mouse.wheel(0,-260);
+  await page.waitForFunction(y=>scrollY<y-100,previous);
+ }
+ async function heldJump(){
+  const accepted=Promise.withResolvers();hold=accepted.resolve;
+  await jump.click();return accepted.promise;
+ }
+ const paint=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ for(const status of [304,200]){
+  await wheelUp();
+  const response=await heldJump();
+  await wheelUp();
+  const input=page.locator('textarea');
+  await input.fill('keep this draft');
+  await input.evaluate(el=>{el.setSelectionRange(2,6);window.originalDraft=el});
+  const top=await page.evaluate(()=>scrollY);
+  const received=page.waitForResponse(r=>r.url().includes('/api/updates?')&&r.status()===status);
+  response.writeHead(status,{'content-type':'application/json',etag:'"reader"'});
+  response.end(status===200?JSON.stringify({view:'/',before:0,latest:2,regions}):undefined);
+  await (await received).finished();await paint();
+  assert.equal(await page.evaluate(()=>scrollY),top,'a later upward gesture must cancel the outstanding jump on HTTP '+status);
+  assert.equal(await jump.isVisible(),true);
+  assert.deepEqual(await input.evaluate(el=>[el===window.originalDraft,document.activeElement===el,el.value,el.selectionStart,el.selectionEnd]),[true,true,'keep this draft',2,6]);
+  const resumed=await heldJump();
+  resumed.writeHead(304,{etag:'"reader"'}).end();
+  await bottom();
+ }
+ await wheelUp();
+ const superseded=await heldJump();
+ await wheelUp();
+ const newest=await heldJump();
+ newest.writeHead(304,{etag:'"reader"'}).end();
+ await bottom();
+ superseded.writeHead(304,{etag:'"reader"'}).end();
+ await paint();await bottom();
+ assert.equal(await jump.isVisible(),false);
 });

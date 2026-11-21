@@ -134,7 +134,11 @@ export function startLiveUpdates(){
  const taskQuery=new URLSearchParams(location.search);
  const patch=regionPatcher(regions);
  const thread=view==='/'?document.querySelector<HTMLElement>('.thread'):null;
- const reader=thread?createChatScroll(thread,()=>syncJump()):null;
+ let follow=false,pendingTarget='';
+ const reader=thread?createChatScroll(thread,()=>syncJump(),()=>{
+  // An in-flight refresh may still apply newer facts after a user scrolls away.
+  follow=false;pendingTarget='';
+ }):null;
  const atBottom=()=>reader?.isFollowing()??(scrollY+innerHeight>=document.documentElement.scrollHeight-100);
  const scrollToLatest=()=>reader?reader.toBottom():window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'});
  const feedback=document.getElementById('live-update-status');
@@ -143,7 +147,7 @@ export function startLiveUpdates(){
  const draftNode=draft?.querySelector<HTMLElement>('[data-draft-text]');
  let draftText='',draftFrame=0;
  let before=Number(main.dataset.liveBefore??0),latest=Number(main.dataset.liveLatest??0);
- let etag='',timer=0,generation=0,delay=timing.poll_ms,stopped=false,follow=false,pendingTarget='';
+ let etag='',timer=0,generation=0,delay=timing.poll_ms,stopped=false;
  let request:AbortController|null=null;
  let replies:EventSource|null=null,draftKey='',committing=false;
  const uiNode=document.getElementById('conversation-ui-preview');

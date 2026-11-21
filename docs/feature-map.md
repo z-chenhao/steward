@@ -143,7 +143,7 @@ docs/test-plans/<feature>.md        验收场景、测试层级、已有入口�
 
 Main 新建执行按输入逐条提交回复，Task Worker 独立运行；高频 Tool search、UI、Skill 与 Main Task 协调直接声明，其余工具保持按需 Code Mode 发现。旧冻结执行保持原有输入和工具面。
 
-Web Settings 五个分类共用内容容器、标题位置与配置行选择器尺寸；配置行与命令对齐、输入区账户模型选择见 [渠道功能](features/channels.md)；超宽组件的无滚动条横向操作见 [Intelligent UI](features/intelligent-ui.md)。
+Web Chat 的“返回最新”服从最后一次阅读操作，延迟更新保留其间选定的阅读位置与草稿。Web Settings 五个分类共用内容容器、标题位置与配置行选择器尺寸；配置行与命令对齐、输入区账户模型选择见 [渠道功能](features/channels.md)；超宽组件的无滚动条横向操作见 [Intelligent UI](features/intelligent-ui.md)。
 
 Tasks 按真实 Root 派发分离[执行记录与任务配置](features/tasks.md)，短标题独立于完整任务简报，历史轮次保持可查。
 
