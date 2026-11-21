@@ -87,20 +87,28 @@ test('Mermaid retries a failed loader, exposes its description and keeps its sou
 });
 
 test('the newest reading gesture owns a delayed Latest messages response',{timeout:45000},async t=>{
- const regions={'workspace-status':'','conversation-attention':'','conversation-messages':'','conversation-approvals':''};
- let hold;
+ const regions={'conversation-attention':'','conversation-messages':'','conversation-approvals':''};
+ let hold,version=1;
+ const tag=id=>'"reader-'+id+'"';
+ const sendSnapshot=(res,id)=>{
+  version=Math.max(version,id);
+  res.writeHead(200,{'content-type':'application/json',etag:tag(id)});
+  res.end(JSON.stringify({view:'/',before:0,latest:id,regions:{...regions,'workspace-status':'Snapshot '+id}}));
+ };
  const server=createServer((req,res)=>{
   if(req.url==='/'){
    res.setHeader('Content-Type','text/html');
-   res.end('<!doctype html><style>html{overflow-y:scroll}::-webkit-scrollbar{width:24px}::-webkit-scrollbar-thumb{background:#666}</style><main data-live-view="/"><div class="thread" style="height:4000px">History</div><footer id="composer-root" style="position:fixed;bottom:0"><textarea></textarea><button id="new-messages" hidden>Latest messages</button></footer></main>');
+   res.end('<!doctype html><style>html{overflow-y:scroll}::-webkit-scrollbar{width:24px}::-webkit-scrollbar-thumb{background:#666}</style><main data-live-view="/"><div id="workspace-status" hidden></div><div class="thread" style="height:4000px">History</div><footer id="composer-root" style="position:fixed;bottom:0"><textarea></textarea><button id="new-messages" hidden>Latest messages</button></footer></main>');
    return;
   }
   if(req.url.startsWith('/api/updates?')){
-   if(hold&&!req.headers['if-none-match']){
-    const accept=hold;hold=undefined;accept(res);return;
+   const matches=req.headers['if-none-match']===tag(version);
+   if(hold&&hold.conditional===matches){
+    const {accept}=hold;hold=undefined;accept(res);return;
    }
-   res.writeHead(200,{'content-type':'application/json',etag:'"reader"'});
-   res.end(JSON.stringify({view:'/',before:0,latest:1,regions}));return;
+   if(matches)res.writeHead(304,{etag:tag(version)}).end();
+   else sendSnapshot(res,version);
+   return;
   }
   res.writeHead(404).end();
  });
@@ -110,9 +118,8 @@ test('the newest reading gesture owns a delayed Latest messages response',{timeo
  page.setDefaultTimeout(8000);
  await page.goto('http://127.0.0.1:'+server.address().port);
  await page.addScriptTag({content:script});
- const initial=page.waitForResponse(response=>response.url().includes('/api/updates?'));
- await page.evaluate(()=>ui.startLiveUpdates().start());
- await (await initial).finished();
+ const applied=id=>page.waitForFunction(id=>document.querySelector('#workspace-status').textContent==='Snapshot '+id,id);
+ await page.evaluate(()=>ui.startLiveUpdates().start());await applied(1);
  const bottom=()=>page.waitForFunction(()=>Math.abs(document.documentElement.scrollHeight-innerHeight-scrollY)<2);
  await bottom();
  const jump=page.getByRole('button',{name:'Latest messages'});
@@ -139,12 +146,16 @@ test('the newest reading gesture owns a delayed Latest messages response',{timeo
    requestAnimationFrame(tick);
   }));
  }
+ function holdRequest(conditional){
+  const {promise,resolve}=Promise.withResolvers();
+  hold={conditional,accept:resolve};return promise;
+ }
  async function heldJump(){
-  const accepted=Promise.withResolvers();hold=accepted.resolve;
-  await jump.click();return accepted.promise;
+  const accepted=holdRequest(false);
+  await jump.click();return accepted;
  }
  const paint=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
- for(const [status,read] of [[304,dragScrollbarUp],[304,wheelUp],[200,wheelUp]]){
+ for(const read of [dragScrollbarUp,wheelUp]){
   await wheelUp();
   const response=await heldJump();
   await read();
@@ -154,13 +165,19 @@ test('the newest reading gesture owns a delayed Latest messages response',{timeo
    await input.evaluate(el=>{el.setSelectionRange(2,6);window.originalDraft=el});
   }
   const top=await page.evaluate(()=>scrollY);
-  const received=page.waitForResponse(r=>r.url().includes('/api/updates?')&&r.status()===status);
-  response.writeHead(status,{'content-type':'application/json',etag:'"reader"'});
-  response.end(status===200?JSON.stringify({view:'/',before:0,latest:2,regions}):undefined);
-  await (await received).finished();await paint();
-  assert.equal(await page.evaluate(()=>scrollY),top,read.name+' must cancel the outstanding jump on HTTP '+status);
+  sendSnapshot(response,version+1);await applied(version);await paint();
+  assert.equal(await page.evaluate(()=>scrollY),top,read.name+' must cancel the outstanding jump');
   assert.equal(await jump.isVisible(),true);
-  if(read===wheelUp)assert.deepEqual(await input.evaluate(el=>[el===window.originalDraft,document.activeElement===el,el.value,el.selectionStart,el.selectionEnd]),[true,true,'keep this draft',2,6]);
+  if(read===wheelUp){
+   // Real refreshes use the ETag from the applied snapshot. Waiting for its
+   // next conditional request proves the client consumed the bodyless 304.
+   const unchanged=await holdRequest(true);
+   const nextPoll=holdRequest(true);
+   unchanged.writeHead(304,{etag:tag(version)}).end();
+   const next=await nextPoll;next.writeHead(304,{etag:tag(version)}).end();
+   assert.equal(await page.evaluate(()=>scrollY),top);
+   assert.deepEqual(await input.evaluate(el=>[el===window.originalDraft,document.activeElement===el,el.value,el.selectionStart,el.selectionEnd]),[true,true,'keep this draft',2,6]);
+  }
   const resumed=await heldJump();
   if(read===dragScrollbarUp){
    const clamped=await page.evaluate(()=>{
@@ -170,16 +187,15 @@ test('the newest reading gesture owns a delayed Latest messages response',{timeo
    });
    assert.equal(clamped,true);await paint();
   }
-  resumed.writeHead(304,{etag:'"reader"'}).end();
-  await bottom();
+  sendSnapshot(resumed,version+1);await applied(version);await bottom();
  }
  await wheelUp();
  const superseded=await heldJump();
  await wheelUp();
  const newest=await heldJump();
- newest.writeHead(304,{etag:'"reader"'}).end();
- await bottom();
- superseded.writeHead(304,{etag:'"reader"'}).end();
- await paint();await bottom();
+ const final=version+2;
+ sendSnapshot(newest,final);await applied(final);await bottom();
+ sendSnapshot(superseded,final-1);
+ await paint();await applied(final);await bottom();
  assert.equal(await jump.isVisible(),false);
 });
