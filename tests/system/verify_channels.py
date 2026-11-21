@@ -407,13 +407,14 @@ def feishu_task_questions(binary, report, managed=False):
         def rows(query, args=()):
             with closing(sqlite3.connect(state)) as db, db:
                 db.row_factory = sqlite3.Row
+                db.execute('BEGIN')
                 return [dict(row) for row in db.execute(query, args)]
 
         def wait(read, predicate, description):
             return h.wait_state(predicate, description, lambda _: read(), timeout=20)
 
         def question_rows():
-            return rows("""SELECT f.feedback_ref, f.prompt, f.status, f.response_message_id,
+            return rows("""SELECT f.feedback_ref, f.prompt, f.status, f.source_message_id, f.response_message_id,
                 q.binding_version, d.delivery_id, d.version AS delivery_version, d.status AS delivery_status, c.remote_id
                 FROM task_feedback f LEFT JOIN feishu_task_question q USING(feedback_ref)
                 LEFT JOIN delivery_request d ON d.message_id=q.message_id
@@ -465,8 +466,27 @@ def feishu_task_questions(binary, report, managed=False):
             require(action(q, card_id, answer, 'valid-answer')['toast']['type'] == 'success', 'valid answer rejected')
             accepted = rows('SELECT response_message_id FROM task_feedback WHERE feedback_ref=?', (q['feedback_ref'],))[0]['response_message_id']
             require(accepted, 'success toast preceded durable acceptance')
-            h.wait(lambda s: len(s['runs']) >= 6 and all(r['status'] == 'completed' for r in s['runs']) and
-                   len(s['deliveries']) >= 6 and all(d['status'] == 'sent' for d in s['deliveries']), 'Main continuation and delivery')
+            # A question and its answer can join the active Main that reported the
+            # original work. Follow the accepted answer through its own Task epoch.
+            def delivered_continuation(message_id):
+                return rows("""SELECT w.run_id AS worker, b.run_id AS reporting_main, d.delivery_id
+                    FROM task_instruction i JOIN task t USING(task_id)
+                    JOIN run w ON w.task_id=i.task_id AND w.task_epoch=i.task_epoch
+                    JOIN task_update u ON u.root_run_id=w.run_id AND u.kind='completed'
+                    JOIN main_inbox b USING(event_id) JOIN main_reply p ON p.run_id=b.run_id
+                    JOIN delivery_request d ON d.delivery_id=p.delivery_id
+                    JOIN message_route m ON m.message_id=d.message_id
+                    WHERE t.task_ref=? AND i.source_message_id=? AND i.instruction=?
+                      AND w.worker_position='root' AND w.status='completed'
+                      AND d.channel='feishu' AND d.status='sent' AND m.reply_source_id='om_task_origin'""",
+                    (ref, message_id, answer))
+
+            continuation = wait(lambda: delivered_continuation(accepted), bool,
+                                'accepted card answer continued the original Task and delivered its result')
+            require(len(continuation) == 1, 'accepted card answer produced multiple continuations or result deliveries')
+            require(not delivered_continuation(q['source_message_id']), 'original question matched the answer continuation')
+            h.wait(lambda s: all(r['status'] == 'completed' for r in s['runs']) and
+                   len(s['deliveries']) >= 6 and all(d['status'] == 'sent' for d in s['deliveries']), 'all fixture work and deliveries completed')
             require(rows('SELECT count(*) AS n FROM task_instruction')[0]['n'] == 1 and
                     rows('SELECT task_ref FROM task') == [dict(task_ref=ref)] and not h.rows()['approvals'],
                     'answer did not continue one existing Task independently of approvals')
@@ -544,7 +564,7 @@ def feishu_task_questions(binary, report, managed=False):
             report['scenarios']['feishu-task-questions'] = dict(
                 feedback_ref=q['feedback_ref'], card_id=card_id, accepted_message_id=accepted,
                 original_question_topic=remote['reply_to'], unknown_card_attempts=attempts,
-                answered=1, continuations=1, final_task_status='paused')
+                answered=1, continuations=1, continuation=continuation[0], final_task_status='paused')
             report['checks'].append('Feishu Task question Card 2.0, signed owner/context/receipt checks, three-channel dedup, original reply routing, stale/reenrolled/ambiguous rejection and query-only restart')
         finally:
             h.cleanup()
