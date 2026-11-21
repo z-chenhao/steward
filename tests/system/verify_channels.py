@@ -469,13 +469,14 @@ def feishu_task_questions(binary, report, managed=False):
             # A question and its answer can join the active Main that reported the
             # original work. Follow the accepted answer through its own Task epoch.
             def delivered_continuation(message_id):
-                return rows("""SELECT w.run_id AS worker, b.run_id AS reporting_main, d.delivery_id
+                return rows("""SELECT w.run_id AS worker, b.run_id AS reporting_main, d.delivery_id, c.remote_id
                     FROM task_instruction i JOIN task t USING(task_id)
                     JOIN run w ON w.task_id=i.task_id AND w.task_epoch=i.task_epoch
                     JOIN task_update u ON u.root_run_id=w.run_id AND u.kind='completed'
                     JOIN main_inbox b USING(event_id) JOIN main_reply p ON p.run_id=b.run_id
                     JOIN delivery_request d ON d.delivery_id=p.delivery_id
                     JOIN message_route m ON m.message_id=d.message_id
+                    JOIN channel_receipt c ON c.delivery_id=d.delivery_id AND c.part=0
                     WHERE t.task_ref=? AND i.source_message_id=? AND i.instruction=?
                       AND w.worker_position='root' AND w.status='completed'
                       AND d.channel='feishu' AND d.status='sent' AND m.reply_source_id='om_task_origin'""",
@@ -494,6 +495,8 @@ def feishu_task_questions(binary, report, managed=False):
                          FROM main_input i JOIN message_route m USING(message_id) WHERE message_id=?""", (accepted,)) ==
                     [dict(source='feishu', reply_source_id=card_id)], 'answer did not retain the real card route')
             outbound = platform.evidence()['messages']
+            require(any('remote-' + m['uuid'] == continuation[0]['remote_id'] and m.get('reply_to') == 'om_task_origin'
+                        for m in outbound), 'continued Task result receipt did not match the original Feishu topic')
             require(sum(m.get('reply_to') == card_id for m in outbound) == 1 and
                     sum(m.get('reply_to') == 'om_task_origin' for m in outbound) == 3,
                     'answer reply or asynchronous continuation lost its Feishu topic')
