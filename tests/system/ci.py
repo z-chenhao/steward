@@ -54,7 +54,8 @@ def command(lane):
     if lane == 'web-plugins':
         return 'make build test-web-access\npython3 tests/system/runner.py --gate web-plugins --binary bin/steward --evidence evidence/e2e-web-plugins'
     if lane == 'mcp-plugins':
-        return ("go test -race -p 1 -timeout=15m ./internal/tool/mcp/... ./internal/plugin/mcpbridge/... ./internal/agent/sqlite -run '^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)' -count=1\n"
+        return ("go test -race -p 1 -timeout=15m ./internal/tool/mcp/... ./internal/plugin/mcpbridge/... -run '^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)' -count=1\n"
+                'python3 tests/system/race.py --part mcp-sqlite\n'
                 'make build\npython3 tests/system/runner.py --gate mcp-plugins --binary bin/steward --evidence evidence/e2e-mcp-plugins')
     if lane == 'connected-apps-plugins':
         return 'make build\npython3 tests/system/runner.py --gate connected-apps-plugins --binary bin/steward --evidence evidence/e2e-connected-apps-plugins'

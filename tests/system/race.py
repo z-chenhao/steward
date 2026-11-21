@@ -29,10 +29,11 @@ APP = 'github.com/z-chenhao/assistant/internal/app'
 APP_PATTERN = '^Test(ConnectedApps|Apps)'
 APPS_SQLITE_PATTERN = r'^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)'
 GITHUB_SQLITE_PATTERN = r'^Test(GitHub.*|StartupReconcilesRemovedOrChangedGitHubScopeBeforeActor|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$'
+MCP_SQLITE_PATTERN = r'^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)'
 ARTIFACT_SQLITE_PATTERN = r'^Test(Artifact.*|V68Artifact.*|ShippedPluginDistributionRejectsPartialNativeFallback|MigrationCatalogContainsEveryForwardSource)$'
 CAPABILITIES_SQLITE_PATTERN = 'Test(MainQueuesSecondRequest|SerialMain|Recall.*|ConversationalRecall.*|.*UI.*|ReplyStream.*|InboundAdmission|Files|AccountFiles|.*Refresh.*|.*ModelMenu.*|Capability.*|Guided.*|FeishuStatus.*|FeedbackProjection.*|FeedbackUnavailableProjection.*|DeliveryProjection.*|FrozenDelivery.*|ManagedCard.*|CardPresentation.*|TerminalInterface.*|ModelPicker.*|ModelConnection.*|ModelSettings.*|SettingsDraft.*|Coding(Check|Project|Environment|Container|Architecture|Development).*|TaskCode.*|TaskChildInheritsWorkScopeAndOwnerReportIsTaskBound|CodingPluginActualImportAndReportPreserveSourceAndOriginalFacts|CandidateSnapshot.*|ReviewSnapshot.*)'
 SQLITE_PATTERNS = {'apps-sqlite': APPS_SQLITE_PATTERN, 'github-sqlite': GITHUB_SQLITE_PATTERN,
-                   'artifact-sqlite': ARTIFACT_SQLITE_PATTERN,
+                   'mcp-sqlite': MCP_SQLITE_PATTERN, 'artifact-sqlite': ARTIFACT_SQLITE_PATTERN,
                    'capabilities-sqlite': CAPABILITIES_SQLITE_PATTERN}
 APP_BATCH_SIZE = 12
 RACE = ['go', 'test', '-race', '-count=1', '-timeout=15m']
@@ -184,7 +185,7 @@ def drive_batch(job, folder, stopped, package):
 def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     started = time.monotonic()
     flags = TEN_MINUTE_RACE if memory or pattern == CAPABILITIES_SQLITE_PATTERN else RACE
-    serial_batches = pattern == ARTIFACT_SQLITE_PATTERN
+    serial_batches = pattern in (ARTIFACT_SQLITE_PATTERN, MCP_SQLITE_PATTERN)
     if serial_batches:
         flags = [*flags, '-p=1']
     discovery, metrics = flags + ['-list', '.', SQLITE], {}
@@ -205,8 +206,8 @@ def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     serial = [name for name in SERIAL_SQLITE if name in names]
     budget = cpu_budget()
     seconds = timing_hints()
-    # Artifact used one process with native Go parallelism. Split its package
-    # alarm without changing the CPU available to its deadline-sensitive tests.
+    # Artifact and MCP used one process with native Go parallelism. Keep that
+    # CPU budget while giving each sequential batch its own package alarm.
     sqlite_workers = 1 if serial_batches else max(1, min(3, budget - 1))
     worker_cpus = None if serial_batches else 1
     slices = [group[start:start + SQLITE_BATCH_SIZE]
