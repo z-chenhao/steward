@@ -20,7 +20,7 @@ export function createChatScroll(content:HTMLElement,changed:()=>void,onRead?:()
  // A clamp followed by more layout growth can look like an upward gesture.
  // Explicit wheel/key/touch cancellation still wins during a resize; retain
  // stable-layout scroll detection for native navigation and pane restoration.
- const scroll=()=>{if(content.getBoundingClientRect().height===lastHeight&&movedUp())cancel();else if(!escaped&&nearBottom())following=true;lastTop=scrollY};
+ const scroll=()=>{if(content.getBoundingClientRect().height===lastHeight&&movedUp())readHistory();else if(!escaped&&nearBottom())following=true;lastTop=scrollY};
  const wheel=(event:WheelEvent)=>{if(event.deltaY<0)readHistory();else if(event.deltaY>0)escaped=false};
  const key=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey||event.target instanceof Element&&event.target.closest('input,textarea,select,[contenteditable]'))return;if(['ArrowUp','PageUp','Home'].includes(event.key))readHistory();else if(['ArrowDown','PageDown','End'].includes(event.key))escaped=false};
  const touchStart=(event:TouchEvent)=>{touchY=event.touches[0]?.clientY};

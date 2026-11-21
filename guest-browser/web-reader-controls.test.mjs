@@ -7,7 +7,7 @@ import {build} from '../web/node_modules/esbuild/lib/main.js';
 
 let browser,script;
 before(async()=>{
- browser=await chromium.launch({headless:true,...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});
+ browser=await chromium.launch({headless:true,ignoreDefaultArgs:['--hide-scrollbars'],...(process.env.STEWARD_BROWSER_EXECUTABLE?{executablePath:process.env.STEWARD_BROWSER_EXECUTABLE}:{})});
  const paths=['local-time','components/ui/sheet','components/ui/split-view','workers','computer','live-updates','markdown'];
  script=(await build({stdin:{contents:paths.map(p=>'export * from "./src/'+p+'"').join('\n'),resolveDir:fileURLToPath(new URL('../web/',import.meta.url))},jsx:'automatic',bundle:true,format:'iife',globalName:'ui',write:false})).outputFiles[0].text;
 });
@@ -92,7 +92,7 @@ test('the newest reading gesture owns a delayed Latest messages response',{timeo
  const server=createServer((req,res)=>{
   if(req.url==='/'){
    res.setHeader('Content-Type','text/html');
-   res.end('<main data-live-view="/"><div class="thread" style="height:4000px">History</div><footer id="composer-root" style="position:fixed;bottom:0"><textarea></textarea><button id="new-messages" hidden>Latest messages</button></footer></main>');
+   res.end('<!doctype html><style>html{overflow-y:scroll}::-webkit-scrollbar{width:24px}::-webkit-scrollbar-thumb{background:#666}</style><main data-live-view="/"><div class="thread" style="height:4000px">History</div><footer id="composer-root" style="position:fixed;bottom:0"><textarea></textarea><button id="new-messages" hidden>Latest messages</button></footer></main>');
    return;
   }
   if(req.url.startsWith('/api/updates?')){
@@ -121,27 +121,55 @@ test('the newest reading gesture owns a delayed Latest messages response',{timeo
   await page.mouse.move(120,240);await page.mouse.wheel(0,-260);
   await page.waitForFunction(y=>scrollY<y-100,previous);
  }
+ async function dragScrollbarUp(){
+  const thumb=await page.evaluate(()=>({
+   x:(document.documentElement.clientWidth+innerWidth)/2,
+   y:(scrollY+innerHeight/2)*innerHeight/document.documentElement.scrollHeight,
+   top:scrollY,
+  }));
+  await page.mouse.move(thumb.x,thumb.y);await page.mouse.down();
+  await page.mouse.move(thumb.x,thumb.y-50,{steps:6});await page.mouse.up();
+  await page.waitForFunction(top=>scrollY<top-100,thumb.top);
+  await page.evaluate(()=>new Promise(resolve=>{
+   let y=scrollY,stable=0;
+   function tick(){
+    stable=y===scrollY?stable+1:0;y=scrollY;
+    if(stable===4)resolve();else requestAnimationFrame(tick);
+   }
+   requestAnimationFrame(tick);
+  }));
+ }
  async function heldJump(){
   const accepted=Promise.withResolvers();hold=accepted.resolve;
   await jump.click();return accepted.promise;
  }
  const paint=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
- for(const status of [304,200]){
+ for(const [status,read] of [[304,dragScrollbarUp],[304,wheelUp],[200,wheelUp]]){
   await wheelUp();
   const response=await heldJump();
-  await wheelUp();
+  await read();
   const input=page.locator('textarea');
-  await input.fill('keep this draft');
-  await input.evaluate(el=>{el.setSelectionRange(2,6);window.originalDraft=el});
+  if(read===wheelUp){
+   await input.fill('keep this draft');
+   await input.evaluate(el=>{el.setSelectionRange(2,6);window.originalDraft=el});
+  }
   const top=await page.evaluate(()=>scrollY);
   const received=page.waitForResponse(r=>r.url().includes('/api/updates?')&&r.status()===status);
   response.writeHead(status,{'content-type':'application/json',etag:'"reader"'});
   response.end(status===200?JSON.stringify({view:'/',before:0,latest:2,regions}):undefined);
   await (await received).finished();await paint();
-  assert.equal(await page.evaluate(()=>scrollY),top,'a later upward gesture must cancel the outstanding jump on HTTP '+status);
+  assert.equal(await page.evaluate(()=>scrollY),top,read.name+' must cancel the outstanding jump on HTTP '+status);
   assert.equal(await jump.isVisible(),true);
-  assert.deepEqual(await input.evaluate(el=>[el===window.originalDraft,document.activeElement===el,el.value,el.selectionStart,el.selectionEnd]),[true,true,'keep this draft',2,6]);
+  if(read===wheelUp)assert.deepEqual(await input.evaluate(el=>[el===window.originalDraft,document.activeElement===el,el.value,el.selectionStart,el.selectionEnd]),[true,true,'keep this draft',2,6]);
   const resumed=await heldJump();
+  if(read===dragScrollbarUp){
+   const clamped=await page.evaluate(()=>{
+    const thread=document.querySelector('.thread'),top=scrollY;
+    thread.style.height='600px';void document.documentElement.offsetHeight;
+    const shrank=scrollY<top;thread.style.height='4020px';return shrank;
+   });
+   assert.equal(clamped,true);await paint();
+  }
   resumed.writeHead(304,{etag:'"reader"'}).end();
   await bottom();
  }
