@@ -160,11 +160,13 @@ def root_verdict(path, expected, package):
 def drive_batch(job, folder, stopped, package):
     name, command, expected, cpus = job
     output, metrics = folder / (name + '.log'), {}
-    env = dict(os.environ, GOMAXPROCS=str(cpus))
+    env = os.environ.copy()
+    if cpus is not None:
+        env['GOMAXPROCS'] = str(cpus)
     began = time.monotonic()
     code = run_command(command, env, output, stopped, metrics)
     result = dict(name=name, command=command, returncode=code,
-                  wall_seconds=time.monotonic() - began, gomaxprocs=cpus, **metrics)
+                  wall_seconds=time.monotonic() - began, gomaxprocs=cpus if cpus is not None else env.get('GOMAXPROCS'), **metrics)
     if expected is not None:
         result['expected_tests'] = expected
         if code == 0:
@@ -182,6 +184,9 @@ def drive_batch(job, folder, stopped, package):
 def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     started = time.monotonic()
     flags = TEN_MINUTE_RACE if memory or pattern == CAPABILITIES_SQLITE_PATTERN else RACE
+    serial_batches = pattern == ARTIFACT_SQLITE_PATTERN
+    if serial_batches:
+        flags = [*flags, '-p=1']
     discovery, metrics = flags + ['-list', '.', SQLITE], {}
     listing = folder / 'sqlite-list.log'
     code = run_command(discovery, os.environ.copy(), listing, stopped, metrics)
@@ -200,14 +205,18 @@ def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     serial = [name for name in SERIAL_SQLITE if name in names]
     budget = cpu_budget()
     seconds = timing_hints()
-    sqlite_workers = max(1, min(3, budget - 1))
+    # Artifact used one process with native Go parallelism. Split its package
+    # alarm without changing the CPU available to its deadline-sensitive tests.
+    sqlite_workers = 1 if serial_batches else max(1, min(3, budget - 1))
+    worker_cpus = None if serial_batches else 1
     slices = [group[start:start + SQLITE_BATCH_SIZE]
-              for group in partitions([n for n in names if n not in serial], sqlite_workers, seconds)
+              for group in partitions([n for n in names if n not in serial], sqlite_workers, None if serial_batches else seconds)
               for start in range(0, len(group), SQLITE_BATCH_SIZE)]
-    row.update(partition_strategy='longest_measured_first', timing_hints=seconds,
+    row.update(partition_strategy='discovery_order' if serial_batches else 'longest_measured_first',
+               timing_hints=seconds,
                unmeasured_tests=[n for n in names if n not in seconds],
                sqlite_workers=sqlite_workers, maximum_batch_roots=SQLITE_BATCH_SIZE)
-    jobs = [(f'sqlite-{i + 1}', flags + ['-json', '-run', '^(' + '|'.join(group) + ')$', SQLITE], group, 1)
+    jobs = [(f'sqlite-{i + 1}', flags + ['-json', '-run', '^(' + '|'.join(group) + ')$', SQLITE], group, worker_cpus)
             for i, group in enumerate(slices)]
     others = [p for p in selected if p != SQLITE]
     if others:
