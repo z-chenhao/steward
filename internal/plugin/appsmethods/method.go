@@ -9,7 +9,7 @@ import (
 )
 
 func Handlers() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: "steward.connected-apps", Version: "1.0.1", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Method: method, contract.Guidance: guidance}}
+	return rsiplugin.Handlers{PluginID: "steward.connected-apps", Version: "1.0.2", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Method: method, contract.Guidance: guidance, contract.MailReview: mailReview}}
 }
 
 // The method owns the search/execute workflow and full-result presentation.

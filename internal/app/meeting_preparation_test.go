@@ -95,8 +95,6 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 	st.UserID, st.KeyRef = "owned-user", "credential:prep-test"
 	st.Connections = []connectedapps.Connection{
 		{ID: "cal", Name: "Calendar", Alias: "Work", Status: "active", Toolkit: "googlecalendar", AccountID: "ca_cal"},
-		{ID: "mail", Name: "Mail", Alias: "Work", Status: "active", Toolkit: "gmail", AccountID: "ca_mail"},
-		{ID: "other", Name: "Mail", Alias: "Other", Status: "active", Toolkit: "gmail", AccountID: "ca_other"},
 	}
 	if err = a.store.SaveApps(ctx, st, st.Revision); err != nil {
 		t.Fatal(err)
@@ -104,7 +102,7 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 	var mu sync.Mutex
 	paths := []string{}
 	mailSubject := "Re: Release review"
-	remoteRevoked, revokeDuringRead := false, false
+	remoteRevoked, revokeDuringRead, mailAuthorized := false, false, false
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -117,6 +115,9 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 			tk := "googlecalendar"
 			status := "ACTIVE"
 			if id == "ca_mail" {
+				if !mailAuthorized {
+					t.Error("looked up a mailbox before explicit consent")
+				}
 				tk = "gmail"
 				if remoteRevoked {
 					status = "REVOKED"
@@ -188,13 +189,40 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 	if browserEvidence == "" {
 		browserEvidence = t.TempDir()
 	}
-	driver := exec.Command("node", "../../guest-browser/meeting-preparation.mjs", server.URL, browserEvidence)
-	if _, e := os.Stat("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"); e == nil {
-		driver.Env = append(os.Environ(), "STEWARD_BROWSER_EXECUTABLE=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+	runBrowser := func(phase string) {
+		t.Helper()
+		driver := exec.Command("node", "../../guest-browser/meeting-preparation.mjs", server.URL, browserEvidence, phase)
+		if _, e := os.Stat("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"); e == nil {
+			driver.Env = append(os.Environ(), "STEWARD_BROWSER_EXECUTABLE=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+		}
+		if out, e := driver.CombinedOutput(); e != nil {
+			t.Fatal(string(out), e)
+		}
 	}
-	if out, e := driver.CombinedOutput(); e != nil {
-		t.Fatal(string(out), e)
+	runBrowser("calendar")
+	st, err = a.connectedApps.State(ctx)
+	if err != nil || st.Meeting == nil || !st.Meeting.CalendarOnly || st.Meeting.Mail != (connectedapps.SourcePin{}) {
+		t.Fatal("expected an explicit calendar-only grant", st.Meeting, err)
 	}
+	// An independently connected mailbox must not increase the existing grant.
+	st.Connections = append(st.Connections,
+		connectedapps.Connection{ID: "mail", Name: "Mail", Alias: "Work", Status: "active", Toolkit: "gmail", AccountID: "ca_mail"},
+		connectedapps.Connection{ID: "other", Name: "Mail", Alias: "Other", Status: "active", Toolkit: "gmail", AccountID: "ca_other"},
+	)
+	if err = a.store.SaveApps(ctx, st, st.Revision); err != nil {
+		t.Fatal(err)
+	}
+	partial, err := a.MeetingPreparation(ctx)
+	if err != nil || partial.Status != "ready" || partial.Brief.MailLink != "" || partial.Brief.Event != "Release review" {
+		t.Fatal("connecting an account changed the calendar brief", partial, err)
+	}
+	mu.Lock()
+	if len(paths) != 1 || paths[0] != "/calendar/v3/calendars/primary/events" {
+		t.Errorf("unexpected calendar-only content reads: %v", paths)
+	}
+	mailAuthorized = true
+	mu.Unlock()
+	runBrowser("mail")
 	current, _ := a.connectedApps.State(ctx)
 	if current.Meeting != nil {
 		t.Fatal("web revoke did not clear the grant")
@@ -204,7 +232,7 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 	mu.Unlock()
 	a.refreshMeeting(ctx, time.Now().Add(24*time.Hour))
 	mu.Lock()
-	if len(paths) != count || count != 4 {
+	if len(paths) != count || count != 5 {
 		t.Errorf("disable read content: %v", paths)
 	}
 	revokeDuringRead = true
@@ -241,8 +269,8 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 		t.Fatal(err)
 	}
 	view, _ = a.MeetingPreparation(ctx)
-	if view.Status != "empty" {
-		t.Fatal("original version unexpectedly accepts AW", view)
+	if view.Status != "ready" || view.Brief.Event != "Release review" || view.Brief.MailLink != "" {
+		t.Fatal("original version must keep the calendar event without accepting AW", view)
 	}
 	initial, _ := host.Store.Status(ctx)
 	baseline, err := host.Store.Graph(ctx, initial.Revision)
@@ -291,7 +319,7 @@ func TestMeetingPreparationProductionWebAndRevocation(t *testing.T) {
 	activate("meeting-rollback", target.Revision, initial.Revision)
 	a.refreshMeeting(ctx, time.Now())
 	view, _ = a.MeetingPreparation(ctx)
-	if view.Status != "empty" {
+	if view.Status != "ready" || view.Brief.Event != "Release review" || view.Brief.MailLink != "" {
 		t.Fatal("rollback retained stale recommendation", view)
 	}
 	mu.Lock()
@@ -323,7 +351,7 @@ func meetingCandidatePackage(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.0"`, `Version: "1.1.0"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.1.0"`, `Version: "1.2.0"`, 1)
 	code = strings.Replace(code, `prefix != "fwd" {`, `prefix != "fwd" && prefix != "aw" {`, 1)
 	patch := filepath.Join(t.TempDir(), "policy.go")
 	if err = os.WriteFile(patch, []byte(code), 0600); err != nil {
@@ -345,7 +373,7 @@ func meetingCandidatePackage(t *testing.T) string {
 	if err = rsiplugin.Decode(raw, &manifest); err != nil {
 		t.Fatal(err)
 	}
-	manifest.Version = "1.1.0"
+	manifest.Version = "1.2.0"
 	manifest, err = rsi.Seal(dir, manifest)
 	if err != nil {
 		t.Fatal(err)

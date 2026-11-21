@@ -123,11 +123,12 @@ func (s *Store) WriteDocument(ctx context.Context, scope recall.Scope, floor int
 		return memory.Document{}, recall.ErrInvalid
 	}
 	raw, _ := json.Marshal(struct {
-		Scope    recall.Scope
-		Sources  []memory.SourceRef
-		Write    memory.DocumentWrite
-		Evidence []recall.Evidence `json:",omitempty"`
-	}{scope, sources, w, w.Evidence})
+		Scope               recall.Scope
+		Sources             []memory.SourceRef
+		Write               memory.DocumentWrite
+		Evidence            []recall.Evidence `json:",omitempty"`
+		ReboundDependencies map[string]string `json:",omitempty"`
+	}{scope, sources, w, w.Evidence, w.ReboundDependencies})
 	hash, err := s.vault.Digest(ctx, string(raw))
 	if err != nil {
 		return memory.Document{}, err
@@ -172,7 +173,21 @@ func (s *Store) WriteDocument(ctx context.Context, scope recall.Scope, floor int
 	if w.Ref != "" {
 		var revision int64
 		var layer string
-		err = tx.QueryRowContext(ctx, `SELECT coalesce((SELECT revision FROM memory_document WHERE memory_id=m.memory_id),1),coalesce((SELECT layer FROM memory_document WHERE memory_id=m.memory_id),'notes')`+currentMemoryRows+` AND m.memory_id=? AND m.created_at>?`, scope.UserID, scope.UserID, scope.AgentID, strings.TrimPrefix(w.Ref, "memory:"), floor).Scan(&revision, &layer)
+		visible := currentMemoryRows
+		args := []any{scope.UserID, scope.UserID, scope.AgentID}
+		if len(w.ReboundDependencies) > 0 {
+			// A just-revised source makes its old wiki unreadable. Permit a
+			// CAS repair only for the exact supersession this pass performed.
+			// Deletion, retirement, competing edits and the new links still fence it.
+			visible = currentMemoryDependencies + ` AND NOT EXISTS(SELECT 1 FROM json_each(?) pair WHERE pair.key='memory:'||source.memory_id AND pair.value='memory:'||successor.memory_id AND EXISTS(SELECT 1` + currentMemoryRows + ` AND m.memory_id=successor.memory_id AND m.created_at>?))` + currentMemoryDependencyEnd
+			pairs, err := json.Marshal(w.ReboundDependencies)
+			if err != nil {
+				return memory.Document{}, err
+			}
+			args = append(args, string(pairs), scope.UserID, scope.UserID, scope.AgentID, floor)
+		}
+		args = append(args, strings.TrimPrefix(w.Ref, "memory:"), floor)
+		err = tx.QueryRowContext(ctx, `SELECT coalesce((SELECT revision FROM memory_document WHERE memory_id=m.memory_id),1),coalesce((SELECT layer FROM memory_document WHERE memory_id=m.memory_id),'notes')`+visible+` AND m.memory_id=? AND m.created_at>?`, args...).Scan(&revision, &layer)
 		if err == sql.ErrNoRows || err == nil && (revision != w.Revision || layer != w.Layer) {
 			return memory.Document{}, recall.ErrConflict
 		}

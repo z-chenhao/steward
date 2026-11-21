@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -21,6 +22,7 @@ type appsGuidanceCache struct {
 	sync.Mutex
 	graph string
 	plan  contract.GuidancePlan
+	mail  *contract.MailRecipe
 }
 
 type appsGuidanceNeed struct {
@@ -100,7 +102,7 @@ FROM rsi_control c WHERE c.singleton=1`, contract.Guidance).Scan(&graph, &availa
 	}
 	cache := &r.appsGuidance
 	cache.Lock()
-	plan, ready := cache.plan, cache.graph == graph
+	plan, mail, ready := cache.plan, cache.mail, cache.graph == graph
 	cache.Unlock()
 	if !ready {
 		return specs, &appsGuidanceNeed{graph: graph, privacy: privacy}
@@ -117,6 +119,8 @@ FROM rsi_control c WHERE c.singleton=1`, contract.Guidance).Scan(&graph, &availa
 		recipe := plan.Execute
 		if strings.HasSuffix(spec.Name, "__search_tools") {
 			recipe = plan.Search
+		} else if mail != nil && !connection.Public && connection.Toolkit == mail.Toolkit {
+			specs[index].MailReview = &contract.FrozenMailReview{Account: label, Recipe: *mail}
 		}
 		description := recipe.Before + label + recipe.After
 		namespace := plan.Namespace.Before + label + plan.Namespace.After
@@ -152,9 +156,24 @@ func (r *Runs) prepareAppsGuidance(ctx context.Context, need *appsGuidanceNeed) 
 	if err := rsiplugin.DecodeResult(raw, &plan); err != nil {
 		return err
 	}
+	var mail *contract.MailRecipe
+	_, err = store.ServiceBinding(ctx, need.graph, contract.MailReview)
+	if err == nil {
+		raw, err = host.ReadService(ctx, need.graph, contract.MailReview, json.RawMessage(`{}`), nil)
+		if err != nil {
+			return err
+		}
+		var recipe contract.MailRecipe
+		if err := rsiplugin.DecodeResult(raw, &recipe); err != nil {
+			return err
+		}
+		mail = &recipe
+	} else if !errors.Is(err, rsi.ErrNotFound) {
+		return err
+	}
 	cache := &r.appsGuidance
 	cache.Lock()
-	cache.graph, cache.plan = need.graph, plan
+	cache.graph, cache.plan, cache.mail = need.graph, plan, mail
 	cache.Unlock()
 	return nil
 }
@@ -193,6 +212,7 @@ func (r *Runs) appsRegistryForRun(ctx context.Context, claim agent.RunClaim, bas
 		definition, _ := base.Resolve(spec.Name)
 		if original, exists := frozen[spec.Name]; exists && spec.Provider == original.Provider && spec.ResourceHash != "" && spec.ResourceHash == original.ResourceHash {
 			definition.Spec.Description = original.Description
+			definition.Spec.MailReview = original.MailReview
 		}
 		definitions = append(definitions, definition)
 	}

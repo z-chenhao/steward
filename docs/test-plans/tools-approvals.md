@@ -99,3 +99,13 @@ Computer 动作参数的原 hash／解析选项、批准前固化与不重算、
 ### 测试商户的单次付款
 
 参考 Cue 的预算与回执流程。所有者先读取已报价订单，批准固定商户、订单、币种与按最小单位计的上限。MCP 插件门禁覆盖批准前未付款、批准后精确成交、截断付款应答后冷恢复只查原单。使用独立商户接收日志核对每单只有一次 `pay_order`，以账本核对查询所得回执。单元回归覆盖超额、错币种、错商户以及并发重复付款。
+
+### 具名 Gmail 发信审批
+
+参考 [Linger 邮件确认卡](https://github.com/simplexai-labs/linger/blob/77abdcb37f779f9c9d2de89fa245efa88d3f6584/apps/web/src/features/rooms/cards/decision-connector-write-view.tsx#L25-L182)。所有者在原审批中核对已授权账户、显式发件地址、全部收件目标（含密送）、附件、主题和正文，然后决定是否放行。跨账户混淆、未展开就漏看密送，以及把批准误作送达，都会影响这个决定。
+
+| 检查 | 可观察结果 |
+| --- | --- |
+| `TestConnectedAppsPluginActualApprovalAndUnknownNeverRepeats` | 经真实插件冻结具名账户并建立 SQLite 审批；切换当前方法包，旧审批的账户、配方、参数和 hash 保持原值。批准前零次外部写入，应答遗失后冷恢复仍仅一次发送尝试。外部端点使用受控 HTTP peer。 |
+| `TestMailApprovalRendersFrozenEnvelopeAndCompleteValues`、`TestMailApprovalKeepsOriginalViewForUnrecognizedOrAmbiguousCalls` | 本地 HTML 转义正文、保留完整附件引用和未知参数；已有草稿、重名键及无布局的历史审批使用原参数。 |
+| `STEWARD_TEST_APP_BROWSER=1 go test ./internal/interaction/web -run TestApprovalParametersBrowser -count=1` | Chromium 在桌面与手机、明暗主题测量有值控件；核对 To/Cc/Bcc、实际表单 hash、键盘展开长正文、原生无脚本页面。设置 `STEWARD_APP_BROWSER_EVIDENCE` 可保存截图。 |

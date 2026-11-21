@@ -124,3 +124,151 @@ func TestMemoryVerifiedFeedbackCorrectsHypothesisForSubsequentSearch(t *testing.
 		t.Fatal("replay duplicated correction")
 	}
 }
+
+func TestMemoryDreamWikiCorrectionKeepsCurrentBudgetAndOriginalDateEvidence(t *testing.T) {
+	ctx := context.Background()
+	s, r, _, actor, curator := semanticRuntime(t)
+	installCuratorPlugin(t, s, r)
+	registry, err := tool.NewRegistry([]tool.Definition{memory.Definition()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.registry, actor.Registry = registry, registry
+	main := actor.Provider.(*loopProvider)
+	main.respond = func(llm.GenerationRequest) (llm.GenerationResult, error) {
+		return llm.GenerationResult{Text: "Received."}, nil
+	}
+
+	const oldBudget = "Atlas budget is 180,000."
+	const newBudget = "Atlas budget is now 210,000."
+	const deadline = "Atlas delivery is December 12."
+	const wikiTitle = "Atlas project"
+	curator.reply = func(in memory.CurationInput) llm.GenerationResult {
+		if in.Mode != "dream" {
+			return llm.GenerationResult{Text: `{"facts":[]}`}
+		}
+		heads := map[string]memory.Document{}
+		for _, doc := range in.Documents {
+			heads[doc.Title] = doc
+		}
+		note := func(title, quote string) memory.DocumentWrite {
+			for i, obs := range in.Observations {
+				if obs.Author == "user" && strings.Contains(obs.Text, quote) {
+					head := heads[title]
+					return memory.DocumentWrite{Layer: memory.Notes, Ref: head.Ref, Revision: head.Revision, Title: title, Content: quote, Support: []memory.SupportQuote{{Observation: i, Quote: quote}}}
+				}
+			}
+			t.Fatalf("missing original observation %q", quote)
+			return memory.DocumentWrite{}
+		}
+		wiki := func(current string) memory.DocumentWrite {
+			head := heads[wikiTitle]
+			return memory.DocumentWrite{Layer: memory.Representations, Ref: head.Ref, Revision: head.Revision, Title: wikiTitle,
+				Content: current + "\n" + deadline, Links: []string{heads["Atlas budget"].Ref, heads["Atlas delivery"].Ref}}
+		}
+		proposal := memory.Proposal{Done: true}
+		switch {
+		case in.Goal == "Atlas baseline" && in.Pass == 0:
+			proposal.Documents = []memory.DocumentWrite{note("Atlas budget", oldBudget), note("Atlas delivery", deadline)}
+			proposal.Done = false
+		case in.Goal == "Atlas baseline":
+			proposal.Documents = []memory.DocumentWrite{wiki(oldBudget)}
+		case in.Goal == "Atlas budget correction":
+			// The wiki depends on both notes, only the budget note is revised.
+			proposal.Documents = []memory.DocumentWrite{wiki(newBudget), note("Atlas budget", newBudget)}
+		default:
+			t.Fatalf("unexpected maintenance goal %q", in.Goal)
+		}
+		raw, err := json.Marshal(proposal)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return llm.GenerationResult{Text: string(raw)}
+	}
+	dream := func(goal string) {
+		t.Helper()
+		if _, err := r.ManageMemory(ctx, goal, memory.Mutation{Operation: "dream", Content: goal}); err != nil {
+			t.Fatal(err)
+		}
+		if err := r.CurateMemory(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mustSubmit(t, actor, "original-budget", oldBudget)
+	dateInput := mustSubmit(t, actor, "original-delivery", deadline)
+	mustDrain(t, actor)
+	dream("Atlas baseline")
+	correction := mustSubmit(t, actor, "correct-budget", newBudget)
+	mustDrain(t, actor)
+	dream("Atlas budget correction")
+	if scalar(t, s, `SELECT count(*) FROM memory_mutation WHERE source_type='dream' AND failed_at IS NOT NULL`) != 0 {
+		t.Fatal("accepted budget correction failed before publishing the updated wiki")
+	}
+
+	// A new user input opens the current wiki through the actual model tools.
+	var wikiRef string
+	var wikiRead bool
+	main.respond = func(req llm.GenerationRequest) (llm.GenerationResult, error) {
+		messages, err := llm.ResolveMemoryMessages(ctx, req)
+		if err != nil {
+			return llm.GenerationResult{}, err
+		}
+		last := messages[len(messages)-1]
+		switch last.ToolCallID {
+		case "list-wiki":
+			var list struct {
+				Documents []memory.Document `json:"documents"`
+			}
+			if json.Unmarshal([]byte(last.Text), &list) != nil || len(list.Documents) != 1 || list.Documents[0].Revision != 2 {
+				return llm.GenerationResult{}, fmt.Errorf("current project revision unavailable: %s", last.Text)
+			}
+			wikiRef = list.Documents[0].Ref
+			args, _ := json.Marshal(memory.Mutation{Operation: "read", MemoryRef: wikiRef})
+			return llm.GenerationResult{ToolCalls: []llm.ToolCall{{ID: "read-wiki", Name: memory.ManageName, Arguments: string(args)}}}, nil
+		case "read-wiki":
+			var doc memory.Document
+			if json.Unmarshal([]byte(last.Text), &doc) != nil || doc.Content != newBudget+"\n"+deadline {
+				return llm.GenerationResult{}, fmt.Errorf("wrong revision content: %s", last.Text)
+			}
+			want := map[string]string{dateInput.MessageID: deadline, correction.MessageID: newBudget}
+			if len(doc.Sources) != 2 || len(doc.Evidence) != 2 {
+				return llm.GenerationResult{}, fmt.Errorf("current wiki cites superseded or missing sources: %+v / %+v", doc.Sources, doc.Evidence)
+			}
+			for _, src := range doc.Sources {
+				if src.Type != "conversation" || want[src.Ref] == "" {
+					return llm.GenerationResult{}, fmt.Errorf("unexpected wiki source: %+v", src)
+				}
+			}
+			for _, ev := range doc.Evidence {
+				if want[ev.SourceRef] != ev.Quote || ev.Author != "user" || ev.At.IsZero() {
+					return llm.GenerationResult{}, fmt.Errorf("wrong original attribution: %+v", ev)
+				}
+				delete(want, ev.SourceRef)
+			}
+			if len(want) != 0 {
+				return llm.GenerationResult{}, fmt.Errorf("missing original evidence: %v", want)
+			}
+			wikiRead = true
+			return llm.GenerationResult{Text: "Checked the project wiki."}, nil
+		default:
+			return llm.GenerationResult{ToolCalls: []llm.ToolCall{{ID: "list-wiki", Name: memory.ManageName, Arguments: `{"operation":"list","layer":"representations"}`}}}, nil
+		}
+	}
+	mustSubmit(t, actor, "ask-again", "Check the budget and delivery date in the Atlas project wiki.")
+	mustDrain(t, actor)
+	if !wikiRead {
+		t.Fatal("the next input did not read the corrected wiki")
+	}
+	if _, err := r.ManageMemory(ctx, "forget-project", memory.Mutation{Operation: "forget", Category: "all"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, request := range []memory.Mutation{
+		{Operation: "read", MemoryRef: wikiRef},
+		{Operation: "read", Layer: memory.Transcripts, MemoryRef: dateInput.MessageID},
+		{Operation: "read", Layer: memory.Transcripts, MemoryRef: correction.MessageID},
+	} {
+		if _, err := r.ManageMemory(ctx, "revoked-"+request.MemoryRef, request); err == nil {
+			t.Fatal("read after Forget", request)
+		}
+	}
+}

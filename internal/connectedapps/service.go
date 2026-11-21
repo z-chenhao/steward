@@ -166,7 +166,11 @@ func (s *Service) View(ctx context.Context, search, category, cursor string) (Vi
 
 func (s *Service) save(ctx context.Context, state State) error {
 	if state.Meeting != nil {
-		for _, pin := range []SourcePin{state.Meeting.Calendar, state.Meeting.Mail} {
+		pins := []SourcePin{state.Meeting.Calendar}
+		if !state.Meeting.CalendarOnly || state.Meeting.Mail != (SourcePin{}) {
+			pins = append(pins, state.Meeting.Mail)
+		}
+		for _, pin := range pins {
 			c := find(&state, pin.ID)
 			if c == nil || c.Status != "active" || c.Public || BindingHash(state, *c) != pin.Hash {
 				state.Meeting = nil

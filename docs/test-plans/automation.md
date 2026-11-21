@@ -135,4 +135,4 @@ Schedule 的 Main／Root 指引与阈值冻结回归纳入 `make test-prompts` �
 
 ### 次日会议与邮件来源
 
-参考 OpenAI Dots 的主动只读研究。该系统分片安装固定的 guest-browser 依赖与 Chromium，实际运行会议准备的浏览器验收。操作者选择两个账号并授权，看到明日会议与相关邮件的各自链接；关闭研究或撤回来源后无后续内容读取。Steward 只请求主题元数据，匹配窗口和时区在页面可见。connected-apps-plugins 系统门禁通过 `TestMeetingPreparationProductionWebAndRevocation`、真实完整托管组合、Chromium 设置页面和受控 Composio 协议端核对目标账号、GET 方法、字段、来源链接、停用和两次读取之间撤权；截图覆盖明暗和手机/桌面。`TestMeetingPreparationDSTWindow` 验证 23/25 小时的本地日历日。
+参考 OpenAI Dots 的主动只读研究和 simplexai/linger 的分步交付。该系统分片安装固定的 guest-browser 依赖与 Chromium，实际运行会议准备的浏览器验收。浏览器从仅连接日历开始，键盘提交后看到会议和来源。协议端必须只收到日历查询，不得查询邮箱身份。加入测试邮箱连接后，重新打开仍可见原简报；显式选定邮箱并授权才出现相关邮件的链接。插件验收同时覆盖后来一场会议才有匹配时保留原会议。关闭研究或撤回来源后无后续内容读取。Steward 只请求主题元数据，匹配窗口和时区在页面可见。connected-apps-plugins 系统门禁通过 `TestMeetingPreparationProductionWebAndRevocation`、真实完整托管组合、Chromium 设置页面和受控 Composio 协议端核对目标账号、GET 方法、字段、来源链接、停用和两次读取之间撤权；截图覆盖明暗和手机/桌面。`TestMeetingPreparationDSTWindow` 验证 23/25 小时的本地日历日。

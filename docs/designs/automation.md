@@ -198,8 +198,8 @@ Web 的已验证浏览器时区只作为新建表单的显示输入。工作台�
 
 ### 获准日历与邮件的只读研究
 
-操作者在既有 connected-apps CAS 文档中保存两个确切绑定摘要、一次性授权标识和时区。Host 在每次内容读取和交付前复核两份本地授权及供应商账户状态，关闭连接会同时清除研究授权。连接查询和凭证仍由受信适配器持有。Composio 代理只可发起固定的 Google Calendar 事件、Gmail 会话/主题和邮箱身份 GET；邮箱身份用于生成对应账号的来源链接。普通模型和插件没有通用代理入口。
+操作者在既有 connected-apps CAS 文档中保存日历绑定摘要、可选邮箱绑定摘要、独立授权标识和时区。仅日历授权有明确标记。历史双账号授权继续要求两份有效绑定，每次内容读取及交付均复核授权范围内的绑定与供应商账号状态。新增连接不会扩大既有授权，撤销绑定会使相应结果失效。连接查询和凭证仍由受信适配器持有。Composio 代理只可发起固定的 Google Calendar 事件、Gmail 会话/主题和邮箱身份 GET；邮箱身份用于生成对应账号的来源链接。普通模型和插件没有通用代理入口。
 
-独立 `meeting-preparation` 包拥有标题和主题匹配策略；私有 `steward.meeting-preparation/1` 接收有界数组，返回选择的位置。Host 验证索引、绑定和当前组合，组装可信来源链接。内存缓存按授权、日期和图版本区分，停用、隔离或换源后停止交付。次日边界按所选时区的两个本地午夜计算。每次网页服务启动和跨日检查不依赖推理或发送消息。
+独立 `meeting-preparation` 包拥有会议选择和主题匹配策略。1.1 先固定明日第一场有标题的会议，再查这场会议的邮件。同一日历结果下，新增邮箱不会把简报切换至另一场有邮件的会议。私有 `steward.meeting-preparation/1` 接收有界数组，返回选择的位置。Host 验证索引、绑定和当前组合，组装可信来源链接。内存缓存按授权、日期和图版本区分，停用、隔离或换源后停止交付。次日边界按所选时区的两个本地午夜计算。每次网页服务启动和跨日检查不依赖推理或发送消息。
 
 适配器依据 [Composio 代理协议](https://docs.composio.dev/reference/api-reference/tools/postToolsExecuteProxy)、[Calendar 事件查询](https://developers.google.com/workspace/calendar/api/v3/reference/events/list) 和 [Gmail 会话查询](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.threads/list) 实现。

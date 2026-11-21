@@ -508,7 +508,7 @@ func testConnectedAppsDefaultLifecycle(t *testing.T, mode string) {
 	policy.Cases = cases
 	contracts := policy.AllowedContracts[:0]
 	for _, item := range policy.AllowedContracts {
-		if item != "steward.apps-method/1" && item != "steward.apps-guidance/1" {
+		if item != "steward.apps-method/1" && item != "steward.apps-guidance/1" && item != "steward.apps-mail-review/1" {
 			contracts = append(contracts, item)
 		}
 	}

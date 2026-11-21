@@ -37,11 +37,12 @@ func Select(q contract.Input) (contract.Pair, error) {
 				return contract.Pair{Meeting: i, Thread: j}, nil
 			}
 		}
+		return contract.Pair{Meeting: i, Thread: -1}, nil
 	}
 	return none, nil
 }
 func Handlers() rsiplugin.Handlers {
-	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.0.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Select: func(ctx context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
+	return rsiplugin.Handlers{PluginID: contract.PluginID, Version: "1.1.0", Services: map[string]func(context.Context, rsiplugin.Call) (rsiplugin.Result, error){contract.Select: func(ctx context.Context, c rsiplugin.Call) (rsiplugin.Result, error) {
 		var q contract.Input
 		if err := rsiplugin.Decode(c.Input, &q); err != nil {
 			return rsiplugin.Result{}, err

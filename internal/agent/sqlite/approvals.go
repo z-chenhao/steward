@@ -8,6 +8,7 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/interaction"
+	apps "github.com/z-chenhao/assistant/internal/plugin/appsmethods/contract"
 	"github.com/z-chenhao/assistant/internal/tool"
 )
 
@@ -92,11 +93,15 @@ func (r *Runs) approvalView(ctx context.Context, ids string, includePending bool
 	if predicate != "" {
 		scoped = " AND " + predicate
 	}
-	query := `SELECT approval_id,tool_name,arguments_json,frozen_arguments_hash,status,expires_at,action_parameters FROM (
+	query := `SELECT approval_id,tool_name,arguments_json,frozen_arguments_hash,status,expires_at,action_parameters,mail_review FROM (
  SELECT a.approval_id,i.tool_name,i.arguments_json,a.frozen_arguments_hash,
  CASE WHEN a.status IN ('pending','approved') AND a.expires_at<=:now AND i.status IN ('queued','waiting') AND i.attempt_count=0 THEN 'expired' ELSE a.status END status,
- a.expires_at,a.created_at,coalesce(p.plan_json,'') action_parameters FROM approval a JOIN tool_invocation i USING(invocation_id) LEFT JOIN computer_action_plan p ON p.invocation_id=i.invocation_id AND p.request_hash=i.request_hash WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)` + scoped + `
- UNION ALL SELECT approval_id,'account_spend',arguments_json,frozen_hash,status,0,created_at,'' FROM spend_approval a WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)` + scoped + `
+ a.expires_at,a.created_at,coalesce(p.plan_json,'') action_parameters,
+ CASE WHEN i.tool_name GLOB 'mcp__apps__b__*__execute' THEN coalesce((
+   SELECT json_extract(j.value,'$.mail_review') FROM run r JOIN capability_snapshot cs ON cs.snapshot_id=r.capability_snapshot_id,
+   json_each(cs.tools_json) j WHERE r.run_id=i.run_id AND json_extract(j.value,'$.name')=i.tool_name AND json_extract(j.value,'$.provider')='composio'
+ ),'') ELSE '' END mail_review FROM approval a JOIN tool_invocation i USING(invocation_id) LEFT JOIN computer_action_plan p ON p.invocation_id=i.invocation_id AND p.request_hash=i.request_hash WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)` + scoped + `
+ UNION ALL SELECT approval_id,'account_spend',arguments_json,frozen_hash,status,0,created_at,'','' FROM spend_approval a WHERE a.scope=(SELECT agent_id FROM agent_config WHERE singleton=1)` + scoped + `
  ) a`
 	if includePending {
 		query += " WHERE " + predicate
@@ -114,8 +119,16 @@ func (r *Runs) approvalView(ctx context.Context, ids string, includePending bool
 	out := []interaction.Approval{}
 	for rows.Next() {
 		var v interaction.Approval
-		if rows.Scan(&v.ID, &v.Tool, &v.Arguments, &v.Hash, &v.Status, &v.ExpiresAt, &v.Parameters) != nil {
+		var mail string
+		if rows.Scan(&v.ID, &v.Tool, &v.Arguments, &v.Hash, &v.Status, &v.ExpiresAt, &v.Parameters, &mail) != nil {
 			return nil, agent.ErrStorage
+		}
+		if mail != "" {
+			var review apps.FrozenMailReview
+			if json.Unmarshal([]byte(mail), &review) != nil {
+				return nil, agent.ErrStorage
+			}
+			v.MailReview = &review
 		}
 		out = append(out, v)
 	}

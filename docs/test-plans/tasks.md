@@ -58,6 +58,7 @@ F-004/F-042 的精确 PR 关联接续使用 [github_followup_test.go](../../inte
 - `internal/task/task_test.go`：新问题/审阅分支的严格 union、必填/越臂/重复/null 字段、成果数量与冻结旧 schema 拒绝；旧请求省略新字段时保留规范化身份。
 - `internal/agent/sqlite/task_feedback_test.go`：真实 Main Tool/Actor 保存问题，所有者并发八次回应只生成一条 Main input，Main 接续原 Task；不同重复冲突、源消息关联、原子失败回滚与重开读取。同轮检查问题与审阅同时可答、同种替代、旧单槽兼容与不可变范围；独立检查 supersede、到期、epoch、pause/cancel/Forget、当前反馈换目标/因果、已接纳反馈遇到后续停止、新普通输入继续与新审阅取代旧修订。成果引用沿真实 ArtifactStore 保留、作为回应附件进入 Main，始终不产生动作审批。
 - 同文件的读取 fixture 验证 52 个当前问题跨稳定游标完整读取，按 Task 筛选与读取前后事件数不变；历史和隐私撤销不占待办页；元数据 read fixture 覆盖缺失/删除/其他所有者/到期成果被过滤，受活动 Task 保护的原 TTL 到期成果仍可用，不读取 blob。它不替代实际写入口验证。
+- 参考 Linger 在工作上下文内补连接的操作，[会议任务接续回归](../../internal/agent/sqlite/meeting_task_feedback_test.go)从实际 CodeMode 工具清单发现缺 Gmail。Main 将问题留在原任务，账户 Connect/Check 后仍无新轮次或邮件读取。从设置表单连接并检查账户，再通过原 Task 的 Web 反馈表单明确回答，两次提交返回同一回执。新 Root 在独立审批后从本地协议端点读取指定线程，原 Task 详情展示一条含该线程标识的 Main 交付。旧 Run 的能力清单保持逐字相同，发送次数为零。该用例使用脚本模型和本地账户服务，页面导航见[操作步骤](../features/tasks.md#回答已保存的问题与审阅成果)。
 - `verify_tasks.py` 的 feedback 场景通过现有脚本模型、实际 CLI、每次独立进程和 SQLite readback：记录问题 → 列表 → 回答/重试 → Main append → 原 Task 的新 Root；暂停后拒绝旧回答；真实上传成果经 Main 记录精确修订审阅、回应与接续不创建动作批准；回应提交前后 SIGKILL 后只接续一次。软件协议证据不证明真实模型能稳定识别何时提问或准确理解成果意见。
 - Web 的具名待办与跨 CLI 回应复用见 [渠道测试](channels.md)；个人飞书问题和成果审阅卡的签名提交、同 Task 接续及跨端重试见[渠道测试](channels.md#feishu-task-question-tests)。真实客户端兼容与模型语义质量仍为缺口。
 

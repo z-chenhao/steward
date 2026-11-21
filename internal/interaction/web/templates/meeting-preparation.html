@@ -1,30 +1,35 @@
 {{define "meeting-preparation-page"}}
 <section class="workspace-page settings-page">
- <div class="page-heading"><div><h1>{{tr "Meeting preparation"}}</h1><p>{{tr "Prepare tomorrow's first meeting with a matching email thread. The selected accounts are read while Steward Web is running."}}</p></div></div>
+ <div class="page-heading"><div><h1>{{tr "Meeting preparation"}}</h1><p>{{tr "See tomorrow's first meeting and any matching email from the accounts you choose."}}</p></div></div>
  {{with .Meeting}}
  {{if .Enabled}}
    <section class="detail-section" aria-live="polite">
    {{if eq .Status "ready"}}<h2>{{tr "Before the meeting"}}</h2>
-    <p>{{tr "Review the matching email thread before this meeting."}}</p>
-    <p><a href="{{.Brief.EventLink}}" rel="noreferrer">{{.Brief.Event}}</a> · <time>{{.Brief.Start}}</time></p>
-    <p><a href="{{.Brief.MailLink}}" rel="noreferrer">{{.Brief.Subject}}</a></p>
-   {{else if eq .Status "empty"}}<p>{{tr "No matching meeting and recent thread found for tomorrow."}}</p>
+    <p><a class="text-link" href="{{.Brief.EventLink}}" rel="noreferrer">{{.Brief.Event}}</a> · <time>{{.Brief.Start}}</time></p>
+    {{if .Brief.MailLink}}<p><a class="text-link" href="{{.Brief.MailLink}}" rel="noreferrer">{{.Brief.Subject}}</a></p>
+    {{else if .Mail}}<p>{{tr "No matching thread in the selected mailbox."}}</p>
+    {{else}}<p>{{tr "Prepared from your calendar only."}}</p>{{end}}
+   {{else if eq .Status "empty"}}<p>{{tr "No meeting brief available for tomorrow."}}</p>
    {{else if eq .Status "pending"}}<p>{{tr "Preparing the selected sources. Refresh to check the result."}}</p>
    {{else if eq .Status "revoked"}}<p>{{tr "A selected source is no longer authorized. Reconnect or turn off preparation."}}</p>
    {{else}}<p>{{tr "Preparation is unavailable. Check the selected connections and the active plugin."}}</p>{{end}}
-   <form method="post" action="/meeting-preparation/configure"><input type="hidden" name="revision" value="{{.Revision}}"><button class="secondary control-form-action" name="action" value="disable">{{tr "Turn off meeting preparation"}}</button></form>
+   <form id="meeting-disable" method="post" action="/meeting-preparation/configure"><input type="hidden" name="revision" value="{{.Revision}}"><input type="hidden" name="action" value="disable"></form>
    </section>
  {{end}}
- {{if and .Calendars .Mailboxes}}
- <form class="form-panel detail-section" method="post" action="/meeting-preparation/configure">
+ {{if .Calendars}}
+ <form id="meeting-sources" class="form-panel detail-section" method="post" action="/meeting-preparation/configure">
   <input type="hidden" name="revision" value="{{.Revision}}">
-  <label>{{tr "Calendar account"}}<select name="calendar" required><option value="">{{tr "Choose an account"}}</option>{{range .Calendars}}<option value="{{.ID}}" {{if eq .ID $.Meeting.Calendar}}selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-  <label>{{tr "Mail account"}}<select name="mail" required><option value="">{{tr "Choose an account"}}</option>{{range .Mailboxes}}<option value="{{.ID}}" {{if eq .ID $.Meeting.Mail}}selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-  <label>{{tr "Meeting time zone"}}<input name="zone" autocomplete="off" required maxlength="100" value="{{.Zone}}" placeholder="Asia/Shanghai"></label>
-  <p class="field-help">{{tr "Use an IANA time zone. Reads up to 20 timed events on the primary calendar and 10 threads from the last seven days. Only email subject metadata is used."}}</p>
-  <button class="control-form-action" name="action" value="enable">{{tr "Allow read-only preparation"}}</button>
+  <div class="setting-row"><label for="meeting-calendar">{{tr "Calendar account"}}</label><select id="meeting-calendar" name="calendar" required><option value="">{{tr "Choose an account"}}</option>{{range .Calendars}}<option value="{{.ID}}" {{if eq .ID $.Meeting.Calendar}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  <div class="setting-row"><label for="meeting-mail">{{tr "Mail account"}}</label><select id="meeting-mail" name="mail"><option value="">{{tr "Calendar only"}}</option>{{range .Mailboxes}}<option value="{{.ID}}" {{if eq .ID $.Meeting.Mail}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  {{if not .Mailboxes}}<p><a class="text-link" href="/settings/apps?app=gmail">{{tr "Connect Gmail to include related email"}}</a></p>{{end}}
+  <div class="setting-row"><label for="meeting-zone">{{tr "Meeting time zone"}}</label><div class="setting-controls preference-controls"><input id="meeting-zone" name="zone" autocomplete="off" required maxlength="100" value="{{.Zone}}" placeholder="Asia/Shanghai"></div></div>
+  <p class="field-help">{{tr "Use an IANA time zone. Steward reads up to 20 timed events on your primary calendar. Choosing a mailbox also allows reading the mailbox address and subjects from up to 10 threads from the last seven days."}}</p>
  </form>
- {{else}}<p><a href="/settings/apps">{{tr "Connect Google Calendar and Gmail to choose your sources."}}</a></p>{{end}}
+ {{else}}<p><a class="text-link" href="/settings/apps?app=googlecalendar">{{tr "Connect Google Calendar to prepare a meeting"}}</a></p>{{end}}
+ {{if or .Enabled .Calendars}}<div class="settings-actions">
+  {{if .Enabled}}<button class="secondary setting-action control-form-action" form="meeting-disable">{{tr "Turn off preparation"}}</button>{{end}}
+  {{if .Calendars}}<button class="setting-action control-form-action" form="meeting-sources" name="action" value="enable">{{tr "Allow read-only preparation"}}</button>{{end}}
+ </div>{{end}}
  {{end}}
 </section>
 {{end}}

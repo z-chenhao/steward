@@ -15,10 +15,11 @@ type SourcePin struct {
 	Hash string `json:"binding_hash"`
 }
 type MeetingGrant struct {
-	ID       string    `json:"grant_id"`
-	Calendar SourcePin `json:"calendar"`
-	Mail     SourcePin `json:"mail"`
-	Zone     string    `json:"zone"`
+	ID           string    `json:"grant_id"`
+	Calendar     SourcePin `json:"calendar"`
+	Mail         SourcePin `json:"mail"`
+	CalendarOnly bool      `json:"calendar_only,omitempty"`
+	Zone         string    `json:"zone"`
 }
 type MeetingEvidence struct {
 	Mailbox  string
@@ -58,16 +59,19 @@ func (s *Service) SetMeetingGrant(ctx context.Context, revision int64, calendar,
 	if err != nil {
 		return err
 	}
-	inbox, err := pin(mail, "gmail")
-	if err != nil {
-		return err
+	var inbox SourcePin
+	if mail != "" {
+		inbox, err = pin(mail, "gmail")
+		if err != nil {
+			return err
+		}
 	}
-	st.Meeting = &MeetingGrant{ID: rand.Text(), Calendar: cal, Mail: inbox, Zone: zone}
+	st.Meeting = &MeetingGrant{ID: rand.Text(), Calendar: cal, Mail: inbox, CalendarOnly: mail == "", Zone: zone}
 	return s.Store.SaveApps(ctx, st, revision)
 }
 
-// Re-read both exact bindings before every content read and before publishing
-// its result; another process may have revoked or rotated either connection.
+// Re-read the granted bindings before every content read and before publishing
+// its result; another process may have revoked or rotated a connection.
 func (s *Service) withMeetingAccounts(ctx context.Context, g MeetingGrant, read func(composio.Client, string, Connection, Connection) error) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -90,11 +94,18 @@ func (s *Service) withMeetingAccounts(ctx context.Context, g MeetingGrant, read 
 	if err != nil {
 		return err
 	}
-	mail, err := check(g.Mail, "gmail")
-	if err != nil {
-		return err
+	accounts := []Connection{cal}
+	var mailbox Connection
+	if !g.CalendarOnly {
+		mailbox, err = check(g.Mail, "gmail")
+		if err != nil {
+			return err
+		}
+		accounts = append(accounts, mailbox)
+	} else if g.Mail != (SourcePin{}) {
+		return ErrDenied
 	}
-	for _, c := range []Connection{cal, mail} {
+	for _, c := range accounts {
 		if err = checkExecutionAccount(ctx, client, st, c); err != nil {
 			return err
 		}
@@ -109,7 +120,7 @@ func (s *Service) withMeetingAccounts(ctx context.Context, g MeetingGrant, read 
 	if read == nil {
 		return nil
 	}
-	return read(client, st.UserID, cal, mail)
+	return read(client, st.UserID, cal, mailbox)
 }
 func (s *Service) ValidateMeeting(ctx context.Context, g MeetingGrant) error {
 	return s.withMeetingAccounts(ctx, g, nil)
@@ -139,7 +150,7 @@ func (s *Service) ReadMeetingEvidence(ctx context.Context, g MeetingGrant, start
 		}
 		return nil
 	})
-	if err != nil || len(out.Events) == 0 {
+	if err != nil || len(out.Events) == 0 || g.CalendarOnly {
 		return out, err
 	}
 	var threads []composio.MailThread

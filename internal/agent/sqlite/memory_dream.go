@@ -104,7 +104,7 @@ func (r *Runs) scheduleDream(ctx context.Context) (bool, error) {
 }
 
 func (r *Runs) dreamInput(ctx context.Context, scope recall.Scope, event string, at time.Time, floor int64, pass int) (memory.CurationInput, error) {
-	in := memory.CurationInput{Version: 3, Mode: "dream", Pass: pass, Observation: memory.Observation{EventID: event, Author: "maintenance", At: at}}
+	in := memory.CurationInput{Version: 4, Mode: "dream", Pass: pass, Observation: memory.Observation{EventID: event, Author: "maintenance", At: at}}
 	var goal, key string
 	if e := r.host.db.QueryRowContext(ctx, `SELECT payload,source_ref FROM memory_mutation WHERE event_id=? AND agent_id=?`, event, scope.AgentID).Scan(&goal, &key); e != nil {
 		return in, agent.ErrStorage
@@ -348,6 +348,7 @@ func (r *Runs) curateDream(ctx context.Context, scope recall.Scope, event string
 				}
 			}
 			replacements := map[string]string{}
+			evidenceInput := frozen
 			for _, i := range order {
 				w := p.Documents[i]
 				w.Links = append([]string(nil), w.Links...)
@@ -359,7 +360,14 @@ func (r *Runs) curateDream(ctx context.Context, scope recall.Scope, event string
 				documentSources := sources
 				if frozen.Version >= 2 {
 					var e error
-					documentSources, w.Evidence, e = memory.DreamEvidence(frozen, p.Documents[i])
+					if frozen.Version >= 4 {
+						w.ReboundDependencies = replacements
+						documentSources, w.Evidence, e = memory.DreamEvidence(evidenceInput, w)
+					} else {
+						// A historical pass may already have a memory.db receipt
+						// hashed against the frozen predecessor's quotes.
+						documentSources, w.Evidence, e = memory.DreamEvidence(frozen, p.Documents[i])
+					}
 					if e != nil {
 						return e
 					}
@@ -399,6 +407,10 @@ func (r *Runs) curateDream(ctx context.Context, scope recall.Scope, event string
 				}
 				if w.Ref != "" && !w.Retire {
 					replacements[w.Ref] = ref.Ref
+					if frozen.Version >= 4 {
+						// Bind dependent quotes to exactly the revision their links select.
+						evidenceInput.Documents = append(evidenceInput.Documents, memory.Document{Ref: ref.Ref, Sources: documentSources, Evidence: w.Evidence})
+					}
 				}
 			}
 			finished := p.Done || pass == 2
