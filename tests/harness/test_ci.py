@@ -230,6 +230,10 @@ class CIChecksTests(unittest.TestCase):
         for flag in ('-race', '-count=1', '-timeout=15m'):
             self.assertIn(flag, args)
         pattern = args[args.index('-run') + 1]
+        self.assertEqual(pattern, race.ARTIFACT_SQLITE_PATTERN)
+        self.assertNotIn('./internal/agent/sqlite', args)
+        self.assertIn('python3 tests/system/race.py --part artifact-sqlite', recipe)
+        self.assertEqual(race.SQLITE_PATTERNS['artifact-sqlite'], pattern)
         for name in ('TestArtifactDefaultProductionOwnerWithoutModelAndColdLifecycle',
                      'TestArtifactFreshUnbundledProductionOwnerCannotUseNative',
                      'TestArtifactDefaultProductionHTTPChannelsFreezeCreationTypeAcrossVersions',
