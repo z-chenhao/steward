@@ -35,7 +35,38 @@ try {
         assert.equal(await field.count(),1);assert.equal(await field.locator('dd').innerText(),value);
       }
       assert.equal(await upload.locator('input[name=hash]').inputValue(),'b'.repeat(64));
-      assert.equal(await page.locator('.approval').count(),4);
+      assert.equal(await page.locator('.approval').count(),5);
+      const mail = page.locator('[data-approval="mail-preview"]');
+      const mailField = label => mail.locator('.approval-fields > div').filter({has: page.getByText(label, {exact:true})}).locator('dd');
+      for (const [label, value] of [['已授权账户','Gmail / work'],['指定发件地址','alias@example.test'],['收件人','primary@example.test\nother@example.test'],['抄送','copy@example.test'],['密送','archive@example.test']]) {
+        assert.equal(await mailField(label).innerText(), value);
+      }
+      assert((await mailField('邮件附件 (1)').innerText()).includes('议程.pdf'));
+      const body = mailField('邮件正文');
+      assert(!(await body.innerText()).includes('完整正文末尾'));
+      await body.locator('summary').focus();
+      await page.keyboard.press('Enter');
+      assert((await body.innerText()).includes('完整正文末尾'));
+      assert.equal(await mail.locator('input[name=hash]').inputValue(), 'c'.repeat(64));
+      const mailGeometry = await mail.evaluate(node=>({width:node.getBoundingClientRect().width,buttons:[...node.querySelectorAll('button[name=decision]')].map(b=>b.getBoundingClientRect().height),color:getComputedStyle(node.querySelector('dd')).color}));
+      assert(mailGeometry.width>0 && mailGeometry.width<=viewport.width);
+      assert.equal(mailGeometry.buttons.length, 2);
+      assert(mailGeometry.buttons.every(h=>h>=(viewport.width<760?44:36)));
+      assert.equal(mailGeometry.color,theme==='light'?'rgb(33, 33, 33)':'rgb(237, 237, 237)');
+      await body.locator('summary').click();
+      // Capture the original rendered approval without the sticky Chat header covering its upper rows.
+      const inbox = await context.newPage();
+      await inbox.goto(url+'/tasks/attention');
+      const inboxMail = inbox.locator('[data-approval="mail-preview"]');
+      await inboxMail.waitFor({timeout:4000});
+      await inboxMail.evaluate(node => node.scrollIntoView({block: 'center'}));
+      const row = inboxMail.locator('.approval-fields > div').first();
+      const [labelBox, valueBox] = await Promise.all([row.locator('dt').boundingBox(), row.locator('dd').boundingBox()]);
+      assert(labelBox && valueBox && valueBox.x >= labelBox.x + labelBox.width, 'show the named account next to its label');
+      assert(Math.abs(labelBox.y - valueBox.y) < valueBox.height / 2, 'align the nonempty account row on one baseline');
+      await inboxMail.screenshot({path: `${evidence}/mail-${viewport.width}-${theme}.png`});
+      await inbox.close();
+
       const uploadSizes=await upload.evaluate(node=>({left:node.getBoundingClientRect().left,right:node.getBoundingClientRect().right,color:getComputedStyle(node.querySelector('dd')).color,buttons:[...node.querySelectorAll('button[name=decision]')].map(button=>({height:button.getBoundingClientRect().height}))}));
       assert(uploadSizes.left>=0 && uploadSizes.right<=viewport.width+1);
       assert.equal(uploadSizes.color,theme==='light'?'rgb(33, 33, 33)':'rgb(237, 237, 237)');
@@ -65,6 +96,9 @@ try {
   const fallback = await browser.newContext({viewport: {width: 390, height: 844}, javaScriptEnabled: false});
   const page = await fallback.newPage();
   await page.goto(url);
+  const nativeMail = page.locator('[data-approval="mail-preview"]');
+  assert.equal(await nativeMail.getByText('archive@example.test', {exact:true}).count(),1);
+  assert.equal(await nativeMail.locator('form input[name=hash]').inputValue(),'c'.repeat(64));
   assert.equal(await page.locator('.approval-fields dt').filter({hasText: 'Scroll amount'}).count(), 1);
   assert.equal(await page.locator('.approval-fields dt').filter({hasText: 'Timeout (ms)'}).count(), 2);
   assert.equal(await page.locator('.approval-fields dt').filter({hasText: /^Media type$/}).count(), 2);

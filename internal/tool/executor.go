@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/llm"
+	apps "github.com/z-chenhao/assistant/internal/plugin/appsmethods/contract"
 )
 
 type Error struct {
@@ -90,6 +91,8 @@ func (r Result) ModelText() string {
 }
 
 type Spec struct {
+	// MailReview only projects owner approvals. It never enters Tool calls or model declarations.
+	MailReview *apps.FrozenMailReview `json:"mail_review,omitempty"`
 	// PromptContext is trusted Host resource metadata, frozen with capability.
 	// It is excluded from the provider Tool declaration by ProviderTools.
 	PromptContext []PromptContext `json:"prompt_context,omitempty"`

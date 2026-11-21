@@ -9,14 +9,24 @@ import (
 )
 
 type approvalField struct{ Name, Value string }
+type mailField struct {
+	Name, Value, Full           string
+	Missing, LiteralLabel, Wide bool
+	Count                       int
+}
 type approvalView struct {
 	ID, Hash, Status, Tool, Title, Raw, ReturnTo string
 	Fields                                       []approvalField
+	Mail                                         []mailField
 	Pending                                      bool
 }
 
 func approvalFor(a interaction.Approval) approvalView {
 	v := approvalView{ID: a.ID, Hash: a.Hash, Status: a.Status, Tool: a.Tool, Raw: a.Arguments, Title: "Review this action", Pending: a.Status == "pending"}
+	if v.Mail = mailReviewFields(a); len(v.Mail) != 0 {
+		v.Title = "Review email before sending"
+		return v
+	}
 	if a.Tool == "account_spend" {
 		v.Title = "Review model spending"
 	} else if a.Tool == "builtin__write" || a.Tool == "builtin__edit" {

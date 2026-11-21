@@ -89,7 +89,7 @@ F-069 保持部分完成：已接通的核心链路不证明未接入供应商�
 
 `TestMCPPluginCurrentConfigurationFencesDispatchReleaseAndCommit` 在实际 list 后、call 后和完成事务前移除／替换原配置，不能派发旧动作或转发到替换 peer；效果已发生的撤销及 Guardian stop／quarantine 在原回执记录 unknown，恢复不重放。只改目录描述仍允许原冻结动作，不把展示改动当成执行撤权。
 
-required `mcp-plugins` lane 先运行 MCP 与原查询恢复的 race 回归，再经正常 provider bridge、真实 CodeMode 和受限 stdio peer 验证标准30包首启（包括四个 Apps 包）、原文多块返回、目录投影、冷进程首个依赖调用、确切审批和 unknown 不重发。通过所有者控制面选定明确缺少 MCP 与 Apps 工具方法的组合，验证运行时不会补选 MCP；从已迁移组合只移除 MCP，保留其余功能并拒绝新 MCP 调用，随后全局停用和停止均不得被冷启动覆盖。该初始组装沿用当前 SDK，不冒充归档二十一包发行版。所有 SQLite 证据读取关闭连接并使用一致读事务；本地 peer 不等于真实供应商 Live。
+required `mcp-plugins` lane 先运行 MCP 与原查询恢复的 race 回归。SQLite 按原测试范围和发现顺序分批，每批最多八个根测试，顺序执行并各自保留 15 分钟超时；证据核对每个选中的根测试恰好一次。随后经正常 provider bridge、真实 CodeMode 和受限 stdio peer 验证标准30包首启（包括四个 Apps 包）、原文多块返回、目录投影、冷进程首个依赖调用、确切审批和 unknown 不重发。通过所有者控制面选定明确缺少 MCP 与 Apps 工具方法的组合，验证运行时不会补选 MCP；从已迁移组合只移除 MCP，保留其余功能并拒绝新 MCP 调用，随后全局停用和停止均不得被冷启动覆盖。该初始组装沿用当前 SDK，不冒充归档二十一包发行版。所有 SQLite 证据读取关闭连接并使用一致读事务；本地 peer 不等于真实供应商 Live。
 
 MCP 现有本地 stdio 范围的托管迁移已验收，持续回归须保留默认构建／源码与预构建安装／首启／冷重启、独立换版／回退／停用、旧 Run／Child 与兼容清理，并同时运行完整软件、prompts、memory、MCP／Web／RSI race 及核心和适用功能系统门禁。Linux ARM64 使用实际解释器与生产 bubblewrap 验证同一正常业务链及六项生命周期场景，并清理自建容器；这不证明完整 Linux 产品、真实 Guest 或远程认证／供应商 Live。共享 unknown 查询恢复另按[工具验收方案](tools-approvals.md)保护未冻结操作不能获得后来安装的查询权限。
 

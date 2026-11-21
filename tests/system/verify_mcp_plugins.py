@@ -100,7 +100,7 @@ def select_composition_without_mcp(h, binary, graph, policy, baseline=""):
     omitted = {'mcp-bridge'} | ({'connected-apps'} if not baseline else set())
     omitted_contracts = {'steward.mcp-method/1', 'steward.mcp-namespace/1'}
     if not baseline:
-        omitted_contracts.update(('steward.apps-method/1', 'steward.apps-guidance/1'))
+        omitted_contracts.update(('steward.apps-method/1', 'steward.apps-guidance/1', 'steward.apps-mail-review/1'))
     prior = dict(graph, bindings=[b for b in graph['bindings'] if b['instance_id'] not in omitted])
     if not baseline:
         # This is initial owner assembly in a separate data root, before any

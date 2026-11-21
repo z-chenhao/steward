@@ -237,3 +237,8 @@ Recall 的独立查询／排序／摘录策略保留原工具、输入冻结和�
 `TestSemanticCuratorScheduleMissingRunnerCannotRestoreNative` 验证同一真实 Store 中先保留从未托管的调度配方，再安装并激活实际 Curator 插件；移除运行器后首次调度读取必须返回不可用且不启用原生频率，停用后再次读取也不得复活。该回归由必需 memory-context lane 的 Semantic race 清单自动收录。
 
 `TestContextPluginUsesFrozenRunVersionAndDurableSelection` 使用独立二进制实际改变压缩方法，并由独立 Owner 预期接纳；同时读取原图与新图，精确回退恢复原方法。关闭原 Store、新建 Store／Catalog 后首次 Drain 执行退役版本的排队 Run，核对原绑定与选择回执；停用后再次重开，首次 Drain 不发送模型请求且不恢复 native。该证据覆盖现有压缩插件生命周期，不代表新的摘要质量评测。
+
+
+### Wiki 修订保留独立事实的原始证据
+
+对照 Linger 的 [Wiki 保留未改条目与来源的用例](https://github.com/simplexai-labs/linger/blob/77abdcb37f779f9c9d2de89fa245efa88d3f6584/apps/node-services/tests/llm-wiki/wiki-page-template.llm-wiki.test.ts#L861-L902)。Steward 使用链接笔记表达独立事实。`TestMemoryDreamWikiCorrectionKeepsCurrentBudgetAndOriginalDateEvidence` 在受管 Curator 下提交预算、日期，再单独纠正预算。Dream 同批更新预算及 Wiki，下一条用户输入经 Main 工具列举和精读，验证唯一当前修订、两条原文引证及其消息身份；Forget 后原引用和 transcript 读取均受限。测试使用受控模型提案检验软件归属与提交语义。`TestMemoryWikiRebindRejectsMissingWrongAndObsoleteSuccessor` 验证普通写入、错误或已过时的后继均不能绕过依赖版本。二者进入已有 `make test-memory`。

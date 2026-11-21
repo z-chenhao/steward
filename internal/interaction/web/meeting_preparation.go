@@ -32,7 +32,7 @@ func (s *Server) configureMeeting(w http.ResponseWriter, r *http.Request) error 
 	}
 	rev, err := strconv.ParseInt(r.PostFormValue("revision"), 10, 64)
 	action := r.PostFormValue("action")
-	if err != nil || rev < 0 || action != "enable" && action != "disable" {
+	if err != nil || rev < 0 || action != "enable" && action != "disable" || action == "enable" && !r.PostForm.Has("mail") {
 		fail(w, 400)
 		return nil
 	}

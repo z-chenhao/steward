@@ -11,6 +11,11 @@
 .approval-fields>div{min-width:0}
 .approval-fields dt{font-size:12px;color:var(--muted-foreground);text-transform:capitalize;margin-bottom:3px}
 .approval-fields dd{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.approval-fields-compact{gap:6px;margin-top:14px}
+.approval-fields-compact>div{display:grid;grid-template-columns:minmax(5em,28%) minmax(0,1fr);gap:10px;align-items:baseline}
+.approval-fields-compact dt{font-size:var(--text-meta);text-transform:none}
+.approval-fields-compact .approval-full-row{grid-template-columns:minmax(0,1fr);gap:2px;border-top:1px solid var(--border);padding-top:8px;margin-top:2px}
+.approval .approval-fields-compact .technical-details{margin:2px 0}
 .approval form{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .approval .technical-details{margin:18px 0}
 .approval .technical-details pre{background:var(--background)}

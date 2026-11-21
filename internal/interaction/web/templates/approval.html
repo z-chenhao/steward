@@ -1,8 +1,9 @@
 {{define "approval-card"}}
 <section class="approval panel" tabindex="-1" id="approval-{{.ID}}" data-approval="{{.ID}}">
  <div class="row-heading"><h2 aria-label="{{tr .Title}}">{{tr .Title}}{{template "help" (help (printf "approval-help-%s" .ID) (tr "Exact action details") (printf "%s %s" (tr "Your decision applies to this exact action.") (tr "Approval permits execution; check the action result to confirm completion.")))}}</h2><span class="status-pill" data-status="{{.Status}}">{{tr .Status}}</span></div>
- <p class="approval-action">{{tr (toolLabel .Tool)}}</p>
- <dl class="approval-fields">{{range .Fields}}<div><dt>{{tr .Name}}</dt><dd>{{.Value}}</dd></div>{{end}}</dl>
+ {{if not .Mail}}<p class="approval-action">{{tr (toolLabel .Tool)}}</p>{{end}}
+ {{if .Mail}}<dl class="approval-fields approval-fields-compact">{{range .Mail}}<div{{if .Wide}} class="approval-full-row"{{end}}><dt>{{if .LiteralLabel}}{{.Name}}{{else}}{{tr .Name}}{{end}}{{if .Count}} ({{.Count}}){{end}}</dt><dd>{{if .Missing}}{{tr "Not provided"}}{{else}}{{.Value}}{{end}}{{if .Full}}<details class="technical-details"><summary>{{tr "Show full value"}}</summary><pre>{{.Full}}</pre></details>{{end}}</dd></div>{{end}}</dl>
+ {{else}}<dl class="approval-fields">{{range .Fields}}<div><dt>{{tr .Name}}</dt><dd>{{.Value}}</dd></div>{{end}}</dl>{{end}}
  <details class="technical-details"><summary>{{tr "Exact action details"}}</summary><p><code>{{.Tool}}</code></p><pre>{{.Raw}}</pre></details>
  {{if .Pending}}<form action="/approval" method="post"><input type="hidden" name="return_to" value="{{.ReturnTo}}"><input type="hidden" name="approval_id" value="{{.ID}}"><input type="hidden" name="hash" value="{{.Hash}}"><button class="control-form-action" name="decision" value="approved">{{tr "Approve"}}</button><button class="secondary control-form-action" name="decision" value="denied">{{tr "Decline"}}</button></form>{{else}}{{end}}
 </section>

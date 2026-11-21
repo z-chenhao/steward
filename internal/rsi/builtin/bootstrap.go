@@ -76,12 +76,14 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	scheduleVersion := ""
 	var memoryInspectorVersion, memoryInspectorDirectory string
 	githubIssueComments := false
+	appsMailReview := false
 	appsClient := false
 	appsInventory := false
 	artifactBody := false
 	codingDraft := false
 	codingChecks := false
 	watchdogAlerts := false
+	meetingCalendarOnly := false
 	codingProject := false
 	for _, p := range bundledPlugins(&d) {
 		if *p.Directory == "" {
@@ -93,6 +95,9 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		}
 		if installed.Manifest.PluginID != p.ID {
 			return rsi.ErrInvalid
+		}
+		if p.Name == "meeting-preparation" {
+			meetingCalendarOnly = installed.Manifest.Version != "1.0.0"
 		}
 		if p.Name == "github-pr-followup" {
 			githubIssueComments = installed.Manifest.Version == "1.0.2"
@@ -106,6 +111,13 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		if p.Name == "memory-inspector" {
 			memoryInspectorVersion = installed.Manifest.Version
 			memoryInspectorDirectory = h.Catalog.Path(installed.Digest)
+		}
+		if p.Name == "connected-apps" {
+			for _, service := range installed.Manifest.Provides {
+				if service.Contract == apps.MailReview {
+					appsMailReview = true
+				}
+			}
 		}
 		if p.Name == "artifact-workbench" {
 			for _, service := range installed.Manifest.Provides {
@@ -267,7 +279,7 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 	}
 	if d.MeetingPreparation != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.meeting-preparation/1")
-		policy.Cases = append(policy.Cases, meetingPreparationCases()...)
+		policy.Cases = append(policy.Cases, meetingPreparationCases(meetingCalendarOnly)...)
 	}
 	if d.Experience != "" {
 		policy.AllowedContracts = append(policy.AllowedContracts, "steward.experience-policy/1", "steward.browser-demonstration/1", "steward.correction-recipe/1")
@@ -347,6 +359,10 @@ func EnsureDefault(ctx context.Context, h rsi.Host, d Directories, web ...WebExt
 		policy.AllowedContracts = append(policy.AllowedContracts, apps.Method, apps.Guidance)
 		policy.AllowedRequests = append(policy.AllowedRequests, "resource.call")
 		policy.Cases = append(policy.Cases, appsCases()...)
+		if appsMailReview {
+			policy.AllowedContracts = append(policy.AllowedContracts, apps.MailReview)
+			policy.Cases = append(policy.Cases, appsMailReviewCase())
+		}
 	}
 
 	if d.Discovery != "" {

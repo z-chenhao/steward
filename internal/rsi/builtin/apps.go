@@ -62,3 +62,8 @@ func appsCases() []rsi.Case {
 	expected, _ := json.Marshal(guidance)
 	return append(cases, rsi.Case{InstanceID: "connected-apps", Contract: contract.Guidance, Input: json.RawMessage(`{}`), Expected: expected})
 }
+
+// The owner verifies the meaning of address roles before selecting the package.
+func appsMailReviewCase() rsi.Case {
+	return rsi.Case{InstanceID: "connected-apps", Contract: contract.MailReview, Input: json.RawMessage(`{}`), Expected: json.RawMessage(`{"toolkit":"gmail","operation":"GMAIL_SEND_EMAIL","fields":[{"key":"from_email","role":"from"},{"key":"recipient_email","role":"to"},{"key":"to","role":"to"},{"key":"extra_recipients","role":"to"},{"key":"cc","role":"cc"},{"key":"bcc","role":"bcc"},{"key":"subject","role":"subject"},{"key":"attachment","role":"attachments"},{"key":"body","role":"body"}]}`)}
+}

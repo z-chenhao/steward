@@ -44,6 +44,10 @@ type Document struct {
 }
 
 type DocumentWrite struct {
+	// ReboundDependencies identifies exact predecessor/successor pairs already
+	// committed by this Dream pass. Only Host can supply this CAS evidence.
+	ReboundDependencies map[string]string `json:"-"`
+
 	Support  []SupportQuote    `json:"support,omitempty"`
 	Evidence []recall.Evidence `json:"-"` // Host-validated, never model authority.
 	Ref      string            `json:"memory_ref,omitempty"`

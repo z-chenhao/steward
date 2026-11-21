@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/z-chenhao/assistant/internal/interaction"
+	"github.com/z-chenhao/assistant/internal/plugin/webworkbench/contract"
 )
 
 func TestApprovalParametersKeepOriginalHashAndResolvedOptions(t *testing.T) {
@@ -44,8 +45,18 @@ func TestApprovalParametersBrowser(t *testing.T) {
 	defer cancel()
 	s := languageServer()
 	s.Config.TokenRef = ""
+	s.Tasks = workspaceReader{}
+	s.Feedbacks = &attentionSettings{}
+	presentation := originalWorkbenchPresentation(t)
+	revision := "sha256:" + strings.Repeat("a", 64)
+	s.WebWorkbench = func(_ context.Context, ref string) (contract.Presentation, string, bool, error) {
+		if ref != "" && ref != revision {
+			return contract.Presentation{}, "", true, errWorkbenchUnavailable
+		}
+		return presentation, revision, true, nil
+	}
 	s.Core.(*updatesCore).approvals = []interaction.Approval{{ID: "frozen-options", Tool: "builtin__computer_invoke", Arguments: `{"method":"scroll","handle_token":"opaque-surface","args":[{"observationRevision":"original-revision","index":0},"down"]}`, Hash: strings.Repeat("a", 64), Status: "pending", Parameters: `{"direction":"down","amount":50.5}`}}
-	s.Core.(*updatesCore).approvals = append(s.Core.(*updatesCore).approvals, playwrightApprovalSample(), transferApprovalSample(), uploadApprovalSample())
+	s.Core.(*updatesCore).approvals = append(s.Core.(*updatesCore).approvals, playwrightApprovalSample(), transferApprovalSample(), uploadApprovalSample(), mailApprovalSample())
 	server := httptest.NewServer(s)
 	defer server.Close()
 	script, err := filepath.Abs("../../../tests/system/approval_parameters_browser.mjs")

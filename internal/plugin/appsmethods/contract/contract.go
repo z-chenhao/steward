@@ -43,3 +43,24 @@ type GuidancePlan struct {
 	Search    TextRecipe `json:"search"`
 	Execute   TextRecipe `json:"execute"`
 }
+
+// MailReview is a pure, account-free presentation recipe. Fields name original
+// provider argument keys. Values and account identity never enter the plugin.
+const MailReview = "steward.apps-mail-review/1"
+
+type MailField struct {
+	Key  string `json:"key"`
+	Role string `json:"role"`
+}
+
+type MailRecipe struct {
+	Toolkit   string      `json:"toolkit"`
+	Operation string      `json:"operation"`
+	Fields    []MailField `json:"fields"`
+}
+
+// FrozenMailReview belongs to the exact account tool in a capability snapshot.
+type FrozenMailReview struct {
+	Account string     `json:"account"`
+	Recipe  MailRecipe `json:"recipe"`
+}

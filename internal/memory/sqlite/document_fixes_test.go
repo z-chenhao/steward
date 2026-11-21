@@ -126,3 +126,37 @@ func TestMemoryRepairsPreFixDocumentFactSuccessorWithoutRewritingOriginal(t *tes
 		t.Fatal("repair duplicated document receipts")
 	}
 }
+
+func TestMemoryWikiRebindRejectsMissingWrongAndObsoleteSuccessor(t *testing.T) {
+	s, scope := semanticFixture(t)
+	ctx := context.Background()
+	sources := []memory.SourceRef{{Type: "conversation", Ref: "conversation:atlas"}}
+	write := func(id string, w memory.DocumentWrite) memory.Document {
+		t.Helper()
+		d, err := s.WriteDocument(ctx, scope, 0, id, id, time.Now(), sources, w)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return d
+	}
+	note := memory.DocumentWrite{Layer: memory.Notes, Title: "Atlas budget", Content: "180,000"}
+	old := write("budget-v1", note)
+	wiki := memory.DocumentWrite{Layer: memory.Representations, Title: "Atlas", Content: "180,000", Links: []string{old.Ref}}
+	page := write("wiki-v1", wiki)
+	note.Ref, note.Revision, note.Content = old.Ref, 1, "210,000"
+	now := write("budget-v2", note)
+	wiki.Ref, wiki.Revision, wiki.Content = page.Ref, 1, "Dates pending."
+	wiki.Links = nil // Dropping the old link cannot bypass a stale predecessor.
+	mustConflict := func(pairs map[string]string) {
+		t.Helper()
+		wiki.ReboundDependencies = pairs
+		if _, err := s.WriteDocument(ctx, scope, 0, "bad", "bad", time.Now(), sources, wiki); !errors.Is(err, recall.ErrConflict) {
+			t.Fatalf("obsolete dependencies accepted: %v, %v", pairs, err)
+		}
+	}
+	mustConflict(nil)
+	mustConflict(map[string]string{old.Ref: "memory:unrelated"})
+	note.Ref, note.Revision, note.Content = now.Ref, 2, "220,000"
+	write("budget-v3", note)
+	mustConflict(map[string]string{old.Ref: now.Ref})
+}

@@ -555,9 +555,14 @@ class CIChecksTests(unittest.TestCase):
         lanes = {lane['lane']: lane for lane in ci.plan('system')['include']}
         self.assertIn('mcp-plugins', lanes)
         command = ci.command('mcp-plugins')
-        self.assertIn('make build', command)
-        self.assertIn('go test -race -p 1 -timeout=15m', command)
-        self.assertIn("^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)", command)
+        packages, batches, build, system = command.splitlines()
+        pattern = '^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)'
+        self.assertEqual(shlex.split(packages), ['go', 'test', '-race', '-p', '1', '-timeout=15m',
+            './internal/tool/mcp/...', './internal/plugin/mcpbridge/...', '-run', pattern, '-count=1'])
+        self.assertEqual(race.SQLITE_PATTERNS['mcp-sqlite'], pattern)
+        self.assertEqual(batches, 'python3 tests/system/race.py --part mcp-sqlite')
+        self.assertEqual(build, 'make build')
+        self.assertIn('--gate mcp-plugins --binary bin/steward', system)
         self.assertEqual(command.count('--gate mcp-plugins'), 1)
         from runner import REGISTRY
         self.assertEqual(REGISTRY['mcp-plugins'], 'verify_mcp_plugins.py')

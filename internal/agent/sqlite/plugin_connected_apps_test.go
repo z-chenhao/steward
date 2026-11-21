@@ -40,7 +40,10 @@ func appsVersionPackage(t *testing.T, version string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code := strings.Replace(string(raw), `Version: "1.0.1"`, `Version: "`+version+`"`, 1)
+	code := strings.Replace(string(raw), `Version: "1.0.2"`, `Version: "`+version+`"`, 1)
+	if version != "1.0.2" {
+		code = strings.Replace(code, ", contract.MailReview: mailReview", "", 1)
+	}
 	if version == "1.1.0" || version == "1.9.0" {
 		code = strings.Replace(code, `mode := "inline"`, `mode := "artifact"`, 1)
 	}
@@ -107,6 +110,9 @@ func appsVersionPackage(t *testing.T, version string) string {
 		t.Fatal(err)
 	}
 	manifest.Version = version
+	if version != "1.0.2" {
+		manifest.Provides = manifest.Provides[:2]
+	}
 	if version == "0.9.0" {
 		manifest.Provides = manifest.Provides[:1]
 	}
@@ -213,6 +219,10 @@ func selectAppsVersion(t *testing.T, host rsi.Host, baseline, version string) (s
 		}
 		expected, _ := json.Marshal(guidance)
 		policy.Cases = append(policy.Cases, rsi.Case{InstanceID: "connected-apps", Contract: contract.Guidance, Input: json.RawMessage(`{}`), Expected: expected})
+	}
+	if version == "1.0.2" {
+		policy.AllowedContracts = append(policy.AllowedContracts, contract.MailReview)
+		policy.Cases = append(policy.Cases, rsi.Case{InstanceID: "connected-apps", Contract: contract.MailReview, Input: json.RawMessage(`{}`), Expected: json.RawMessage(`{"toolkit":"gmail","operation":"GMAIL_SEND_EMAIL","fields":[{"key":"from_email","role":"from"},{"key":"recipient_email","role":"to"},{"key":"to","role":"to"},{"key":"extra_recipients","role":"to"},{"key":"cc","role":"cc"},{"key":"bcc","role":"bcc"},{"key":"subject","role":"subject"},{"key":"attachment","role":"attachments"},{"key":"body","role":"body"}]}`)})
 	}
 	if err = host.Store.PutPolicy(ctx, policy); err != nil {
 		t.Fatal(err)
@@ -364,7 +374,7 @@ func TestConnectedAppsPluginActualCodeModeUpgradeRetainedRollbackAndDisable(t *t
 func TestConnectedAppsPluginActualApprovalAndUnknownNeverRepeats(t *testing.T) {
 	ctx := context.Background()
 	f := newAppsPluginFixture(t)
-	selectAppsVersion(t, f.host, "", "1.0.1")
+	withPreview, _ := selectAppsVersion(t, f.host, "", "1.0.2")
 	var sources atomic.Int32
 	f.store.MainBoundary = func(point string) {
 		if point == "after_apps_source" {
@@ -387,6 +397,16 @@ func TestConnectedAppsPluginActualApprovalAndUnknownNeverRepeats(t *testing.T) {
 	var approval, hash string
 	if err := f.store.db.QueryRow(`SELECT approval_id,frozen_arguments_hash FROM approval WHERE status='pending'`).Scan(&approval, &hash); err != nil {
 		t.Fatal(err)
+	}
+	rows, err := f.runs.PendingApprovals(ctx)
+	if err != nil || len(rows) != 1 || rows[0].Hash != hash || rows[0].MailReview == nil || rows[0].MailReview.Account != f.connection.Name+" / personal" || rows[0].MailReview.Recipe.Operation != "GMAIL_SEND_EMAIL" || !strings.Contains(rows[0].Arguments, "friend@example.test") {
+		t.Fatalf("missing original named mail approval: %+v, %v", rows, err)
+	}
+	// An owner selects a version without the preview while the user is reading.
+	selectAppsVersion(t, f.host, withPreview, "1.0.1")
+	after, err := f.runs.PageApprovals(ctx, []string{approval}, false)
+	if err != nil || len(after) != 1 || after[0].MailReview == nil || after[0].MailReview.Account != rows[0].MailReview.Account || after[0].Hash != hash || after[0].Arguments != rows[0].Arguments {
+		t.Fatal("rollback changed an existing approval", after, err)
 	}
 	f.peer.broken.Store(true)
 	if err := f.runs.Decide(ctx, idAgent(t, f.store), approval, hash, "approved"); err != nil {

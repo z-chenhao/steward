@@ -96,7 +96,7 @@ func (a *App) prepareMeeting(ctx context.Context, g connectedapps.MeetingGrant, 
 	if pair.Meeting == -1 && pair.Thread == -1 {
 		return brief, false, nil
 	}
-	if pair.Meeting < 0 || pair.Meeting >= len(evidence.Events) || pair.Thread < 0 || pair.Thread >= len(evidence.Threads) {
+	if pair.Meeting < 0 || pair.Meeting >= len(evidence.Events) || pair.Thread < -1 || pair.Thread >= len(evidence.Threads) {
 		return brief, false, rsi.ErrInvalid
 	}
 	event := evidence.Events[pair.Meeting]
@@ -104,7 +104,12 @@ func (a *App) prepareMeeting(ctx context.Context, g connectedapps.MeetingGrant, 
 	if link == "" {
 		return brief, false, rsi.ErrInvalid
 	}
-	return connectedapps.MeetingBrief{Event: event.Title, EventLink: link, Start: event.Start.DateTime.In(start.Location()).Format("2006-01-02 15:04 MST"), Subject: evidence.Subjects[pair.Thread], MailLink: "https://mail.google.com/mail/u/" + url.PathEscape(evidence.Mailbox) + "/#all/" + evidence.Threads[pair.Thread].ID}, true, nil
+	brief = connectedapps.MeetingBrief{Event: event.Title, EventLink: link, Start: event.Start.DateTime.In(start.Location()).Format("2006-01-02 15:04 MST")}
+	if pair.Thread >= 0 {
+		brief.Subject = evidence.Subjects[pair.Thread]
+		brief.MailLink = "https://mail.google.com/mail/u/" + url.PathEscape(evidence.Mailbox) + "/#all/" + evidence.Threads[pair.Thread].ID
+	}
+	return brief, true, nil
 }
 func (a *App) refreshMeeting(ctx context.Context, now time.Time) {
 	cache := &a.meetingCache

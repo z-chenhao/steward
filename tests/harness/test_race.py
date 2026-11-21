@@ -1,5 +1,6 @@
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from itertools import product
 import json
 import os
 from pathlib import Path
@@ -195,11 +196,12 @@ class SQLiteRaceInventoryTests(unittest.TestCase):
             for required in ('-race', '-count=1', '-timeout=15m'):
                 self.assertIn(required, command)
 
-    def test_artifact_batches_preserve_serial_order_and_native_runtime_parallelism(self):
-        names = [*race.SERIAL_SQLITE, 'TestUnrelated', *[f'TestArtifactNew{i:02}' for i in reversed(range(19))]]
-        chosen = names[len(race.SERIAL_SQLITE) + 1:]
-        for inherited in (None, '2'):
-            with self.subTest(inherited=inherited), tempfile.TemporaryDirectory() as directory:
+    def test_artifact_and_mcp_batches_preserve_serial_order_and_native_runtime_parallelism(self):
+        for feature, inherited in product(('Artifact', 'MCP'), (None, '2')):
+            pattern = race.SQLITE_PATTERNS[feature.lower() + '-sqlite']
+            chosen = [f'Test{feature}New{i:02}' for i in reversed(range(19))]
+            names = [*race.SERIAL_SQLITE, 'TestUnrelated', *chosen]
+            with self.subTest(feature=feature, inherited=inherited), tempfile.TemporaryDirectory() as directory:
                 selected = []
                 def execute(command, env, output, stopped, metrics):
                     metrics.update(owned_group_drained=True, cpu_seconds=.01)
@@ -220,8 +222,9 @@ class SQLiteRaceInventoryTests(unittest.TestCase):
                     if inherited:
                         os.environ['GOMAXPROCS'] = inherited
                     result = race.run_remainder([race.SQLITE], Path(directory), threading.Event(),
-                                                pattern=race.ARTIFACT_SQLITE_PATTERN)
+                                                pattern=pattern)
                 self.assertEqual(result['returncode'], 0)
+                self.assertTrue(result['selection_complete'])
                 pool.assert_called_once_with(max_workers=1)
                 self.assertEqual(result['sqlite_workers'], 1)
                 self.assertEqual(result['partition_strategy'], 'discovery_order')
