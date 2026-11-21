@@ -118,17 +118,20 @@ func attachHistoricalArtifactFixture(t *testing.T, store *Store, runID, ref stri
 func TestArtifactWorkbenchSearchTenThousandAuthorizedRows(t *testing.T) {
 	ctx := context.Background()
 	calls := []llm.ToolCall{{ID: "one", Name: artifacttools.Search, Arguments: `{"query":"needle","limit":1}`}}
-	store, runs, claim, executor, exchange := admitPolicyRun(t, artifacttools.Definitions(), calls, false, func(s *Store, r *Runs) { installArtifactWorkbench(t, s, r) })
-	defer runs.Release(ctx, claim)
-	defer keepRunClaim(runs, claim)()
+	store, runs, provider, runID := preparePolicyRun(t, artifacttools.Definitions(), calls, false, func(s *Store, r *Runs) { installArtifactWorkbench(t, s, r) })
+	// Populate the Run before its worker claims it. A large fixture write can
+	// hold SQLite's writer longer than a live worker can wait to renew.
 	const count = 10000
 	now := time.Now()
 	_, err := store.db.Exec(`WITH RECURSIVE n(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM n WHERE i<?)
 	INSERT INTO artifact(artifact_id,artifact_ref,owner_user_id,owner_agent_id,run_id,media_type,name,byte_size,content_hash,storage_key,visibility,retention_class,created_at,expires_at)
-	SELECT printf('%064x',i),'artifact:'||printf('%064x',i),?,agent_id,run_id,'text/plain',CASE i WHEN ? THEN 'needle' ELSE 'other' END,1,printf('%064x',i),printf('%064x',i),'run','standard',?,? FROM n CROSS JOIN run WHERE run_id=?`, count, artifact.LocalUser, count, now.UnixMicro(), now.Add(time.Hour).UnixMicro(), claim.RunID())
+	SELECT printf('%064x',i),'artifact:'||printf('%064x',i),?,agent_id,run_id,'text/plain',CASE i WHEN ? THEN 'needle' ELSE 'other' END,1,printf('%064x',i),printf('%064x',i),'run','standard',?,? FROM n CROSS JOIN run WHERE run_id=?`, count, artifact.LocalUser, count, now.UnixMicro(), now.Add(time.Hour).UnixMicro(), runID)
 	if err != nil {
 		t.Fatal(err)
 	}
+	claim, executor, exchange := claimPolicyExchange(t, runs, provider, runID)
+	defer runs.Release(ctx, claim)
+	defer keepRunClaim(runs, claim)()
 	result, err := executor.Execute(ctx, exchange, calls)
 	if err != nil || len(result) != 1 || result[0].Error != nil {
 		t.Fatal(result, err)
