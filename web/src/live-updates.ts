@@ -6,6 +6,9 @@ import {captureRichFormDrafts} from './rich-forms';
 import {renderDraftMarkdown} from './markdown';
 import {reconcileOutgoing} from './outgoing';
 import {createUIPreview} from './intelligent-ui/preview';
+import {enhanceSelectControls} from './components/ui/select';
+import {enhanceFormMenus} from './components/ui/form-menu';
+import {enhanceFormDisclosures} from './components/ui/disclosure';
 
 const snapshot=z.object({view:z.string(),before:z.number().int().nonnegative(),latest:z.number().int().nonnegative(),regions:z.record(z.string(),z.string())});
 const replyFrame=z.object({key:z.string().regex(/^[a-f0-9]{32}$/),state:z.enum(['draft','discarded','committed']),text:z.string().optional(),reset:z.boolean().optional()});
@@ -35,6 +38,11 @@ function regionPatcher(ids:readonly string[],scope:ParentNode=document){
   if(!region||markup.get(id)===html)return;
   const parsed=document.createElement('template');parsed.innerHTML=html;
   const restoreDrafts=captureRichFormDrafts(region);
+  const focused=document.activeElement instanceof HTMLElement&&region.contains(document.activeElement)?document.activeElement:null;
+  const focusKey=focused?.closest<HTMLElement>('[data-live-key]')?.dataset.liveKey??'';
+  const focusHref=focused instanceof HTMLAnchorElement?focused.getAttribute('href'):null;
+  const focusName=focused instanceof HTMLButtonElement?focused.name:null;
+  const focusValue=focused instanceof HTMLButtonElement?focused.value:null;
   if(id==='signin-status'&&region.querySelector('[data-signin-pending]')&&parsed.content.querySelector('[data-account-reconnected]')){
    location.reload();
    return;
@@ -74,7 +82,12 @@ function regionPatcher(ids:readonly string[],scope:ParentNode=document){
     releaseProjections(child as HTMLElement);child.remove()
    }}
   }
-  markup.set(id,html);enhanceProjections(region);restoreDrafts();
+  markup.set(id,html);enhanceProjections(region);enhanceSelectControls(region);enhanceFormMenus(region);enhanceFormDisclosures(region);restoreDrafts();
+  if(focused&&!focused.isConnected){
+   const container=(focusKey?region.querySelector<HTMLElement>(`[data-live-key="${CSS.escape(focusKey)}"]`):null)??region;
+   const target=focusHref?container.querySelector<HTMLElement>(`a[href="${CSS.escape(focusHref)}"]`):focusName!==null?container.querySelector<HTMLElement>(`button[name="${CSS.escape(focusName)}"][value="${CSS.escape(focusValue??'')}"]`):container.querySelector<HTMLElement>('button,a[href]');
+   target?.focus({preventScroll:true});
+  }
  };
 }
 

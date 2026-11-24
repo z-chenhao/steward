@@ -516,7 +516,7 @@ func (c *Client) generate(ctx context.Context, method string, r llm.GenerationRe
 	if observe {
 		stream.capture = func(d llm.Dispatch) {
 			for _, m := range r.Messages {
-				if m.Memory != nil && d.Body != nil {
+				if (m.Memory != nil || strings.Contains(m.Text, "<recall_memory>")) && d.Body != nil {
 					d.Body = nil
 					d.BodyHash = ""
 					d.Omitted = "Memory-bearing request body omitted"
@@ -601,21 +601,28 @@ func (c *Client) generate(ctx context.Context, method string, r llm.GenerationRe
 	result = llm.GenerationResult{ToolCalls: []llm.ToolCall{}}
 	var generatedText strings.Builder
 	var authTick <-chan time.Time
+	checkGuard := func() (error, bool) {
+		if connection.Guard == nil {
+			return nil, false
+		}
+		if authErr := connection.Guard(ctx); authErr != nil {
+			hostRejected = true
+			if cleanupErr := c.cleanupGeneration(ctx, p, r.GenerationID); cleanupErr != nil {
+				return errors.Join(authErr, cleanupErr), true
+			}
+			return authErr, true
+		}
+		return nil, false
+	}
 	if connection.Guard != nil {
+		if guardErr, stop := checkGuard(); stop {
+			return llm.GenerationResult{}, guardErr
+		}
 		ticker := time.NewTicker(200 * time.Millisecond)
 		defer ticker.Stop()
 		authTick = ticker.C
 	}
 	for {
-		if connection.Guard != nil {
-			if authErr := connection.Guard(ctx); authErr != nil {
-				hostRejected = true
-				if cleanupErr := c.cleanupGeneration(ctx, p, r.GenerationID); cleanupErr != nil {
-					return llm.GenerationResult{}, errors.Join(authErr, cleanupErr)
-				}
-				return llm.GenerationResult{}, authErr
-			}
-		}
 		if stream.wasCancelled() {
 			return llm.GenerationResult{}, llm.GenerationCancelled
 		}
@@ -625,6 +632,9 @@ func (c *Client) generate(ctx context.Context, method string, r llm.GenerationRe
 		var d eventDelivery
 		select {
 		case <-authTick:
+			if guardErr, stop := checkGuard(); stop {
+				return llm.GenerationResult{}, guardErr
+			}
 			continue
 		case <-stream.cancelled:
 			return llm.GenerationResult{}, llm.GenerationCancelled
@@ -720,6 +730,9 @@ func (c *Client) Dispose(ctx context.Context, id string) error {
 	c.mu.Lock()
 	if c.disposedSessions == nil {
 		c.disposedSessions = map[string]bool{}
+	}
+	if len(c.disposedSessions) >= 4096 {
+		clear(c.disposedSessions)
 	}
 	c.disposedSessions[id] = true
 	p.mu.Lock()

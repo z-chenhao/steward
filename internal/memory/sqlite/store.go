@@ -59,7 +59,7 @@ func Open(ctx context.Context, root string) (*Store, error) {
 	}
 	u := url.URL{Scheme: "file", Path: path}
 	q := u.Query()
-	for _, p := range []string{"foreign_keys(1)", "busy_timeout(5000)", "journal_mode(WAL)"} {
+	for _, p := range []string{"foreign_keys(1)", "busy_timeout(5000)", "journal_mode(WAL)", "synchronous(NORMAL)"} {
 		q.Add("_pragma", p)
 	}
 	q.Set("_txlock", "immediate")
@@ -314,8 +314,9 @@ SELECT e.source_type,e.source_ref FROM memory_evidence e JOIN memory_fact f USIN
 WHERE f.memory_id IN (WITH RECURSIVE lineage(id) AS (SELECT ? UNION SELECT m.memory_id FROM memory_record m JOIN lineage l ON m.supersedes_memory_id=l.id UNION SELECT m.supersedes_memory_id FROM memory_record m JOIN lineage l ON m.memory_id=l.id WHERE m.supersedes_memory_id IS NOT NULL) SELECT id FROM lineage)`, id); err != nil {
 		return recall.ErrUnavailable
 	}
-	// Forget the whole supersession lineage: older derived facts cannot reappear.
-	if _, err = tx.ExecContext(ctx, `UPDATE recall_document SET active=0 WHERE ref IN(WITH RECURSIVE lineage(id) AS (SELECT ? UNION SELECT m.memory_id FROM memory_record m JOIN lineage l ON m.supersedes_memory_id=l.id UNION SELECT m.supersedes_memory_id FROM memory_record m JOIN lineage l ON m.memory_id=l.id WHERE m.supersedes_memory_id IS NOT NULL) SELECT 'memory:'||id FROM lineage)`, id); err != nil {
+	// Forget the whole supersession lineage: older derived facts cannot reappear,
+	// and scrub content/vectors so forgotten plaintext does not persist in FTS5.
+	if _, err = tx.ExecContext(ctx, `UPDATE recall_document SET active=0,content='',vector_json=NULL,embedding_id=NULL WHERE ref IN(WITH RECURSIVE lineage(id) AS (SELECT ? UNION SELECT m.memory_id FROM memory_record m JOIN lineage l ON m.supersedes_memory_id=l.id UNION SELECT m.supersedes_memory_id FROM memory_record m JOIN lineage l ON m.memory_id=l.id WHERE m.supersedes_memory_id IS NOT NULL) SELECT 'memory:'||id FROM lineage)`, id); err != nil {
 		return recall.ErrUnavailable
 	}
 	if tx.Commit() != nil {

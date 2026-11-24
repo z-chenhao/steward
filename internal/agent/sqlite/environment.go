@@ -142,7 +142,7 @@ func (t *tools) executeEnvironment(ctx context.Context, inv tool.Invocation) (re
 			case <-live.Done():
 				return
 			case <-tick.C:
-				err := t.runs.write(live, func(tx *sql.Tx) error {
+				err := t.runs.read(live, func(tx *sql.Tx) error {
 					if b != nil {
 						return b.fence(live, tx)
 					}

@@ -238,7 +238,7 @@ func (s *Store) settleSpend(ctx context.Context, tx *sql.Tx, req llm.GenerationR
 		return err
 	}
 	var boundary, total int64
-	if err = tx.QueryRowContext(ctx, `SELECT s.boundary_micros,(SELECT coalesce(sum(CASE WHEN v.status='priced' THEN v.actual_micros ELSE v.reserved_micros END),0) FROM spend_reservation v WHERE v.account_key=s.account_key AND v.currency=s.currency) FROM spend_snapshot s WHERE s.snapshot_id=?`, req.Snapshot.SnapshotID).Scan(&boundary, &total); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT s.boundary_micros,(SELECT coalesce(sum(CASE WHEN v.status='priced' THEN v.actual_micros ELSE v.reserved_micros END),0) FROM (SELECT account_key,currency,status,actual_micros,reserved_micros FROM spend_reservation UNION ALL SELECT account_key,currency,status,actual_micros,reserved_micros FROM memory_cost_reservation) v WHERE v.account_key=s.account_key AND v.currency=s.currency) FROM spend_snapshot s WHERE s.snapshot_id=?`, req.Snapshot.SnapshotID).Scan(&boundary, &total); err != nil {
 		return err
 	}
 	if boundary > 0 && total >= boundary {
@@ -287,7 +287,7 @@ func (r *Runs) Spend(ctx context.Context) ([]agent.SpendView, error) {
  SELECT * FROM spend_snapshot UNION ALL
  SELECT DISTINCT u.snapshot_id,u.account_key,'',0,'null' FROM spend_unpriced_usage u WHERE NOT EXISTS(SELECT 1 FROM spend_snapshot f WHERE f.snapshot_id=u.snapshot_id)
  ) SELECT s.snapshot_id,coalesce(json_extract(s.price_json,'$.version'),''),s.account_key,s.currency,CASE WHEN s.price_json='null' AND s.boundary_micros=0 THEN 'unpriced_unconfigured' WHEN s.price_json='null' THEN 'unpriced' WHEN s.boundary_micros=0 THEN 'unconfigured' ELSE 'configured' END,s.boundary_micros,
- (SELECT coalesce(sum(CASE WHEN v.status='priced' THEN v.actual_micros ELSE v.reserved_micros END),0) FROM spend_reservation v WHERE v.account_key=s.account_key AND v.currency=s.currency),
+ (SELECT coalesce(sum(CASE WHEN v.status='priced' THEN v.actual_micros ELSE v.reserved_micros END),0) FROM (SELECT account_key,currency,status,actual_micros,reserved_micros FROM spend_reservation UNION ALL SELECT account_key,currency,status,actual_micros,reserved_micros FROM memory_cost_reservation) v WHERE v.account_key=s.account_key AND v.currency=s.currency),
  (SELECT count(*) FROM spend_reservation v WHERE v.account_key=s.account_key AND v.currency=s.currency AND v.status='usage_missing'),
  (SELECT count(*) FROM spend_unpriced_usage u WHERE u.account_key=s.account_key)
  FROM snapshots s ORDER BY s.account_key,s.snapshot_id`)

@@ -32,7 +32,16 @@ export function enhanceCapabilityForms(){
   const save=async()=>{
    clearTimeout(timer);sync();
    if(pending){queued=true;return}
-   if(!form.checkValidity()){feedback('Complete the required fields.');return}
+   if(!form.checkValidity()){
+    const firstInvalid=form.querySelector<HTMLElement>(':invalid');
+    for(let parent=firstInvalid?.parentElement;parent;parent=parent.parentElement){
+     if(parent instanceof HTMLDetailsElement)parent.open=true;
+    }
+    firstInvalid?.setAttribute('aria-invalid','true');
+    feedback('Complete the required fields.');
+    return;
+   }
+   form.querySelectorAll('[aria-invalid="true"]').forEach(node=>node.removeAttribute('aria-invalid'));
    const data=values(),sent=fields();
    if(sent===baseline){feedback('');return}
    data.set('action','apply');pending=true;queued=false;form.setAttribute('aria-busy','true');feedback('Saving…');
@@ -61,7 +70,7 @@ export function enhanceCapabilityForms(){
     if(fields()!==sent)queued=true;
     else feedback('Saved.')
    }catch(error){feedback(error instanceof Error?error.message:'Could not save. Your changes are kept.',true)}
-   finally{clearTimeout(timeout);pending=false;form.removeAttribute('aria-busy');sync();if(saved&&queued)void save()}
+   finally{clearTimeout(timeout);pending=false;form.removeAttribute('aria-busy');for(const button of rowButtons)button.disabled=false;sync();if(saved&&queued)void save()}
   };
   const changed=(event:Event)=>{
    sync();document.querySelectorAll<HTMLElement>('[data-capability-feedback]').forEach(node=>{node.hidden=true});

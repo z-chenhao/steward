@@ -77,17 +77,16 @@ func redactWireValue(value any, secrets []string) any {
 		if strings.HasPrefix(v, "data:") {
 			return "[media omitted]"
 		}
-		return v
+		return secretValuePattern.ReplaceAllString(v, "[credential redacted]")
 	case []any:
 		for i, x := range v {
 			v[i] = redactWireValue(x, secrets)
 		}
 	case map[string]any:
 		for k, x := range v {
-			switch strings.ToLower(k) {
-			case "authorization", "api_key", "access_token", "refresh_token", "cookie", "set-cookie":
+			if sensitive.MatchString(k) {
 				v[k] = "[credential redacted]"
-			default:
+			} else {
 				v[k] = redactWireValue(x, secrets)
 			}
 		}

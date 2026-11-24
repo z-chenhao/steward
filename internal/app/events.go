@@ -24,9 +24,15 @@ func (a *App) WaitForRuntime(ctx context.Context) error {
 	if d, e := a.providerDiagnostics(ctx); e != nil || !d.AgentIngressEnabled {
 		return agent.ErrSetup
 	}
-	select {
-	case a.runtimeWake <- struct{}{}:
-	default:
+	a.runtimeMu.RLock()
+	wake := a.runtimeWake
+	done := a.runtimeDone
+	a.runtimeMu.RUnlock()
+	if wake != nil {
+		select {
+		case wake <- struct{}{}:
+		default:
+		}
 	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
@@ -34,7 +40,7 @@ func (a *App) WaitForRuntime(ctx context.Context) error {
 	defer ticker.Stop()
 	for !a.eventsReady.Load() {
 		select {
-		case <-a.runtimeDone:
+		case <-done:
 			return agent.ErrSetup
 		case <-ctx.Done():
 			return event.ErrUnavailable
@@ -59,9 +65,13 @@ func (a *App) WithEvents(ctx context.Context, cfg config.Config, run func(contex
 		return nil
 	}
 	a.eventsRequired.Store(true)
-	a.runtimeWake = make(chan struct{}, 1)
 	workCtx, cancelWork := context.WithCancel(ctx)
+	a.runtimeMu.Lock()
+	if a.runtimeWake == nil {
+		a.runtimeWake = make(chan struct{}, 1)
+	}
 	a.runtimeDone = workCtx.Done()
+	a.runtimeMu.Unlock()
 	defer cancelWork()
 	pluginDone := make(chan struct{})
 	go func() {

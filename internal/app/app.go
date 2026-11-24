@@ -53,6 +53,9 @@ type App struct {
 	meetingCache            meetingCache
 	connectedApps           *connectedapps.Service
 	connectedAppsRegistryMu sync.Mutex
+	pluginBootstrapMu       sync.Mutex
+	ocrOnce                 sync.Once
+	ocrCompute              *rsi.Compute
 	capabilitySettings      *configsetup.Manager
 	core                    atomic.Pointer[runtimeCore]
 	prepareCore             func(context.Context) error
@@ -61,6 +64,7 @@ type App struct {
 	prepareFeaturePlugins   func(context.Context) error
 	eventsRequired          atomic.Bool
 	eventsReady             atomic.Bool
+	runtimeMu               sync.RWMutex
 	runtimeWake             chan struct{}
 	runtimeDone             <-chan struct{}
 	rootLock                *os.File
@@ -160,7 +164,7 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 	}
 	success := false
 	defer func() {
-		if !success {
+		if !success && lock != nil {
 			lock.Close()
 		}
 	}()
@@ -196,6 +200,7 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 		return nil, errors.Join(err, t.Close())
 	}
 	if err = store.BindOwner(ctx, cfg.App.OwnerID); err != nil {
+		startup.End(err)
 		_ = store.Close()
 		_ = t.Close()
 		return nil, err
@@ -204,7 +209,8 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 	store.Artifacts().RetentionDays = cfg.Artifact.RetentionDays
 	store.Artifacts().CleanupBatch = cfg.Artifact.CleanupBatch
 	store.ConfigureLegacyReferenceEstimator(pricing.New())
-	a := &App{capabilitySettings: configsetup.New(cfg, secrets), rootLock: lock, store: store, telemetry: t, artifacts: store.Artifacts(), skillConfig: cfg.Skills}
+	a := &App{capabilitySettings: configsetup.New(cfg, secrets), rootLock: lock, runtimeWake: make(chan struct{}, 1), store: store, telemetry: t, artifacts: store.Artifacts(), skillConfig: cfg.Skills}
+	lock = nil
 	cfg = a.capabilitySettings.PrepareDefaults(ctx)
 	a.skillConfig = cfg.Skills
 	if fixture == "" || fixture == "computer" {
@@ -215,8 +221,13 @@ func open(ctx context.Context, cfg config.Config, fixture string, secrets llm.Se
 	a.capabilitySettings.Presentation = a.readCapabilityPresentation
 	a.history, err = conversationsqlite.Open(ctx, cfg.App.DataRoot)
 	if err != nil {
+		startup.End(err)
 		_ = store.Close()
 		_ = t.Close()
+		if a.rootLock != nil {
+			_ = a.rootLock.Close()
+			a.rootLock = nil
+		}
 		return nil, err
 	}
 	identity, identityErr := store.Diagnostics(ctx)

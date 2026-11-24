@@ -55,8 +55,21 @@ func (r *Runs) Generation(ctx context.Context, c agent.RunClaim, run agent.Run) 
 		request.Tools = nil
 		request.OutputLimitBytes = compaction.MaxBytes
 	}
-	if err := r.pluginModel(ctx, c, run, &request); err != nil {
-		return agent.Generation{}, err
+	reusedFrozen := false
+	if r.plugins != nil && compaction == nil {
+		var existingRaw string
+		if qErr := r.host.db.QueryRowContext(ctx, `SELECT request_json FROM model_generation WHERE run_id=? AND step_index=?`, run.ID, run.Checkpoint.Step).Scan(&existingRaw); qErr == nil {
+			var persisted llm.GenerationRequest
+			if json.Unmarshal([]byte(existingRaw), &persisted) == nil {
+				request = persisted
+				reusedFrozen = true
+			}
+		}
+	}
+	if compaction == nil && !reusedFrozen {
+		if err := r.pluginModel(ctx, c, run, &request); err != nil {
+			return agent.Generation{}, err
+		}
 	}
 	// Compaction is threshold-based; this final bound rejects an irreducible turn.
 	wire, _ := encoded(request.Messages)

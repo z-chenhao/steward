@@ -65,6 +65,7 @@ func (g SSHGuest) commandInputFor(ctx context.Context, ip, command string, sudo 
 		return "", computer.ErrInvalid
 	}
 	password, err := g.Secrets.Get(ctx, g.Config.PasswordRef)
+	defer clear(password)
 	if err != nil || len(password) == 0 || strings.ContainsAny(string(password), "\x00\r\n") {
 		return "", computer.ErrUnavailable
 	}

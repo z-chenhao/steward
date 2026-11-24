@@ -90,10 +90,11 @@ func (l *agentLoop) run(ctx context.Context) error {
 			l.joinTools(false)
 			return ctx.Err()
 		}
-		r, err = l.options.Store.Load(l.work, l.claim)
+		next, err := l.options.Store.Load(l.work, l.claim)
 		if err != nil {
 			return err
 		}
+		r = next
 		// Settlement can request consent after a final model result was saved.
 		// Hold that result without regenerating it.
 		if r.SpendStatus == "pending" {

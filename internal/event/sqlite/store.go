@@ -41,7 +41,7 @@ func (s *Store) Pending(ctx context.Context, limit int) ([]event.CloudEvent, err
 	if limit < 1 || limit > 1000 {
 		return nil, errors.New("outbox batch must be between 1 and 1000")
 	}
-	rows, err := s.db.QueryContext(ctx, `SELECT event_id,payload_json FROM event_outbox WHERE published_at IS NULL AND dead_at IS NULL ORDER BY attempt_count,rowid LIMIT ?`, limit)
+	rows, err := s.db.QueryContext(ctx, `SELECT event_id,payload_json FROM event_outbox WHERE published_at IS NULL AND dead_at IS NULL ORDER BY attempt_count,outbox_id LIMIT ?`, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -26,9 +26,8 @@ export function enhanceShell(){
 
  html.classList.add('js');
  const mobile=matchMedia('(max-width: 760px)');
- let collapsed=false;
- try{collapsed=localStorage.getItem('steward-sidebar')==='collapsed'}catch{}
- html.classList.toggle('sidebar-collapsed',collapsed&&!mobile.matches);
+ const readCollapsed=()=>{try{return localStorage.getItem('steward-sidebar')==='collapsed'}catch{return false}};
+ html.classList.toggle('sidebar-collapsed',readCollapsed()&&!mobile.matches);
  const toggles=document.querySelectorAll<HTMLButtonElement>('[data-sidebar-toggle]');
  const sidebar=document.getElementById('workspace-navigation');
  const update=()=>{
@@ -59,7 +58,7 @@ export function enhanceShell(){
    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus()}
   }
  });
- mobile.addEventListener('change',close);update();
+ mobile.addEventListener('change',()=>{html.classList.toggle('sidebar-collapsed',readCollapsed()&&!mobile.matches);close()});update();
  // Server-rendered buttons become actionable only after their handlers and
  // current labels are ready, including while the deferred bundle is delayed.
  toggles.forEach(button=>{button.disabled=false});if(backdrop)backdrop.disabled=false;

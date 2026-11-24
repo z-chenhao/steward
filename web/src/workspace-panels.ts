@@ -31,10 +31,12 @@ export function connectWorkspacePanel(panel:HTMLDialogElement,onOpen:()=>void,on
   else if(anchor.node)window.scrollBy(0,anchor.node.getBoundingClientRect().top-anchor.top);
   if(!Array.from(panels.keys()).some(item=>item.open))readingAnchor=null;
  }
+ const expandLabel=panel.id==='worker-panel'?'Expand worker view':'Expand computer view';
+ const reduceLabel=panel.id==='worker-panel'?'Reduce worker view':'Reduce computer view';
  function close(restore=true){
   if(!panel.open)return;
   onClose();panel.close();panel.classList.remove('is-expanded');
-  expand?.setAttribute('aria-pressed','false');expand?.setAttribute('aria-label',t('Expand computer view'));
+  expand?.setAttribute('aria-pressed','false');expand?.setAttribute('aria-label',t(expandLabel));
   sync();if(restore&&opener?.isConnected)opener.focus({preventScroll:true});
  }
  panels.set(panel,()=>close(false));
@@ -49,7 +51,7 @@ export function connectWorkspacePanel(panel:HTMLDialogElement,onOpen:()=>void,on
  // from the synchronous modal/nonmodal resize conversion.
  panel.addEventListener('cancel',event=>{event.preventDefault();layout(()=>close())});
  panel.addEventListener('close',()=>{if(!panel.open)sync()});
- document.addEventListener('keydown',event=>{if(event.key==='Escape'&&panel.open&&!compact.matches){event.preventDefault();layout(()=>close())}});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!event.defaultPrevented&&panel.open&&!compact.matches){event.preventDefault();layout(()=>close())}});
  compact.addEventListener('change',()=>{if(panel.open){const focus=document.activeElement as HTMLElement|null;panel.close();if(compact.matches||panel.classList.contains('is-expanded'))panel.showModal();else panel.show();focus?.focus({preventScroll:true})}});
- expand?.addEventListener('click',()=>layout(()=>{const large=panel.classList.toggle('is-expanded');expand.setAttribute('aria-pressed',String(large));expand.setAttribute('aria-label',t(large?'Reduce computer view':'Expand computer view'));panel.close();if(compact.matches||large)panel.showModal();else panel.show();sync();expand.focus({preventScroll:true})}));
+ expand?.addEventListener('click',()=>layout(()=>{const large=panel.classList.toggle('is-expanded');expand.setAttribute('aria-pressed',String(large));expand.setAttribute('aria-label',t(large?reduceLabel:expandLabel));panel.close();if(compact.matches||large)panel.showModal();else panel.show();sync();expand.focus({preventScroll:true})}));
 }

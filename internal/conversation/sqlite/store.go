@@ -46,7 +46,7 @@ func Open(ctx context.Context, root string) (*Store, error) {
 	}
 	u := url.URL{Scheme: "file", Path: path}
 	q := u.Query()
-	for _, p := range []string{"foreign_keys(1)", "busy_timeout(5000)", "journal_mode(WAL)"} {
+	for _, p := range []string{"foreign_keys(1)", "busy_timeout(5000)", "journal_mode(WAL)", "synchronous(NORMAL)"} {
 		q.Add("_pragma", p)
 	}
 	q.Set("_txlock", "immediate")

@@ -38,22 +38,20 @@ func failedVerificationInvocation(err error) verifiedCase {
 func (h Host) verifyCases(ctx context.Context, graph rsiplugin.Graph, bindings map[string]rsiplugin.Binding, packages map[string]Package, cases []Case) []verifiedCase {
 	results := make([]verifiedCase, len(cases))
 	var running sync.WaitGroup
-	queued := 0
+	sem := make(chan struct{}, verificationWorkers)
 	for i, test := range cases {
 		if hasRequest(packages[test.InstanceID].Manifest, "compute.ocr") {
 			running.Wait()
-			queued = 0
 			results[i] = h.verifyCase(ctx, graph, bindings, packages[test.InstanceID], test)
 			continue
 		}
-		if queued == verificationWorkers {
-			running.Wait()
-			queued = 0
-		}
+		sem <- struct{}{}
 		running.Add(1)
-		queued++
 		go func(index int, test Case) {
-			defer running.Done()
+			defer func() {
+				<-sem
+				running.Done()
+			}()
 			results[index] = h.verifyCase(ctx, graph, bindings, packages[test.InstanceID], test)
 		}(i, test)
 	}

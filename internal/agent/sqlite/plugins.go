@@ -86,7 +86,14 @@ func (r *Runs) pluginModel(ctx context.Context, c agent.RunClaim, run agent.Run,
 			request.Tools = kept
 		}
 		for _, m := range out.AdditionalContext {
-			request.Messages = append(request.Messages, llm.Message{Role: "user", Text: "<untrusted_plugin_context>\n" + m.Text + "\n</untrusted_plugin_context>"})
+			msg := llm.Message{Role: "user", Text: "<untrusted_plugin_context>\n" + m.Text + "\n</untrusted_plugin_context>"}
+			if n := len(request.Messages); n > 0 && request.Messages[n-1].Role == "user" {
+				request.Messages = append(request.Messages, llm.Message{})
+				request.Messages[n] = request.Messages[n-1]
+				request.Messages[n-1] = msg
+			} else {
+				request.Messages = append(request.Messages, msg)
+			}
 		}
 	}
 	return nil
@@ -166,7 +173,7 @@ func (r *Runs) pluginSpecs(ctx context.Context, tx *sql.Tx, base []tool.Spec) ([
 	if json.Unmarshal([]byte(raw), &g) != nil {
 		return nil, agent.ErrStorage
 	}
-	tools, err := pluginTools(r.plugins.Catalog, revision, g.Bindings)
+	tools, err := pluginToolsFromDB(ctx, tx, r.plugins.Catalog, revision, g.Bindings)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +221,7 @@ func (r *Runs) RegistryForRun(ctx context.Context, c agent.RunClaim, base *tool.
 			defs = append(defs, d)
 		}
 	}
-	tools, err := pluginTools(h.Catalog, revision, g.Graph.Bindings)
+	tools, err := pluginToolsFromDB(ctx, r.host.db, h.Catalog, revision, g.Graph.Bindings)
 	if err != nil {
 		return nil, err
 	}
@@ -240,6 +247,39 @@ func (r *Runs) RegistryForRun(ctx context.Context, c agent.RunClaim, base *tool.
 type pluginTool struct {
 	spec               tool.Spec
 	instance, contract string
+}
+
+type pluginQueryRunner interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}
+
+func pluginToolsFromDB(ctx context.Context, q pluginQueryRunner, catalog rsi.Catalog, revision string, bindings []rsiplugin.Binding) ([]pluginTool, error) {
+	rows, err := q.QueryContext(ctx, `SELECT DISTINCT json_extract(b.value,'$.package_digest') FROM rsi_graph g, json_each(g.graph_json,'$.bindings') b JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest') WHERE g.revision=? AND coalesce(json_array_length(json_extract(p.manifest_json,'$.tools')),0)>0`, revision)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	digests := map[string]bool{}
+	for rows.Next() {
+		var d string
+		if err = rows.Scan(&d); err != nil {
+			return nil, err
+		}
+		digests[d] = true
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(digests) == 0 {
+		return nil, nil
+	}
+	var filtered []rsiplugin.Binding
+	for _, b := range bindings {
+		if digests[b.PackageDigest] {
+			filtered = append(filtered, b)
+		}
+	}
+	return pluginTools(catalog, revision, filtered)
 }
 
 func pluginTools(catalog rsi.Catalog, revision string, bindings []rsiplugin.Binding) ([]pluginTool, error) {

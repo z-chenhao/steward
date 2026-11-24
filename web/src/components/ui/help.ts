@@ -13,7 +13,7 @@ export function enhanceContextHelp(){
    if(!trigger||!tooltip||!fallback||!('showPopover' in tooltip))continue;
    ready.add(help);let hovered=false,pinned=fallback.open,dismissed=false;
    tooltip.popover='manual';
-   const hide=()=>{if(tooltip.matches(':popover-open'))tooltip.hidePopover();tooltip.hidden=true};
+   const hide=()=>{if(tooltip.matches(':popover-open'))tooltip.hidePopover();tooltip.hidden=true;trigger.setAttribute('aria-expanded','false')};
    const position=()=>{
     if(tooltip.hidden)return;
     const scrollTop=tooltip.scrollTop;
@@ -32,17 +32,19 @@ export function enhanceContextHelp(){
    const render=()=>{
     const visible=!dismissed&&(hovered||pinned||document.activeElement===trigger);
     if(visible&&active!==help){dismiss();active=help;document.dispatchEvent(new Event('preference-help-open'))}
+    trigger.setAttribute('aria-expanded',String(visible));
     if(visible){tooltip.hidden=false;if(!tooltip.matches(':popover-open'))tooltip.showPopover();position()}else{hide();if(active===help)active=null}
    };
    controls.set(help,{position,dismiss:()=>{hovered=false;pinned=false;dismissed=true;hide()}});
-   tooltip.addEventListener('toggle',()=>{if(!tooltip.matches(':popover-open')){tooltip.hidden=true;if(active===help)active=null}});
+   tooltip.addEventListener('toggle',()=>{if(!tooltip.matches(':popover-open')){tooltip.hidden=true;trigger.setAttribute('aria-expanded','false');if(active===help)active=null}});
    help.addEventListener('pointerenter',event=>{if(event.pointerType==='touch')return;hovered=true;dismissed=false;render()});
    help.addEventListener('pointerleave',()=>{hovered=false;render()});
    tooltip.addEventListener('pointerenter',()=>{hovered=true;render()});
    tooltip.addEventListener('pointerleave',()=>{hovered=false;render()});
    trigger.addEventListener('focus',()=>{dismissed=false;render()});
-   trigger.addEventListener('blur',()=>{pinned=false;render()});
+   trigger.addEventListener('blur',event=>{if(event.relatedTarget instanceof Node&&!help.contains(event.relatedTarget))pinned=false;render()});
    trigger.addEventListener('click',event=>{event.preventDefault();pinned=!pinned;dismissed=!pinned;render()});
+   trigger.setAttribute('aria-expanded',String(pinned));
    const hadFocus=fallback.contains(document.activeElement);fallback.hidden=true;trigger.hidden=false;if(hadFocus)trigger.focus();else if(pinned)render();
   }
  };

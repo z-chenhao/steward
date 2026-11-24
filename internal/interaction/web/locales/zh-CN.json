@@ -603,6 +603,8 @@
   "Open execution history": "查看执行历史",
   "Expand computer view": "展开 Computer 画面",
   "Reduce computer view": "收起 Computer 画面",
+  "Expand worker view": "展开 Worker 视图",
+  "Reduce worker view": "收起 Worker 视图",
   "Close computer view": "关闭 Computer 画面",
   "Connecting to Computer…": "正在连接 Computer…",
   "Waiting for a current window image…": "正在等待当前窗口画面…",

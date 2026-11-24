@@ -236,10 +236,7 @@ func (h Host) Verify(ctx context.Context, id string) (string, error) {
 		}
 	}
 	for _, b := range g.Graph.Bindings {
-		pkg, e := h.Catalog.Load(b.PackageDigest)
-		if e != nil {
-			return "", e
-		}
+		pkg := packages[b.InstanceID]
 		for _, service := range pkg.Manifest.Provides {
 			passed = passed && covered[b.InstanceID+":"+service.Contract]
 		}
@@ -294,68 +291,85 @@ func (h Host) Hook(ctx context.Context, input rsiplugin.HookInput) (rsiplugin.Ho
 		return combined, nil
 	}
 	input.Execution.GraphRevision = revision
-	g, err := h.Store.Graph(ctx, revision)
-	if err != nil {
-		return combined, err
-	}
-	for _, id := range g.Order {
+	var ordered []rsiplugin.Binding
+	if selector, ok := h.Store.(interface {
+		HookBindings(context.Context, string, rsiplugin.Stage) ([]rsiplugin.Binding, error)
+	}); ok {
+		ordered, err = selector.HookBindings(ctx, revision, input.Stage)
+		if err != nil {
+			return combined, err
+		}
+		if len(ordered) == 0 {
+			return combined, nil
+		}
+	} else {
+		g, err := h.Store.Graph(ctx, revision)
+		if err != nil {
+			return combined, err
+		}
+		byID := make(map[string]rsiplugin.Binding, len(g.Graph.Bindings))
 		for _, b := range g.Graph.Bindings {
-			if b.InstanceID != id {
-				continue
+			byID[b.InstanceID] = b
+		}
+		for _, id := range g.Order {
+			if b, ok := byID[id]; ok {
+				ordered = append(ordered, b)
 			}
-			p, e := h.Catalog.Load(b.PackageDigest)
-			if e != nil {
-				return combined, e
+		}
+	}
+	for _, b := range ordered {
+		p, e := h.Catalog.Load(b.PackageDigest)
+		if e != nil {
+			return combined, e
+		}
+		found := false
+		for _, hook := range p.Manifest.Hooks {
+			found = found || hook.Stage == input.Stage
+		}
+		if !found {
+			continue
+		}
+		visible := visibleInput(input, p.Manifest)
+		key, e := rsiplugin.Digest("steward.rsi.hook/1", struct {
+			Input    rsiplugin.HookInput
+			Instance string
+		}{visible, b.InstanceID})
+		if e != nil {
+			return combined, ErrInvalid
+		}
+		var output rsiplugin.HookOutput
+		err = h.invoke(ctx, input.Execution, b, key, visible, func(state rsiplugin.State) (json.RawMessage, *json.RawMessage, error) {
+			var result rsiplugin.HookResult
+			e := h.runner(b, input.Execution, key).Invoke(ctx, b, "hook", rsiplugin.HookCall{OperationID: key, Input: visible, State: state}, &result)
+			if e == nil {
+				e = validateHook(p.Manifest, input, result.Output)
 			}
-			found := false
-			for _, hook := range p.Manifest.Hooks {
-				found = found || hook.Stage == input.Stage
+			raw, _ := json.Marshal(result.Output)
+			return raw, result.State, e
+		}, &output)
+		if err != nil {
+			return combined, err
+		}
+		combined.Reject = combined.Reject || output.Reject
+		if output.Reason != "" {
+			combined.Reason = output.Reason
+		}
+		combined.AdditionalContext = append(combined.AdditionalContext, output.AdditionalContext...)
+		if len(output.Arguments) > 0 {
+			combined.Arguments = output.Arguments
+			if input.ToolCall != nil {
+				copy := *input.ToolCall
+				copy.Arguments = output.Arguments
+				input.ToolCall = &copy
 			}
-			if !found {
-				continue
-			}
-			visible := visibleInput(input, p.Manifest)
-			key, e := rsiplugin.Digest("steward.rsi.hook/1", struct {
-				Input    rsiplugin.HookInput
-				Instance string
-			}{visible, b.InstanceID})
-			if e != nil {
-				return combined, ErrInvalid
-			}
-			var output rsiplugin.HookOutput
-			err = h.invoke(ctx, input.Execution, b, key, visible, func(state rsiplugin.State) (json.RawMessage, *json.RawMessage, error) {
-				var result rsiplugin.HookResult
-				e := h.runner(b, input.Execution, key).Invoke(ctx, b, "hook", rsiplugin.HookCall{OperationID: key, Input: visible, State: state}, &result)
-				if e == nil {
-					e = validateHook(p.Manifest, input, result.Output)
-				}
-				raw, _ := json.Marshal(result.Output)
-				return raw, result.State, e
-			}, &output)
-			if err != nil {
-				return combined, err
-			}
-			combined.Reject = combined.Reject || output.Reject
-			if output.Reason != "" {
-				combined.Reason = output.Reason
-			}
-			combined.AdditionalContext = append(combined.AdditionalContext, output.AdditionalContext...)
-			if len(output.Arguments) > 0 {
-				combined.Arguments = output.Arguments
-				if input.ToolCall != nil {
-					copy := *input.ToolCall
-					copy.Arguments = output.Arguments
-					input.ToolCall = &copy
-				}
-			}
-			if output.Text != nil {
-				combined.Text = output.Text
-				input.Text = *output.Text
-			}
-			if output.ToolNames != nil {
-				combined.ToolNames = output.ToolNames
-				input.ToolNames = *output.ToolNames
-			}
+		}
+		if output.Text != nil {
+			combined.Text = output.Text
+			input.Text = *output.Text
+		}
+		if output.ToolNames != nil {
+			combined.ToolNames = output.ToolNames
+			input.ToolNames = *output.ToolNames
 		}
 	}
 	return combined, combined.Validate(input.Stage)

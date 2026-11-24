@@ -66,7 +66,7 @@
 .intelligent-widget .answer-surface>header{margin:0 0 12px;padding-right:42px;font-size:14px}.intelligent-widget .answer-surface>header strong{font-size:14px;font-weight:600}.openintelligentui-native{overflow:visible}
 @media(max-width:760px){.answer-toolbar{top:-7px}.shared-action-menu button{min-height:44px}.answer-surface :is(.native-answer-title,.answer-table caption){padding-inline-end:48px}.answer-surface[data-mode=fullscreen]{inset:8px;padding:16px}.answer-surface[data-mode=modal]{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:16px}.answer-surface[data-mode=pip]{right:8px;bottom:160px;min-width:260px;width:calc(100vw - 16px)}.native-carousel-list{grid-auto-columns:minmax(220px,88%)}.native-carousel-controls{margin-right:44px}.native-carousel>.native-answer-title+.native-carousel-controls{margin-top:0}.native-input-form :is(input:not([type=checkbox]),textarea),.answer-filter input{font-size:16px;min-height:44px}.answer-chart-range input{min-height:44px}}
 .native-tool-action button[data-proposed=true]{border-color:var(--control-border)}
-@media(max-width:760px){.native-form-choice,.native-card-title,.native-tool-action>button,.native-input-form button[type=submit],.native-chart-legend button{min-height:44px}.answer-column-sort,.answer-cell-select{min-height:36px}.native-result-card a{display:inline-flex;align-items:center;min-height:44px}}
+@media(max-width:760px){.native-form-choice,.native-card-title,.native-tool-action>button,.native-input-form button[type=submit],.native-chart-legend button,.answer-column-sort,.answer-cell-select{min-height:44px}.native-result-card a{display:inline-flex;align-items:center;min-height:44px}}
 /* Recharts measures after layout; contain its previous SVG size during resize. */
 .native-chart .recharts-responsive-container{overflow:hidden}
 /* Reset page-wide label/button defaults inside compact answer content. */
@@ -74,7 +74,7 @@
 .answer-column-sort,.answer-cell-select,.native-card-title{justify-content:flex-start;min-height:0}
 .native-chart-legend button{min-height:24px}
 .native-tool-action>button,.widget-followup-actions>button+button{background:transparent;border-color:var(--control-border);color:var(--foreground)}
-@media(max-width:760px){.answer-column-sort,.answer-cell-select{min-height:36px}.native-card-title,.native-chart-legend button{min-height:44px}}
+@media(max-width:760px){.answer-column-sort,.answer-cell-select,.native-card-title,.native-chart-legend button{min-height:44px}}
 .answer-column-sort:hover,.answer-cell-select:hover,.native-card-title:hover{background:transparent;color:var(--foreground);text-decoration:underline;text-underline-offset:3px}
 .native-tool-action>button:hover,.widget-followup-actions>button+button:hover{background:var(--hover);color:var(--foreground)}
 /* Component interiors use the shared shadcn-style skin, never page typography. */
@@ -120,6 +120,7 @@
 .answer-chart-container{height:240px;min-width:0;font-variant-numeric:tabular-nums}
 .answer-chart-container .recharts-surface{overflow:visible}
 .answer-chart-container .recharts-sector{outline:none}
+.answer-chart-container .recharts-sector:focus-visible{stroke:var(--focus);stroke-width:2px}
 .answer-chart-container .recharts-line-dot:focus-visible{outline:none}
 .answer-chart-container .recharts-line-dot:focus-visible circle:last-child{stroke-width:4px}
 .answer-chart-tooltip{display:grid;gap:6px;min-width:128px;max-width:260px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--foreground);font:12px/1.5 var(--font-ui)}

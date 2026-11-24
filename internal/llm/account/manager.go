@@ -310,8 +310,18 @@ func (m *Manager) Ensure(ctx context.Context, id string) (llm.AuthConnection, ll
 		if err != nil {
 			return err
 		}
-		updated, err := m.Provider.AccountRefresh(ctx, c)
-		if err != nil || updated.ClientID != c.ClientID || updated.SubjectHash != c.SubjectHash || !updated.ExpiresAt.After(time.Now().Add(3*time.Minute)) {
+		refreshCtx, cancelRefresh := context.WithTimeout(context.WithoutCancel(ctx), 15*time.Second)
+		updated, err := m.Provider.AccountRefresh(refreshCtx, c)
+		cancelRefresh()
+		if err != nil {
+			if errors.Is(err, llm.AuthRequired) {
+				return m.lose(a)
+			}
+			// Transient network/5xx errors or timeouts must not destroy stored OAuth credentials.
+			_ = m.Store.AccountState(context.WithoutCancel(ctx), a, "connected", nil)
+			return err
+		}
+		if updated.ClientID != c.ClientID || updated.SubjectHash != c.SubjectHash || !updated.ExpiresAt.After(time.Now().Add(3*time.Minute)) {
 			return m.lose(a)
 		}
 		if err = m.put(ctx, a, updated); err != nil {
