@@ -405,7 +405,11 @@ func Open(ctx context.Context, dataRoot string) (*Store, error) {
 	ru.RawQuery = rq.Encode()
 	if reader, rErr := sql.Open("sqlite", ru.String()); rErr == nil {
 		reader.SetMaxOpenConns(4)
-		s.reader = reader
+		if connect(ctx, reader) == nil {
+			s.reader = reader
+		} else {
+			_ = reader.Close()
+		}
 	}
 	return s, nil
 }

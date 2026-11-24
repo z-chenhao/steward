@@ -110,7 +110,8 @@ func runEvent(ctx context.Context, tx *sql.Tx, id, kind string, version int64) e
 func (r *Runs) write(ctx context.Context, fn func(*sql.Tx) error) error {
 	var err error
 	var admission *capabilityPrivacy
-	for attempt := 0; attempt < 3; attempt++ {
+	prepAttempts := 0
+	for attempt := 0; attempt < 5; attempt++ {
 		err = r.host.Transaction(ctx, func(tx *sql.Tx) error {
 			if admission != nil {
 				if err := admission.check(ctx, tx); err != nil {
@@ -130,10 +131,11 @@ func (r *Runs) write(ctx context.Context, fn func(*sql.Tx) error) error {
 		if needsMCP || needsApps || needsUI || needsSchedule {
 			// Transaction has rolled back. No candidate process/IO runs under
 			// a state writer; Forget must not resubmit old ingress on retry.
-			if attempt == 2 {
+			if prepAttempts == 2 {
 				err = tool.ErrResource
 				break
 			}
+			prepAttempts++
 			if admission == nil {
 				var original capabilityPrivacy
 				if needsMCP {
@@ -179,7 +181,7 @@ func (r *Runs) write(ctx context.Context, fn func(*sql.Tx) error) error {
 			continue
 		}
 		var sqliteErr *sqlitedriver.Error
-		if !errors.As(err, &sqliteErr) || (sqliteErr.Code()&0xff != sqlite3.SQLITE_BUSY && sqliteErr.Code()&0xff != sqlite3.SQLITE_LOCKED) || attempt == 2 {
+		if !errors.As(err, &sqliteErr) || (sqliteErr.Code()&0xff != sqlite3.SQLITE_BUSY && sqliteErr.Code()&0xff != sqlite3.SQLITE_LOCKED) || attempt == 4 {
 			break
 		}
 		timer := time.NewTimer(time.Duration(10<<attempt) * time.Millisecond)
@@ -202,9 +204,23 @@ func (r *Runs) write(ctx context.Context, fn func(*sql.Tx) error) error {
 }
 
 func (r *Runs) read(ctx context.Context, fn func(*sql.Tx) error) error {
-	err := r.host.ReadTransaction(ctx, fn)
-	if err == nil {
-		return nil
+	var err error
+	for attempt := 0; attempt < 5; attempt++ {
+		err = r.host.ReadTransaction(ctx, fn)
+		if err == nil {
+			return nil
+		}
+		var sqliteErr *sqlitedriver.Error
+		if !errors.As(err, &sqliteErr) || (sqliteErr.Code()&0xff != sqlite3.SQLITE_BUSY && sqliteErr.Code()&0xff != sqlite3.SQLITE_LOCKED) || attempt == 4 {
+			break
+		}
+		timer := time.NewTimer(time.Duration(10<<attempt) * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return &agent.OperationError{Operation: "state read", Category: agent.ErrStorage, Cause: ctx.Err()}
+		case <-timer.C:
+		}
 	}
 	for _, known := range []error{task.ErrFeedbackStale, task.ErrNotFound, artifact.ErrNotFound, artifact.ErrIntegrity, artifact.ErrInvalid, artifact.ErrLimit, artifact.ErrConflict, interaction.ErrUnauthorized, automation.ErrInvalid, computer.ErrInvalid, computer.ErrStale, computer.ErrBusy, computer.ErrCompatibility, agent.ErrResourceLimit, agent.ErrBusy, agent.ErrClaimLost, agent.ErrConflict, agent.ErrSetup, conversation.ErrConflict, conversation.ErrInvalid, delivery.ErrConflict, delivery.ErrStorage, llm.ModelIncompatible, llm.ContextLengthExceeded, tool.ErrResource, tool.ErrReplay, tool.ErrApprovalDenied} {
 		if errors.Is(err, known) {
