@@ -11,7 +11,7 @@ import (
 // Native call/result pairs and accepted generation requests remain immutable.
 func (r *Runs) MainActivity(ctx context.Context, c agent.RunClaim, after, step int64) (agent.MainActivity, error) {
 	var out agent.MainActivity
-	err := r.write(ctx, func(tx *sql.Tx) error {
+	err := r.read(ctx, func(tx *sql.Tx) error {
 		if err := fence(ctx, tx, c); err != nil {
 			return err
 		}

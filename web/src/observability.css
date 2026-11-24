@@ -122,4 +122,4 @@
 .obs-tree-pane{position:relative}
 .obs-detail-pane{container:observation-detail / inline-size}
 .control-sheet .obs-workbench{height:auto;min-height:0;flex:1}
-@media(max-width:760px){.obs-pane-heading{height:auto;min-height:44px}}
+@media(max-width:760px){.obs-pane-heading{height:auto;min-height:44px}body .obs-tree-pane .obs-timeline-axis span:nth-child(2n){display:none}body .obs-tree-pane .obs-timeline-axis span:first-child,body .obs-tree-pane .obs-timeline-axis span:last-child{display:block}}

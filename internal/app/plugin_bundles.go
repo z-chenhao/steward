@@ -10,6 +10,8 @@ import (
 )
 
 func (a *App) prepareBuiltinPlugins(ctx context.Context, cfg config.Config) error {
+	a.pluginBootstrapMu.Lock()
+	defer a.pluginBootstrapMu.Unlock()
 	host := a.Plugins()
 	status, err := host.Store.Status(ctx)
 	if err != nil {

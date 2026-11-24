@@ -74,9 +74,15 @@ func (a *accountAuth) request(ctx context.Context, path string, form url.Values)
 	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, authError()
+		return nil, &provider.Error{Code: "PROVIDER_UNAVAILABLE"}
 	}
 	defer res.Body.Close()
+	if res.StatusCode == http.StatusTooManyRequests {
+		return nil, &provider.Error{Code: "RATE_LIMITED"}
+	}
+	if res.StatusCode >= 500 {
+		return nil, &provider.Error{Code: "PROVIDER_UNAVAILABLE"}
+	}
 	if res.StatusCode != 200 {
 		return nil, authError()
 	}

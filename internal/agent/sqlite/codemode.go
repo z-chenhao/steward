@@ -372,7 +372,7 @@ func (b *codeBridge) store(ctx context.Context, method, callKey string, raw json
 			return err
 		}
 		if method == "host.store_put" {
-			if !json.Valid(args.Value) || len(args.Value) > 262144 || strings.Contains(string(args.Value), `"handle_token"`) || strings.Contains(string(args.Value), `"handleToken"`) {
+			if !json.Valid(args.Value) || len(args.Value) > 262144 || hasForbiddenCodeStoreKey(args.Value) {
 				reply = denied("INVALID_ARGUMENT")
 				return nil
 			}
@@ -522,4 +522,30 @@ func (b *codeBridge) discover(m codemode.Message) codemode.Reply {
 		return codemode.Reply{Value: tool.SearchToolsLegacyV1(candidates, nil, query, options.Limit).Tools}
 	}
 	return codemode.Reply{}
+}
+
+func hasForbiddenCodeStoreKey(raw json.RawMessage) bool {
+	var v any
+	if json.Unmarshal(raw, &v) != nil {
+		return true
+	}
+	var walk func(any) bool
+	walk = func(node any) bool {
+		switch x := node.(type) {
+		case map[string]any:
+			for k, child := range x {
+				if k == "handle_token" || k == "handleToken" || walk(child) {
+					return true
+				}
+			}
+		case []any:
+			for _, child := range x {
+				if walk(child) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	return walk(v)
 }

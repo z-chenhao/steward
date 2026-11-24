@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -49,8 +50,19 @@ func (p *process) send(value any) error {
 	_, err = p.input.Write(append(b, '\n'))
 	return err
 }
+func killProcessGroup(cmd *exec.Cmd) {
+	if cmd == nil || cmd.Process == nil {
+		return
+	}
+	if cmd.Process.Pid > 0 {
+		_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+	}
+	_ = cmd.Process.Kill()
+}
+
 func (s *Sidecar) Start(ctx context.Context, req ExecutionRequest, sink ExecutionEventSink) (Outcome, error) {
 	cmd := exec.Command(s.Command, s.Script)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	// Never inherit NODE_OPTIONS, credentials, account environment or user paths.
 	cmd.Env = []string{"PATH=/usr/bin:/bin", "TZ=UTC", "LANG=C.UTF-8"}
 	input, err := cmd.StdinPipe()
@@ -76,13 +88,18 @@ func (s *Sidecar) Start(ctx context.Context, req ExecutionRequest, sink Executio
 	if err = cmd.Start(); err != nil {
 		return Outcome{}, ErrProtocol
 	}
+	execCtx, cancelExec := context.WithCancel(ctx)
 	done := make(chan struct{})
+	var wg sync.WaitGroup
+	// LIFO cleanup order: cancel in-flight host handlers & kill sidecar process
+	// group first, then wait for handler goroutines, then close done.
 	defer close(done)
-	defer func() { _ = input.Close(); _ = cmd.Process.Kill(); _ = cmd.Wait() }()
+	defer wg.Wait()
+	defer func() { cancelExec(); _ = input.Close(); killProcessGroup(cmd); _ = cmd.Wait() }()
 	go func() {
 		select {
-		case <-ctx.Done():
-			_ = cmd.Process.Kill()
+		case <-execCtx.Done():
+			killProcessGroup(cmd)
 		case <-done:
 		}
 	}()
@@ -114,8 +131,6 @@ func (s *Sidecar) Start(ctx context.Context, req ExecutionRequest, sink Executio
 	if p.send(map[string]any{"jsonrpc": "2.0", "id": "start", "method": "execution.start", "params": req}) != nil {
 		return Outcome{}, ErrProtocol
 	}
-	var wg sync.WaitGroup
-	defer wg.Wait()
 	// Calls can execute concurrently; events and Store stay ordered on this reader.
 	var sequence int64
 	var terminal *Outcome
@@ -175,13 +190,19 @@ func (s *Sidecar) Start(ctx context.Context, req ExecutionRequest, sink Executio
 			terminal = event.Outcome
 		}
 		respond := func(msg rpc, event Message) error {
-			reply, err := sink.Handle(ctx, msg.Method, event)
+			reply, err := sink.Handle(execCtx, msg.Method, event)
 			response := map[string]any{"jsonrpc": "2.0", "id": msg.ID, "result": reply}
 			if err != nil {
 				delete(response, "result")
 				response["error"] = map[string]any{"code": -32000, "message": "PROVIDER_UNAVAILABLE"}
 			}
-			_ = p.send(response)
+			if sendErr := p.send(response); sendErr != nil {
+				fallback := map[string]any{"jsonrpc": "2.0", "id": msg.ID, "error": map[string]any{"code": -32000, "message": "RESOURCE_LIMIT"}}
+				_ = p.send(fallback)
+				if err == nil {
+					err = sendErr
+				}
+			}
 			return err
 		}
 		switch msg.Method {

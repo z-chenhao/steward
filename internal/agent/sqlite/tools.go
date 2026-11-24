@@ -60,9 +60,42 @@ func (t *tools) Accept(ctx context.Context, exchange string, calls []llm.ToolCal
 
 func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCall, specs []tool.Spec, parent string) ([]tool.Invocation, error) {
 	out := []tool.Invocation{}
-	effective, rejected, hookErr := t.runs.pluginBeforeTools(ctx, t.claim, exchange, calls, t.fence)
-	if hookErr != nil {
-		return nil, hookErr
+	// Skip BeforeToolCall/PrepareDelegation hooks for calls already persisted in
+	// tool_invocation so recovery/replay stays idempotent even if hooks change.
+	existingArgs := map[string]string{}
+	if rows, qErr := t.runs.host.db.QueryContext(ctx, `SELECT provider_call_id,arguments_json FROM tool_invocation WHERE run_id=? AND provider_exchange_id=?`, t.claim.RunID(), exchange); qErr == nil {
+		for rows.Next() {
+			var cid, cargs string
+			if rows.Scan(&cid, &cargs) == nil {
+				existingArgs[cid] = cargs
+			}
+		}
+		rows.Close()
+	}
+	effective := append([]llm.ToolCall(nil), calls...)
+	rejected := make([]bool, len(calls))
+	var freshIdx []int
+	var freshCalls []llm.ToolCall
+	for i, call := range calls {
+		if persisted, ok := existingArgs[call.ID]; ok && (parent == "" || persisted == call.Arguments) {
+			effective[i].Arguments = persisted
+		} else if _, ok := existingArgs[call.ID]; ok {
+			// Nested CodeMode replay with differing arguments: do not re-run hooks
+			// and keep incoming arguments so oldHash != hash detects replay drift.
+		} else {
+			freshIdx = append(freshIdx, i)
+			freshCalls = append(freshCalls, call)
+		}
+	}
+	if len(freshCalls) > 0 {
+		hooked, hookRejected, hookErr := t.runs.pluginBeforeTools(ctx, t.claim, exchange, freshCalls, t.fence)
+		if hookErr != nil {
+			return nil, hookErr
+		}
+		for j, idx := range freshIdx {
+			effective[idx] = hooked[j]
+			rejected[idx] = hookRejected[j]
+		}
 	}
 	err := t.runs.write(ctx, func(tx *sql.Tx) error {
 		out = out[:0]
@@ -115,7 +148,8 @@ func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCal
 				return agent.ErrConflict
 			}
 		}
-		for i, call := range calls {
+		for i := range calls {
+			call := effective[i]
 			request, _ := encoded(call)
 			if parent != "" {
 				request, _ = encoded(struct {
@@ -124,7 +158,6 @@ func (t *tools) accept(ctx context.Context, exchange string, calls []llm.ToolCal
 				}{call, specs})
 			}
 			hash := digest(request)
-			call = effective[i]
 			var inv tool.Invocation
 			var oldHash string
 			var result sql.NullString
@@ -789,11 +822,13 @@ var _ tool.PolicyStore = (*tools)(nil)
 func (t *tools) WaitReason(ctx context.Context) (string, error) {
 	// Any resource/retry wait needs a scheduler wake even if another call is
 	// awaiting approval. Approval-only batches release the Run indefinitely.
-	var pending, total int
-	if err := t.runs.host.db.QueryRowContext(ctx, `SELECT coalesce(sum(wait_reason!='approval'),0),count(*) FROM tool_invocation WHERE run_id=? AND status='waiting'`, t.claim.RunID()).Scan(&pending, &total); err != nil {
+	// Exclude the suspended CodeMode wrapper (wait_reason='external_event') when
+	// a nested approval is holding the execution so Run status reports approval.
+	var pending, approvals, total int
+	if err := t.runs.host.db.QueryRowContext(ctx, `SELECT coalesce(sum(wait_reason!='approval' AND NOT (tool_name='builtin__codemode_execute' AND wait_reason='external_event')),0),coalesce(sum(wait_reason='approval'),0),count(*) FROM tool_invocation WHERE run_id=? AND status='waiting'`, t.claim.RunID()).Scan(&pending, &approvals, &total); err != nil {
 		return "", agent.ErrStorage
 	}
-	if pending > 0 || total == 0 {
+	if pending > 0 || total == 0 || approvals == 0 {
 		return "resource", nil
 	}
 	return "approval", nil

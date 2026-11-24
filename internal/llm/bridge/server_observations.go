@@ -44,7 +44,8 @@ func (s *Server) observe(r generationRequest, o provider.Observation) {
 	s.send(map[string]any{"jsonrpc": "2.0", "method": "generation.observation", "params": value})
 }
 
-var sensitive = regexp.MustCompile(`(?i)^(authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|cookie|set-cookie)$`)
+var sensitive = regexp.MustCompile(`(?i)^(authorization|x-api-key|api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password|cookie|set-cookie)$`)
+var secretValuePattern = regexp.MustCompile(`(Bearer\s+[A-Za-z0-9._~+/=-]{8,}|-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,})`)
 
 func redact(value any, r generationRequest) any {
 	switch v := value.(type) {
@@ -70,7 +71,7 @@ func redact(value any, r generationRequest) any {
 				v = strings.ReplaceAll(v, secret, "[credential redacted]")
 			}
 		}
-		return v
+		return secretValuePattern.ReplaceAllString(v, "[credential redacted]")
 	case []any:
 		out := make([]any, len(v))
 		for i, x := range v {

@@ -66,15 +66,14 @@ func (a *App) prepareRuntime(ctx context.Context, cfg config.Config, fixture str
 	}
 	runs.ConfigureLocalEnvironment(cfg.ExecutionConfig())
 	runs.ConfigureImageOCR(imageOCR)
+	var newComputer *macosvm.Provider
 	if cfg.Computer != nil {
 		provider, e := macosvm.New(*cfg.Computer, macosvm.SSHGuest{Config: cfg.Computer.Guest, Secrets: secrets})
 		if e != nil {
 			return e
 		}
+		newComputer = provider
 		runs.ConfigureComputer(provider, cfg.Computer.Compatibility, cfg.Computer.Manifest)
-		a.computerPreviewMu.Lock()
-		a.computer = provider
-		a.computerPreviewMu.Unlock()
 		provider.Boundary = func(point string) {
 			if a.testBoundary != nil {
 				a.testBoundary("computer_" + point)
@@ -112,7 +111,19 @@ func (a *App) prepareRuntime(ctx context.Context, cfg config.Config, fixture str
 	}
 	if fixture == "" || fixture == "computer" {
 		if err := a.prepareBuiltinPlugins(ctx, cfg); err != nil {
+			if newComputer != nil {
+				newComputer.Close()
+			}
 			return err
+		}
+	}
+	if newComputer != nil {
+		a.computerPreviewMu.Lock()
+		old := a.computer
+		a.computer = newComputer
+		a.computerPreviewMu.Unlock()
+		if old != nil {
+			old.Close()
 		}
 	}
 	a.core.Store(&runtimeCore{runs: runs, registry: registry})

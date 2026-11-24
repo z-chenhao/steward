@@ -70,20 +70,23 @@ func (s *Server) client() *http.Client {
 	}
 	return &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 }
-func (s *Server) send(v any) {
+func (s *Server) send(v any) bool {
 	data, err := json.Marshal(v)
 	if err != nil || len(data) >= MaxFrameBytes {
-		return
+		return false
 	}
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()
-	_, _ = s.out.Write(append(data, '\n'))
+	_, err = s.out.Write(append(data, '\n'))
+	return err == nil
 }
 func (s *Server) reply(f frame, v any, err error) {
 	if err != nil {
 		s.send(map[string]any{"jsonrpc": "2.0", "id": f.ID, "error": map[string]any{"code": -32000, "message": provider.ErrorCode(err)}})
 	} else {
-		s.send(map[string]any{"jsonrpc": "2.0", "id": f.ID, "result": v})
+		if !s.send(map[string]any{"jsonrpc": "2.0", "id": f.ID, "result": v}) {
+			s.send(map[string]any{"jsonrpc": "2.0", "id": f.ID, "error": map[string]any{"code": -32000, "message": "INVALID_PROVIDER_RESPONSE"}})
+		}
 	}
 }
 func (s *Server) stopJobs(session string) {

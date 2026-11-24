@@ -88,7 +88,9 @@ func (a Actor) Drain(ctx context.Context) error {
 					go func() {
 						run, loadErr := a.Store.Load(context.WithoutCancel(ctx), claim)
 						err := loadErr
-						if err == nil {
+						if err != nil {
+							_ = a.Store.Release(context.WithoutCancel(ctx), claim)
+						} else {
 							err = a.execute(ctx, id, claim)
 						}
 						// A Root's business failure is durably reported to Main. Infrastructure

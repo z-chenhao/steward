@@ -151,7 +151,7 @@ func (c *Client) Stream(ctx context.Context, m Model, in Context, o Options, emi
 			}
 			response.Body.Close()
 			cancel()
-			if attempt < retries && (response.StatusCode == 429 || response.StatusCode == 502 || response.StatusCode == 503 || response.StatusCode == 504) {
+			if attempt < retries && (response.StatusCode == 429 || response.StatusCode == 500 || response.StatusCode == 502 || response.StatusCode == 503 || response.StatusCode == 504) {
 				delay := failure.RetryAfter
 				if o.MaxRetryDelay > 0 && delay > o.MaxRetryDelay {
 					return state.message, failure

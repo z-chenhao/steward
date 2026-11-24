@@ -10,6 +10,7 @@ import (
 
 	"github.com/z-chenhao/assistant/internal/agent"
 	"github.com/z-chenhao/assistant/internal/conversation"
+	"github.com/z-chenhao/assistant/internal/llm"
 	"github.com/z-chenhao/assistant/internal/memory"
 	"github.com/z-chenhao/assistant/internal/recall"
 	"github.com/z-chenhao/assistant/internal/tool"
@@ -389,7 +390,19 @@ func (r *Runs) CurateMemory(ctx context.Context) error {
 				}
 				continue
 			}
-			if _, writeErr := r.host.db.ExecContext(context.WithoutCancel(ctx), `UPDATE memory_mutation SET attempts=attempts+1,last_error='MEMORY_UNAVAILABLE' WHERE event_id=? AND failed_at IS NULL`, id); writeErr != nil {
+			if errors.Is(e, llm.ContextLengthExceeded) {
+				if writeErr := r.write(ctx, func(tx *sql.Tx) error {
+					_, e := tx.ExecContext(ctx, `UPDATE memory_mutation SET failed_at=?,last_error='CONTEXT_LENGTH_EXCEEDED',attempts=attempts+1 WHERE event_id=? AND failed_at IS NULL`, time.Now().UnixMicro(), id)
+					if e != nil {
+						return e
+					}
+					return runEvent(ctx, tx, id, "memory_mutation.rejected", 1)
+				}); writeErr != nil {
+					return writeErr
+				}
+				continue
+			}
+			if _, writeErr := r.host.db.ExecContext(context.WithoutCancel(ctx), `UPDATE memory_mutation SET attempts=attempts+1,last_error='MEMORY_UNAVAILABLE',failed_at=CASE WHEN attempts+1>=8 THEN ? ELSE NULL END WHERE event_id=? AND failed_at IS NULL`, time.Now().UnixMicro(), id); writeErr != nil {
 				return agent.ErrStorage
 			}
 			return e

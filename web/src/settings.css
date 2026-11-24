@@ -77,7 +77,7 @@ html:not(.js) [data-client-pending]{display:none}
  .setting-row{gap:12px}.setting-row label{font-size:13px}
  .settings-page .panel{padding:16px}
  .settings-page form>label:not(.check),.settings-page fieldset>label:not(.check){display:block;font-size:13px}.settings-page form>label>input,.settings-page fieldset>label>input,.settings-page form>label>textarea,.settings-page fieldset>label>textarea{margin-top:7px;font-size:16px}.settings-page form>label>select,.settings-page fieldset>label>select{display:block;margin-top:7px}
- .settings-page .capability-submit{align-items:center;flex-direction:row-reverse;flex-wrap:wrap}.settings-page .capability-submit button{min-height:40px}
+ .settings-page .capability-submit{align-items:center;flex-direction:row-reverse;flex-wrap:wrap}
  .settings-page :is(.model-connect-form,.capability-guided) label:not(.check):has(>input,>textarea,>select,>.control-select){gap:8px 12px}
  .settings-workspace .page-feedback{margin:16px auto 0}
 }
@@ -90,8 +90,6 @@ html:not(.js) [data-client-pending]{display:none}
 .settings-workspace .page-feedback.success{width:auto;position:fixed;right:24px;bottom:24px;z-index:50;margin:0;max-width:360px;box-shadow:0 4px 16px #0001}
 @media(max-width:760px){.settings-row-controls{flex-wrap:wrap}.settings-workspace .page-feedback{margin:16px auto 0}.settings-workspace .page-feedback.success{margin:0;right:16px;bottom:16px;max-width:calc(100vw - 32px)}}
 
-.sidebar-collapsed .settings-topbar{display:flex;height:56px;padding:0 24px}
-.sidebar-collapsed .settings-topbar>span{margin-right:auto}
 .settings-exit{font-size:24px;text-decoration:none;width:40px;text-align:center;color:var(--muted-foreground)}
 
 .setting-row>.setting-switch{margin:0}

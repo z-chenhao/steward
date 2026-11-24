@@ -303,6 +303,7 @@ type Store struct {
 	nextRun             *sql.Stmt
 	activeRun           *sql.Stmt
 	db                  *sql.DB
+	reader              *sql.DB
 	path                string
 	codeRoot            string
 	artifacts           *artifactsqlite.Store
@@ -343,6 +344,7 @@ func Open(ctx context.Context, dataRoot string) (*Store, error) {
 	q.Add("_pragma", "foreign_keys(1)")
 	q.Add("_pragma", "busy_timeout(5000)")
 	q.Add("_pragma", "journal_mode(WAL)")
+	q.Add("_pragma", "synchronous(NORMAL)")
 	q.Set("_txlock", "immediate")
 	u.RawQuery = q.Encode()
 	db, err := sql.Open("sqlite", u.String())
@@ -395,6 +397,16 @@ func Open(ctx context.Context, dataRoot string) (*Store, error) {
 		return nil, errors.Join(err, s.Close())
 	}
 	s.dispatches = inspectionsqlite.NewRecorder(path)
+	ru := url.URL{Scheme: "file", Path: path}
+	rq := ru.Query()
+	rq.Set("mode", "ro")
+	rq.Add("_pragma", "busy_timeout(5000)")
+	rq.Add("_pragma", "query_only(1)")
+	ru.RawQuery = rq.Encode()
+	if reader, rErr := sql.Open("sqlite", ru.String()); rErr == nil {
+		reader.SetMaxOpenConns(4)
+		s.reader = reader
+	}
 	return s, nil
 }
 
@@ -531,6 +543,9 @@ func (s *Store) Close() error {
 	if s.inspector != nil {
 		inspectionErr = errors.Join(inspectionErr, s.inspector.Close())
 	}
+	if s.reader != nil {
+		inspectionErr = errors.Join(inspectionErr, s.reader.Close())
+	}
 	if s.artifacts != nil {
 		return errors.Join(inspectionErr, s.artifacts.Close(), s.db.Close())
 	}
@@ -556,6 +571,21 @@ func (s *Store) Transaction(ctx context.Context, write func(*sql.Tx) error) erro
 		return err
 	}
 	return tx.Commit()
+}
+
+// ReadTransaction executes a consistent read-only snapshot without contending
+// on the single BEGIN IMMEDIATE writer connection.
+func (s *Store) ReadTransaction(ctx context.Context, read func(*sql.Tx) error) error {
+	db := s.reader
+	if db == nil {
+		db = s.db
+	}
+	tx, err := db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	return read(tx)
 }
 
 // Plugins shares the authoritative Host connection; it never opens a second state writer.

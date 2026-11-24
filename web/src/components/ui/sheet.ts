@@ -4,7 +4,7 @@ import {createResizeHandle} from './resize-handle';
 // The shared shell supports a non-modal peek beside a working list, or a modal
 // sheet. The feature supplies content and navigation; native links still work.
 export function createSideSheet(label:string,onClose:()=>void,options:{modal?:boolean;storageKey?:string;previousLabel?:string;nextLabel?:string}={}){
- const dialog=document.createElement('dialog');dialog.className='control-sheet';dialog.setAttribute('aria-label',label);
+ const dialog=document.createElement('dialog');dialog.className='control-sheet';dialog.tabIndex=-1;dialog.setAttribute('aria-label',label);
  const header=document.createElement('div');header.className='control-sheet-header';
  const title=document.createElement('strong');title.textContent=label;
  const icon=(pathData:string)=>{
@@ -28,8 +28,8 @@ export function createSideSheet(label:string,onClose:()=>void,options:{modal?:bo
  let opener:HTMLElement|null=null;
  const restore=()=>{if(opener?.isConnected)opener.focus({preventScroll:true})};
  const closed=()=>{restore();onClose()};
- const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'&&!event.defaultPrevented&&dialog.open&&dialog.contains(document.activeElement)){event.preventDefault();dialog.close()}};
+ const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'&&!event.defaultPrevented&&dialog.open){event.preventDefault();dialog.close()}};
  close.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',closed);document.addEventListener('keydown',escape);
  expand.addEventListener('click',()=>{const expanded=dialog.toggleAttribute('data-expanded');expand.setAttribute('aria-pressed',String(expanded));fitResize()});
- return {dialog,body,full,title,previous,next,open:()=>{if(!dialog.open){opener=document.activeElement instanceof HTMLElement?document.activeElement:null;if(options.modal===false)dialog.show();else dialog.showModal()}},dispose:()=>{window.removeEventListener('resize',fitResize);resize.dispose();document.removeEventListener('keydown',escape);dialog.removeEventListener('close',closed);dialog.close();dialog.remove();restore()}};
+ return {dialog,body,full,title,previous,next,open:()=>{if(!dialog.open){opener=document.activeElement instanceof HTMLElement?document.activeElement:null;if(options.modal===false)dialog.show();else dialog.showModal();dialog.focus({preventScroll:true})}},dispose:()=>{window.removeEventListener('resize',fitResize);resize.dispose();document.removeEventListener('keydown',escape);dialog.removeEventListener('close',closed);dialog.close();dialog.remove();restore()}};
 }

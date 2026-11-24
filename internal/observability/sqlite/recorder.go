@@ -29,7 +29,8 @@ func NewRecorder(path string) *Recorder {
 	u := url.URL{Scheme: "file", Path: path}
 	q := u.Query()
 	q.Set("mode", "rw")
-	q.Add("_pragma", "busy_timeout(25)")
+	q.Add("_pragma", "busy_timeout(150)")
+	q.Add("_pragma", "synchronous(NORMAL)")
 	q.Add("_pragma", "foreign_keys(1)")
 	u.RawQuery = q.Encode()
 	db, err := sql.Open("sqlite", u.String())

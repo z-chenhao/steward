@@ -99,7 +99,13 @@ func (m *managedRuntime) startPreparation(ctx context.Context, prepare func(cont
 	if m.done != nil {
 		select {
 		case <-m.done:
-			return m.err
+			if m.err == nil {
+				return nil
+			}
+			// Allow retrying after a previous failed preparation instead of
+			// permanently latching m.err for the process lifetime.
+			m.done = nil
+			m.err = nil
 		default:
 			return computer.ErrPreparing
 		}

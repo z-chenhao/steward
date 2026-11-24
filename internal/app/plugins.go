@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"sync"
 
 	"github.com/z-chenhao/assistant/internal/config"
 	"github.com/z-chenhao/assistant/internal/media/ocr"
@@ -14,11 +13,9 @@ import (
 
 // Plugins is an operator control port. It is never registered as a model tool.
 func (a *App) Plugins() rsi.Host {
-	var once sync.Once
-	var computer *rsi.Compute
 	load := func(ctx context.Context) *rsi.Compute {
-		once.Do(func() { computer = driver.New(ocr.Discover(ctx)) })
-		return computer
+		a.ocrOnce.Do(func() { a.ocrCompute = driver.New(ocr.Discover(ctx)) })
+		return a.ocrCompute
 	}
 	return rsi.Host{Catalog: rsi.NewCatalog(a.store.DataRoot()), Store: a.store.Plugins(), Compute: &rsi.Compute{
 		Identity: func(ctx context.Context) (string, error) { return load(ctx).Identity(ctx) },

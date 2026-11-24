@@ -200,6 +200,19 @@ func (r *Runs) write(ctx context.Context, fn func(*sql.Tx) error) error {
 	}
 	return &agent.OperationError{Operation: "state transaction", Category: agent.ErrStorage, Cause: err}
 }
+
+func (r *Runs) read(ctx context.Context, fn func(*sql.Tx) error) error {
+	err := r.host.ReadTransaction(ctx, fn)
+	if err == nil {
+		return nil
+	}
+	for _, known := range []error{task.ErrFeedbackStale, task.ErrNotFound, artifact.ErrNotFound, artifact.ErrIntegrity, artifact.ErrInvalid, artifact.ErrLimit, artifact.ErrConflict, interaction.ErrUnauthorized, automation.ErrInvalid, computer.ErrInvalid, computer.ErrStale, computer.ErrBusy, computer.ErrCompatibility, agent.ErrResourceLimit, agent.ErrBusy, agent.ErrClaimLost, agent.ErrConflict, agent.ErrSetup, conversation.ErrConflict, conversation.ErrInvalid, delivery.ErrConflict, delivery.ErrStorage, llm.ModelIncompatible, llm.ContextLengthExceeded, tool.ErrResource, tool.ErrReplay, tool.ErrApprovalDenied} {
+		if errors.Is(err, known) {
+			return known
+		}
+	}
+	return &agent.OperationError{Operation: "state read", Category: agent.ErrStorage, Cause: err}
+}
 func fence(ctx context.Context, tx *sql.Tx, c agent.RunClaim) error {
 	owner, ok := c.(*claim)
 	if !ok {
@@ -525,7 +538,7 @@ func (r *Runs) Release(ctx context.Context, c agent.RunClaim) error {
 func (r *Runs) Load(ctx context.Context, c agent.RunClaim) (agent.Run, error) {
 	var run agent.Run
 	var snapshotID, cp, tools string
-	err := r.write(ctx, func(tx *sql.Tx) error {
+	err := r.read(ctx, func(tx *sql.Tx) error {
 		if err := fence(ctx, tx, c); err != nil {
 			return err
 		}

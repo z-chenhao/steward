@@ -196,7 +196,7 @@ func (s *Server) generate(ctx context.Context, r generationRequest, j *job) {
 		cancel()
 	})
 	defer deadline.Stop()
-	o := provider.Options{HTTPClient: s.client(), APIKey: r.Connection.APIKey, AccessToken: r.Connection.AccessToken, MaxTokens: snapshot.MaxOutputTokens, SessionID: r.SessionID, HeaderTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxRetries: 2, MaxResponseBytes: 4 << 20, MaxEvents: 64 << 10, Observe: func(obs provider.Observation) {
+	o := provider.Options{HTTPClient: s.client(), APIKey: r.Connection.APIKey, AccessToken: r.Connection.AccessToken, MaxTokens: snapshot.MaxOutputTokens, SessionID: r.SessionID, HeaderTimeout: 30 * time.Second, IdleTimeout: 90 * time.Second, MaxRetries: 2, MaxRetryDelay: 30 * time.Second, MaxResponseBytes: 4 << 20, MaxEvents: 64 << 10, Observe: func(obs provider.Observation) {
 		if obs.Phase == "header_timeout" || obs.Phase == "stream_idle_timeout" {
 			expired.Store(true)
 		}

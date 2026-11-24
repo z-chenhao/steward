@@ -69,21 +69,33 @@ func (v Vault) Seal(ctx context.Context, plain, binding string) (string, error) 
 	return "sealed:v1:" + base64.RawStdEncoding.EncodeToString(a.Seal(n, n, []byte(plain), []byte(binding))), nil
 }
 func (v Vault) Open(ctx context.Context, sealed, binding string) (string, error) {
-	const prefix = "sealed:v1:"
-	if len(sealed) < len(prefix) || sealed[:len(prefix)] != prefix {
-		return "", recall.ErrUnavailable
+	open, err := v.OpenBatch(ctx)
+	if err != nil {
+		return "", err
 	}
+	return open(sealed, binding)
+}
+
+// OpenBatch derives the AEAD cipher once for a batch of sealed records while
+// still zeroing raw key material immediately after key-schedule setup.
+func (v Vault) OpenBatch(ctx context.Context) (func(sealed, binding string) (string, error), error) {
 	a, e := v.key(ctx)
 	if e != nil {
-		return "", e
+		return nil, e
 	}
-	raw, e := base64.RawStdEncoding.DecodeString(sealed[len(prefix):])
-	if e != nil || len(raw) < a.NonceSize() {
-		return "", recall.ErrUnavailable
-	}
-	p, e := a.Open(nil, raw[:a.NonceSize()], raw[a.NonceSize():], []byte(binding))
-	if e != nil {
-		return "", recall.ErrUnavailable
-	}
-	return string(p), nil
+	const prefix = "sealed:v1:"
+	return func(sealed, binding string) (string, error) {
+		if len(sealed) < len(prefix) || sealed[:len(prefix)] != prefix {
+			return "", recall.ErrUnavailable
+		}
+		raw, e := base64.RawStdEncoding.DecodeString(sealed[len(prefix):])
+		if e != nil || len(raw) < a.NonceSize() {
+			return "", recall.ErrUnavailable
+		}
+		p, e := a.Open(nil, raw[:a.NonceSize()], raw[a.NonceSize():], []byte(binding))
+		if e != nil {
+			return "", recall.ErrUnavailable
+		}
+		return string(p), nil
+	}, nil
 }

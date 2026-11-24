@@ -416,10 +416,60 @@ func binding(ctx context.Context, tx *sql.Tx, run string) (string, error) {
 	}
 	return revision, nil
 }
+func (s *Store) HookBindings(ctx context.Context, revision string, stage rsiplugin.Stage) ([]rsiplugin.Binding, error) {
+	g, err := s.Graph(ctx, revision)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.DB.QueryContext(ctx, `SELECT json_extract(b.value,'$.instance_id') FROM rsi_graph g, json_each(g.graph_json,'$.bindings') b
+      JOIN rsi_package p ON p.digest=json_extract(b.value,'$.package_digest')
+      WHERE g.revision=? AND EXISTS(SELECT 1 FROM json_each(p.manifest_json,'$.hooks') h
+        WHERE json_extract(h.value,'$.stage')=?)`, revision, string(stage))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	subscribed := map[string]bool{}
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		subscribed[id] = true
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(subscribed) == 0 {
+		return nil, nil
+	}
+	byID := make(map[string]rsiplugin.Binding, len(g.Graph.Bindings))
+	for _, b := range g.Graph.Bindings {
+		if subscribed[b.InstanceID] {
+			byID[b.InstanceID] = b
+		}
+	}
+	out := make([]rsiplugin.Binding, 0, len(byID))
+	for _, id := range g.Order {
+		if b, ok := byID[id]; ok {
+			out = append(out, b)
+		}
+	}
+	return out, nil
+}
+
 func (s *Store) Binding(ctx context.Context, run string) (string, error) {
-	var out string
-	err := s.write(ctx, func(tx *sql.Tx) error { var err error; out, err = binding(ctx, tx, run); return err })
-	return out, err
+	tx, err := s.DB.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+	if s.Fence != nil {
+		if err = s.Fence(ctx, tx); err != nil {
+			return "", err
+		}
+	}
+	return binding(ctx, tx, run)
 }
 
 // CheckGraph is also used by explicitly authorized owner reads without a Run.

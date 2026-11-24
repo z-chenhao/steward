@@ -316,10 +316,12 @@ func (s *subscription) Next(ctx context.Context) (event.Delivery, error) {
 		return nil, event.ErrPoison
 	}
 	if msg.Headers().Get("Content-Type") != event.ContentType {
+		_ = msg.Nak()
 		return nil, event.ErrPoison
 	}
 	e, err := event.Decode(msg.Data())
 	if err != nil {
+		_ = msg.Nak()
 		return nil, event.ErrPoison
 	}
 	return &delivery{message: msg, event: e, timeout: s.timeout}, nil

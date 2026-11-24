@@ -232,6 +232,7 @@ func (s *Store) encryptedIndex(ctx context.Context, scope recall.Scope) (*sql.DB
 		return nil, recall.ErrUnavailable
 	}
 	var docs []sqliteindex.Document
+	var openSealed func(sealed, binding string) (string, error)
 	for rows.Next() {
 		var r memory.Record
 		var at int64
@@ -241,7 +242,14 @@ func (s *Store) encryptedIndex(ctx context.Context, scope recall.Scope) (*sql.DB
 		}
 		text := r.Content
 		if strings.HasPrefix(text, "sealed:v1:") {
-			text, e = s.vault.Open(ctx, text, binding(r))
+			if openSealed == nil {
+				openSealed, e = s.vault.OpenBatch(ctx)
+				if e != nil {
+					rows.Close()
+					return nil, e
+				}
+			}
+			text, e = openSealed(text, binding(r))
 			if e != nil {
 				rows.Close()
 				return nil, e
