@@ -98,7 +98,7 @@ generateSandboxedUi 保留上游六字段及 classic-script 函数/表达式语�
 
 宿主在生成 CSS/HTML 之前安装 `Websandbox.connection.remote.sendPrompt({text})` 与 `openLink({url})` 适配器。只接受确切 iframe Window、opaque origin、固定协议和有界参数。sendPrompt 提出可编辑草稿，用户显式发送；已有草稿和不确定发送的来源不被覆盖。openLink 只提出无凭据 HTTPS 链接，用户在宿主打开。沙箱不能直接访问工具、宿主存储或审批；状态和已声明动作由下述宿主边界处理。
 
-CSP sandbox 与 iframe allow-scripts 保持 opaque origin；禁止父 DOM、宿主存储、外部网络、子框架、表单动作与媒体权限，初始化先禁用 Worker/WebRTC 构造器。直接导航仅返回文字替代。D3 7.9.0、Three.js 0.181.2（含 SVGRenderer）和 Natural Earth 4.1.0 / world-atlas 2.0.2（1:110m）地理数据通过独立构建产物作为可信脚本注入最终沙箱，不进入 Host 主包；不增加模型输入字段或允许 CDN/importmap。构建时收集所有传递依赖的许可证，保留上游归属。原生图表依赖继续固定打包。GEO.countries 提供 GeoJSON、GEO.source 提供可见署名，topojson-client 3.1.0 只负责本地格式转换；离线粗略底图不代表当前边界、道路或实况。每个最终沙箱加载本地库的成本用于换取自由图形组合；无脚本预览不加载库。旧自定义 HTML 与旧组件只保留历史文字替代，不执行历史代码；不删除或重写数据库记录。
+CSP sandbox 与 iframe allow-scripts 保持 opaque origin；禁止父 DOM、宿主存储、外部网络、子框架、表单动作与媒体权限，初始化先禁用 Worker/WebRTC 构造器。直接导航仅返回文字替代。D3 7.9.2、Three.js 0.187.0（含 SVGRenderer）和 Natural Earth 4.1.0 / world-atlas 2.0.2（1:110m）地理数据通过独立构建产物作为可信脚本注入最终沙箱，不进入 Host 主包；不增加模型输入字段或允许 CDN/importmap。构建时收集所有传递依赖的许可证，保留上游归属。原生图表依赖继续固定打包。GEO.countries 提供 GeoJSON、GEO.source 提供可见署名，topojson-client 3.1.0 只负责本地格式转换；离线粗略底图不代表当前边界、道路或实况。每个最终沙箱加载本地库的成本用于换取自由图形组合；无脚本预览不加载库。旧自定义 HTML 与旧组件只保留历史文字替代，不执行历史代码；不删除或重写数据库记录。
 
 展示选择是 Main 的当前策略：比较、趋势、机制、空间关系和参数场景主动考虑视觉，按问题匹配原生组件或生成式图解，简单事实仍用文字。上游由 Runtime 注入多个带类型的渲染工具并由 Jev 逐轮选择；Steward 保留单一 typed show 包装与已有 Main，不加入额外路由模型。两者复用组件/六字段/完成态接口，不等同于复用全部 Agent 或流式执行实现。选择保留现有执行/持久化而不整体引入 CopilotKit/LangGraph，以免产生双重调度、内存检查点或第二个模型入口。流式预览位于冻结最终交付之外，不新增持久协议。
 
