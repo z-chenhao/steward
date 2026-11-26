@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "playwright-core": "1.65.1"
+    "playwright-core": "1.64.1"
   },
   "scripts": {
     "test": "node --test test.mjs readiness.test.mjs browser-upload.test.mjs browser-projection.test.mjs browser-selection.test.mjs cards-view.test.mjs table-view.test.mjs charts-policy.test.mjs chat-scroll.test.mjs capability-save.test.mjs web-answer-recovery.test.mjs web-reader-controls.test.mjs",
