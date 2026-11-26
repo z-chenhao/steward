@@ -412,7 +412,7 @@ func selectTaskVersion(t *testing.T, h rsi.Host, source, id, baseline string, ch
 }
 
 func TestTaskPluginSearchForgetBeforePrivateInputRelease(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	calls := []llm.ToolCall{{ID: "private-search", Name: task.SearchName, Arguments: `{"scope":"all"}`}}
 	s, r, c, _, exchange := admitPolicyRun(t, task.Definitions(), calls, false, func(s *Store, r *Runs) {

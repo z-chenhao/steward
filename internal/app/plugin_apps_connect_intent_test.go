@@ -12,7 +12,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -82,9 +81,7 @@ func TestAppsAccountIntentActualNativeEffectsVersionColdAndPrivateFences(t *test
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	nonce := regexp.MustCompile(`^personal_[a-f0-9]{8}$`)
 	normalizeAlias := func(alias string) string {
 		if nonce.MatchString(alias) {

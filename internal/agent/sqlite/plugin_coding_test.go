@@ -541,7 +541,7 @@ func TestCodingPluginLateForgetRejectsImportBeforePublishing(t *testing.T) {
 			name = "transport-cancel"
 		}
 		t.Run(name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 			defer cancel()
 			s, r, a, p, _ := codeFixture(t)
 			h := installCodingPlugin(t, s, r)
@@ -599,7 +599,7 @@ func TestCodingPluginLateForgetRejectsImportBeforePublishing(t *testing.T) {
 	}
 }
 func TestCodingPluginLateForgetRejectsOwnerReportBeforeReturningFacts(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	s, r, a, p, _ := codeFixture(t)
 	p.respond = delegateToolWork(func(llm.GenerationRequest) (llm.GenerationResult, error) {

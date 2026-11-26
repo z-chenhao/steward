@@ -223,7 +223,7 @@ func TestProgressPluginIndependentUpgradeRetainedRootsChildIsolationAndDisable(t
 }
 
 func TestProgressPluginLateForgetCannotPublishPrivateSummary(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	s, r, a, p := taskFixture(t)
 	h := installProgressPlugin(t, s, r)

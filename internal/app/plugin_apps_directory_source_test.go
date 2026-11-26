@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -52,9 +51,7 @@ func TestAppsDirectoryActualSourcePolicyPagesVersionAndColdLifecycle(t *testing.
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 
 	orderRaw, err := os.ReadFile("../../tests/fixtures/plugins/apps-card-order-v1.json")
 	if err != nil {

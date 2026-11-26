@@ -31,9 +31,7 @@ func audioFixture(t *testing.T) (*Store, *Runs, rsi.Host, string, func([]byte, .
 		cmd.Stdin = bytes.NewReader(input)
 		return cmd.CombinedOutput()
 	}
-	if b, err := exec.Command("go", "build", "-o", filepath.Join(source, "plugin"), "../../../cmd/plugins/audio-transcript").CombinedOutput(); err != nil {
-		t.Fatal(string(b), err)
-	}
+	buildTestBinary(t, "../../../cmd/plugins/audio-transcript", filepath.Join(source, "plugin"))
 	raw, err := os.ReadFile("../../../plugins/audio-transcript/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)

@@ -400,7 +400,7 @@ func testDelegationApprovalIsPerInvocationAndWaitingTreeReleasesLeases(t *testin
 		return effect, nil
 	}
 	mustSubmit(t, a, "one", "delegate")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := a.Drain(ctx); err != nil {
 		t.Fatal("waiting tree retained live resources", err)

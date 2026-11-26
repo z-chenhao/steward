@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -66,9 +65,7 @@ func TestMemoryInspectorCorrectionSubmittedInputRestrictsRealMutations(t *testin
 	a.Registry = registry
 	r.registry = registry
 	source := t.TempDir()
-	if out, err := exec.Command("go", "build", "-o", filepath.Join(source, "plugin"), "../../../cmd/plugins/memory-inspector").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../../cmd/plugins/memory-inspector", filepath.Join(source, "plugin"))
 	sealMemoryInspectorTestPackage(t, source)
 	cases, err := builtin.MemoryInspectorCases("1.1.1", source)
 	if err != nil {

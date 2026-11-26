@@ -57,9 +57,7 @@ func testAppsSettingsViewLifecycle(t *testing.T, browser bool) {
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch {

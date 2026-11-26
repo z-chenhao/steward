@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os/exec"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -38,9 +37,7 @@ func TestAppsSessionFlowExactPreServiceColdInflightAndOptInBoundary(t *testing.T
 	defer func() { _ = a.Close() }()
 	a.eventsRequired.Store(false)
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	var mu sync.Mutex
 	calls := 0
 	var entered, release chan struct{}

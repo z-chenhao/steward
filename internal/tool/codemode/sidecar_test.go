@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"github.com/z-chenhao/assistant/internal/tool"
 	"os"
 	"os/exec"
@@ -145,5 +146,39 @@ func TestSidecarCancelStopsCPUExecution(t *testing.T) {
 		}
 	case <-ctx.Done():
 		t.Fatal("cancel did not reap runtime")
+	}
+}
+
+func TestSidecarDeathBeforeEventAckReturnsProtocolNotEventCommit(t *testing.T) {
+	node, err := exec.LookPath("node")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := `import {createInterface} from 'node:readline';
+const send = x => process.stdout.write(JSON.stringify({jsonrpc:'2.0',...x})+'\n');
+createInterface({input:process.stdin}).on('line',line=>{
+ const m=JSON.parse(line);
+ if(m.method==='runtime.initialize')send({id:m.id,result:m.params});
+ if(m.method==='execution.start'){
+  const request=m.params;
+  const event={protocolVersion:'1',runtimeId:'steward-js-v2',executionId:request.executionId,parentInvocationId:request.parentInvocationId,runId:request.runId,claimToken:request.claimToken,executionEpoch:request.executionEpoch,sequence:1,occurredAt:'2026-10-17T00:00:00Z',kind:'execution_suspended',outcome:{kind:'suspended',output:[],pendingCallIds:['1']}};
+  send({id:'event',method:'execution.event',params:event});
+  process.exit(0);
+ }
+});`
+	path := filepath.Join(t.TempDir(), "peer.mjs")
+	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
+		t.Fatal(err)
+	}
+	runtime := &Sidecar{Command: node, Script: path}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err = runtime.Start(ctx, requestFixture("return 1;"), sinkFunc(func(ctx context.Context, method string, m Message) (Reply, error) {
+		// Give the peer time to exit and close stdin before Start writes the ack.
+		time.Sleep(150 * time.Millisecond)
+		return Reply{}, nil
+	}))
+	if !errors.Is(err, ErrProtocol) || errors.Is(err, ErrEventCommit) {
+		t.Fatalf("expected ErrProtocol (not ErrEventCommit) on broken pipe after commit, got %v", err)
 	}
 }

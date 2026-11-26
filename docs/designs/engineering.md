@@ -200,20 +200,25 @@ are test levels; using CI does not turn a unit test into an end-to-end test.
 
 [CI](../../.github/workflows/ci.yml) preserves `Ubuntu checks` as the sole required
 aggregate status. A scope job selects documentation-only checks or the full code
-path. Code runs in thirteen isolated Ubuntu lanes, described by the private
-[CI partition](../../tests/system/ci.py):
+path. Code runs in isolated Ubuntu lanes ordered longest-first to minimize queue
+delay on the critical path, described by the private [CI partition](../../tests/system/ci.py):
 
-- Six software lanes retain all `make test lint` work, `make test-prompts` and
-  connected-app contracts: Go, provider RPC, frontend/JavaScript,
-  browser/infrastructure, connected apps, and lint.
-- Five system lanes cover the eleven core gates without duplicate scenarios. Each runner
-  builds its own binary, records its hash and source state, and owns disposable
-  fixtures. Channels partitions its independent Web and transport scenarios
-  across two runners; the ordinary local gate still runs both groups.
-- One lane retains the complete memory race inventory and the
-  `memory-maintenance` / `recall` system gates.
-- One lane retains Web Access contracts, focused Main/UI/credential races, task
-  coding isolation/recovery, Code Mode discovery and Main responsiveness.
+- Software lanes retain all `make test lint` work, `make test-prompts`,
+  `make test-tool-discovery` and `make test-connected-apps` (split across
+  `connected-apps` and `connected-apps-app`), plus `browser-infra` and
+  `browser-apps` partitioning `make test-browser`. JS-only lanes (`frontend`,
+  `provider`) skip Go toolchain/cache setup and Linux sandbox packages so they
+  cannot publish an empty Go cache for Go lanes.
+- System lanes cover the core gates without duplicate scenarios, plus dedicated
+  plugin and race lanes (`memory-context` / `memory-race` sharding the memory
+  SQLite race inventory 1/2 and 2/2; `web-access-race` / `web-plugins`
+  partitioning `make test-web-access`; `capabilities-race`; `artifact-plugins`;
+  `mcp-plugins`; `github-plugins`; `computer-plugins`; `connected-apps-plugins`;
+  `tool-discovery-plugins`; `coding-development`). Each runner builds its own
+  binary, records its hash and source state, and owns disposable fixtures and
+  a per-step disposable test-binary cache (`STEWARD_TEST_BUILD_CACHE_DIR`).
+  Channels partitions its independent Web and transport scenarios across two
+  runners; the ordinary local gate still runs both groups.
 
 The local Make targets remain sequential and unchanged. Jobs share dependency
 caches, not mutable build outputs, node_modules or application state. Native
@@ -280,9 +285,13 @@ validation rather than treated as guaranteed by job timeouts.
 ### Extended regression
 
 [Extended regression](../../.github/workflows/regression.yml) runs weekly and via
-manual dispatch. It executes all retained deterministic system gates, then the
-complete Go race inventory. A separate macOS job checks native CLI/startup, the credential adapter and offline VM contracts; actual Guest integration remains explicit live validation. It uploads failures as well as passing results and
-has a 60-minute outer limit. A failure remains a defect to investigate; it cannot
+manual dispatch. It executes extended deterministic system flows (`make test-full`),
+the complete Go package race inventory (`race.py --part packages`), and the
+sharded SQLite race inventory (`race.py --part sqlite --shard 1/2` and `2/2`) in
+independent parallel jobs, alongside a separate macOS job checking native
+CLI/startup, the credential adapter and offline VM contracts; actual Guest
+integration remains explicit live validation. Each job uploads failures as well
+as passing results and has a 60-minute outer limit. A failure remains a defect to investigate; it cannot
 be waived into a release pass. Run it before releases and broad protocol/state
 changes, or use the corresponding focused gates during development.
 

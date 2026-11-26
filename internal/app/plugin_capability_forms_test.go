@@ -31,9 +31,7 @@ func TestCapabilityFormsActualUpgradeRollbackStopAndCold(t *testing.T) {
 	}
 	defer func() { _ = a.Close() }()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-		t.Fatal(e, string(out))
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host := a.Plugins()
 	host.Catalog.Launcher = carrier
 	in := contract.Request{Operation: "prepare", ID: "computer", WithView: true, Values: []contract.Field{}}

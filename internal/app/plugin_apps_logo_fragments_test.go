@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -26,9 +25,7 @@ func (f appsLogoHTTPTransport) RoundTrip(r *http.Request) (*http.Response, error
 func TestAppsLogoActualAccountFragmentsKeepOriginalVersionAndAcceptedAction(t *testing.T) {
 	ctx := context.Background()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	for _, format := range []string{"json", "native", "json-quarantine"} {
 		t.Run(format, func(t *testing.T) {
 			root := t.TempDir()

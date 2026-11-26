@@ -9,16 +9,13 @@ import (
 	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 )
 
 func TestAppsAccountInventoryAllRetainedPreServiceProfilesKeepOriginalColdRead(t *testing.T) {
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-		t.Fatal(string(out), e)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	raw, e := os.ReadFile("../rsi/builtin/apps-cases.json")
 	if e != nil {
 		t.Fatal(e)

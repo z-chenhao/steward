@@ -28,6 +28,24 @@ func TestPythonDiscoveryIgnoresCallerEnvironment(t *testing.T) {
 			t.Fatalf("accepted unsupported interpreter %q", path)
 		}
 	}
+	for _, valid := range []string{
+		"/Applications/Xcode.app/Contents/Developer",
+		"/Applications/Xcode_16.4.app/Contents/Developer",
+	} {
+		if !isXcodeDeveloperRoot(valid) {
+			t.Fatalf("rejected valid Xcode developer root %q", valid)
+		}
+	}
+	for _, invalid := range []string{
+		"/Applications/Evil.app/Contents/Developer",
+		"/Applications/Xcode.app/sub/Contents/Developer",
+		"/tmp/Xcode.app/Contents/Developer",
+		"/Applications/Xcode_16.4.app/../Evil.app/Contents/Developer",
+	} {
+		if isXcodeDeveloperRoot(invalid) {
+			t.Fatalf("accepted untrusted Xcode developer root %q", invalid)
+		}
+	}
 }
 
 func TestNativePythonSignalsOnlyItsOwnSandbox(t *testing.T) {

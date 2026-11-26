@@ -136,9 +136,7 @@ func TestAppsAccountInventoryActualIndependentVersionsFrozenAndDisable(t *testin
 	defer func() { _ = a.Close() }()
 	a.eventsRequired.Store(false)
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-		t.Fatal(string(out), e)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host := a.Plugins()
 	host.Catalog.Launcher = carrier
 	first, firstPolicy := prepareAccountInventoryVersion(t, ctx, host, "1.8.0")

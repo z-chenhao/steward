@@ -15,7 +15,6 @@ import (
 	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -36,9 +35,7 @@ func TestAppsAccountInventoryActualLargeWindowsAndInterWindowFence(t *testing.T)
 	defer a.Close()
 	a.eventsRequired.Store(false)
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-		t.Fatal(string(out), e)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host := a.Plugins()
 	host.Catalog.Launcher = carrier
 	graph, policy := prepareAccountInventoryVersion(t, ctx, host, "1.8.0")

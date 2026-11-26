@@ -10,7 +10,6 @@ import (
 	"github.com/z-chenhao/assistant/internal/rsi"
 	"github.com/z-chenhao/assistant/internal/rsi/builtin"
 	"net/http/httptest"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -34,9 +33,7 @@ func TestAppsAccountInventoryActualDefaultPrivateStateAndCold(t *testing.T) {
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-		t.Fatal(string(out), e)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host := a.Plugins()
 	host.Catalog.Launcher = carrier
 	bind := func() {

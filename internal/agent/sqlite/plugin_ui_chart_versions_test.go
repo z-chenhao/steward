@@ -255,6 +255,8 @@ func TestUIChartChildAdmissionAfterUpgradeKeepsParentGraphAndService(t *testing.
 	}
 	target, _ := installChartVersion122(t, h, original.PackageDigest)
 	c, run, gen, toolCalls := childAdmission(t, s, r, a, p, `{"task":"child explicit input"}`)
+	stopRenewal := keepRunClaim(r, c)
+	defer stopRenewal()
 	released := false
 	defer func() {
 		if !released {

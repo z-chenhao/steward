@@ -23,7 +23,7 @@ type Widget struct {
 }
 
 func ShowDefinition() tool.Definition {
-	return tool.Definition{Host: true, Spec: tool.Spec{Name: ShowName, Version: 1, Permission: "ui_present", ReplayPolicy: "safe", ResourceHash: "openintelligentui-v4", InputSchema: uidocv1.ShowSchema, ModelInputSchema: uidocv1.ModelShowSchema, OutputBytes: 4096, Description: "Show visuals; read intelligent_ui. text precedes a visual; replace corrects a staged ui_ref. Staged is success."}}
+	return tool.Definition{Host: true, Spec: tool.Spec{Name: ShowName, Version: 1, Permission: "ui_present", ReplayPolicy: "safe", ResourceHash: "openintelligentui-v4", InputSchema: uidocv1.ShowSchema, ModelInputSchema: uidocv1.ModelShowSchema, TimeoutMS: 30000, OutputBytes: 4096, Description: "Show visuals; read intelligent_ui. text precedes a visual; replace corrects a staged ui_ref. Staged is success."}}
 }
 func ParseWidget(raw string) (Widget, bool) {
 	document, ok := uidocv1.Parse(raw)

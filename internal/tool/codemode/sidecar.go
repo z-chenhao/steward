@@ -189,30 +189,35 @@ func (s *Sidecar) Start(ctx context.Context, req ExecutionRequest, sink Executio
 			}
 			terminal = event.Outcome
 		}
-		respond := func(msg rpc, event Message) error {
+		respond := func(msg rpc, event Message) (handleErr, sendErr error) {
 			reply, err := sink.Handle(execCtx, msg.Method, event)
 			response := map[string]any{"jsonrpc": "2.0", "id": msg.ID, "result": reply}
 			if err != nil {
 				delete(response, "result")
 				response["error"] = map[string]any{"code": -32000, "message": "PROVIDER_UNAVAILABLE"}
 			}
-			if sendErr := p.send(response); sendErr != nil {
+			if sErr := p.send(response); sErr != nil {
 				fallback := map[string]any{"jsonrpc": "2.0", "id": msg.ID, "error": map[string]any{"code": -32000, "message": "RESOURCE_LIMIT"}}
 				_ = p.send(fallback)
-				if err == nil {
-					err = sendErr
-				}
+				return err, sErr
 			}
-			return err
+			return err, nil
 		}
 		switch msg.Method {
 		case "host.invoke":
 			wg.Add(1)
-			go func(m rpc, e Message) { defer wg.Done(); _ = respond(m, e) }(msg, event)
+			go func(m rpc, e Message) { defer wg.Done(); _, _ = respond(m, e) }(msg, event)
 		case "execution.event", "host.discover", "host.store_get", "host.store_put":
-			err := respond(msg, event)
-			if msg.Method == "execution.event" && err != nil {
-				return Outcome{}, ErrEventCommit
+			handleErr, sendErr := respond(msg, event)
+			if msg.Method == "execution.event" {
+				if handleErr != nil {
+					return Outcome{}, ErrEventCommit
+				}
+				if sendErr != nil {
+					return Outcome{}, ErrProtocol
+				}
+			} else if sendErr != nil {
+				return Outcome{}, ErrProtocol
 			}
 		default:
 			return Outcome{}, ErrProtocol

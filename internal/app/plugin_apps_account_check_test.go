@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -59,9 +58,7 @@ func TestAppsAccountCheckActualOriginalSourceVersionColdAndFences(t *testing.T) 
 	defer func() { _ = a.Close() }()
 	a.eventsRequired.Store(false)
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	var mu sync.Mutex
 	var active accountCheckFixture
 	seeding := false

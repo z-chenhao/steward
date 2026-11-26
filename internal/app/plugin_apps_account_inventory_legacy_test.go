@@ -9,7 +9,6 @@ import (
 	"github.com/z-chenhao/assistant/internal/llm/memory"
 	directory "github.com/z-chenhao/assistant/internal/plugin/appsdirectory/contract"
 	"net/http/httptest"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -43,9 +42,7 @@ func TestAppsAccountInventoryOriginalProfileRollbackAndFirstInstall(t *testing.T
 				t.Fatal(e)
 			}
 			carrier := filepath.Join(t.TempDir(), "steward")
-			if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-				t.Fatal(string(out), e)
-			}
+			buildTestBinary(t, "../../cmd/steward", carrier)
 			host := a.Plugins()
 			host.Catalog.Launcher = carrier
 			bind := func() {

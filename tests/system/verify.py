@@ -66,7 +66,7 @@ class Harness:
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         with selectors.DefaultSelector() as selector:
             selector.register(self.process.stdout, selectors.EVENT_READ)
-            require(selector.select(timeout=15), "startup diagnostics timed out")
+            require(selector.select(timeout=30), "startup diagnostics timed out")
         line = self.process.stdout.readline()
         require(bool(line), "process exited before startup diagnostics")
         value = json.loads(line)

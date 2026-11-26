@@ -28,8 +28,8 @@ func installUIRuntimeAtTableBoundary(t *testing.T, s *Store, r *Runs, historical
 func installUIRuntimeAtFormBoundary(t *testing.T, s *Store, r *Runs, historical, formViews bool, charts ...bool) rsi.Host {
 	t.Helper()
 	source := t.TempDir()
-	args := []string{"build", "-o", filepath.Join(source, "plugin")}
 	if historical {
+		args := []string{"build", "-o", filepath.Join(source, "plugin")}
 		path, err := filepath.Abs("../../plugin/intelligentui/plugin.go")
 		if err != nil {
 			t.Fatal(err)
@@ -54,11 +54,12 @@ func installUIRuntimeAtFormBoundary(t *testing.T, s *Store, r *Runs, historical,
 		if err = os.WriteFile(overlayPath, overlay, 0600); err != nil {
 			t.Fatal(err)
 		}
-		args = append(args, "-overlay", overlayPath)
-	}
-	args = append(args, "../../../cmd/plugins/intelligent-ui")
-	if out, err := exec.Command("go", args...).CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
+		args = append(args, "-overlay", overlayPath, "../../../cmd/plugins/intelligent-ui")
+		if out, err := exec.Command("go", args...).CombinedOutput(); err != nil {
+			t.Fatal(string(out), err)
+		}
+	} else {
+		buildTestBinary(t, "../../../cmd/plugins/intelligent-ui", filepath.Join(source, "plugin"))
 	}
 	if err := os.Mkdir(filepath.Join(source, "view"), 0700); err != nil {
 		t.Fatal(err)

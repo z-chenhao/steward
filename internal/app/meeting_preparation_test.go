@@ -33,7 +33,12 @@ func TestMain(m *testing.M) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	os.Exit(m.Run())
+	code := m.Run()
+	if err := cleanupTestBinaryCache(); err != nil {
+		fmt.Fprintln(os.Stderr, "remove fixture binaries:", err)
+		code = 1
+	}
+	os.Exit(code)
 }
 
 func TestMeetingPreparationDSTWindow(t *testing.T) {

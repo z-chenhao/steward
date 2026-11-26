@@ -9,7 +9,6 @@ import (
 	"github.com/z-chenhao/assistant/internal/rsi"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -38,9 +37,7 @@ func TestAppsCardViewActualResourceVersionsRefsColdAndUnavailable(t *testing.T) 
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	var host rsi.Host
 	var server *web.Server
 	reads := 0
@@ -224,9 +221,7 @@ func TestAppsCardViewOnlyNeverRestoresWholeNative(t *testing.T) {
 	}
 	host := a.Plugins()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host.Catalog.Launcher = carrier
 	revision, policy := prepareInterface(t, ctx, host, "2.8.0")
 	activateInterface(t, ctx, host, "", revision, policy, "card-only")

@@ -97,9 +97,7 @@ func TestWebWorkbenchActualHTTPIndependentCopyRollbackRetainedAndCold(t *testing
 	}
 	defer func() { a.Close() }()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	h := a.Plugins()
 	h.Catalog.Launcher = carrier
 	if _, err = a.BindChannel(ctx, "web", web.Subject, web.Destination, true, 0); err != nil {

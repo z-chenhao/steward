@@ -17,6 +17,30 @@ import (
 const developerRoot = "/Library/Developer"
 const xcodeDeveloperRoot = "/Applications/Xcode.app/Contents/Developer"
 
+// trustedDeveloperRoots returns the canonical Apple developer directories
+// permitted to supply Python 3 and be readable inside Seatbelt. On hosts where
+// /Applications/Xcode.app is a symlink (e.g. to /Applications/Xcode_16.x.app),
+// include its resolved Xcode bundle developer root as well.
+func trustedDeveloperRoots() []string {
+	roots := []string{developerRoot, xcodeDeveloperRoot}
+	if resolved, err := filepath.EvalSymlinks(xcodeDeveloperRoot); err == nil && isXcodeDeveloperRoot(resolved) && resolved != xcodeDeveloperRoot {
+		roots = append(roots, resolved)
+	}
+	return roots
+}
+
+func isXcodeDeveloperRoot(path string) bool {
+	if !strings.HasPrefix(path, "/Applications/Xcode") || !strings.HasSuffix(path, "/Contents/Developer") {
+		return false
+	}
+	if strings.ContainsAny(path, "\r\n\x00") || filepath.Clean(path) != path {
+		return false
+	}
+	rel := strings.TrimPrefix(path, "/Applications/")
+	bundle := strings.TrimSuffix(rel, "/Contents/Developer")
+	return strings.HasPrefix(bundle, "Xcode") && strings.HasSuffix(bundle, ".app") && !strings.Contains(bundle, "/")
+}
+
 func Check() error { _, err := os.Stat("/usr/bin/sandbox-exec"); return err }
 
 // Python3 resolves the Xcode launcher before constructing the sandbox. Only
@@ -36,12 +60,26 @@ func Python3(ctx context.Context) (string, error) {
 }
 
 func developerPython(path string) (string, error) {
+	return developerPythonWithin(path, trustedDeveloperRoots())
+}
+
+func developerPythonWithin(path string, roots []string) (string, error) {
 	unavailable := errors.New("system Python 3 is outside supported developer roots or is not executable")
 	if !filepath.IsAbs(path) || strings.ContainsAny(path, "\r\n\x00") {
 		return "", unavailable
 	}
 	resolved, err := filepath.EvalSymlinks(path)
-	if err != nil || !(strings.HasPrefix(resolved, developerRoot+"/") || strings.HasPrefix(resolved, xcodeDeveloperRoot+"/")) {
+	if err != nil {
+		return "", unavailable
+	}
+	trusted := false
+	for _, root := range roots {
+		if strings.HasPrefix(resolved, root+"/") {
+			trusted = true
+			break
+		}
+	}
+	if !trusted {
 		return "", unavailable
 	}
 	info, err := os.Stat(resolved)
@@ -67,7 +105,11 @@ func PythonCommand(ctx context.Context, args []string, readRoots []string, root 
 
 func command(ctx context.Context, executable string, args []string, readRoots []string, writeRoot string, childSignals bool) (*exec.Cmd, error) {
 	q := strconv.Quote
-	profile := `(version 1)(deny default)(allow process-fork)(allow process-exec)(allow sysctl-read)(allow file-read-metadata)(allow file-read* (literal "/") (subpath "/usr") (subpath "/bin") (subpath "/System") (subpath ` + q(developerRoot) + `) (subpath ` + q(xcodeDeveloperRoot) + `) (literal ` + q(executable) + `) (subpath ` + q(writeRoot) + `) (literal "/dev/null") (literal "/dev/urandom")`
+	profile := `(version 1)(deny default)(allow process-fork)(allow process-exec)(allow sysctl-read)(allow file-read-metadata)(allow file-read* (literal "/") (subpath "/usr") (subpath "/bin") (subpath "/System")`
+	for _, root := range trustedDeveloperRoots() {
+		profile += `(subpath ` + q(root) + `)`
+	}
+	profile += ` (literal ` + q(executable) + `) (subpath ` + q(writeRoot) + `) (literal "/dev/null") (literal "/dev/urandom")`
 	for _, root := range readRoots {
 		profile += `(subpath ` + q(root) + `)`
 	}

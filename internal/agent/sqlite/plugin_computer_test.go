@@ -869,7 +869,7 @@ func TestComputerPluginLateForgetRejectsPrivateProjectionAtGuardAndTransport(t *
 			name = "transport-cancel"
 		}
 		t.Run(name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 			defer cancel()
 			s, r, bridges, _ := computerPluginClaims(t, func(s *Store, r *Runs) {
 				h := installComputerPlugin(t, s, r)

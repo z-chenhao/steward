@@ -407,3 +407,69 @@ class AppsRaceInventoryTests(unittest.TestCase):
                 for command in commands:
                     for flag in ('-race', '-count=1', '-timeout=15m'):
                         self.assertIn(flag, command)
+
+    def test_sharding_partitions_all_roots_exactly_once_and_rejects_invalid_specs(self):
+        for bad in ('', '0/2', '3/2', '1/0', 'a/b', '1/2/3'):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                race.parse_shard(bad)
+        self.assertEqual(race.parse_shard('1/2'), (1, 2))
+        self.assertEqual(race.parse_shard('2/2'), (2, 2))
+        with self.assertRaises(ValueError):
+            race.main('packages', '1/2')
+        with self.assertRaises(ValueError):
+            race.main('apps', '1/2')
+
+        names = [*race.SERIAL_SQLITE, *[f'TestMemoryItem{i:02}' for i in range(17)]]
+        costs = {name: float(i + 1) for i, name in enumerate(names)}
+        for total in (2, 3):
+            with self.subTest(total=total):
+                combined = []
+                for idx in range(1, total + 1):
+                    with tempfile.TemporaryDirectory() as directory:
+                        def execute(command, env, output, stopped, metrics):
+                            metrics.update(owned_group_drained=True, cpu_seconds=.01)
+                            if '-list' in command:
+                                output.write_text('\n'.join(names) + '\nok\t' + race.SQLITE + '\t0.01s\n')
+                            else:
+                                selected = command[command.index('-run') + 1][2:-2].split('|')
+                                output.write_text('\n'.join(map(json.dumps, events(selected))))
+                            return 0
+                        with patch.object(race, 'run_command', side_effect=execute), \
+                             patch.object(race, 'cpu_budget', return_value=4), \
+                             patch.object(race, 'timing_hints', return_value=costs):
+                            res = race.run_remainder([race.SQLITE], Path(directory), threading.Event(), shard=(idx, total))
+                        self.assertEqual(res['returncode'], 0)
+                        self.assertTrue(res['selection_complete'])
+                        self.assertEqual(res['shard'], f'{idx}/{total}')
+                        combined.extend(res['expected_tests'])
+                self.assertEqual(Counter(combined), Counter(names))
+
+    def test_bounded_batches_spread_heavy_tests_across_processes(self):
+        heavy = [f'TestMemoryHeavy{i:02}' for i in range(8)]
+        light = [f'TestMemoryLight{i:02}' for i in range(32)]
+        names = [*race.SERIAL_SQLITE, *heavy, *light]
+        costs = {n: 100.0 for n in heavy}
+        costs.update({n: 2.0 for n in light})
+        batches = []
+
+        def execute(command, env, output, stopped, metrics):
+            metrics.update(owned_group_drained=True, cpu_seconds=.01)
+            if '-list' in command:
+                output.write_text('\n'.join(names) + '\nok\t' + race.SQLITE + '\t0.01s\n')
+            else:
+                selected = command[command.index('-run') + 1][2:-2].split('|')
+                batches.append(selected)
+                output.write_text('\n'.join(map(json.dumps, events(selected))))
+            return 0
+
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(race, 'run_command', side_effect=execute), \
+             patch.object(race, 'cpu_budget', return_value=4), \
+             patch.object(race, 'timing_hints', return_value=costs):
+            res = race.run_remainder([race.SQLITE], Path(directory), threading.Event(), memory=True)
+        self.assertEqual(res['returncode'], 0)
+        self.assertTrue(res['selection_complete'])
+        self.assertEqual(len(batches), 5)
+        for batch in batches:
+            self.assertLessEqual(len(batch), race.SQLITE_BATCH_SIZE)
+            self.assertLessEqual(sum(costs[n] for n in batch), 220.0)
