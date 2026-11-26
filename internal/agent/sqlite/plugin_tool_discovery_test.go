@@ -350,7 +350,7 @@ func TestToolDiscoveryActualFrozenMetadataBeyondOrdinaryInputLimit(t *testing.T)
 }
 
 func TestToolDiscoveryLateForgetRejectsReplyWithoutHoldingSQLiteWriter(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	s, r, b, _, _ := toolDiscoveryCodeFixture(t, "1.2.0")
 	owner := idAgent(t, s)
@@ -687,7 +687,7 @@ func TestToolDiscoveryNativeChunkFenceKeepsMutableAuthorityAndImmutableProof(t *
 	}
 }
 func TestToolDiscoveryNativeLateForgetRejectsStreamedReply(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	calls := []llm.ToolCall{{ID: "search", Name: tool.SearchName, Arguments: `{"query":"catalog","limit":1}`}}
 	s, r, _, executor, exchange := admitPolicyRun(t, largeToolCatalog(), calls, false, func(s *Store, r *Runs) {

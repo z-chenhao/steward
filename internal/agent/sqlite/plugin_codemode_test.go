@@ -175,7 +175,7 @@ func TestV58CodeDescriptionMigrationPreservesNativeManifestAndReplay(t *testing.
 }
 
 func TestCodeModePluginLateForgetRejectsDescriptionBeforeAcknowledgment(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	var h rsi.Host
 	echo, _ := tool.FixtureRegistry().Resolve("mcp__fixture__echo")

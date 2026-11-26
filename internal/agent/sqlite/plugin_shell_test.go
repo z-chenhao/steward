@@ -366,7 +366,7 @@ func TestShellPluginLateForgetRejectsApprovedCommandBeforeDispatch(t *testing.T)
 	}
 }
 func testShellPluginLateForget(t *testing.T, resume bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {

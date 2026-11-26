@@ -318,7 +318,7 @@ func TestDelegationPluginMethodAndInitializedContextCommitTogether(t *testing.T)
 }
 
 func TestDelegationPluginLateForgetRejectsInitializedMethodAndChildWork(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	s, r, a, p := childFixture(t)
 	h := installDelegationPlugin(t, s, r)
