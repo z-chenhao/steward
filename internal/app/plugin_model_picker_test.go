@@ -30,9 +30,7 @@ func TestModelPickerActualIndependentUpgradePinnedReaderRollbackAndCold(t *testi
 	}
 	defer func() { a.Close() }()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, e := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); e != nil {
-		t.Fatal(string(out), e)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host := a.Plugins()
 	host.Catalog.Launcher = carrier
 	if err = builtin.EnsureDefault(ctx, host, builtin.Directories{DOCX: defaultFeaturePackage(t, "docx-reader", nil), ModelConnections: defaultFeaturePackage(t, "model-connections", nil)}); err != nil {

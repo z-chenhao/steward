@@ -49,9 +49,7 @@ func TestTaskMailboxRealForwardingCLIAndRevocation(t *testing.T) {
 		}
 		return out
 	}
-	if b, err := exec.Command("go", "build", "-o", filepath.Join(source, "plugin"), "../../../cmd/plugins/task-mail").CombinedOutput(); err != nil {
-		t.Fatal(string(b), err)
-	}
+	buildTestBinary(t, "../../../cmd/plugins/task-mail", filepath.Join(source, "plugin"))
 	raw, err := os.ReadFile("../../../plugins/task-mail/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)

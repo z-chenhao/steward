@@ -81,9 +81,7 @@ func runAppsInterfaceBrowsers(t *testing.T, versions []string, script, evidenceV
 	}
 	ctx := context.Background()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	for _, version := range versions {
 		t.Run(version, func(t *testing.T) {
 			root := t.TempDir()

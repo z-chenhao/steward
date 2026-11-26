@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -61,9 +60,7 @@ func testAppsViewResourceVersions(t *testing.T, pages bool) {
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	const search = "mail & jobs"
 	const category = "communication"
 	const next = `next opaque /<&" 中文`

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -42,9 +41,7 @@ func TestAppsLocalizationActualOwnedTextV1RefsColdFrozenEffectsAndNoFallback(t *
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	var host rsi.Host
 	var server *web.Server
 	var locales []string
@@ -204,9 +201,7 @@ func TestAppsLocalizationCompositionOnlyNeverRestoresNative(t *testing.T) {
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	host := a.Plugins()
 	host.Catalog.Launcher = carrier
 	revision, policy := prepareInterface(t, ctx, host, "2.4.0")

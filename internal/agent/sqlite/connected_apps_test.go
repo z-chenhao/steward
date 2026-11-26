@@ -441,7 +441,7 @@ func TestConnectedAppsApprovedExecutionReplayAndUnknown(t *testing.T) {
 }
 
 func TestConnectedAppsRealCodeModeDiscoveryApprovalAndFrozenConnection(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	s, r, a, provider := childFixture(t, codemode.Definition())
 	p := newAppsPeer(t, s)

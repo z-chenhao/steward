@@ -10,34 +10,62 @@ from race import CAPABILITIES_SQLITE_PATTERN
 from verify_channels import CHANNEL_GROUPS
 
 # Keep the public local Make targets intact. CI partitions their existing work
-# across isolated runners rather than rebuilding a shared, mutable worktree.
+# across isolated runners (ordered longest-first so runner capacity favors the
+# critical path) rather than rebuilding a shared, mutable worktree.
 SOFTWARE = {
-    'go': 'make test-go-core',
     'go-domains': 'make test-go-domains',
-    'prompts': 'make test-prompts',
+    'go': 'make test-go-core',
+    'connected-apps-app': 'make test-connected-apps-app',
+    'browser-apps': 'make test-browser-apps',
     'tool-discovery': 'make test-tool-discovery',
-    'connected-apps': 'make test-connected-apps',
+    'prompts': 'make test-prompts',
+    'connected-apps': 'make test-connected-apps-core',
+    'browser-infra': 'make test-browser-web test-infra',
     'provider': 'npm test --prefix provider-bridge',
-    'frontend': 'npm run check --prefix web\nnpm test --prefix web\nnpm test --prefix runtime/javascript',
-    'browser-infra': 'make test-browser test-infra',
     'lint': 'make lint',
+    'frontend': 'npm run check --prefix web\nnpm test --prefix web\nnpm test --prefix runtime/javascript',
 }
 SYSTEM = {
-    'main-tasks': ('main', 'tasks', 'children'),
-    'tools-provider': ('tools', 'artifacts', 'code-recovery', 'local-provider', 'account', 'model-menu-plugins', 'feishu-plugins'),
     'startup-ui': ('startup', 'intelligent-ui', 'ui-interactions', 'capability-form-plugins'),
+    'tools-provider': ('tools', 'artifacts', 'code-recovery', 'local-provider', 'account', 'model-menu-plugins', 'feishu-plugins'),
+    'main-tasks': ('main', 'tasks', 'children'),
 }
 MEMORY_GATES = ('memory-maintenance', 'recall')
 CAPABILITIES = ('task-code-environments', 'task-code-recovery', 'task-code-exact-report', 'tool-loading', 'main-business')
 RACE = "go test -race -p 1 ./internal/agent ./internal/coding ./internal/computer/projectcontainer ./internal/config/setup ./internal/interaction/web ./internal/interaction/feishu ./internal/llm/bridge ./internal/app ./internal/llm/secret ./internal/tui -run '" + CAPABILITIES_SQLITE_PATTERN + "' -count=1"
+JS_ONLY_LANES = ('frontend', 'provider')
 
 
 def plan(kind):
-    names = SOFTWARE if kind == 'software' else (*SYSTEM, *('channels-' + group for group in CHANNEL_GROUPS), 'capabilities-race', 'memory-context', 'computer-plugins', 'web-plugins', 'mcp-plugins', 'connected-apps-plugins', 'tool-discovery-plugins', 'github-plugins', 'artifact-plugins', 'coding-development')
-    return dict(include=[dict(lane=name,
+    if kind == 'software':
+        names = tuple(SOFTWARE)
+    else:
+        channel_lanes = tuple('channels-' + group for group in sorted(CHANNEL_GROUPS, key=lambda g: g != 'web'))
+        names = (
+            'memory-context',
+            'memory-race',
+            'artifact-plugins',
+            'capabilities-race',
+            'web-plugins',
+            'web-access-race',
+            'mcp-plugins',
+            'github-plugins',
+            'connected-apps-plugins',
+            'startup-ui',
+            'coding-development',
+            'tools-provider',
+            *channel_lanes,
+            'main-tasks',
+            'computer-plugins',
+            'tool-discovery-plugins',
+        )
+    return dict(include=[dict(
+        lane=name,
+        go=str(name not in JS_ONLY_LANES).lower(),
+        sandbox=str(name not in JS_ONLY_LANES).lower(),
         frontend=str(name in ('frontend', 'browser-infra', 'lint')).lower(),
-        browser=str(name in ('browser-infra', 'lint', 'tools-provider', 'startup-ui', 'connected-apps-plugins') or name.startswith('channels-')).lower())
-        for name in names])
+        browser=str(name in ('browser-infra', 'browser-apps', 'lint', 'tools-provider', 'startup-ui', 'connected-apps-plugins') or name.startswith('channels-')).lower(),
+    ) for name in names])
 
 
 def command(lane):
@@ -51,8 +79,10 @@ def command(lane):
         return f'make build\npython3 tests/system/verify_channels.py --group {group} --binary bin/steward --evidence evidence/{lane}/report.json'
     if lane == 'computer-plugins':
         return 'make build\npython3 tests/system/runner.py --gate computer-plugins --binary bin/steward --evidence evidence/e2e-computer-plugins'
+    if lane == 'web-access-race':
+        return 'make test-web-access-core'
     if lane == 'web-plugins':
-        return 'make build test-web-access\npython3 tests/system/runner.py --gate web-plugins --binary bin/steward --evidence evidence/e2e-web-plugins'
+        return 'make build test-web-access-extract\npython3 tests/system/runner.py --gate web-plugins --binary bin/steward --evidence evidence/e2e-web-plugins'
     if lane == 'mcp-plugins':
         return ("go test -race -p 1 -timeout=15m ./internal/tool/mcp/... ./internal/plugin/mcpbridge/... -run '^Test(MCP|ToolUnknown|ArtifactQueryRecovery|TaskControlCancelTreeAndInvocationOutcomes)' -count=1\n"
                 'python3 tests/system/race.py --part mcp-sqlite\n'
@@ -70,7 +100,9 @@ def command(lane):
                 'make test-coding-development CODING_DEVELOPMENT_EVIDENCE=evidence/coding-development')
     if lane == 'memory-context':
         gates = ' '.join('--gate ' + gate for gate in MEMORY_GATES)
-        return f'make test-memory build\npython3 tests/system/runner.py {gates} --binary bin/steward --evidence evidence/e2e-{lane}'
+        return f"make test-memory MEMORY_RACE_ARGS='--shard 1/2' build\npython3 tests/system/runner.py {gates} --binary bin/steward --evidence evidence/e2e-{lane}"
+    if lane == 'memory-race':
+        return 'python3 tests/system/race.py --part memory --shard 2/2'
     if lane == 'capabilities-race':
         commands = ['make build', RACE,
                     'python3 tests/system/race.py --part capabilities-sqlite',

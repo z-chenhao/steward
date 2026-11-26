@@ -76,9 +76,7 @@ func TestServiceWatchdogActualProducerUpgradeRollbackDeactivationAndCold(t *test
 	defer func() { a.Close() }()
 	h := a.Plugins()
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	h.Catalog.Launcher = carrier
 	raw, err := os.ReadFile("../rsi/builtin/service-watchdog-owner-v1.json")
 	if err != nil {

@@ -1,6 +1,12 @@
 name: Development runtime
 description: Pinned tools and lockfile-installed dependencies shared by software checks
 inputs:
+  go:
+    description: Install Go toolchain and module/build cache
+    default: 'true'
+  sandbox:
+    description: Install Linux bubblewrap/util-linux/OCR sandbox dependencies
+    default: 'true'
   frontend:
     description: Install frontend build and TypeScript dependencies
     default: 'false'
@@ -11,8 +17,12 @@ runs:
   using: composite
   steps:
     - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      if: inputs.go == 'true'
       with:
         go-version-file: go.mod
+        cache-dependency-path: |
+          go.sum
+          .github/actions/ci-inputs/action.yml
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version-file: .node-version
@@ -32,6 +42,7 @@ runs:
         if [ '${{ inputs.frontend }}' = true ]; then packages+=(web); fi
         python3 scripts/setup.py --part packages --packages "${packages[@]}" --timeout 120
     - name: Prepare local execution and OCR dependencies
+      if: inputs.sandbox == 'true'
       shell: bash
       run: |
         # Hosted regional mirrors have throttled dependency downloads.

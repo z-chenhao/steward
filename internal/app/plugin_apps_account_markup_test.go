@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -62,9 +61,7 @@ func testAppsAccountPresentationLifecycle(t *testing.T, kind string) {
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	var peer *httptest.Server
 	if connectIteration {
 		if err := secrets.Put(ctx, "credential:connect-view-project", []byte("synthetic-connect-view-project")); err != nil {

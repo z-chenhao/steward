@@ -7,7 +7,7 @@
   ],
   "runtime": {
     "entry": "plugin",
-    "timeout_ms": 5000
+    "timeout_ms": 10000
   },
   "files": [],
   "provides": [

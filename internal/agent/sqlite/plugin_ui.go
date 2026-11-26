@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"sync"
 
 	"github.com/z-chenhao/assistant/internal/delivery/ui"
 	"github.com/z-chenhao/assistant/internal/plugin/intelligentui/contract"
@@ -200,160 +201,195 @@ func (t *tools) prepareUI(ctx context.Context, inv tool.Invocation) (p uiPrepara
 	if err = rsiplugin.DecodeResult(raw, &definition); err != nil {
 		return p, err
 	}
-	if p.planManaged {
-		viewBinding, e := h.ServiceInstance(ctx, a.pluginGraph, contract.PlanViews)
-		if e != nil {
-			return p, e
-		}
-		if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
-			return p, rsi.ErrInvalid
-		}
-		facts := contract.PlanFacts{Plans: []contract.PlanFact{}}
-		for i, c := range acceptedDocument.Components {
-			if c.Name == "plan_visualization" {
-				facts.Plans = append(facts.Plans, contract.PlanFact{Component: i, Props: c.Props})
+	viewCtx, cancelViews := context.WithCancel(ctx)
+	defer cancelViews()
+	var viewWG sync.WaitGroup
+	var viewErrs [5]error
+	runView := func(slot int, fn func() error) {
+		viewWG.Add(1)
+		go func() {
+			defer viewWG.Done()
+			if e := fn(); e != nil {
+				viewErrs[slot] = e
+				cancelViews()
 			}
-		}
-		input, e := json.Marshal(facts)
-		if e != nil {
-			return p, e
-		}
-		viewRaw, e := h.ReadService(ctx, a.pluginGraph, contract.PlanViews, []byte(`{}`), []rsi.InputData{{ID: contract.PlanInput, Data: input}})
-		if e != nil {
-			return p, e
-		}
-		var views contract.PlanViewsResult
-		if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
-			return p, e
-		}
-		if e = validPlanViews(result.DocumentJSON, views); e != nil {
-			return p, e
-		}
-		p.planOutput = viewRaw
+		}()
+	}
+	if p.planManaged {
+		runView(0, func() error {
+			viewBinding, e := h.ServiceInstance(viewCtx, a.pluginGraph, contract.PlanViews)
+			if e != nil {
+				return e
+			}
+			if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
+				return rsi.ErrInvalid
+			}
+			facts := contract.PlanFacts{Plans: []contract.PlanFact{}}
+			for i, c := range acceptedDocument.Components {
+				if c.Name == "plan_visualization" {
+					facts.Plans = append(facts.Plans, contract.PlanFact{Component: i, Props: c.Props})
+				}
+			}
+			input, e := json.Marshal(facts)
+			if e != nil {
+				return e
+			}
+			viewRaw, e := h.ReadService(viewCtx, a.pluginGraph, contract.PlanViews, []byte(`{}`), []rsi.InputData{{ID: contract.PlanInput, Data: input}})
+			if e != nil {
+				return e
+			}
+			var views contract.PlanViewsResult
+			if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
+				return e
+			}
+			if e = validPlanViews(result.DocumentJSON, views); e != nil {
+				return e
+			}
+			p.planOutput = viewRaw
+			return nil
+		})
 	}
 	if p.cardsManaged {
-		viewBinding, e := h.ServiceInstance(ctx, a.pluginGraph, contract.CardsViews)
-		if e != nil {
-			return p, e
-		}
-		if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
-			return p, rsi.ErrInvalid
-		}
-		facts := contract.CardsFacts{Cards: []contract.CardsFact{}}
-		for i, c := range acceptedDocument.Components {
-			if c.Name == "steward.cards" {
-				facts.Cards = append(facts.Cards, contract.CardsFact{Component: i, Props: c.Props})
+		runView(1, func() error {
+			viewBinding, e := h.ServiceInstance(viewCtx, a.pluginGraph, contract.CardsViews)
+			if e != nil {
+				return e
 			}
-		}
-		input, e := json.Marshal(facts)
-		if e != nil {
-			return p, e
-		}
-		viewRaw, e := h.ReadService(ctx, a.pluginGraph, contract.CardsViews, []byte(`{}`), []rsi.InputData{{ID: contract.CardsInput, Data: input}})
-		if e != nil {
-			return p, e
-		}
-		var views contract.CardsViewsResult
-		if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
-			return p, e
-		}
-		if e = validCardsViews(result.DocumentJSON, views); e != nil {
-			return p, e
-		}
-		p.cardsOutput = viewRaw
+			if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
+				return rsi.ErrInvalid
+			}
+			facts := contract.CardsFacts{Cards: []contract.CardsFact{}}
+			for i, c := range acceptedDocument.Components {
+				if c.Name == "steward.cards" {
+					facts.Cards = append(facts.Cards, contract.CardsFact{Component: i, Props: c.Props})
+				}
+			}
+			input, e := json.Marshal(facts)
+			if e != nil {
+				return e
+			}
+			viewRaw, e := h.ReadService(viewCtx, a.pluginGraph, contract.CardsViews, []byte(`{}`), []rsi.InputData{{ID: contract.CardsInput, Data: input}})
+			if e != nil {
+				return e
+			}
+			var views contract.CardsViewsResult
+			if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
+				return e
+			}
+			if e = validCardsViews(result.DocumentJSON, views); e != nil {
+				return e
+			}
+			p.cardsOutput = viewRaw
+			return nil
+		})
 	}
 	if p.tableManaged {
-		viewBinding, e := h.ServiceInstance(ctx, a.pluginGraph, contract.TableViews)
-		if e != nil {
-			return p, e
-		}
-		if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
-			return p, rsi.ErrInvalid
-		}
-		facts := contract.TableFacts{Tables: []contract.TableFact{}}
-		for i, c := range acceptedDocument.Components {
-			if c.Name == "Table" {
-				facts.Tables = append(facts.Tables, contract.TableFact{Component: i, Props: c.Props})
+		runView(2, func() error {
+			viewBinding, e := h.ServiceInstance(viewCtx, a.pluginGraph, contract.TableViews)
+			if e != nil {
+				return e
 			}
-		}
-		input, e := json.Marshal(facts)
-		if e != nil {
-			return p, e
-		}
-		viewRaw, e := h.ReadService(ctx, a.pluginGraph, contract.TableViews, []byte(`{}`), []rsi.InputData{{ID: contract.TableInput, Data: input}})
-		if e != nil {
-			return p, e
-		}
-		var views contract.TableViewsResult
-		if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
-			return p, e
-		}
-		if e = validTableViews(result.DocumentJSON, views); e != nil {
-			return p, e
-		}
-		p.tableOutput = viewRaw
+			if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
+				return rsi.ErrInvalid
+			}
+			facts := contract.TableFacts{Tables: []contract.TableFact{}}
+			for i, c := range acceptedDocument.Components {
+				if c.Name == "Table" {
+					facts.Tables = append(facts.Tables, contract.TableFact{Component: i, Props: c.Props})
+				}
+			}
+			input, e := json.Marshal(facts)
+			if e != nil {
+				return e
+			}
+			viewRaw, e := h.ReadService(viewCtx, a.pluginGraph, contract.TableViews, []byte(`{}`), []rsi.InputData{{ID: contract.TableInput, Data: input}})
+			if e != nil {
+				return e
+			}
+			var views contract.TableViewsResult
+			if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
+				return e
+			}
+			if e = validTableViews(result.DocumentJSON, views); e != nil {
+				return e
+			}
+			p.tableOutput = viewRaw
+			return nil
+		})
 	}
 	if p.chartManaged {
-		viewBinding, e := h.ServiceInstance(ctx, a.pluginGraph, contract.ChartViews)
-		if e != nil {
-			return p, e
-		}
-		if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
-			return p, rsi.ErrInvalid
-		}
-		facts := contract.ChartFacts{Charts: []contract.ChartFact{}}
-		for i, c := range acceptedDocument.Components {
-			if isChartComponent(c.Name) {
-				facts.Charts = append(facts.Charts, contract.ChartFact{Component: i, Name: c.Name, Props: c.Props})
+		runView(3, func() error {
+			viewBinding, e := h.ServiceInstance(viewCtx, a.pluginGraph, contract.ChartViews)
+			if e != nil {
+				return e
 			}
-		}
-		input, e := json.Marshal(facts)
-		if e != nil {
-			return p, e
-		}
-		viewRaw, e := h.ReadService(ctx, a.pluginGraph, contract.ChartViews, []byte(`{}`), []rsi.InputData{{ID: contract.ChartInput, Data: input}})
-		if e != nil {
-			return p, e
-		}
-		var views contract.ChartViewsResult
-		if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
-			return p, e
-		}
-		if e = validChartViews(result.DocumentJSON, views); e != nil {
-			return p, e
-		}
-		p.chartOutput = viewRaw
+			if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
+				return rsi.ErrInvalid
+			}
+			facts := contract.ChartFacts{Charts: []contract.ChartFact{}}
+			for i, c := range acceptedDocument.Components {
+				if isChartComponent(c.Name) {
+					facts.Charts = append(facts.Charts, contract.ChartFact{Component: i, Name: c.Name, Props: c.Props})
+				}
+			}
+			input, e := json.Marshal(facts)
+			if e != nil {
+				return e
+			}
+			viewRaw, e := h.ReadService(viewCtx, a.pluginGraph, contract.ChartViews, []byte(`{}`), []rsi.InputData{{ID: contract.ChartInput, Data: input}})
+			if e != nil {
+				return e
+			}
+			var views contract.ChartViewsResult
+			if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
+				return e
+			}
+			if e = validChartViews(result.DocumentJSON, views); e != nil {
+				return e
+			}
+			p.chartOutput = viewRaw
+			return nil
+		})
 	}
 	if p.formViewManaged {
-		viewBinding, e := h.ServiceInstance(ctx, a.pluginGraph, contract.FormViews)
-		if e != nil {
-			return p, e
-		}
-		if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
-			return p, rsi.ErrInvalid
-		}
-		facts := contract.FormViewFacts{Forms: []contract.FormViewFact{}}
-		for i, c := range acceptedDocument.Components {
-			if c.Name == "steward.form" {
-				facts.Forms = append(facts.Forms, contract.FormViewFact{Component: i, Name: c.Name, Props: c.Props})
+		runView(4, func() error {
+			viewBinding, e := h.ServiceInstance(viewCtx, a.pluginGraph, contract.FormViews)
+			if e != nil {
+				return e
 			}
-		}
-		input, e := json.Marshal(facts)
+			if viewBinding.InstanceID != b.InstanceID || viewBinding.PackageDigest != b.PackageDigest {
+				return rsi.ErrInvalid
+			}
+			facts := contract.FormViewFacts{Forms: []contract.FormViewFact{}}
+			for i, c := range acceptedDocument.Components {
+				if c.Name == "steward.form" {
+					facts.Forms = append(facts.Forms, contract.FormViewFact{Component: i, Name: c.Name, Props: c.Props})
+				}
+			}
+			input, e := json.Marshal(facts)
+			if e != nil {
+				return e
+			}
+			viewRaw, e := h.ReadService(viewCtx, a.pluginGraph, contract.FormViews, []byte(`{}`), []rsi.InputData{{ID: contract.FormViewInput, Data: input}})
+			if e != nil {
+				return e
+			}
+			var views contract.FormViewsResult
+			if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
+				return e
+			}
+			if e = validFormViews(result.DocumentJSON, views); e != nil {
+				return e
+			}
+			p.formViewOutput = viewRaw
+			return nil
+		})
+	}
+	viewWG.Wait()
+	for _, e := range viewErrs {
 		if e != nil {
 			return p, e
 		}
-		viewRaw, e := h.ReadService(ctx, a.pluginGraph, contract.FormViews, []byte(`{}`), []rsi.InputData{{ID: contract.FormViewInput, Data: input}})
-		if e != nil {
-			return p, e
-		}
-		var views contract.FormViewsResult
-		if e = rsiplugin.DecodeResult(viewRaw, &views); e != nil {
-			return p, e
-		}
-		if e = validFormViews(result.DocumentJSON, views); e != nil {
-			return p, e
-		}
-		p.formViewOutput = viewRaw
 	}
 	p.document = result.DocumentJSON
 	return p, nil

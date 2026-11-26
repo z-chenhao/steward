@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import platform
 import signal
+import tempfile
 import threading
 import time
 
@@ -46,7 +47,13 @@ def main():
     started = time.monotonic()
     code = 127
     try:
-        code = run_command(command, os.environ.copy(), folder / (args.name + '.log'), stopped, metrics)
+        env = os.environ.copy()
+        if env.get('STEWARD_TEST_BUILD_CACHE_DIR'):
+            code = run_command(command, env, folder / (args.name + '.log'), stopped, metrics)
+        else:
+            with tempfile.TemporaryDirectory(prefix='steward-step-bins-') as build_cache:
+                env['STEWARD_TEST_BUILD_CACHE_DIR'] = build_cache
+                code = run_command(command, env, folder / (args.name + '.log'), stopped, metrics)
     finally:
         stable = source == source_state()
         if not stable:

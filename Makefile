@@ -1,4 +1,4 @@
-.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-connected-apps test-github-plugins test-artifact-plugins test-go test-go-core test-go-domains test-node test-browser test-infra test-e2e test-full test-race test-coding-environment test-coding-development lint lint-actions audit
+.PHONY: help setup install run build build-host build-plugins test test-prompts test-memory test-tool-discovery test-web-access test-web-access-core test-web-access-extract test-connected-apps test-connected-apps-core test-connected-apps-app test-github-plugins test-artifact-plugins test-go test-go-core test-go-domains test-node test-browser test-browser-web test-browser-apps test-infra test-e2e test-full test-race test-coding-environment test-coding-development lint lint-actions audit
 
 .DEFAULT_GOAL := setup
 
@@ -65,12 +65,16 @@ test-tool-discovery:
 	go test -race -p 1 -timeout=15m ./internal/plugin/tooldiscovery/... ./internal/plugin/skilllibrary/... ./internal/skill ./internal/tool ./internal/agent/sqlite -run '^Test(ToolDiscovery.*|ChildStorage.*|ToolSearch.*|LegacyMainLoadsOneOf500.*|LoadedToolSurvivesApproval.*|MigrationCatalogContainsEveryForwardSource|Skill.*)$$' -count=1
 
 # Deterministic connector contracts; live network checks are explicitly opt-in.
-test-web-access:
+test-web-access: test-web-access-core test-web-access-extract
+
+test-web-access-core:
 	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run '(WebAccess|WebPlugin(Search|Read|Research|Fetch|SourceFormatting|RawSource|HTML|Image)|WebSearch|HostedSearch|SearchCompletion|SearchPolicy|DefinitionsFreeze|ExaMCP|FetchAddresses)' -skip 'WebPlugin(Search|Read|Research|Fetch|SourceFormatting|RawSource|HTML|Image)' -count=1
 	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run 'WebPlugin(Search|Read)' -count=1
 	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run 'WebPluginResearch' -count=1
 	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run 'WebPlugin(Fetch|SourceFormatting|RawSource)' -count=1
 	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run 'WebPluginHTML' -count=1
+
+test-web-access-extract:
 	go test -race ./internal/plugin/webaccess ./internal/plugin/webhtml ./internal/plugin/webimage ./internal/connector/... ./internal/webcontent/... ./internal/llm/bridge ./internal/llm/provider ./internal/agent ./internal/agent/sqlite -run 'WebPluginImage' -count=1
 	go test -race ./internal/plugin/webextract/... ./internal/agent/sqlite -run 'WebPlugin(Extract|Route)' -count=1
 	go test -race ./internal/rsi ./internal/app -run 'WebBootstrap|WebDefault|ShippedPlugin|ToolDiscoveryBootstrap|AppsBootstrap|Verification' -count=1
@@ -78,13 +82,17 @@ test-web-access:
 # Privacy, provenance and lifecycle regressions run in the required CI lane.
 test-memory:
 	go test -race ./internal/memory/... ./internal/plugin/memoryinspector/... ./internal/recall/... ./internal/conversation/... ./internal/tool ./internal/context ./internal/llm -count=1
-	python3 tests/system/race.py --part memory
+	python3 tests/system/race.py --part memory $(MEMORY_RACE_ARGS)
 	go test -race ./internal/llm/bridge -run 'LayeredMemory|NativeFragmented' -count=1
 	go test -race ./internal/app ./internal/rsi ./internal/interaction/web -run 'MemoryExternalSecrets|MemoryInspector|MemoryView|MemoryStyles|MemoryLocalization|MemoryClientConfiguration|MemoryProgram|AppsStyles' -count=1
 
-test-connected-apps:
+test-connected-apps: test-connected-apps-core test-connected-apps-app
+
+test-connected-apps-core:
 	go test -race -p 1 -timeout=15m ./internal/connector/composio ./internal/connectedapps ./internal/plugin/appsmethods/... ./internal/plugin/appsdirectory/... ./internal/plugin/appsaccounts/... ./internal/plugin/appslogos/... ./internal/plugin/appsinterface/... ./pkg/rsiplugin ./internal/plugin/connectedapps ./internal/rsi ./internal/interaction/web ./internal/tool ./internal/tool/codemode -run '^Test(ConnectedApps|ConnectedAppNamespaces|Apps|Editorial|CatalogueOrder|InventoryOrder|Input(Stream|Chunks|Rejects)|AppLogo|ToolDescriptor|RegistryGroup|Client)' -count=1
 	python3 tests/system/race.py --part apps-sqlite
+
+test-connected-apps-app:
 	python3 tests/system/race.py --part apps
 
 # Build the exact distribution before the mandatory real App lifecycle test.
@@ -118,8 +126,14 @@ apps_browser_env = STEWARD_TEST_APP_BROWSER=1 \
 	STEWARD_APP_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-markup-browser}" \
 	STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE="$${STEWARD_APP_ACCOUNT_MARKUP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-account-markup-browser}"
 
-test-browser:
+test-browser: test-browser-web test-browser-apps
+
+test-browser-web:
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_BROWSER_EVIDENCE="$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}" go test ./internal/interaction/web -run '^Test(MemoryProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures|TraceProgramActualOpaqueWorkerDeniesEffectsAndTerminatesFailures|AppsBrowserActualOpaqueWorkerTransport|AppsBrowserConnectionLifecycle|ComposerModelsBrowserLoadingAndRefresh|MemoryMaintenanceBrowser|TracePageBrowserKeepsOneFrozenAssetVersion|WorkbenchBrowserOriginalStylesAndPinnedUpdates|TraceWorkbenchBrowserReadOnlyControls|TraceWorkbenchBrowserManagedTreeAndColumnPolicies|TraceTimelineMalformedProjectionKeepsOriginalSSR|TraceBrushActualDelayedRepliesCoalesceAndCancel|TraceActivityActualDelayedRepliesCoalesceAndCancel|ApprovalParametersBrowser|UIPlanViewBrowserIsolationAndDetails|UICardsViewBrowserIsolationAndOriginalStyles|UICardsWorkerBrowserIsolationAndBoundedProjection|UICardsControllerBrowserProjectionCASGroupAndRecovery|UICardsImagesBrowserOriginalBlobAndBoundRequests|UICardsPreviewBrowserReadOnlyAndRevision|UITableWorkerBrowserIsolationAndBoundedProjection|UITableControllerBrowserProjectionCASGroupAndExport|UITablePreviewBrowserReadOnlyAndRevision|UIChartWorkerBridgeBrowser|UIChartControllerBrowserProjectionCASAndRange|UIChartPreviewBrowserReadOnlyAndRevision|UIFormViewControllerBrowserOriginalControlsDraftAndBoundSubmit|UIFormViewPreviewBrowserReadOnlyAndRevision|UIMeetingViewBrowserOriginalControlsChoiceAndPreview|UIActionViewBrowserFeedbackRecoveryAndOriginalSource)$$' -count=1
+	npm test --prefix guest-browser
+	node web/artwork/icons.mjs --check
+
+test-browser-apps:
 	$(apps_browser_env) go test ./internal/app -run '^TestApps(EditorialActualOwnerHTTPVersionsSnapshotRollbackAndDisable|SettingsActualOriginalHTTPRowsDraftAndSave|LogoActualOwnerHTTPOriginal65FrozenReferencesColdAndDisable|InterfaceActualManagedBrowserLifecycle)$$' -count=1 -timeout=5m
 	$(apps_browser_env) go test ./internal/app -run '^TestApps(CompositionActualVersionsColdOriginalProfileOnlyAndUnavailable|LocalizationActualBrowserOwnedFeedbackAndNative|CardViewActualManagedResourceBrowser|SidebarViewActualBrowserAndAcceptedLink)$$' -count=1 -timeout=5m
 	$(apps_browser_env) go test ./internal/app -run '^TestApps(MarkupActualBrowserAndRecoveryLink|GraphicsActualBrowserAndRecoveryLink|AccountMarkupActualBrowserAndRecoveryLink)$$' -count=1 -timeout=5m
@@ -129,8 +143,6 @@ test-browser:
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_PAGES_BROWSER_EVIDENCE="$${STEWARD_APP_PAGES_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-pages-browser}" go test ./internal/app -run '^TestAppsPagesActualBrowserOriginalControlsAndViews$$' -count=1 -timeout=4m
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_APP_CLIENT_BROWSER_EVIDENCE="$${STEWARD_APP_CLIENT_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-client-browser}" go test ./internal/app -run '^TestAppsClientActualBrowserOriginalControlsAndStyles$$' -count=1 -timeout=4m
 	STEWARD_TEST_APP_BROWSER=1 STEWARD_MEMORY_MANAGED_BROWSER_EVIDENCE="$${STEWARD_MEMORY_MANAGED_BROWSER_EVIDENCE:-$${STEWARD_APP_BROWSER_EVIDENCE:-$(CURDIR)/evidence/apps-browser}/memory-managed}" go test ./internal/app -run '^TestMemoryInspectorActualOwnerPageGraphPinDisableAndFirstColdReference$$' -count=1
-	npm test --prefix guest-browser
-	node web/artwork/icons.mjs --check
 
 export PYTHONPATH := $(CURDIR)/tests/system:$(CURDIR)/scripts:$(PYTHONPATH)
 

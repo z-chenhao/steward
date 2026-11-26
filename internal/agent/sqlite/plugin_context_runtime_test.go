@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -17,41 +15,24 @@ import (
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 )
 
-var runtimeFeatureCarrier struct {
-	once      sync.Once
-	dir, path string
-	err       error
-}
-
 // Only the immutable Host executable is shared. Every test still independently
 // builds its candidate, seals/installs/verifies its graph and owns its data,
 // processes and private state. Re-linking the same Host for every fixture made
 // the growing package suite approach Go's default ten-minute timeout.
 func runtimeFeatureHost(t *testing.T) string {
 	t.Helper()
-	runtimeFeatureCarrier.once.Do(func() {
-		runtimeFeatureCarrier.dir, runtimeFeatureCarrier.err = os.MkdirTemp("", "steward-test-feature-host-")
-		if runtimeFeatureCarrier.err != nil {
-			return
-		}
-		runtimeFeatureCarrier.path = filepath.Join(runtimeFeatureCarrier.dir, "steward")
-		if out, err := exec.Command("go", "build", "-o", runtimeFeatureCarrier.path, "../../../cmd/steward").CombinedOutput(); err != nil {
-			runtimeFeatureCarrier.err = fmt.Errorf("build feature Host: %w: %s", err, out)
-		}
-	})
-	if runtimeFeatureCarrier.err != nil {
-		t.Fatal(runtimeFeatureCarrier.err)
+	path, err := ensureCachedTestBinary("../../../cmd/steward")
+	if err != nil {
+		t.Fatal(err)
 	}
-	return runtimeFeatureCarrier.path
+	return path
 }
 
 func TestMain(m *testing.M) {
 	code := m.Run()
-	if runtimeFeatureCarrier.dir != "" {
-		if err := os.RemoveAll(runtimeFeatureCarrier.dir); err != nil {
-			fmt.Fprintln(os.Stderr, "remove fixture Host:", err)
-			code = 1
-		}
+	if err := cleanupTestBinaryCache(); err != nil {
+		fmt.Fprintln(os.Stderr, "remove fixture binaries:", err)
+		code = 1
 	}
 	os.Exit(code)
 }
@@ -66,9 +47,7 @@ func installContextPlugin(t *testing.T, s *Store, r *Runs) rsi.Host {
 func installRuntimeFeature(t *testing.T, s *Store, r *Runs, name string, policy rsi.Policy, config ...json.RawMessage) rsi.Host {
 	t.Helper()
 	source := t.TempDir()
-	if out, err := exec.Command("go", "build", "-o", filepath.Join(source, "plugin"), "../../../cmd/plugins/"+name).CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../../cmd/plugins/"+name, filepath.Join(source, "plugin"))
 	raw, err := os.ReadFile("../../../plugins/" + name + "/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)

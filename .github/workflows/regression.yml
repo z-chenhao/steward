@@ -25,8 +25,8 @@ jobs:
           node-version-file: .node-version
       - name: CLI, startup, credential adapter and offline VM contracts
         run: go test -count=1 ./cmd/steward ./internal/startup ./internal/llm/secret ./internal/computer/macosvm/...
-  regression:
-    name: Full deterministic regression and race checks
+  full:
+    name: Extended product flows
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -39,14 +39,55 @@ jobs:
           browser: 'true'
       - name: Extended product flows
         run: exec python3 tests/system/process_step.py --name full --phase test -- make test-full
-      - name: Race detector
-        if: ${{ !cancelled() }}
-        run: exec python3 tests/system/process_step.py --name race --phase test -- make test-race
       - name: Retain results, including failures
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: extended-${{ github.sha }}-${{ github.run_attempt }}
+          name: extended-full-${{ github.sha }}-${{ github.run_attempt }}
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14
+  race-packages:
+    name: Race detector / packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/ci-inputs
+      - name: Race detector packages
+        run: exec python3 tests/system/process_step.py --name race-packages --phase test -- python3 tests/system/race.py --part packages
+      - name: Retain results, including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extended-race-packages-${{ github.sha }}-${{ github.run_attempt }}
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14
+  race-sqlite:
+    name: Race detector / sqlite ${{ matrix.shard }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/ci-inputs
+      - name: Race detector sqlite shard
+        env:
+          RACE_SHARD: ${{ matrix.shard }}
+        run: exec python3 tests/system/process_step.py --name "race-sqlite-${RACE_SHARD//\//-}" --phase test -- python3 tests/system/race.py --part sqlite --shard "$RACE_SHARD"
+      - name: Retain results, including failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extended-race-sqlite-${{ strategy.job-index }}-${{ github.sha }}-${{ github.run_attempt }}
           path: evidence/
           if-no-files-found: warn
           retention-days: 14

@@ -21,9 +21,7 @@ import (
 func defaultFeaturePackage(t *testing.T, name string, module []byte) string {
 	t.Helper()
 	directory := t.TempDir()
-	if out, err := exec.Command("go", "build", "-o", filepath.Join(directory, "plugin"), "../../cmd/plugins/"+name).CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/plugins/"+name, filepath.Join(directory, "plugin"))
 	raw, err := os.ReadFile("../../plugins/" + name + "/steward.plugin.json")
 	if err != nil {
 		t.Fatal(err)
@@ -102,9 +100,7 @@ func defaultWebFixture(t *testing.T) (config.Config, builtin.Directories, string
 	}
 	d := builtin.Directories{DOCX: defaultFeaturePackage(t, "docx-reader", nil), Web: defaultFeaturePackage(t, "web-access", nil), Extract: defaultFeaturePackage(t, "web-extract", module)}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	return cfg, d, carrier
 }
 

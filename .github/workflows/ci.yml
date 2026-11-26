@@ -65,6 +65,8 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/ci-inputs
         with:
+          go: ${{ matrix.go }}
+          sandbox: ${{ matrix.sandbox }}
           frontend: ${{ matrix.frontend }}
           browser: ${{ matrix.browser }}
       - name: Run existing software checks
@@ -94,6 +96,8 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/ci-inputs
         with:
+          go: ${{ matrix.go }}
+          sandbox: ${{ matrix.sandbox }}
           frontend: ${{ matrix.frontend }}
           browser: ${{ matrix.browser }}
       - name: Run existing deterministic system checks

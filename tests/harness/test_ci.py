@@ -151,14 +151,26 @@ class CIChecksTests(unittest.TestCase):
             checks[name].assert_called_once_with(binary, evidence, report)
 
     def test_connected_apps_and_browser_regressions_are_required_software_lanes(self):
+        root = Path(__file__).resolve().parents[2]
         lanes = {row['lane']: row for row in ci.plan('software')['include']}
-        self.assertEqual(ci.command('connected-apps'), 'make test-connected-apps')
-        self.assertIn('connected-apps', lanes)
-        self.assertIn('make test-browser', ci.command('browser-infra'))
+        self.assertEqual(ci.command('connected-apps'), 'make test-connected-apps-core')
+        self.assertEqual(ci.command('connected-apps-app'), 'make test-connected-apps-app')
+        self.assertTrue({'connected-apps', 'connected-apps-app'} <= set(lanes))
+        self.assertEqual(
+            subprocess.check_output(['make', '--no-print-directory', '-n', 'test-connected-apps-core', 'test-connected-apps-app'], cwd=root, text=True),
+            subprocess.check_output(['make', '--no-print-directory', '-n', 'test-connected-apps'], cwd=root, text=True),
+        )
+        self.assertIn('make test-browser-web', ci.command('browser-infra'))
+        self.assertEqual(ci.command('browser-apps'), 'make test-browser-apps')
         self.assertEqual(lanes['browser-infra']['browser'], 'true')
         self.assertEqual(lanes['browser-infra']['frontend'], 'true')
+        self.assertEqual(lanes['browser-apps']['browser'], 'true')
+        self.assertEqual(
+            subprocess.check_output(['make', '--no-print-directory', '-n', 'test-browser-web', 'test-browser-apps'], cwd=root, text=True),
+            subprocess.check_output(['make', '--no-print-directory', '-n', 'test-browser'], cwd=root, text=True),
+        )
         dry_run = subprocess.check_output(['make', '-n', 'test-browser'],
-                                          cwd=Path(__file__).resolve().parents[2], text=True)
+                                          cwd=root, text=True)
         patterns = []
         for line in dry_run.splitlines():
             tokens = shlex.split(line)
@@ -388,14 +400,34 @@ class CIChecksTests(unittest.TestCase):
     def test_memory_privacy_race_and_system_gates_are_required(self):
         lanes = {lane['lane']: lane for lane in ci.plan('system')['include']}
         self.assertIn('memory-context', lanes)
+        self.assertIn('memory-race', lanes)
         self.assertEqual(lanes['memory-context']['browser'], 'false')
+        self.assertEqual(lanes['memory-race']['browser'], 'false')
         command = ci.command('memory-context')
-        self.assertIn('make test-memory build', command)
+        self.assertIn("make test-memory MEMORY_RACE_ARGS='--shard 1/2' build", command)
+        self.assertEqual(ci.command('memory-race'), 'python3 tests/system/race.py --part memory --shard 2/2')
         self.assertEqual(ci.MEMORY_GATES, ('memory-maintenance', 'recall'))
         for gate in ci.MEMORY_GATES:
             self.assertEqual(command.count('--gate ' + gate), 1)
         self.assertNotIn('|| true', command)
         self.assertNotIn('continue-on-error', command)
+
+    def test_js_only_lanes_skip_go_and_sandbox_setup_to_keep_go_cache_clean(self):
+        root = Path(__file__).resolve().parents[2]
+        software = {row['lane']: row for row in ci.plan('software')['include']}
+        system = {row['lane']: row for row in ci.plan('system')['include']}
+        for lane in ('frontend', 'provider'):
+            self.assertEqual(software[lane]['go'], 'false')
+            self.assertEqual(software[lane]['sandbox'], 'false')
+        for table in (software, system):
+            for name, row in table.items():
+                if name not in ('frontend', 'provider'):
+                    self.assertEqual(row['go'], 'true', name)
+                    self.assertEqual(row['sandbox'], 'true', name)
+        action = (root / '.github/actions/ci-inputs/action.yml').read_text()
+        self.assertIn("if: inputs.go == 'true'", action)
+        self.assertIn("if: inputs.sandbox == 'true'", action)
+        self.assertIn('.github/actions/ci-inputs/action.yml', action)
 
     def test_managed_memory_inspector_browser_is_required(self):
         root = Path(__file__).resolve().parents[2]
@@ -444,9 +476,17 @@ class CIChecksTests(unittest.TestCase):
                             f'{test} is missing from required memory race checks')
 
     def test_web_plugin_business_roots_are_in_required_race_recipe(self):
-        self.assertIn('test-web-access', shlex.split(ci.command('web-plugins')))
+        root = Path(__file__).resolve().parents[2]
+        lanes = {lane['lane'] for lane in ci.plan('system')['include']}
+        self.assertTrue({'web-access-race', 'web-plugins'} <= lanes)
+        self.assertEqual(ci.command('web-access-race'), 'make test-web-access-core')
+        self.assertIn('test-web-access-extract', shlex.split(ci.command('web-plugins')))
+        self.assertEqual(
+            subprocess.check_output(['make', '--no-print-directory', '-n', 'test-web-access-core', 'test-web-access-extract'], cwd=root, text=True),
+            subprocess.check_output(['make', '--no-print-directory', '-n', 'test-web-access'], cwd=root, text=True),
+        )
         dry_run = subprocess.check_output(['make', '-n', 'test-web-access'],
-                                          cwd=Path(__file__).resolve().parents[2], text=True)
+                                          cwd=root, text=True)
         commands = [shlex.split(line) for line in dry_run.splitlines()]
         def selected(root):
             return sum(re.search(row[row.index('-run') + 1], root) is not None and

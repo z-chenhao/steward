@@ -17,6 +17,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -182,7 +183,32 @@ def drive_batch(job, folder, stopped, package):
     return result
 
 
-def run_remainder(selected, folder, stopped, memory=False, pattern=None):
+def parse_shard(spec):
+    if spec is None:
+        return None
+    if not isinstance(spec, str) or not re.fullmatch(r'[1-9][0-9]*/[1-9][0-9]*', spec):
+        raise ValueError('invalid shard specification: ' + repr(spec))
+    index, total = (int(part) for part in spec.split('/', 1))
+    if index < 1 or index > total:
+        raise ValueError('shard index out of range: ' + spec)
+    return index, total
+
+
+def shard_names(names, shard, seconds=None):
+    if shard is None:
+        return names
+    index, total = shard
+    serial = [name for name in SERIAL_SQLITE if name in names]
+    regular = [name for name in names if name not in serial]
+    buckets = partitions(regular, total, seconds) if regular else []
+    while len(buckets) < total:
+        buckets.append([])
+    if serial:
+        buckets[0] = serial + buckets[0]
+    return buckets[index - 1]
+
+
+def run_remainder(selected, folder, stopped, memory=False, pattern=None, shard=None):
     started = time.monotonic()
     flags = TEN_MINUTE_RACE if memory or pattern == CAPABILITIES_SQLITE_PATTERN else RACE
     serial_batches = pattern in (ARTIFACT_SQLITE_PATTERN, MCP_SQLITE_PATTERN)
@@ -193,6 +219,8 @@ def run_remainder(selected, folder, stopped, memory=False, pattern=None):
     code = run_command(discovery, os.environ.copy(), listing, stopped, metrics)
     row = dict(name='remainder', packages=selected, discovery=discovery,
                discovery_metrics=metrics, returncode=code, workers=[])
+    if shard is not None:
+        row['shard'] = f'{shard[0]}/{shard[1]}'
     if code:
         show_failure(listing, code)
         return dict(row, wall_seconds=time.monotonic() - started)
@@ -203,15 +231,22 @@ def run_remainder(selected, folder, stopped, memory=False, pattern=None):
         names = [name for name in names if re.search(MEMORY_PATTERN if memory else pattern, name)]
         if not names:
             raise ValueError('missing selected SQLite race inventory')
+    seconds = timing_hints()
+    names = shard_names(names, shard, None if serial_batches else seconds)
+    if not names:
+        drained = metrics.get('owned_group_drained') is True
+        return dict(row, expected_tests=[], isolated_tests=[], cpu_budget=cpu_budget(), workers=[],
+                    selection_complete=True, returncode=0 if drained else 1, owned_group_drained=drained,
+                    cpu_seconds=metrics.get('cpu_seconds'), wall_seconds=time.monotonic() - started)
     serial = [name for name in SERIAL_SQLITE if name in names]
     budget = cpu_budget()
-    seconds = timing_hints()
     # Artifact and MCP used one process with native Go parallelism. Keep that
     # CPU budget while giving each sequential batch its own package alarm.
     sqlite_workers = 1 if serial_batches else max(1, min(3, budget - 1))
     worker_cpus = None if serial_batches else 1
+    remaining = [n for n in names if n not in serial]
     slices = [group[start:start + SQLITE_BATCH_SIZE]
-              for group in partitions([n for n in names if n not in serial], sqlite_workers, None if serial_batches else seconds)
+              for group in (partitions(remaining, sqlite_workers, None if serial_batches else seconds) if remaining else [])
               for start in range(0, len(group), SQLITE_BATCH_SIZE)]
     row.update(partition_strategy='discovery_order' if serial_batches else 'longest_measured_first',
                timing_hints=seconds,
@@ -271,12 +306,18 @@ def run_app(selected, folder, stopped, pattern='.'):
                 wall_seconds=time.monotonic() - started)
 
 
-def main(part=None):
+def main(part=None, shard=None):
+    parsed_shard = parse_shard(shard)
+    if parsed_shard is not None and part not in ('sqlite', 'memory', *SQLITE_PATTERNS):
+        raise ValueError('sharding is only supported for SQLite race parts')
     source = source_state()
     packages = subprocess.check_output(['go', 'list', './...'], text=True).splitlines()
     plan = groups(packages, part)
     selected_packages = [p for _, selected in plan for p in selected]
-    folder = Path('evidence/race-apps' if part == 'apps' else 'evidence/race')
+    if parsed_shard is not None:
+        folder = Path(f'evidence/race-{part}-shard-{parsed_shard[0]}-of-{parsed_shard[1]}')
+    else:
+        folder = Path('evidence/race-apps' if part == 'apps' else 'evidence/race')
     folder.mkdir(parents=True, exist_ok=True)
     for name in ('bridge', 'recorder', 'remainder', 'other-packages'):
         (folder / (name + '.log')).unlink(missing_ok=True)
@@ -289,13 +330,22 @@ def main(part=None):
         signal.signal(sig, lambda *_: stopped.set())
     rows = []
     passed = True
+    owned_cache = None
+    previous_cache = os.environ.get('STEWARD_TEST_BUILD_CACHE_DIR')
+    if not previous_cache:
+        owned_cache = tempfile.TemporaryDirectory(prefix='steward-race-bins-')
+        os.environ['STEWARD_TEST_BUILD_CACHE_DIR'] = owned_cache.name
     try:
         for name, selected in plan:
             if not selected:
                 continue
             if name == 'remainder':
-                row = run_remainder(selected, folder, stopped, memory=part == 'memory',
-                                    pattern=SQLITE_PATTERNS.get(part))
+                if parsed_shard is not None:
+                    row = run_remainder(selected, folder, stopped, memory=part == 'memory',
+                                        pattern=SQLITE_PATTERNS.get(part), shard=parsed_shard)
+                else:
+                    row = run_remainder(selected, folder, stopped, memory=part == 'memory',
+                                        pattern=SQLITE_PATTERNS.get(part))
             elif name == 'app':
                 row = run_app(selected, folder, stopped, APP_PATTERN if part == 'apps' else '.')
             else:
@@ -311,12 +361,15 @@ def main(part=None):
                 passed = False
                 break
     finally:
+        if owned_cache is not None:
+            os.environ.pop('STEWARD_TEST_BUILD_CACHE_DIR', None)
+            owned_cache.cleanup()
         stable = source == source_state()
         executed = [p for row in rows if row['returncode'] == 0 for p in row['packages']]
         passed = (passed and stable and not stopped.is_set() and sorted(executed) == sorted(selected_packages)
                   and all(row.get('owned_group_drained') is True for row in rows))
         report = dict(version=1, **source, source_stable=stable, packages=packages,
-                      part=part, selected_packages=selected_packages, stages=rows, passed=passed)
+                      part=part, shard=shard, selected_packages=selected_packages, stages=rows, passed=passed)
         (folder / 'inventory.json').write_text(json.dumps(report, indent=2) + '\n')
     return 0 if passed else 1
 
@@ -324,4 +377,6 @@ def main(part=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--part', choices=['packages', 'sqlite', 'memory', 'apps', *SQLITE_PATTERNS])
-    raise SystemExit(main(parser.parse_args().part))
+    parser.add_argument('--shard', help='Optional deterministic K/N shard (1-indexed) for SQLite race parts')
+    parsed = parser.parse_args()
+    raise SystemExit(main(parsed.part, parsed.shard))

@@ -12,7 +12,6 @@ import (
 	"github.com/z-chenhao/assistant/pkg/rsiplugin"
 	"net/http/httptest"
 	"net/url"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -40,9 +39,7 @@ func TestAppsGraphicsActualVersionsRefsColdFrozenEffectsAndReceipts(t *testing.T
 		t.Fatal(err)
 	}
 	carrier := filepath.Join(t.TempDir(), "steward")
-	if out, err := exec.Command("go", "build", "-o", carrier, "../../cmd/steward").CombinedOutput(); err != nil {
-		t.Fatal(string(out), err)
-	}
+	buildTestBinary(t, "../../cmd/steward", carrier)
 	var host rsi.Host
 	var server *web.Server
 	reads := 0
