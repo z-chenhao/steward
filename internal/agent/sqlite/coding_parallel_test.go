@@ -18,8 +18,6 @@ import (
 
 func TestTaskCodeIndependentWorkspacesDoNotConsumeEachOthersConflictSlot(t *testing.T) {
 	s, r, a, p, cfg := codeFixture(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	r.ConfigureToolLimits(ToolLimits{Global: 32, Agent: 32, Run: 32, Provider: 32, Tool: 32})
 	p.respond = delegateToolWork(func(req llm.GenerationRequest) (llm.GenerationResult, error) {
 		if req.Messages[len(req.Messages)-1].Role == "tool" {
@@ -31,6 +29,10 @@ func TestTaskCodeIndependentWorkspacesDoNotConsumeEachOthersConflictSlot(t *test
 		mustSubmit(t, a, key, "Run work in an independent task")
 		mustDrain(t, a)
 	}
+	// Start the execution deadline after task setup and drain complete so slow
+	// race-instrumented CI runners do not expire ctx before tool slots start.
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	approvals, err := r.PendingApprovals(ctx)
 	if err != nil || len(approvals) != 2 {
 		t.Fatal("expected two independently approved commands", approvals, err)
