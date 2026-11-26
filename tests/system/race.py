@@ -117,9 +117,11 @@ def timing_hints():
     return json.loads(Path(__file__).with_name('race_timings.json').read_text())['seconds']
 
 
-def partitions(names, workers, seconds=None):
+def partitions(names, workers, seconds=None, maximum_size=None):
     if not names or len(names) != len(set(names)) or workers < 1:
         raise ValueError('invalid SQLite partition inventory')
+    if maximum_size is not None and (maximum_size < 1 or workers * maximum_size < len(names)):
+        raise ValueError('invalid SQLite maximum batch size')
     count = min(workers, len(names))
     if seconds is None:
         return [names[i::workers] for i in range(count)]
@@ -133,7 +135,8 @@ def partitions(names, workers, seconds=None):
     costs = {name: seconds.get(name, fallback) for name in names}
     slices, loads = [[] for _ in range(count)], [0] * count
     for name in sorted(names, key=lambda name: (-costs[name], name)):
-        target = min(range(count), key=lambda i: (loads[i], len(slices[i]), i))
+        eligible = [i for i in range(count) if maximum_size is None or len(slices[i]) < maximum_size]
+        target = min(eligible, key=lambda i: (loads[i], len(slices[i]), i))
         slices[target].append(name)
         loads[target] += costs[name]
     return slices
@@ -245,9 +248,15 @@ def run_remainder(selected, folder, stopped, memory=False, pattern=None, shard=N
     sqlite_workers = 1 if serial_batches else max(1, min(3, budget - 1))
     worker_cpus = None if serial_batches else 1
     remaining = [n for n in names if n not in serial]
-    slices = [group[start:start + SQLITE_BATCH_SIZE]
-              for group in (partitions(remaining, sqlite_workers, None if serial_batches else seconds) if remaining else [])
-              for start in range(0, len(group), SQLITE_BATCH_SIZE)]
+    if not remaining:
+        slices = []
+    elif serial_batches:
+        slices = [group[start:start + SQLITE_BATCH_SIZE]
+                  for group in partitions(remaining, sqlite_workers, None)
+                  for start in range(0, len(group), SQLITE_BATCH_SIZE)]
+    else:
+        batch_count = max(sqlite_workers, math.ceil(len(remaining) / SQLITE_BATCH_SIZE))
+        slices = partitions(remaining, batch_count, seconds, maximum_size=SQLITE_BATCH_SIZE)
     row.update(partition_strategy='discovery_order' if serial_batches else 'longest_measured_first',
                timing_hints=seconds,
                unmeasured_tests=[n for n in names if n not in seconds],

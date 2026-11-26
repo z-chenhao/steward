@@ -203,12 +203,20 @@ func (t *tools) prepareUI(ctx context.Context, inv tool.Invocation) (p uiPrepara
 	}
 	viewCtx, cancelViews := context.WithCancel(ctx)
 	defer cancelViews()
+	viewSem := make(chan struct{}, 3)
 	var viewWG sync.WaitGroup
 	var viewErrs [5]error
 	runView := func(slot int, fn func() error) {
 		viewWG.Add(1)
 		go func() {
 			defer viewWG.Done()
+			select {
+			case viewSem <- struct{}{}:
+				defer func() { <-viewSem }()
+			case <-viewCtx.Done():
+				viewErrs[slot] = viewCtx.Err()
+				return
+			}
 			if e := fn(); e != nil {
 				viewErrs[slot] = e
 				cancelViews()
