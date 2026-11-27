@@ -392,11 +392,14 @@ func testEvidenceAdmittedRead(t *testing.T, managed bool) {
 		t.Fatal(err)
 	}
 	defer writer.Rollback()
-	readCtx, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	// Keep the read deadline below SQLite's 5s busy_timeout (while writer holds
+	// the WAL write lock until defer Rollback) so writer contention still fails
+	// without flaking when two sandboxed plugin calls run under -race CI load.
+	readCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	out, err := ts.ExecuteBuiltin(readCtx, inv)
 	if err != nil || out.Error != nil {
-		t.Fatal("already-admitted Main evidence read contended for WAL writer", out, err)
+		t.Fatal("already-admitted Main evidence read contended for WAL writer", out, err, errors.Unwrap(err))
 	}
 	var page evidence.Page
 	if err = json.Unmarshal([]byte(out.Text), &page); err != nil || page.Text != "read this original" {
